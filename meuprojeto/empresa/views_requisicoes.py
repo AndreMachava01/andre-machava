@@ -19,7 +19,7 @@ from .models_stock import (
 )
 from .models_base import Sucursal
 from .decorators import require_stock_access, require_sucursal_access, get_user_sucursais
-from .services.email_service import EmailService
+from .services.email_service import EmailNotificationService as EmailService
 
 # =============================================================================
 # VIEWS DE REQUISIÇÕES DE STOCK

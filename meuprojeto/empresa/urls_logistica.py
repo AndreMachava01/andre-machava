@@ -12,6 +12,10 @@ urlpatterns = [
     
     # API endpoints
     path('dashboard-data/', views_logistica.logistica_dashboard_data, name='dashboard_data'),
+    # API interna
+    path('cotacao-interna/', views_logistica.cotacao_interna, name='cotacao_interna'),
+    path('cotacao/', views_logistica.cotacao_form, name='cotacao_form'),
+    path('webhooks/<str:carrier>/', views_logistica.carrier_webhook, name='carrier_webhook'),
     
     # Rastreamento de entregas
     path('rastreamento/', views_logistica.rastreamento_list, name='rastreamento_list'),

@@ -6,11 +6,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Q, Count, Sum
 from django.http import JsonResponse
 from datetime import timedelta
 import logging
+import json
 
 from .decorators import require_stock_access
 from .models_stock import (
@@ -21,6 +23,9 @@ from .services.logistica_sync import (
     sincronizar_rastreamento_com_notificacao,
     criar_evento_rastreamento,
 )
+from .services.pricing import calculate_quote, PricingItem
+from django.conf import settings
+from django.core.mail import send_mail
 from .services import logistica_ops
 
 # Utilitários movidos para services/logistica_sync.py
@@ -1549,3 +1554,160 @@ def checklist_viaturas_print_blank(request):
 
     return render(request, 'stock/logistica/checklist/print_blank.html', context)
 
+
+# =============================================================================
+# API INTERNA: COTAÇÃO LOGÍSTICA
+# =============================================================================
+
+@login_required
+@require_stock_access
+@require_http_methods(["POST"])
+def cotacao_interna(request):
+    """Calcula cotação interna usando regras básicas (sem integrações externas)."""
+    import json
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+
+    transportadora_id = payload.get('transportadora_id')
+    items_payload = payload.get('items') or []
+    origem_provincia = payload.get('origem_provincia')
+    destino_provincia = payload.get('destino_provincia')
+    fuel_surcharge_pct = float(payload.get('fuel_surcharge_pct') or 0)
+    tolls_flat = float(payload.get('tolls_flat') or 0)
+    insurance_pct = float(payload.get('insurance_pct') or 0)
+
+    if not transportadora_id or not items_payload:
+        return JsonResponse({'error': 'Campos obrigatórios: transportadora_id e items'}, status=400)
+
+    transportadora = get_object_or_404(Transportadora, id=transportadora_id, status='ATIVA')
+
+    try:
+        items = []
+        for it in items_payload:
+            items.append(PricingItem(
+                weight_kg=float(it.get('weight_kg') or 0),
+                length_cm=float(it.get('length_cm') or 0),
+                width_cm=float(it.get('width_cm') or 0),
+                height_cm=float(it.get('height_cm') or 0),
+                declared_value=float(it.get('declared_value') or 0),
+            ))
+    except Exception:
+        return JsonResponse({'error': 'Items inválidos'}, status=400)
+
+    result = calculate_quote(
+        transportadora=transportadora,
+        items=items,
+        origem_provincia=origem_provincia,
+        destino_provincia=destino_provincia,
+        fuel_surcharge_pct=max(0.0, fuel_surcharge_pct),
+        tolls_flat=max(0.0, tolls_flat),
+        insurance_pct=max(0.0, insurance_pct),
+    )
+
+    return JsonResponse({
+        'total_cost': result.total_cost,
+        'currency': result.currency,
+        'estimated_days': result.estimated_days,
+        'breakdown': result.breakdown,
+    })
+
+
+@login_required
+@require_stock_access
+def cotacao_form(request):
+    """Formulário simples para testar cotação interna pelo navegador."""
+    transportadoras = Transportadora.objects.filter(status='ATIVA').order_by('nome')
+    context = {
+        'transportadoras': transportadoras,
+    }
+    return render(request, 'stock/logistica/cotacao/form.html', context)
+
+
+# =============================================================================
+# WEBHOOKS DE TRANSPORTADORAS (SKELETON)
+# =============================================================================
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def carrier_webhook(request, carrier):
+    """Webhook para receber atualizações de transportadoras."""
+    from .services.webhook_service import CarrierWebhookView
+    
+    # Usar a view de webhook do serviço
+    webhook_view = CarrierWebhookView()
+    return webhook_view.post(request, carrier)
+
+
+# =============================================================================
+# NOTIFICAÇÕES INTERNAS (E-MAIL BÁSICO)
+# =============================================================================
+
+def send_internal_email_notification(request):
+    """Endpoint para envio de notificações por email interno."""
+    from .services.email_service import email_service
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            notification_type = data.get('type')
+            recipient_email = data.get('recipient_email')
+            
+            if not notification_type or not recipient_email:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'type e recipient_email são obrigatórios'
+                }, status=400)
+            
+            # Processar baseado no tipo
+            if notification_type == 'tracking_update':
+                result = email_service.send_tracking_update(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    status=data.get('status', ''),
+                    location=data.get('location'),
+                    estimated_delivery=data.get('estimated_delivery')
+                )
+            elif notification_type == 'delivery_confirmation':
+                result = email_service.send_delivery_confirmation(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    delivery_date=data.get('delivery_date', ''),
+                    signature_name=data.get('signature_name')
+                )
+            elif notification_type == 'delay_notification':
+                result = email_service.send_delay_notification(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    original_date=data.get('original_date', ''),
+                    new_date=data.get('new_date', ''),
+                    reason=data.get('reason')
+                )
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Tipo de notificação não suportado: {notification_type}'
+                }, status=400)
+            
+            return JsonResponse({
+                'success': result,
+                'message': 'Email enviado com sucesso' if result else 'Falha ao enviar email'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'JSON inválido'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Método não permitido'
+    }, status=405)
