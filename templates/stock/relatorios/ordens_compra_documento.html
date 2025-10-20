@@ -1,0 +1,554 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Relatório de Ordens de Compra{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        .action-buttons {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'stock:relatorios:main' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="{% url 'stock:main' %}" class="btn btn-outline">
+        <i class="fas fa-warehouse"></i>Stock
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE ORDENS DE COMPRA</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Ordens de Compra
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ user.get_full_name|default:user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_inicio|date:"d/m/Y" }} a {{ data_fim|date:"d/m/Y" }}
+            </div>
+            <div class="info-item">
+                <strong>Total de Ordens:</strong> {{ total_ordens }}
+            </div>
+            <div class="info-item">
+                <strong>Valor Total:</strong> {{ valor_total|floatformat:2 }} MT
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Ordens:</strong> {{ total_ordens }}
+            </div>
+            <div class="summary-item">
+                <strong>Ordens Pendentes:</strong> {{ ordens_pendentes }}
+            </div>
+            <div class="summary-item">
+                <strong>Ordens Aprovadas:</strong> {{ ordens_aprovadas }}
+            </div>
+            <div class="summary-item">
+                <strong>Valor Total:</strong> {{ valor_total|floatformat:2 }} MT
+            </div>
+        </div>
+    </div>
+
+    <!-- Ordens por Status -->
+    <div class="section">
+        <h3>Ordens por Status</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Quantidade</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in ordens_por_status %}
+                <tr>
+                    <td>{{ status.status }}</td>
+                    <td class="text-center">{{ status.total }}</td>
+                    <td class="text-center">{{ status.percentual|floatformat:1 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Ordens por Fornecedor -->
+    <div class="section">
+        <h3>Ordens por Fornecedor</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Fornecedor</th>
+                    <th>Total de Ordens</th>
+                    <th>Valor Total</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fornecedor in ordens_por_fornecedor %}
+                <tr>
+                    <td>{{ fornecedor.fornecedor__nome }}</td>
+                    <td class="text-center">{{ fornecedor.total }}</td>
+                    <td class="text-right">{{ fornecedor.valor_total|floatformat:2 }} MT</td>
+                    <td class="text-center">{{ fornecedor.percentual|floatformat:1 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Lista de Ordens de Compra -->
+    <div class="section">
+        <h3>Lista de Ordens de Compra</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Data</th>
+                    <th>Fornecedor</th>
+                    <th>Total de Itens</th>
+                    <th>Valor Total</th>
+                    <th>Status</th>
+                    <th>Criado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ordem in ordens %}
+                <tr>
+                    <td>{{ ordem.codigo }}</td>
+                    <td class="text-center">{{ ordem.data_criacao|date:"d/m/Y" }}</td>
+                    <td>{{ ordem.fornecedor.nome }}</td>
+                    <td class="text-center">{{ ordem.itens.count }}</td>
+                    <td class="text-right">{{ ordem.valor_total|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        <span class="status-badge status-{{ ordem.status|lower }}">
+                            {{ ordem.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ ordem.criado_por.get_full_name|default:ordem.criado_por.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="document-footer">
+        <p>Documento gerado automaticamente em {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<!-- Botão de Impressão -->
+<div class="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Relatório
+    </button>
+</div>
+
+<style>
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-card);
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background: var(--bg-card);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-aprovada {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+        
+        .print-actions {
+            display: none;
+        }
+    }
+    
+    @media screen {
+        .print-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-aprovada {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+        
+        .print-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+    }
+</style>
+{% endblock %}

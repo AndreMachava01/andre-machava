@@ -1,0 +1,353 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Avaliação de Desempenho - Impressão{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #10b981;
+        border: 1px solid #10b981;
+    }
+
+    .btn-outline:hover {
+        background: #10b981;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        .action-buttons {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Ação Padronizados -->
+<div class="action-buttons">
+    <a href="{% url 'rh:avaliacao_detail' avaliacao.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar à Avaliação
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Avaliação
+    </button>
+    <a href="{% url 'rh:main' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i> Dashboard RH
+    </a>
+</div>
+
+<div class="print-container">
+    
+    <!-- Cabeçalho da Página -->
+    <div class="header-section">
+        <h1 class="header-title">AVALIAÇÃO DE DESEMPENHO</h1>
+        <p class="header-subtitle">
+            {{ avaliacao.funcionario.nome_completo }} - {{ avaliacao.get_tipo_display }}
+        </p>
+        <p class="print-only" style="margin: 10px 0 0 0; font-size: 14px;">
+            Período: {{ avaliacao.data_inicio|date:"d/m/Y" }} a {{ avaliacao.data_fim|date:"d/m/Y" }}
+        </p>
+    </div>
+
+    <!-- Informações Básicas -->
+    <div class="content-grid">
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-user"></i>
+                Informações do Funcionário
+            </h3>
+            <div class="info-item">
+                <span class="info-label">Nome:</span>
+                <span class="info-value">{{ avaliacao.funcionario.nome_completo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Cargo:</span>
+                <span class="info-value">{{ avaliacao.funcionario.cargo.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Departamento:</span>
+                <span class="info-value">{{ avaliacao.funcionario.cargo.departamento.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Data de Admissão:</span>
+                <span class="info-value">{{ avaliacao.funcionario.data_admissao|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-clipboard-check"></i>
+                Informações da Avaliação
+            </h3>
+            <div class="info-item">
+                <span class="info-label">Avaliador:</span>
+                <span class="info-value">{{ avaliacao.avaliador.nome_completo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tipo:</span>
+                <span class="info-value">{{ avaliacao.get_tipo_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                    <span class="status-badge status-{{ avaliacao.status|lower }}">
+                        {{ avaliacao.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Período:</span>
+                <span class="info-value">{{ avaliacao.data_inicio|date:"d/m/Y" }} a {{ avaliacao.data_fim|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados da Avaliação -->
+    {% if avaliacao.nota_geral %}
+    <div class="resultado-section">
+        <h3 class="resultado-title">RESULTADOS DA AVALIAÇÃO</h3>
+        <div class="resultado-grid">
+            <div class="resultado-item">
+                <div class="resultado-valor">{{ avaliacao.nota_geral|floatformat:1 }}</div>
+                <div class="resultado-label">Nota Geral</div>
+            </div>
+            <div class="resultado-item">
+                <div class="resultado-valor">{{ avaliacao.classificacao|default:"N/A" }}</div>
+                <div class="resultado-label">Classificação</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Critérios de Avaliação -->
+    {% if avaliacoes_criterios %}
+    <div class="criterios-section">
+        <h3 class="card-title">
+            <i class="fas fa-list-check"></i>
+            Critérios de Avaliação
+        </h3>
+        
+        <table class="criterios-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Critério</th>
+                    <th style="width: 15%;">Peso</th>
+                    <th style="width: 15%;">Nota</th>
+                    <th style="width: 15%;">Nota Ponderada</th>
+                    <th style="width: 25%;">Observações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for criterio_avaliado in avaliacoes_criterios %}
+                <tr>
+                    <td>
+                        <strong>{{ criterio_avaliado.criterio.nome }}</strong>
+                        {% if criterio_avaliado.criterio.descricao %}
+                        <br><small style="color: #6b7280;">{{ criterio_avaliado.criterio.descricao }}</small>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ criterio_avaliado.criterio.peso }}%</td>
+                    <td class="nota-cell 
+                        {% if criterio_avaliado.nota >= 8 %}nota-excelente
+                        {% elif criterio_avaliado.nota >= 6 %}nota-bom
+                        {% elif criterio_avaliado.nota >= 4 %}nota-regular
+                        {% else %}nota-ruim{% endif %}">
+                        {{ criterio_avaliado.nota|floatformat:1 }}
+                    </td>
+                    <td style="text-align: center; font-weight: bold;">
+                        {{ criterio_avaliado.nota_ponderada|floatformat:1 }}
+                    </td>
+                    <td>
+                        {% if criterio_avaliado.observacoes %}
+                            {{ criterio_avaliado.observacoes }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Metas e Objetivos -->
+    <div class="content-grid">
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-target"></i>
+                Metas Estabelecidas
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.metas_estabelecidas %}
+                    {{ avaliacao.metas_estabelecidas }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-check-circle"></i>
+                Metas Alcançadas
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.metas_alcancadas %}
+                    {{ avaliacao.metas_alcancadas }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Análise de Desempenho -->
+    <div class="content-grid">
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-thumbs-up"></i>
+                Pontos Fortes
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.pontos_fortes %}
+                    {{ avaliacao.pontos_fortes }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-arrow-up"></i>
+                Pontos de Melhoria
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.pontos_melhoria %}
+                    {{ avaliacao.pontos_melhoria }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Observações -->
+    <div class="content-grid">
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-comment"></i>
+                Observações do Avaliador
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.observacoes_avaliador %}
+                    {{ avaliacao.observacoes_avaliador }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-user-comment"></i>
+                Observações do Funcionário
+            </h3>
+            <div class="text-content">
+                {% if avaliacao.observacoes_funcionario %}
+                    {{ avaliacao.observacoes_funcionario }}
+                {% else %}
+                    <em style="color: #9ca3af;">Não informado</em>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Plano de Desenvolvimento -->
+    {% if avaliacao.plano_desenvolvimento %}
+    <div class="info-card">
+        <h3 class="card-title">
+            <i class="fas fa-graduation-cap"></i>
+            Plano de Desenvolvimento
+        </h3>
+        <div class="text-content">
+            {{ avaliacao.plano_desenvolvimento }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Rodapé -->
+    <div class="footer-info">
+        <p><strong>Data de Geração:</strong> {{ "now"|date:"d/m/Y H:i" }}</p>
+        <p><strong>Sistema de Gestão de RH</strong> - Conception</p>
+    </div>
+</div>
+
+<script>
+// Auto-print quando acessado via parâmetro
+if (window.location.search.includes('print=true')) {
+    window.onload = function() {
+        window.print();
+    }
+}
+</script>
+{% endblock %}

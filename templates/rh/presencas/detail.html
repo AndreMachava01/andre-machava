@@ -1,0 +1,111 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Detalhes da Presença{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:presencas' %}">Presenças</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Detalhes</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-calendar-check"></i>
+                    Detalhes da Presença
+                </h1>
+                <p class="page-subtitle">
+                    Informações completas do registro de presença
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:presencas' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                <a href="{% url 'rh:presenca_edit' presenca.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações da Presença -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-id-card"></i>
+                Informações da Presença
+            </h3>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td class="cell-label">Funcionário:</td>
+                        <td>
+                            <div class="cell-primary">{{ presenca.funcionario.nome_completo }}</div>
+                            <div class="cell-tertiary">{{ presenca.funcionario.codigo_funcionario }}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="cell-label">Data:</td>
+                        <td>{{ presenca.data|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="cell-label">Tipo de Presença:</td>
+                        <td>
+                            <span class="status-badge status-info">{{ presenca.tipo_presenca.nome }}</span>
+                        </td>
+                    </tr>
+                    {% if presenca.hora_entrada %}
+                    <tr>
+                        <td class="cell-label">Hora de Entrada:</td>
+                        <td>{{ presenca.hora_entrada|time:"H:i" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if presenca.hora_saida %}
+                    <tr>
+                        <td class="cell-label">Hora de Saída:</td>
+                        <td>{{ presenca.hora_saida|time:"H:i" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if presenca.horas_trabalhadas %}
+                    <tr>
+                        <td class="cell-label">Horas Trabalhadas:</td>
+                        <td>{{ presenca.horas_trabalhadas }}h</td>
+                    </tr>
+                    {% endif %}
+                    {% if presenca.observacoes %}
+                    <tr>
+                        <td class="cell-label">Observações:</td>
+                        <td>{{ presenca.observacoes }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if presenca.justificativa %}
+                    <tr>
+                        <td class="cell-label">Justificativa:</td>
+                        <td>{{ presenca.justificativa }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Excluir Material{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:materiais' %}">Materiais</a></li>
+            <li class="breadcrumb-item active">Excluir Material</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-trash-alt"></i>
+                Excluir Material
+            </h2>
+            <a href="{% url 'stock:materiais' %}" class="btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="confirmation-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Confirmar Exclusão
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita. O material será permanentemente removido do sistema.
+                    </div>
+
+                    <!-- Material Info -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Informações do Material:</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Código:</strong></td>
+                                    <td><code>{{ material.codigo }}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td>{{ material.nome }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ material.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoria:</strong></td>
+                                    <td>
+                                        {% if material.categoria %}
+                                            <span class="badge bg-secondary">{{ material.categoria.nome }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Não definida</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Detalhes:</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Unidade:</strong></td>
+                                    <td>{{ material.get_unidade_medida_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Preço:</strong></td>
+                                    <td>
+                                        {% if material.preco_custo %}
+                                            <span style="color: #059669; font-weight: 600; font-family: 'SF Mono', 'Monaco', monospace;">
+                                                {{ material.preco_custo|floatformat:2 }} MT
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estoque:</strong></td>
+                                    <td>
+                                        <span style="color: #3b82f6; font-weight: 600;">
+                                            {{ material.quantidade_atual|default:0 }} {{ material.get_unidade_medida_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        {% if material.status == 'ATIVO' %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ material.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if material.descricao %}
+                    <div class="mt-4">
+                        <h6 class="text-muted">Descrição:</h6>
+                        <p class="text-muted">{{ material.descricao }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Supplier Info -->
+                    {% if material.fornecedor_principal %}
+                    <div class="mt-4">
+                        <h6 class="text-muted">Fornecedor Principal:</h6>
+                        <p class="text-muted">{{ material.fornecedor_principal.nome }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Warning about related data -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Nota:</strong> Se este material estiver sendo usado em receitas ou tiver movimentos de stock, a exclusão pode afetar outros registros.
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'stock:materiais' %}" class="btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn-danger" onclick="return confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')">
+                                <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

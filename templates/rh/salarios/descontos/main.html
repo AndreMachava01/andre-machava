@@ -1,0 +1,186 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Descontos Salariais{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="descontos-container">
+    <div class="header-section">
+        <h1 class="header-title">
+            <i class="fas fa-minus-circle"></i>
+            Descontos Salariais
+        </h1>
+        
+        <div style="margin-top: 15px;">
+            <a href="{% url 'rh:salarios' %}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Salários
+            </a>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{% url 'rh:desconto_salarial_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Adicionar Desconto
+        </a>
+        <a href="{% url 'rh:salarios' %}" class="btn btn-secondary">
+            <i class="fas fa-money-bill-wave"></i>
+            Salários
+        </a>
+    </div>
+
+    <div class="filters-section">
+        <form method="get" class="filters-grid">
+            <div class="filter-group">
+                <label for="tipo">Tipo</label>
+                <select name="tipo" id="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for codigo, nome in tipo_choices %}
+                    <option value="{{ codigo }}" {% if tipo == codigo %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="ativo">Status</label>
+                <select name="ativo" id="ativo">
+                    <option value="">Todos os status</option>
+                    <option value="1" {% if ativo == "1" %}selected{% endif %}>Ativo</option>
+                    <option value="0" {% if ativo == "0" %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search">Pesquisar</label>
+                <input type="text" name="search" id="search" value="{{ search }}" placeholder="Nome ou código...">
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Tipo de Valor</th>
+                    <th>Valor</th>
+                    <th>Base de Cálculo</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for desconto in page_obj %}
+                <tr>
+                    <td>
+                        <strong>{{ desconto.nome }}</strong>
+                        {% if desconto.observacoes %}
+                        <br><small class="text-muted">{{ desconto.observacoes|truncatechars:50 }}</small>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ desconto.codigo }}</code></td>
+                    <td>
+                        <span class="tipo-badge">{{ desconto.get_tipo_display }}</span>
+                    </td>
+                    <td>
+                        <span class="tipo-badge">{{ desconto.get_tipo_valor_display }}</span>
+                    </td>
+                    <td>
+                        {% if desconto.tipo_valor == 'FIXO' %}
+                            <span class="value-currency">{{ desconto.valor }}</span>
+                        {% else %}
+                            <span class="value-percent">{{ desconto.valor }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if desconto.base_calculo %}
+                            {{ desconto.get_base_calculo_display }}
+                            {% if desconto.base_calculo == 'OUTRO' and desconto.base_calculo_personalizada %}
+                                <br><small class="text-muted">{{ desconto.base_calculo_personalizada }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{% if desconto.ativo %}ativo{% else %}inativo{% endif %}">
+                            {% if desconto.ativo %}Ativo{% else %}Inativo{% endif %}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{% url 'rh:desconto_salarial_edit' desconto.id %}" class="action-button edit-button" title="Editar Desconto">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'rh:desconto_salarial_delete' desconto.id %}" class="action-button delete-button" title="Excluir Desconto">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-minus-circle"></i>
+            <h3>Nenhum desconto encontrado</h3>
+            <p>Não há descontos cadastrados com os filtros aplicados.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

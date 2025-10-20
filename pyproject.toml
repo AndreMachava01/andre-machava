@@ -1,0 +1,59 @@
+[tool.pylsp-mypy]
+enabled = true
+live_mode = true
+strict = false
+
+[tool.pylsp-mypy.overrides]
+module = [
+    "django.*",
+    "django.contrib.*",
+    "django.core.*",
+    "django.db.*",
+    "django.http.*",
+    "django.utils.*",
+    "django_filters.*"
+]
+
+[tool.pylsp-mypy.overrides.django]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django.contrib]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django.core]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django.db]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django.http]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django.utils]
+ignore_errors = true
+
+[tool.pylsp-mypy.overrides.django_filters]
+ignore_errors = true
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meuprojeto"
+version = "1.0.0"
+description = "Sistema de Gestão de Recursos Humanos"
+dependencies = [
+    "Django>=5.2.6",
+    "django-filter>=23.0",
+    "psycopg2-binary>=2.9.0",
+]
+
+[tool.pylsp]
+plugins = {
+    "pylsp_mypy" = {
+        "enabled" = true,
+        "live_mode" = true,
+        "strict" = false
+    }
+}

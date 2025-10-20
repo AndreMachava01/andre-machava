@@ -1,0 +1,305 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Promoções e Aumentos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Promoções</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-trophy"></i>
+                    Promoções e Aumentos
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie promoções e aumentos salariais dos funcionários
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:promocao_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Promoção
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.total|default:"0" }}</h3>
+                <p class="stat-label">Total de Solicitações</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.pendentes|default:"0" }}</h3>
+                <p class="stat-label">Pendentes</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.aprovadas|default:"0" }}</h3>
+                <p class="stat-label">Aprovadas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.implementadas|default:"0" }}</h3>
+                <p class="stat-label">Implementadas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.rejeitadas|default:"0" }}</h3>
+                <p class="stat-label">Rejeitadas</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter"></i>
+            Filtros de Busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos os Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos os Tipos</option>
+                    {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if tipo_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Funcionário</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon"></i>
+                    <input type="text" name="funcionario" value="{{ funcionario_filter|default:'' }}" 
+                           class="form-control" placeholder="Nome do funcionário">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i>
+                    Buscar
+                </button>
+                
+                {% if status_filter or tipo_filter or funcionario_filter %}
+                    <a href="{% url 'rh:promocoes' %}" class="btn-clear">
+                        <i class="fas fa-times"></i>
+                        Limpar
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if promocoes %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Promoções
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ promocoes.start_index }}-{{ promocoes.end_index }} de {{ promocoes.paginator.count }} promoções
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Salário Anterior</th>
+                            <th>Salário Novo</th>
+                            <th>Aumento</th>
+                            <th>Data Solicitação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for promocao in promocoes %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">{{ promocao.funcionario.nome_completo }}</div>
+                                <div class="cell-code">{{ promocao.funcionario.codigo_funcionario }}</div>
+                            </td>
+                            <td>
+                                <span class="cell-code">{{ promocao.get_tipo_display }}</span>
+                            </td>
+                            <td>
+                                {% if promocao.status == 'PENDENTE' %}
+                                    <span class="status-badge status-pending">Pendente</span>
+                                {% elif promocao.status == 'APROVADO' %}
+                                    <span class="status-badge status-active">Aprovado</span>
+                                {% elif promocao.status == 'IMPLEMENTADO' %}
+                                    <span class="status-badge status-completed">Implementado</span>
+                                {% elif promocao.status == 'REJEITADO' %}
+                                    <span class="status-badge status-danger">Rejeitado</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ promocao.salario_anterior|floatformat:2 }} MT</td>
+                            <td>{{ promocao.salario_novo|floatformat:2 }} MT</td>
+                            <td>
+                                {% if promocao.valor_aumento %}
+                                    <div class="cell-primary">{{ promocao.valor_aumento|floatformat:2 }} MT</div>
+                                    <div class="cell-tertiary">({{ promocao.percentual_aumento|floatformat:1 }}%)</div>
+                                {% else %}
+                                    <span class="cell-tertiary">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ promocao.data_solicitacao|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'rh:promocao_detail' promocao.id %}" class="btn-action secondary" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if promocao.status == 'PENDENTE' %}
+                                        <a href="{% url 'rh:promocao_edit' promocao.id %}" class="btn-action primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'rh:promocao_aprovar' promocao.id %}" class="btn-action success" title="Aprovar">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'rh:promocao_rejeitar' promocao.id %}" class="btn-action danger" title="Rejeitar">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    {% elif promocao.status == 'APROVADO' %}
+                                        <a href="{% url 'rh:promocao_implementar' promocao.id %}" class="btn-action primary" title="Implementar">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if promocoes.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if promocoes.has_previous %}
+                        <a href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if funcionario_filter %}&funcionario={{ funcionario_filter }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ promocoes.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if funcionario_filter %}&funcionario={{ funcionario_filter }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ promocoes.number }} de {{ promocoes.paginator.num_pages }}
+                    </span>
+                    
+                    {% if promocoes.has_next %}
+                        <a href="?page={{ promocoes.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if funcionario_filter %}&funcionario={{ funcionario_filter }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ promocoes.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if funcionario_filter %}&funcionario={{ funcionario_filter }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-trophy"></i>
+                <h4>Nenhuma promoção encontrada</h4>
+                <p>
+                    {% if status_filter or tipo_filter or funcionario_filter %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    adicione a primeira promoção.
+                </p>
+                <a href="{% url 'rh:promocao_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Promoção
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-submit nos filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="status"], select[name="tipo"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

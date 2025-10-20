@@ -1,0 +1,406 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Gerenciar Vinculações - {{ departamento.nome }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header {
+        background: var(--blue-gradient);
+    }
+    
+    /* Cards de informação compactos */
+    .info-card {
+        background: var(--dark-bg-secondary);
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid var(--dark-border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
+    }
+    
+    .info-card h3 {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .info-label {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    /* Seções compactas */
+    .section {
+        background: var(--dark-bg-secondary);
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid var(--dark-border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
+    }
+    
+    .section h3 {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    /* Formulário compacto */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 14px;
+    }
+    
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        background: #1f2937;
+        color: #ffffff;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .form-group select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-actions {
+        margin-top: 15px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Lista de vinculações */
+    .vinculacoes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .vinculacao-item {
+        background: var(--dark-bg-tertiary);
+        border: 1px solid var(--dark-border);
+        border-radius: 6px;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+    
+    .vinculacao-item:hover {
+        background: var(--dark-bg-primary);
+        border-color: #374151;
+    }
+    
+    .vinculacao-info {
+        flex: 1;
+    }
+    
+    .vinculacao-sucursal {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    
+    .vinculacao-data {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    
+    .vinculacao-actions {
+        margin-left: 15px;
+    }
+    
+    /* Estado vazio */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: #6b7280;
+    }
+    
+    .empty-state h4 {
+        color: #ffffff;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    /* Alertas */
+    .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 18px;
+        border: 1px solid;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .alert-success {
+        background: rgba(34, 197, 94, 0.15);
+        color: #10b981;
+        border-color: rgba(34, 197, 94, 0.4);
+    }
+    
+    .alert-error {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.4);
+    }
+    
+    .alert i {
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:departamentos' %}">Departamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Vinculações</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-link"></i>
+                    Gerenciar Vinculações
+                </h1>
+                <p class="page-subtitle">
+                    Vincule este departamento a outras sucursais da empresa
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:departamentos' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Departamentos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Departamento -->
+    <div class="info-card">
+        <h3>
+            <i class="fas fa-building"></i>
+            Informações do Departamento
+        </h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Nome</span>
+                <span class="info-value">{{ departamento.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Código</span>
+                <span class="info-value">{{ departamento.codigo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Sucursal Original</span>
+                <span class="info-value">{{ departamento.sucursal.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tipo</span>
+                <span class="info-value">{{ departamento.get_tipo_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Vincular Nova Sucursal -->
+    <div class="section">
+        <h3>
+            <i class="fas fa-link"></i>
+            Vincular a Nova Sucursal
+        </h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="vincular">
+            
+            <div class="form-group">
+                <label for="sucursal">Selecionar Sucursal</label>
+                <select id="sucursal" name="sucursal" required>
+                    <option value="">Escolha uma sucursal...</option>
+                    {% for sucursal in sucursais_disponiveis %}
+                        <option value="{{ sucursal.id }}">
+                            {{ sucursal.nome }} ({{ sucursal.codigo }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-link"></i>
+                    Vincular Sucursal
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sucursais Vinculadas -->
+    <div class="section">
+        <h3>
+            <i class="fas fa-list"></i>
+            Sucursais Vinculadas
+        </h3>
+        
+        {% if vinculacoes %}
+            <div class="vinculacoes-list">
+                {% for vinculacao in vinculacoes %}
+                    <div class="vinculacao-item">
+                        <div class="vinculacao-info">
+                            <div class="vinculacao-sucursal">
+                                <i class="fas fa-building"></i>
+                                {{ vinculacao.sucursal.nome }}
+                            </div>
+                            <div class="vinculacao-data">
+                                Vinculado em: {{ vinculacao.data_criacao|date:"d/m/Y H:i" }}
+                                {% if vinculacao.ativo %}
+                                    <span style="color: #10b981; font-weight: 600;">• Ativo</span>
+                                {% else %}
+                                    <span style="color: #ef4444; font-weight: 600;">• Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="vinculacao-actions">
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="desvincular">
+                                <input type="hidden" name="sucursal" value="{{ vinculacao.sucursal.id }}">
+                                <button type="submit" class="btn btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja desvincular este departamento da sucursal {{ vinculacao.sucursal.nome }}?')">
+                                    <i class="fas fa-unlink"></i>
+                                    Desvincular
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-unlink"></i>
+                <h4>Nenhuma Sucursal Vinculada</h4>
+                <p>Este departamento ainda não foi vinculado a outras sucursais.</p>
+                <p>Use o formulário acima para vincular a sucursais desejadas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

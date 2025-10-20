@@ -1,0 +1,814 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Transferências de Stock{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        /* Cores funcionais para botões */
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --primary-color: #8b5cf6;
+        --secondary-color: #6b7280;
+        
+        /* Cores vibrantes */
+        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
+        
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 20px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .breadcrumb-section {
+        background: #4b5563;
+        padding: 15px 30px;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .breadcrumb {
+        background: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-item {
+        color: #d1d5db;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+        color: #8b5cf6;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #a78bfa;
+    }
+
+    .breadcrumb-item.active {
+        color: #fbbf24;
+        font-weight: 600;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: #6b7280;
+        margin-right: 8px;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-title i {
+        margin-right: 15px;
+        color: #fbbf24;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-modern {
+        background: var(--green-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .btn-secondary-modern {
+        background: var(--blue-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-secondary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 30px;
+        background: #374151;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        color: white;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+        border: 1px solid #6b7280;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .summary-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        color: #fbbf24;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .summary-card h3 {
+        font-size: 0.9rem;
+        color: #d1d5db;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .filters-card {
+        background: #4b5563;
+        border-radius: 16px;
+        padding: 25px;
+        margin: 0 30px 30px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto auto;
+        gap: 20px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-control-modern {
+        background: #374151;
+        border: 2px solid #6b7280;
+        border-radius: 10px;
+        color: white;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-control-modern::placeholder {
+        color: #9ca3af;
+    }
+
+    .btn-filter {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--green-gradient);
+        color: white;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-clear {
+        background: var(--red-gradient) !important;
+    }
+
+    .movements-section {
+        background: #4b5563;
+        border-radius: 16px;
+        padding: 25px;
+        margin: 0 30px 30px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #6b7280;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fbbf24;
+        margin: 0;
+    }
+
+    .section-title i {
+        margin-right: 10px;
+        color: #8b5cf6;
+    }
+
+    .total-count {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .results-counter {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 10px;
+        color: #93c5fd;
+    }
+
+    .movements-table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid #6b7280;
+    }
+
+    .movements-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #374151;
+    }
+
+    .movements-table th {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-bottom: 2px solid #6b7280;
+    }
+
+    .movements-table td {
+        padding: 15px 12px;
+        border-bottom: 1px solid #4b5563;
+        color: #d1d5db;
+    }
+
+    .movements-table tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .transfer-code {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 0.9rem;
+    }
+
+    .sucursal-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sucursal-name {
+        color: #d1d5db;
+        font-weight: 500;
+    }
+
+    .text-primary {
+        color: #3b82f6 !important;
+    }
+
+    .text-success {
+        color: #10b981 !important;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pendente {
+        background: var(--orange-gradient);
+        color: white;
+    }
+
+    .status-enviada {
+        background: var(--blue-gradient);
+        color: white;
+    }
+
+    .status-recebida {
+        background: var(--green-gradient);
+        color: white;
+    }
+
+    .status-cancelada {
+        background: var(--red-gradient);
+        color: white;
+    }
+
+    .items-count {
+        color: #d1d5db;
+        font-weight: 500;
+    }
+
+    .date-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .date {
+        font-weight: 600;
+        color: white;
+    }
+
+    .time {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-view {
+        background: var(--blue-gradient);
+        color: white;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .pagination-container {
+        margin-top: 25px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination a {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #4b5563;
+        color: #d1d5db;
+        transition: all 0.3s ease;
+        border: 1px solid #6b7280;
+    }
+
+    .pagination a:hover {
+        background: var(--purple-gradient);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .current {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0 15px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #d1d5db;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        color: #9ca3af;
+        margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .movements-table-container {
+            font-size: 0.8rem;
+        }
+        
+        .filters-card,
+        .movements-section {
+            margin: 0 20px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-section">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'stock:main' %}">
+                        <i class="fas fa-warehouse"></i> Stock
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-exchange-alt"></i> Transferências
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-exchange-alt me-2"></i>Transferências
+            </h1>
+            <div class="hero-actions">
+                <a href="{% url 'stock:movimentos' %}" class="btn-modern btn-secondary-modern">
+                    <i class="fas fa-arrow-left"></i>Voltar às Movimentações
+                </a>
+                <a href="{% url 'stock:transferencias:verificar_stock' %}" class="btn-modern btn-primary-modern">
+                    <i class="fas fa-warehouse"></i>Verificar Stock
+                </a>
+                <a href="{% url 'stock:transferencias:create' %}" class="btn-modern btn-primary-modern">
+                    <i class="fas fa-plus"></i>Nova Transferência
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="summary-card">
+            <div class="summary-value">{{ total_transferencias }}</div>
+            <div class="summary-card h3">Total</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_concluidas }}</div>
+            <div class="summary-card h3">Concluídas</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_pendentes }}</div>
+            <div class="summary-card h3">Pendentes</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_em_transito }}</div>
+            <div class="summary-card h3">Em Trânsito</div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="filters-card">
+        <form method="get" class="filter-row">
+            <div class="filter-group">
+                <input type="text" class="form-control-modern" name="search" 
+                       placeholder="Pesquisar por código, usuário, sucursal..." value="{{ request.GET.search }}"
+                       title="Exemplos: TRF0001, admin, Matola, Marracuene">
+            </div>
+            <div class="filter-group">
+                <select class="form-control-modern" name="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <select class="form-control-modern" name="sucursal">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_selecionada == sucursal.id %}selected{% endif %}>
+                            {{ sucursal.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-search"></i>
+            </button>
+            <a href="{% url 'stock:transferencias:list' %}" class="btn-filter btn-clear">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+
+    <!-- Transferências List -->
+    <div class="movements-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-list"></i>
+                Transferências Recentes
+            </h3>
+            <div class="section-actions">
+                <span class="total-count">{{ page_obj.paginator.count }} transferências</span>
+            </div>
+        </div>
+
+        {% if page_obj %}
+            <!-- Results Counter -->
+            {% if request.GET.search or request.GET.status or request.GET.sucursal %}
+            <div class="results-counter" style="margin-bottom: 20px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; color: #60a5fa;">
+                <i class="fas fa-info-circle"></i>
+                {% if page_obj.paginator.count == 1 %}
+                    1 transferência encontrada
+                {% else %}
+                    {{ page_obj.paginator.count }} transferências encontradas
+                {% endif %}
+                {% if request.GET.search %}
+                    para "<strong>{{ request.GET.search }}</strong>"
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <div class="movements-table-container">
+                <table class="movements-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Origem</th>
+                            <th>Destino</th>
+                            <th>Status</th>
+                            <th>Itens</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transferencia in page_obj %}
+                        <tr>
+                            <td class="date-cell">
+                                <span class="transfer-code">{{ transferencia.codigo }}</span>
+                            </td>
+                            <td class="product-cell">
+                                <div class="sucursal-info">
+                                    <i class="fas fa-building text-primary"></i>
+                                    <span class="sucursal-name">{{ transferencia.sucursal_origem.nome }}</span>
+                                </div>
+                            </td>
+                            <td class="product-cell">
+                                <div class="sucursal-info">
+                                    <i class="fas fa-building text-success"></i>
+                                    <span class="sucursal-name">{{ transferencia.sucursal_destino.nome }}</span>
+                                </div>
+                            </td>
+                            <td class="type-cell">
+                                {% if transferencia.status == 'PENDENTE' %}
+                                    <span class="status-badge status-pendente">Pendente</span>
+                                {% elif transferencia.status == 'ENVIADA' %}
+                                    <span class="status-badge status-enviada">Enviada</span>
+                                {% elif transferencia.status == 'RECEBIDA' %}
+                                    <span class="status-badge status-recebida">Recebida</span>
+                                {% elif transferencia.status == 'CANCELADA' %}
+                                    <span class="status-badge status-cancelada">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td class="quantity-cell">
+                                <span class="items-count">{{ transferencia.itens.count }} itens</span>
+                            </td>
+                            <td class="date-cell">
+                                <div class="date-info">
+                                    <span class="date">{{ transferencia.data_criacao|date:"d/m/Y" }}</span>
+                                    <span class="time">{{ transferencia.data_criacao|time:"H:i" }}</span>
+                                </div>
+                            </td>
+                            <td class="actions-cell">
+                                <div class="action-buttons">
+                                    <a href="{% url 'stock:transferencias:detail' transferencia.id %}" class="btn-action btn-view" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    <span class="current">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-exchange-alt"></i>
+                <h4>Nenhuma transferência encontrada</h4>
+                <p>
+                    {% if request.GET.search %}
+                        Nenhuma transferência encontrada para "<strong>{{ request.GET.search }}</strong>".
+                        <br>
+                    {% endif %}
+                    {% if request.GET.status or request.GET.sucursal or request.GET.search %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    <a href="{% url 'stock:transferencias:create' %}">crie a primeira transferência</a>.
+                </p>
+                {% if request.GET.search or request.GET.status or request.GET.sucursal %}
+                    <a href="{% url 'stock:transferencias:list' %}" class="btn-modern btn-primary-modern">
+                        <i class="fas fa-times"></i>Limpar Filtros
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

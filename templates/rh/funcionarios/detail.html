@@ -1,0 +1,240 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% load rh_filters %}
+
+{% block title %}Detalhes do Funcionário{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'rh:funcionarios' %}">Funcionários</a></li>
+            <li class="breadcrumb-item active">{{ funcionario.nome_completo }}</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1>
+                    <i class="fas fa-user me-2"></i>{{ funcionario.nome_completo }}
+                </h1>
+                <p>Detalhes completos do funcionário</p>
+            </div>
+            <div class="action-buttons">
+                <a href="{% url 'rh:funcionarios' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+                <a href="{% url 'rh:funcionario_edit' funcionario.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+        <!-- Informações Básicas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-id-card me-2"></i>Informações Básicas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ funcionario.codigo_funcionario }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ funcionario.email|default:"Não informado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Telefone:</span>
+                    <span class="info-value">{{ funcionario.telefone|default:"Não informado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data de Nascimento:</span>
+                    <span class="info-value">{{ funcionario.data_nascimento|date:"d/m/Y"|default:"Não informado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data de Admissão:</span>
+                    <span class="info-value">{{ funcionario.data_admissao|date:"d/m/Y"|default:"Não informado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="badge {% if funcionario.status == 'AT' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ funcionario.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Profissionais -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-briefcase me-2"></i>Informações Profissionais
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Cargo:</span>
+                    <span class="info-value">{{ funcionario.cargo.nome|default:"Não definido" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Departamento:</span>
+                    <span class="info-value">{{ funcionario.departamento.nome|default:"Não definido" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Sucursal:</span>
+                    <span class="info-value">{{ funcionario.sucursal.nome|default:"Não definido" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Salário Atual:</span>
+                    <span class="info-value">{{ funcionario.salario_atual|floatformat:2 }} MT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remuneração por Hora -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Remuneração por Hora
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="remuneration-grid">
+                    <!-- Remuneração Real -->
+                    <div class="remuneration-card">
+                        <h6>Por Hora (Real)</h6>
+                        {% if remuneracao_hora_real %}
+                            <div class="remuneration-value">{{ remuneracao_hora_real.remuneracao_por_hora }} MT/h</div>
+                            <div class="remuneration-detail">
+                                Baseado em {{ remuneracao_hora_real.horas_trabalhadas }}h trabalhadas
+                            </div>
+                        {% else %}
+                            <div class="remuneration-value">N/A</div>
+                            <div class="remuneration-detail">Sem dados de horas</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remuneração por Dia -->
+                    <div class="remuneration-card">
+                        <h6>Por Dia (Real)</h6>
+                        {% if remuneracao_dia_real %}
+                            <div class="remuneration-value">{{ remuneracao_dia_real.remuneracao_por_dia }} MT/dia</div>
+                            <div class="remuneration-detail">
+                                Baseado em {{ remuneracao_dia_real.dias_trabalhados }} dias trabalhados
+                            </div>
+                        {% else %}
+                            <div class="remuneration-value">N/A</div>
+                            <div class="remuneration-detail">Sem dados de dias</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remuneração Teórica -->
+                    <div class="remuneration-card">
+                        <h6>Por Hora (Teórica)</h6>
+                        {% if remuneracao_hora_teorica %}
+                            <div class="remuneration-value">{{ remuneracao_hora_teorica.remuneracao_por_hora_teorica }} MT/h</div>
+                            <div class="remuneration-detail">
+                                Baseado em {{ remuneracao_hora_teorica.horas_por_dia }}h/dia × {{ remuneracao_hora_teorica.dias_por_mes }} dias
+                            </div>
+                        {% else %}
+                            <div class="remuneration-value">N/A</div>
+                            <div class="remuneration-detail">Sem horário de expediente</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Folhas Recentes -->
+        {% if folhas_recentes %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Folhas Salariais Recentes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mês/Ano</th>
+                                <th>Status</th>
+                                <th>Salário Bruto</th>
+                                <th>Salário Líquido</th>
+                                <th>Horas Trabalhadas</th>
+                                <th>Remuneração/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for folha in folhas_recentes %}
+                                {% for func_folha in folha.funcionarios_folha.all %}
+                                    {% if func_folha.funcionario.id == funcionario.id %}
+                                    <tr>
+                                        <td>{{ folha.mes_referencia|date:"M/Y" }}</td>
+                                        <td>
+                                            <span class="badge {% if folha.status == 'FECHADA' %}bg-success{% elif folha.status == 'ABERTA' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ folha.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ func_folha.salario_bruto|floatformat:2 }} MT</td>
+                                        <td>{{ func_folha.salario_liquido|floatformat:2 }} MT</td>
+                                        <td>{{ func_folha.horas_trabalhadas|floatformat:1 }}h</td>
+                                        <td>
+                                            {% if func_folha.horas_trabalhadas > 0 %}
+                                                <span class="badge bg-info">
+                                                    {{ func_folha.salario_base|div:func_folha.horas_trabalhadas|floatformat:2 }} MT/h
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Observações -->
+        {% if funcionario.observacoes %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sticky-note me-2"></i>Observações
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>{{ funcionario.observacoes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

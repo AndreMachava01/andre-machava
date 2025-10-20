@@ -1,0 +1,644 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Ajustes de Inventário{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 2;
+        margin-top: 15px;
+    }
+
+    .btn-modern {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-modern.btn-primary-modern {
+        background: var(--success-gradient);
+        border-color: transparent;
+    }
+
+    .btn-modern.btn-primary-modern:hover {
+        background: var(--success-gradient);
+        filter: brightness(1.1);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 30px;
+        background: #1f2937;
+        border-bottom: 1px solid #4b5563;
+    }
+
+    .stat-card {
+        background: #374151;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #4b5563;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .stat-card:nth-child(1) { border-left: 4px solid #3b82f6; }
+    .stat-card:nth-child(2) { border-left: 4px solid #f59e0b; }
+    .stat-card:nth-child(3) { border-left: 4px solid #10b981; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #f9fafb;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #d1d5db;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Filters */
+    .filters-section {
+        background: #374151;
+        padding: 20px;
+        border-bottom: 1px solid #4b5563;
+        flex-shrink: 0;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filter-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #d1d5db;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control-modern {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: #f9fafb;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-control-modern::placeholder {
+        color: #9ca3af;
+    }
+
+    .btn-filter {
+        background: var(--info-gradient);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .btn-filter.btn-clear {
+        background: var(--warning-gradient);
+    }
+
+    /* Content Area */
+    .content-area {
+        flex: 1;
+        overflow-y: auto;
+        background: #1f2937;
+        padding: 20px;
+    }
+
+    .table-container {
+        background: #374151;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #4b5563;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern th {
+        background: #4b5563;
+        color: #d1d5db;
+        font-weight: 600;
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .table-modern td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #4b5563;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-aprovado { background: #10b981; color: white; }
+    .status-pendente { background: #f59e0b; color: white; }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action.btn-view {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-action.btn-approve {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #d1d5db;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    .empty-state a {
+        color: #8b5cf6;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .modern-container {
+            margin: 5px;
+            min-height: calc(100vh - 10px);
+        }
+        
+        .hero-section {
+            padding: 15px 20px;
+        }
+        
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            padding: 15px;
+        }
+        
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .table-container {
+            margin: 10px;
+        }
+        
+        .table-modern {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-adjust"></i>
+            Ajustes de Inventário
+        </h1>
+        <p class="hero-subtitle">
+            Gestão de ajustes de stock baseados em inventários físicos
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'stock:inventario:list' %}" class="btn-modern">
+                <i class="fas fa-clipboard-check"></i>
+                Ver Inventários
+            </a>
+            <a href="{% url 'stock:dashboard' %}" class="btn-modern">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_ajustes }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ajustes_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ajustes_aprovados }}</div>
+            <div class="stat-label">Aprovados</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" class="filters-grid" id="filtersForm">
+            <div class="filter-group">
+                <label class="filter-label">Pesquisar</label>
+                <input type="text" name="search" value="{{ search_query }}" 
+                       class="form-control-modern" 
+                       placeholder="Código, item, motivo...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Tipo de Ajuste</label>
+                <select name="tipo_ajuste" class="form-control-modern">
+                    <option value="">Todos os tipos</option>
+                    <option value="INVENTARIO" {% if tipo_ajuste == 'INVENTARIO' %}selected{% endif %}>Inventário Físico</option>
+                    <option value="PERDA" {% if tipo_ajuste == 'PERDA' %}selected{% endif %}>Perda</option>
+                    <option value="DANIFICADO" {% if tipo_ajuste == 'DANIFICADO' %}selected{% endif %}>Danificado</option>
+                    <option value="VENCIDO" {% if tipo_ajuste == 'VENCIDO' %}selected{% endif %}>Vencido</option>
+                    <option value="OUTROS" {% if tipo_ajuste == 'OUTROS' %}selected{% endif %}>Outros</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Sucursal</label>
+                <select name="sucursal" class="form-control-modern">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select name="aprovado" class="form-control-modern">
+                    <option value="">Todos os status</option>
+                    <option value="true" {% if aprovado == 'true' %}selected{% endif %}>Aprovado</option>
+                    <option value="false" {% if aprovado == 'false' %}selected{% endif %}>Pendente</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Data Início</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}" 
+                       class="form-control-modern">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Data Fim</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}" 
+                       class="form-control-modern">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Ordenar por</label>
+                <select name="ordenar" class="form-control-modern">
+                    <option value="-data_ajuste" {% if ordenar == '-data_ajuste' %}selected{% endif %}>Data (Mais recente)</option>
+                    <option value="data_ajuste" {% if ordenar == 'data_ajuste' %}selected{% endif %}>Data (Mais antiga)</option>
+                    <option value="codigo" {% if ordenar == 'codigo' %}selected{% endif %}>Código (A-Z)</option>
+                    <option value="-codigo" {% if ordenar == '-codigo' %}selected{% endif %}>Código (Z-A)</option>
+                    <option value="item__nome" {% if ordenar == 'item__nome' %}selected{% endif %}>Item (A-Z)</option>
+                    <option value="-item__nome" {% if ordenar == '-item__nome' %}selected{% endif %}>Item (Z-A)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-search"></i>Filtrar
+                </button>
+            </div>
+            <div class="filter-group">
+                <button type="button" class="btn-filter btn-clear" onclick="limparFiltros()">
+                    <i class="fas fa-times"></i>Limpar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if ajustes %}
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Item</th>
+                            <th>Sucursal</th>
+                            <th>Tipo</th>
+                            <th>Diferença</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ajuste in ajustes %}
+                        <tr>
+                            <td>
+                                <strong>{{ ajuste.codigo }}</strong>
+                            </td>
+                            <td>{{ ajuste.item.nome }}</td>
+                            <td>{{ ajuste.sucursal.nome }}</td>
+                            <td>{{ ajuste.get_tipo_ajuste_display }}</td>
+                            <td>
+                                <span style="color: {% if ajuste.diferenca > 0 %}#10b981{% elif ajuste.diferenca < 0 %}#ef4444{% else %}#6b7280{% endif %}; font-weight: 600;">
+                                    {{ ajuste.diferenca|add:0|floatformat:0 }}{% if ajuste.diferenca > 0 %}+{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ajuste.aprovado %}
+                                    <span class="status-badge status-aprovado">Aprovado</span>
+                                {% else %}
+                                    <span class="status-badge status-pendente">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ajuste.data_ajuste|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    {% if not ajuste.aprovado %}
+                                    <form method="post" action="{% url 'stock:inventario:ajuste_aprovar' ajuste.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-action btn-approve" title="Aprovar ajuste" onclick="return confirm('Tem certeza que deseja aprovar este ajuste?')">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <span class="btn-action btn-view" title="Ver detalhes" onclick="alert('Detalhes do ajuste:\n\nCódigo: {{ ajuste.codigo }}\nItem: {{ ajuste.item.nome }}\nQuantidade Anterior: {{ ajuste.quantidade_anterior }}\nQuantidade Nova: {{ ajuste.quantidade_nova }}\nMotivo: {{ ajuste.motivo }}')">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if ajustes.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                <div style="display: inline-flex; gap: 10px; align-items: center;">
+                    {% if ajustes.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ ajustes.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span style="padding: 8px 12px; background: #374151; color: #d1d5db; border-radius: 6px;">
+                        Página {{ ajustes.number }} de {{ ajustes.paginator.num_pages }}
+                    </span>
+                    
+                    {% if ajustes.has_next %}
+                        <a href="?page={{ ajustes.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ ajustes.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-adjust"></i>
+                <h3>Nenhum ajuste encontrado</h3>
+                <p>Não há ajustes de inventário que correspondam aos filtros aplicados.</p>
+                <a href="{% url 'stock:inventario:list' %}">Ver inventários</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function limparFiltros() {
+    document.getElementById('filtersForm').reset();
+    window.location.href = window.location.pathname;
+}
+
+// Auto-submit quando mudar ordenação
+document.addEventListener('DOMContentLoaded', function() {
+    const ordenarSelect = document.querySelector('select[name="ordenar"]');
+    if (ordenarSelect) {
+        ordenarSelect.addEventListener('change', function() {
+            document.getElementById('filtersForm').submit();
+        });
+    }
+});
+
+// Salvar filtros no localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filtersForm');
+    const inputs = form.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        const savedValue = localStorage.getItem(`ajustes_filter_${input.name}`);
+        if (savedValue && !input.value) {
+            input.value = savedValue;
+        }
+        
+        input.addEventListener('change', function() {
+            localStorage.setItem(`ajustes_filter_${this.name}`, this.value);
+        });
+    });
+});
+</script>
+{% endblock %}

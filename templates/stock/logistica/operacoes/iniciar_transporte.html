@@ -1,0 +1,279 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Iniciar Transporte{% endblock %}
+
+{% block extra_style %}
+<style>
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        min-height: 100vh;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .page-title {
+        color: #f8fafc;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .page-subtitle {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .info-card-title {
+        color: #f8fafc;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .info-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .info-label {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        color: #f8fafc;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        color: #f8fafc;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-control::placeholder {
+        color: #94a3b8;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(107, 114, 128, 0.3);
+    }
+    
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-coletada {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-shipping-fast"></i>
+            Iniciar Transporte
+        </h1>
+        <p class="page-subtitle">
+            Operação #{{ notificacao.id }} - {{ notificacao.get_tipo_operacao_display }}
+        </p>
+    </div>
+
+    <!-- Informações da Operação -->
+    <div class="info-card">
+        <h3 class="info-card-title">
+            <i class="fas fa-info-circle"></i>
+            Informações da Operação
+        </h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">ID da Operação</div>
+                <div class="info-value">#{{ notificacao.id }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Tipo de Operação</div>
+                <div class="info-value">{{ notificacao.get_tipo_operacao_display }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status Atual</div>
+                <div class="info-value">
+                    <span class="status-badge status-coletada">{{ notificacao.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Prioridade</div>
+                <div class="info-value">{{ notificacao.get_prioridade_display }}</div>
+            </div>
+            {% if notificacao.veiculo_interno %}
+            <div class="info-item">
+                <div class="info-label">Veículo</div>
+                <div class="info-value">{{ notificacao.veiculo_interno.placa }} - {{ notificacao.veiculo_interno.modelo }}</div>
+            </div>
+            {% elif notificacao.transportadora_externa %}
+            <div class="info-item">
+                <div class="info-label">Veículo</div>
+                <div class="info-value">{{ notificacao.transportadora_externa.nome }}</div>
+            </div>
+            {% endif %}
+            {% if notificacao.transportadora_externa %}
+            <div class="info-item">
+                <div class="info-label">Transportadora</div>
+                <div class="info-value">{{ notificacao.transportadora_externa.nome }}</div>
+            </div>
+            {% endif %}
+            {% if notificacao.data_coleta %}
+            <div class="info-item">
+                <div class="info-label">Data da Coleta</div>
+                <div class="info-value">{{ notificacao.data_coleta|date:"d/m/Y H:i" }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulário de Início do Transporte -->
+    <div class="info-card">
+        <h3 class="info-card-title">
+            <i class="fas fa-truck"></i>
+            Iniciar Transporte
+        </h3>
+        <p style="color: #cbd5e1; margin-bottom: 30px;">
+            Confirme que o transporte da mercadoria foi iniciado e está em trânsito para o destino.
+        </p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="observacoes" class="form-label">
+                    <i class="fas fa-comment-alt"></i>
+                    Observações do Transporte
+                </label>
+                <textarea 
+                    name="observacoes" 
+                    id="observacoes" 
+                    class="form-control" 
+                    rows="4" 
+                    placeholder="Descreva qualquer observação sobre o transporte iniciado..."
+                ></textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-shipping-fast"></i>
+                    Iniciar Transporte
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

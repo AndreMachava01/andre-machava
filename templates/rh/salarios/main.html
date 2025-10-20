@@ -1,0 +1,291 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Gestão de Remunerações{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Remunerações</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Gestão de Remunerações
+                </h1>
+                <p class="page-subtitle">
+                    Configure salários, benefícios e descontos dos funcionários
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar ao RH
+                </a>
+                <a href="{% url 'rh:salario_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Remuneração
+                </a>
+                <a href="{% url 'rh:folha_salarial' %}" class="btn btn-primary">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Folha Salarial
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_salarios|default:"0" }}</h3>
+                <p class="stat-label">Total de Remunerações</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ salarios_ativos|default:"0" }}</h3>
+                <p class="stat-label">Remunerações Ativas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ valor_total|default:"0" }} MT</h3>
+                <p class="stat-label">Valor Total Mensal</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ funcionarios_com_salario|default:"0" }}</h3>
+                <p class="stat-label">Funcionários com Salário</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter"></i>
+            Filtros de Busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label">Buscar Funcionário</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon"></i>
+                    <input type="text" name="q" value="{{ search_query|default:'' }}" 
+                           class="form-control" placeholder="Nome do funcionário...">
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Departamento</label>
+                <select name="departamento" class="form-select">
+                    <option value="">Todos os departamentos</option>
+                    {% for dept in departamentos %}
+                        <option value="{{ dept.id }}" {% if departamento_id == dept.id %}selected{% endif %}>
+                            {{ dept.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i>
+                    Filtrar
+                </button>
+                
+                {% if search_query or departamento_id or status %}
+                    <a href="{% url 'rh:salarios' %}" class="btn-clear">
+                        <i class="fas fa-times"></i>
+                        Limpar
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if salarios %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Remunerações
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ salarios.start_index }}-{{ salarios.end_index }} de {{ salarios.paginator.count }} remunerações
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Cargo</th>
+                            <th>Salário Base</th>
+                            <th>Benefícios</th>
+                            <th>Descontos</th>
+                            <th>Salário Líquido</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for salario in salarios %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">{{ salario.funcionario.nome_completo }}</div>
+                                <div class="cell-tertiary">{{ salario.funcionario.codigo_funcionario }}</div>
+                            </td>
+                            <td>{{ salario.funcionario.departamento.nome|default:"N/A" }}</td>
+                            <td>{{ salario.funcionario.cargo.nome|default:"N/A" }}</td>
+                            <td>
+                                <span class="cell-code">{{ salario.salario_base|floatformat:2 }} MT</span>
+                            </td>
+                            <td>
+                                {% if salario.total_beneficios > 0 %}
+                                    <span class="status-badge status-active">+{{ salario.total_beneficios|floatformat:2 }} MT</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">0 MT</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if salario.total_descontos > 0 %}
+                                    <span class="status-badge status-warning">-{{ salario.total_descontos|floatformat:2 }} MT</span>
+                                {% else %}
+                                    <span class="status-badge status-active">0 MT</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ salario.salario_liquido|floatformat:2 }} MT</strong>
+                            </td>
+                            <td>
+                                {% if salario.status == 'ATIVO' %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'rh:salario_edit' salario.id %}" class="btn-action secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'rh:salario_delete' salario.id %}" class="btn-action danger" title="Excluir" 
+                                       onclick="return confirm('Tem certeza que deseja excluir esta remuneração?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if salarios.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if salarios.has_previous %}
+                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ salarios.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ salarios.number }} de {{ salarios.paginator.num_pages }}
+                    </span>
+                    
+                    {% if salarios.has_next %}
+                        <a href="?page={{ salarios.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ salarios.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-money-bill-wave"></i>
+                <h4>Nenhuma remuneração encontrada</h4>
+                <p>Tente ajustar os filtros de busca ou adicione uma nova remuneração.</p>
+                <a href="{% url 'rh:salario_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Remuneração
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-submit filters
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="departamento"], select[name="status"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

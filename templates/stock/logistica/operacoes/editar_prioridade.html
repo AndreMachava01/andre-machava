@@ -1,0 +1,331 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Editar Prioridade - Operação {{ notificacao.id }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+    
+    .priority-info {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .priority-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 4px solid transparent;
+    }
+    
+    .priority-item:nth-child(1) {
+        border-left-color: #17a2b8;
+    }
+    
+    .priority-item:nth-child(2) {
+        border-left-color: #28a745;
+    }
+    
+    .priority-item:nth-child(3) {
+        border-left-color: #ffc107;
+    }
+    
+    .priority-item:nth-child(4) {
+        border-left-color: #dc3545;
+    }
+    
+    .priority-desc {
+        color: #d1d5db;
+        font-size: 0.9rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        margin-top: 8px;
+        font-weight: 400;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="breadcrumb-modern">
+            <a href="{% url 'stock:logistica:operacoes_list' %}">Operações Logísticas</a>
+            <span class="separator">›</span>
+            <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}">Operação #{{ notificacao.id }}</a>
+            <span class="separator">›</span>
+            <span class="current">Editar Prioridade</span>
+        </div>
+        <div class="page-title">
+            <h1>
+                <i class="fas fa-exclamation-triangle"></i>
+                Editar Prioridade da Operação
+            </h1>
+            <p class="page-subtitle">Altere a prioridade desta operação logística</p>
+        </div>
+    </div>
+
+            <!-- Content -->
+            <div class="page-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Aviso sobre edição de prioridade -->
+                {% if notificacao.status not in 'PENDENTE,ATRIBUIDA' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Atenção:</strong> Esta operação já foi coletada (Status: {{ notificacao.get_status_display }}). 
+                        A prioridade não pode mais ser alterada pois o processo logístico já foi iniciado.
+                    </div>
+                {% endif %}
+
+        <!-- Informações da Operação -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Operação
+                </h3>
+            </div>
+            <div class="card-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">ID da Operação</div>
+                        <div class="info-value">#{{ notificacao.id }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tipo de Operação</div>
+                        <div class="info-value">
+                            <span class="badge badge-{{ notificacao.get_tipo_operacao_color }}">
+                                <i class="{{ notificacao.get_tipo_operacao_icon }}"></i>
+                                {{ notificacao.get_tipo_operacao_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status Atual</div>
+                        <div class="info-value">
+                            <span class="badge badge-{{ notificacao.get_status_color }}">
+                                {{ notificacao.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Prioridade Atual</div>
+                        <div class="info-value">
+                            <span class="badge badge-{{ notificacao.get_prioridade_color }}" id="current-priority-badge">
+                                {{ notificacao.get_prioridade_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if notificacao.data_criacao %}
+                    <div class="info-item">
+                        <div class="info-label">Data de Criação</div>
+                        <div class="info-value">{{ notificacao.data_criacao|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    {% if notificacao.usuario_notificacao %}
+                    <div class="info-item">
+                        <div class="info-label">Criado por</div>
+                        <div class="info-value">{{ notificacao.usuario_notificacao.get_full_name|default:notificacao.usuario_notificacao.username }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+                <!-- Formulário de Edição -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit"></i>
+                            Alterar Prioridade
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        {% if notificacao.status in 'PENDENTE,ATRIBUIDA' %}
+                            <form method="post" class="modern-form">
+                                {% csrf_token %}
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="prioridade">
+                                        <i class="fas fa-exclamation-triangle"></i> Nova Prioridade
+                                    </label>
+                                    <select name="prioridade" id="prioridade" class="form-control-modern" required>
+                                        <option value="">Selecione uma prioridade</option>
+                                        {% for value, label in prioridade_choices %}
+                                            <option value="{{ value }}" {% if notificacao.prioridade == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-help">
+                                        <i class="fas fa-info-circle text-info"></i> 
+                                        Selecione a nova prioridade para esta operação
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="observacoes">
+                                        <i class="fas fa-comment-alt"></i> Observações (Opcional)
+                                    </label>
+                                    <textarea name="observacoes" id="observacoes" class="form-control-modern" rows="3" 
+                                              placeholder="Motivo da alteração de prioridade..."></textarea>
+                                    <div class="form-help">
+                                        <i class="fas fa-info-circle text-info"></i> 
+                                        Explique o motivo da alteração de prioridade
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-modern btn-primary-modern">
+                                        <i class="fas fa-save"></i>Salvar Prioridade
+                                    </button>
+                                    <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn-modern btn-secondary-modern">
+                                        <i class="fas fa-times"></i>Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Prioridade Atual:</strong> {{ notificacao.get_prioridade_display }}
+                                <br>
+                                <small>Esta operação já foi coletada e a prioridade não pode mais ser alterada.</small>
+                            </div>
+                            <div class="form-actions">
+                                <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn-modern btn-secondary-modern">
+                                    <i class="fas fa-arrow-left"></i>Voltar à Operação
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+        <!-- Informações Adicionais -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Sobre as Prioridades
+                </h3>
+            </div>
+            <div class="card-content">
+                <div class="priority-info">
+                    <div class="priority-item">
+                        <span class="badge badge-info">BAIXA</span>
+                        <span class="priority-desc">Operações de rotina, sem urgência</span>
+                    </div>
+                    <div class="priority-item">
+                        <span class="badge badge-success">NORMAL</span>
+                        <span class="priority-desc">Operações padrão, prazo normal</span>
+                    </div>
+                    <div class="priority-item">
+                        <span class="badge badge-warning">ALTA</span>
+                        <span class="priority-desc">Operações importantes, requer atenção</span>
+                    </div>
+                    <div class="priority-item">
+                        <span class="badge badge-danger">URGENTE</span>
+                        <span class="priority-desc">Operações críticas, máxima prioridade</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos
+    const prioridadeSelect = document.getElementById('prioridade');
+    const currentPriorityBadge = document.getElementById('current-priority-badge');
+    
+    // Mapeamento de cores
+    const colorMap = {
+        'BAIXA': 'info',
+        'NORMAL': 'success', 
+        'ALTA': 'warning',
+        'URGENTE': 'danger'
+    };
+    
+    // Função para atualizar cor da prioridade
+    function updatePriorityColor() {
+        const selectedValue = prioridadeSelect.value;
+        
+        if (selectedValue && colorMap[selectedValue]) {
+            // Atualizar badge atual
+            if (currentPriorityBadge) {
+                currentPriorityBadge.className = `badge badge-${colorMap[selectedValue]}`;
+                currentPriorityBadge.textContent = prioridadeSelect.options[prioridadeSelect.selectedIndex].text;
+            }
+            
+            // Destacar opção selecionada
+            const options = prioridadeSelect.querySelectorAll('option');
+            options.forEach(option => {
+                option.style.backgroundColor = '';
+            });
+            
+            if (prioridadeSelect.selectedIndex > 0) {
+                prioridadeSelect.options[prioridadeSelect.selectedIndex].style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            }
+        }
+    }
+    
+    // Event listeners
+    prioridadeSelect.addEventListener('change', updatePriorityColor);
+    
+    // Validação do formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const prioridade = prioridadeSelect.value;
+        
+        if (!prioridade) {
+            e.preventDefault();
+            alert('Por favor, selecione uma prioridade.');
+            prioridadeSelect.focus();
+            return false;
+        }
+        
+        // Confirmar alteração
+        const currentPriority = '{{ notificacao.prioridade }}';
+        if (prioridade !== currentPriority) {
+            const confirmMessage = `Tem certeza que deseja alterar a prioridade de "${currentPriority}" para "${prioridadeSelect.options[prioridadeSelect.selectedIndex].text}"?`;
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    
+    // Inicializar cores
+    updatePriorityColor();
+});
+</script>
+{% endblock %}

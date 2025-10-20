@@ -1,0 +1,233 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% load rh_filters %}
+
+{% block title %}Detalhes da Folha Salarial{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:folha_salarial' %}">Folha Salarial</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ folha.mes_referencia|date:"F/Y" }}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Detalhes da Folha Salarial
+                </h1>
+                <p class="page-subtitle">
+                    {{ folha.mes_referencia|date:"F Y" }} - {{ folha.get_status_display }}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_salarial' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                {% if folha.pode_editar %}
+                    <a href="{% url 'rh:folha_edit' folha.id %}" class="btn btn-secondary">
+                        <i class="fas fa-edit"></i>
+                        Editar
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'rh:folha_calcular' folha.id %}" class="btn btn-primary">
+                    <i class="fas fa-calculator"></i>
+                    Recalcular
+                </a>
+                
+                <a href="{% url 'rh:folha_preview' folha.id %}" class="btn btn-success">
+                    <i class="fas fa-eye"></i>
+                    Pré-visualizar
+                </a>
+                
+                {% if folha.pode_editar %}
+                    <a href="{% url 'rh:folha_beneficios' folha.id %}" class="btn btn-info">
+                        <i class="fas fa-gift"></i>
+                        Benefícios
+                    </a>
+                    
+                    <a href="{% url 'rh:folha_descontos' folha.id %}" class="btn btn-warning">
+                        <i class="fas fa-minus-circle"></i>
+                        Descontos
+                    </a>
+                {% endif %}
+                
+                {% if folha.pode_fechar %}
+                    <a href="{% url 'rh:folha_validar_fechamento' folha.id %}" class="btn btn-danger">
+                        <i class="fas fa-lock"></i>
+                        Fechar Folha
+                    </a>
+                {% elif folha.pode_reabrir %}
+                    <a href="{% url 'rh:folha_reabrir' folha.id %}" class="btn btn-warning">
+                        <i class="fas fa-unlock"></i>
+                        Reabrir Folha
+                    </a>
+                {% endif %}
+                
+                {% if folha.pode_marcar_paga %}
+                    <a href="{% url 'rh:folha_marcar_paga' folha.id %}" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i>
+                        Marcar como Paga
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folha.mes_referencia|date:"F/Y" }}</h3>
+                <p class="stat-label">Mês de Referência</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folha.get_status_display }}</h3>
+                <p class="stat-label">Status da Folha</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ funcionarios|length }}</h3>
+                <p class="stat-label">Total de Funcionários</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folha.total_liquido|floatformat:0 }} MT</h3>
+                <p class="stat-label">Total Líquido</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Funcionários -->
+    <div class="table-container">
+        {% if funcionarios %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Trabalhadores na Folha
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ funcionarios|length }} funcionário{{ funcionarios|length|pluralize }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Salário Base</th>
+                            <th>Benefícios</th>
+                            <th>Descontos</th>
+                            <th>Salário Bruto</th>
+                            <th>Salário Líquido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for func_folha in funcionarios %}
+                            <tr>
+                                <td>
+                                    <span class="cell-code">{{ func_folha.funcionario.codigo_funcionario }}</span>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ func_folha.funcionario.nome_completo }}</div>
+                                    <div class="cell-tertiary">{{ func_folha.funcionario.cargo.nome|default:"Sem cargo" }}</div>
+                                </td>
+                                <td>{{ func_folha.funcionario.departamento.nome|default:"N/A" }}</td>
+                                <td>
+                                    <strong>{{ func_folha.salario_base|floatformat:2 }} MT</strong>
+                                </td>
+                                <td>
+                                    <span style="color: var(--success-color);">{{ func_folha.total_beneficios|floatformat:2 }} MT</span>
+                                </td>
+                                <td>
+                                    <span style="color: var(--danger-color);">{{ func_folha.total_descontos|floatformat:2 }} MT</span>
+                                </td>
+                                <td>
+                                    <strong style="color: var(--primary-color);">{{ func_folha.salario_bruto|floatformat:2 }} MT</strong>
+                                </td>
+                                <td>
+                                    <strong style="color: var(--success-color);">{{ func_folha.salario_liquido|floatformat:2 }} MT</strong>
+                                </td>
+                                <td>
+                                    <div class="cell-actions">
+                                        <a href="{% url 'rh:funcionario_detail' func_folha.funcionario.id %}" class="btn-action success" title="Ver Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'rh:canhoto_visualizar' folha.id func_folha.funcionario.id %}" class="btn-action primary" title="Ver Canhoto">
+                                            <i class="fas fa-receipt"></i>
+                                        </a>
+                                        <a href="{% url 'rh:canhoto_salario' folha.id func_folha.funcionario.id %}" class="btn-action outline" title="Baixar PDF">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-users"></i>
+                <h4>Nenhum trabalhador encontrado</h4>
+                <p>Esta folha não possui trabalhadores cadastrados.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    // Confirmação para recalcular
+    document.addEventListener('DOMContentLoaded', function() {
+        const recalcularBtn = document.querySelector('a[href*="calcular"]');
+        if (recalcularBtn) {
+            recalcularBtn.addEventListener('click', function(e) {
+                if (!confirm('Deseja recalcular todos os valores da folha? Esta ação irá atualizar os cálculos de todos os funcionários.')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

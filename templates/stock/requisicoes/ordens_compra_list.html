@@ -1,0 +1,232 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Ordens de Compra{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/requisicoes/">
+            <i class="fas fa-clipboard-list"></i>
+            Requisições
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Ordens de Compra</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Ordens de Compra
+                </h1>
+                <p class="page-subtitle">
+                    Gerenciamento de todas as ordens de compra
+                </p>
+            </div>
+            <div class="page-actions">
+                <a href="{% url 'stock:requisicoes:compra_externa_create' %}" class="btn-action primary">
+                    <i class="fas fa-plus"></i> Nova Ordem
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ total_ordens }}</div>
+            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Total</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ ordens_pendentes }}</div>
+            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Pendentes</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ ordens_guardadas }}</div>
+            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Guardadas</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ ordens_enviadas }}</div>
+            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Enviadas</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
+            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ ordens_recebidas }}</div>
+            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Recebidas</div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card" style="background: #374151; border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+        <form method="get" class="filters-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: end;">
+            <div class="form-group">
+                <label for="search" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Buscar</label>
+                <input type="text" id="search" name="search" value="{{ current_search }}" 
+                       placeholder="Código, fornecedor..." 
+                       style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
+            </div>
+            
+            <div class="form-group">
+                <label for="status" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Status</label>
+                <select id="status" name="status" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fornecedor" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Fornecedor</label>
+                <select id="fornecedor" name="fornecedor" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
+                    <option value="">Todos</option>
+                    {% for fornecedor in fornecedores %}
+                        <option value="{{ fornecedor.id }}" {% if current_fornecedor == fornecedor.id|stringformat:"s" %}selected{% endif %}>{{ fornecedor.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Ordens -->
+    <div class="modern-container" style="background: #374151; border-radius: 20px; border: 1px solid #4b5563; box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); margin-bottom: 20px; padding: 0; overflow: hidden;">
+        <div class="hero-section" style="background: var(--purple-gradient); padding: 15px 30px; color: white; position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;">
+            <div class="hero-content" style="position: relative; z-index: 2; display: flex; align-items: center; gap: 20px;">
+                <h2 class="hero-title" style="font-size: 1.8rem; font-weight: 800; margin: 0; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                    <i class="fas fa-file-invoice"></i>
+                    Ordens de Compra
+                </h2>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            {% if ordens %}
+                <div class="modern-table-container" style="overflow-x: auto;">
+                    <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 12px; overflow: hidden;">
+                        <thead>
+                            <tr style="background: #374151;">
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Código</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Fornecedor</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Sucursal</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Itens</th>
+                                <th style="padding: 15px; text-align: right; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Valor</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Status</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Data</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ordem in ordens %}
+                            <tr style="border-bottom: 1px solid #374151; transition: background-color 0.2s;">
+                                <td style="padding: 15px; color: #f8fafc; font-weight: 600;">{{ ordem.codigo }}</td>
+                                <td style="padding: 15px; color: #d1d5db;">{{ ordem.fornecedor.nome }}</td>
+                                <td style="padding: 15px; color: #d1d5db;">{{ ordem.sucursal_destino.nome }}</td>
+                                <td style="padding: 15px; text-align: center; color: #d1d5db;">{{ ordem.itens.count }}</td>
+                                <td style="padding: 15px; text-align: right; color: #10b981; font-weight: 600;">{{ ordem.valor_total|floatformat:2 }} MT</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <span class="status-badge status-{{ ordem.status|lower }}" style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        {{ ordem.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px; text-align: center; color: #9ca3af; font-size: 0.9rem;">{{ ordem.data_criacao|date:"d/m/Y" }}</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem.id %}" 
+                                           style="background: #3b82f6; color: white; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'stock:requisicoes:ordem_compra_print' ordem.id %}" 
+                                           style="background: #10b981; color: white; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_fornecedor %}&fornecedor={{ current_fornecedor }}{% endif %}" 
+                           style="background: #4b5563; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    {% endif %}
+                    
+                    <span style="color: #d1d5db; font-weight: 600;">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_fornecedor %}&fornecedor={{ current_fornecedor }}{% endif %}" 
+                           style="background: #4b5563; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            Próxima <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                    <i class="fas fa-file-invoice" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3 style="margin-bottom: 10px;">Nenhuma ordem de compra encontrada</h3>
+                    <p>Não há ordens de compra que correspondam aos filtros aplicados.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pendente { background: #fbbf24; color: #92400e; }
+.status-guardada { background: #6b7280; color: white; }
+.status-enviada { background: #3b82f6; color: white; }
+.status-recebida { background: #10b981; color: white; }
+.status-cancelada { background: #ef4444; color: white; }
+.status-rascunho { background: #9ca3af; color: white; }
+</style>
+{% endblock %}

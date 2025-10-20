@@ -1,0 +1,104 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Calendário de Presenças - Teste{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Calendário de Presenças - Teste</h2>
+    
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="funcionario">Funcionário:</label>
+            <select id="funcionario" class="form-control">
+                <option value="">Todos</option>
+                {% for funcionario in funcionarios %}
+                <option value="{{ funcionario.id }}" {% if funcionario.id|stringformat:"s" == funcionario_id %}selected{% endif %}>
+                    {{ funcionario.nome_completo }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    {% for dia in dias_detalhados %}
+                    <th class="text-center {% if dia.e_fim_semana %}table-warning{% endif %}">
+                        {{ dia.dia }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcionario in funcionarios_exibir %}
+                <tr>
+                    <td>{{ funcionario.nome_completo }}</td>
+                    {% for dia in dias_detalhados %}
+                    <td class="text-center {% if dia.e_fim_semana %}table-warning{% endif %}">
+                        <div class="presenca-indicator vazio"
+                             data-funcionario="{{ funcionario.id }}"
+                             data-dia="{{ dia.dia }}"
+                             data-mes="{{ mes }}"
+                             data-ano="{{ ano }}"
+                             onclick="ciclarPresenca(this)">
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+console.log('=== TESTE DE JAVASCRIPT ===');
+
+// Dados das presenças
+const presencasData = {{ presencas_dict }};
+console.log('Dados de presenças:', presencasData);
+
+// Tipos de presença
+const tiposPresenca = [
+    {% for tipo in tipos_presenca %}
+    {
+        id: {{ tipo.id }},
+        nome: "{{ tipo.nome|escapejs }}",
+        codigo: "{{ tipo.codigo|escapejs }}",
+        cor: "{{ tipo.cor|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+console.log('Tipos de presença:', tiposPresenca);
+
+// Função de teste
+function ciclarPresenca(elemento) {
+    console.log('Função ciclarPresenca chamada!', elemento);
+    alert('Clique funcionou!');
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Calendário de teste inicializado');
+    console.log('Indicadores encontrados:', document.querySelectorAll('.presenca-indicator').length);
+});
+</script>
+{% endblock %}
+
+

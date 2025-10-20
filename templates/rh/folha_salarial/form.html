@@ -1,0 +1,164 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Nova Folha Salarial{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'rh:main' %}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="{% url 'rh:folha_salarial' %}">Folha Salarial</a>
+        <span class="separator">›</span>
+        <span class="current">Nova</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>
+                <i class="fas fa-plus-circle"></i>
+                Nova Folha Salarial
+            </h1>
+        </div>
+        <div class="action-buttons">
+            <a href="{% url 'rh:folha_salarial' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Informações da Folha
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="mes">
+                            Mês <span class="required">*</span>
+                        </label>
+                        <select id="mes" name="mes" required>
+                            <option value="">Selecione o mês</option>
+                            <option value="1" {% if request.POST.mes == '1' %}selected{% endif %}>Janeiro</option>
+                            <option value="2" {% if request.POST.mes == '2' %}selected{% endif %}>Fevereiro</option>
+                            <option value="3" {% if request.POST.mes == '3' %}selected{% endif %}>Março</option>
+                            <option value="4" {% if request.POST.mes == '4' %}selected{% endif %}>Abril</option>
+                            <option value="5" {% if request.POST.mes == '5' %}selected{% endif %}>Maio</option>
+                            <option value="6" {% if request.POST.mes == '6' %}selected{% endif %}>Junho</option>
+                            <option value="7" {% if request.POST.mes == '7' %}selected{% endif %}>Julho</option>
+                            <option value="8" {% if request.POST.mes == '8' %}selected{% endif %}>Agosto</option>
+                            <option value="9" {% if request.POST.mes == '9' %}selected{% endif %}>Setembro</option>
+                            <option value="10" {% if request.POST.mes == '10' %}selected{% endif %}>Outubro</option>
+                            <option value="11" {% if request.POST.mes == '11' %}selected{% endif %}>Novembro</option>
+                            <option value="12" {% if request.POST.mes == '12' %}selected{% endif %}>Dezembro</option>
+                        </select>
+                        <div class="help-text">
+                            Selecione o mês para o qual a folha será criada
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ano">
+                            Ano <span class="required">*</span>
+                        </label>
+                        <input type="number" 
+                               id="ano" 
+                               name="ano" 
+                               required
+                               min="2020" 
+                               max="2030"
+                               value="{{ request.POST.ano|default:'' }}">
+                        <div class="help-text">
+                            Digite o ano para o qual a folha será criada
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" disabled>
+                            <option value="ABERTA" selected>Aberta</option>
+                        </select>
+                        <div class="help-text">
+                            A folha será criada com status "Aberta"
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" 
+                                  name="observacoes" 
+                                  placeholder="Digite observações sobre a folha (opcional)...">{{ request.POST.observacoes|default:'' }}</textarea>
+                        <div class="help-text">
+                            Observações adicionais sobre a folha salarial
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>
+                            <i class="fas fa-info-circle"></i> Informações Importantes
+                        </h6>
+                        <ul>
+                            <li>A folha será criada automaticamente com todos os funcionários ativos</li>
+                            <li>Os salários base serão obtidos do campo "Salário Atual" de cada funcionário</li>
+                            <li>O número de dias trabalhados será definido como 22 (padrão)</li>
+                            <li>Você poderá editar os valores individualmente após a criação</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'rh:folha_salarial' %}" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Criar Folha
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Definir ano atual como padrão se não estiver preenchido
+    const anoInput = document.getElementById('ano');
+    if (!anoInput.value) {
+        anoInput.value = new Date().getFullYear();
+    }
+    
+    // Definir mês atual como padrão se não estiver preenchido
+    const mesSelect = document.getElementById('mes');
+    if (!mesSelect.value) {
+        mesSelect.value = new Date().getMonth() + 1;
+    }
+});
+</script>
+{% endblock %}

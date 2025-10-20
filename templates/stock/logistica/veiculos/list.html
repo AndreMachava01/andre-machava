@@ -1,0 +1,384 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Veículos Internos - Logística{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'empresa/css/common.css' %}">
+<style>
+    body {
+        background: #1f2937;
+        color: white;
+    }
+    
+    .page-header {
+        background: var(--cyan-gradient);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-medium);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+        z-index: 1;
+    }
+    
+    .page-header > * {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .card {
+        background: #374151;
+        border: 1px solid #4b5563;
+        border-radius: 15px;
+        box-shadow: var(--shadow-medium);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+        border-bottom: 1px solid #4b5563;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .table {
+        color: white;
+    }
+    
+    .table th {
+        background: #4b5563;
+        border-color: #6b7280;
+        color: white;
+    }
+    
+    .table td {
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+    
+    .table tbody tr:hover {
+        background: #4b5563;
+    }
+    
+    .btn-primary {
+        background: var(--green-gradient);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-large);
+    }
+    
+    .badge {
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-weight: 600;
+    }
+    
+    .badge-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .badge-warning {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .badge-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .badge-info {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .filter-section {
+        background: #374151;
+        border: 1px solid #4b5563;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        color: white;
+        border-radius: 10px;
+    }
+    
+    .form-control:focus {
+        background: #4b5563;
+        border-color: #06b6d4;
+        color: white;
+        box-shadow: 0 0 0 0.2rem rgba(6, 182, 212, 0.25);
+    }
+    
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #6b7280;
+        color: #d1d5db;
+        border-radius: 10px;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #6b7280;
+        border-color: #6b7280;
+        color: white;
+    }
+    
+    /* Estilos para botões de navegação */
+    .navigation-buttons .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .navigation-buttons .btn-secondary {
+        background: var(--purple-gradient);
+        border: none;
+        color: white;
+    }
+    
+    .navigation-buttons .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-large);
+    }
+    
+    .navigation-buttons .btn-outline-secondary {
+        border-color: #6b7280;
+        color: #d1d5db;
+    }
+    
+    .navigation-buttons .btn-outline-secondary:hover {
+        background: #6b7280;
+        border-color: #6b7280;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Estilos para breadcrumb */
+    .breadcrumb {
+        background: #374151;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb-item a {
+        color: #06b6d4;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: #0891b2;
+    }
+    
+    .breadcrumb-item.active {
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Navegação -->
+<div class="navigation-buttons" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="/stock/logistica/" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+        <i class="fas fa-arrow-left"></i>
+        Voltar à Logística
+    </a>
+    <a href="/stock/" class="btn btn-outline-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-warehouse"></i>
+        Stock Principal
+    </a>
+    <a href="/dashboard/" class="btn btn-outline-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-home"></i>
+        Dashboard
+    </a>
+</div>
+
+<!-- Breadcrumb -->
+<div style="background: #374151; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+    <nav style="display: flex; align-items: center; gap: 8px;">
+        <a href="/dashboard/" style="color: #06b6d4; text-decoration: none;">Dashboard</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/" style="color: #06b6d4; text-decoration: none;">Stock</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/logistica/" style="color: #06b6d4; text-decoration: none;">Logística</a>
+        <span style="color: #6b7280;">›</span>
+        <span style="color: white; font-weight: 600;">Veículos Internos</span>
+    </nav>
+</div>
+<div class="container-fluid">
+    <!-- Cabeçalho da Página -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-truck me-3"></i>
+                    Veículos Internos
+                </h1>
+                <p class="mb-0 opacity-75">Gestão da frota própria da empresa</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/stock/logistica/veiculos/create/" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Novo Veículo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="">Todos os Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="categoria" class="form-label">Categoria</label>
+                <select name="categoria" id="categoria" class="form-control">
+                    <option value="">Todas as Categorias</option>
+                    {% for value, label in categoria_choices %}
+                        <option value="{{ value }}" {% if categoria_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtrar
+                </button>
+                <a href="/stock/logistica/veiculos/" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Veículos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Veículos Internos ({{ veiculos.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if veiculos %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Placa</th>
+                                <th>Categoria</th>
+                                <th>Motorista</th>
+                                <th>Status</th>
+                                <th>Entregas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for veiculo in veiculos %}
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">{{ veiculo.codigo }}</strong>
+                                    </td>
+                                    <td>{{ veiculo.nome }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ veiculo.placa }}</span>
+                                    </td>
+                                    <td>{{ veiculo.get_categoria_display }}</td>
+                                    <td>{{ veiculo.motorista_responsavel }}</td>
+                                    <td>
+                                        {% if veiculo.status == 'ATIVO' %}
+                                            <span class="badge badge-success">{{ veiculo.get_status_display }}</span>
+                                        {% elif veiculo.status == 'MANUTENCAO' %}
+                                            <span class="badge badge-warning">{{ veiculo.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ veiculo.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ veiculo.entregas.count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="/stock/logistica/veiculos/{{ veiculo.id }}/" 
+                                               class="btn btn-sm btn-outline-primary" title="Ver Detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="/stock/logistica/veiculos/{{ veiculo.id }}/edit/" 
+                                               class="btn btn-sm btn-outline-warning" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum veículo encontrado</h5>
+                    <p class="text-muted">Comece criando seu primeiro veículo interno.</p>
+                    <a href="/stock/logistica/veiculos/create/" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Novo Veículo
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

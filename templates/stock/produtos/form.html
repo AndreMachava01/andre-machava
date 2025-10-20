@@ -1,0 +1,628 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if produto %}
+        Editar Produto - {{ produto.nome }}
+    {% else %}
+        Novo Produto
+    {% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        /* Cores funcionais para botões */
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --primary-color: #8b5cf6;
+        --secondary-color: #6b7280;
+        
+        /* Cores vibrantes */
+        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
+        
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        color: white;
+    }
+
+    .breadcrumb {
+        background: #374151;
+        padding: 15px 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-light);
+        border: 1px solid #4b5563;
+    }
+
+    .breadcrumb-item a {
+        color: #d1d5db;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+
+    .breadcrumb-item.active {
+        color: #9ca3af;
+    }
+
+    .page-header {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-medium);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    .btn-outline-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .form-container {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: var(--shadow-medium);
+        margin-bottom: 25px;
+    }
+
+    .form-section {
+        background: #374151;
+        border: 1px solid #6b7280;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .form-section h5 {
+        color: white;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #6b7280;
+        padding-bottom: 15px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-section h5 i {
+        color: #8b5cf6;
+        font-size: 1.3rem;
+    }
+
+    .form-label {
+        color: #d1d5db;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    .form-control, .form-select {
+        background: #374151;
+        border: 2px solid #6b7280;
+        color: white;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background: #374151;
+        border-color: #8b5cf6;
+        color: white;
+        box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #9ca3af;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .form-text i {
+        color: #8b5cf6;
+    }
+
+    .input-group-text {
+        background: #6b7280;
+        border: 2px solid #6b7280;
+        color: white;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: var(--green-gradient);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        background: var(--secondary-color);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #4b5563;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .card {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        border-radius: 20px;
+        box-shadow: var(--shadow-light);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #374151;
+        border-bottom: 1px solid #6b7280;
+        padding: 20px 25px;
+    }
+
+    .card-header h5 {
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header h5 i {
+        color: #8b5cf6;
+        font-size: 1.3rem;
+    }
+
+    .card-body {
+        padding: 25px;
+        color: white;
+    }
+
+    .card-body h6 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .card-body ul {
+        color: #d1d5db;
+        padding-left: 20px;
+    }
+
+    .card-body li {
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .card-body li strong {
+        color: white;
+        font-weight: 600;
+    }
+
+    .card-body hr {
+        border-color: #6b7280;
+        margin: 20px 0;
+    }
+
+    .d-flex.justify-content-between {
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .form-container {
+            padding: 20px;
+        }
+        
+        .form-section {
+            padding: 20px;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+        }
+        
+        .btn-primary, .btn-outline-secondary {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:produtos' %}">Produtos</a></li>
+            <li class="breadcrumb-item active">
+                {% if produto %}Editar{% else %}Novo{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>
+                    <i class="fas fa-{% if produto %}edit{% else %}plus{% endif %}"></i>
+                    {% if produto %}
+                        Editar Produto - {{ produto.nome }}
+                    {% else %}
+                        Novo Produto
+                    {% endif %}
+                </h2>
+                <p>
+                    {% if produto %}
+                        Modifique as informações do produto
+                    {% else %}
+                        Cadastre um novo produto no sistema
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'stock:produtos' %}" class="btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Informações Básicas -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label required-field">Nome do Produto</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" 
+                                           value="{% if produto %}{{ produto.nome }}{% endif %}" required>
+                                    <div class="form-text">Nome completo do produto</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="codigo" class="form-label">Código</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" 
+                                           value="{% if produto %}{{ produto.codigo }}{% endif %}" 
+                                           placeholder="Será gerado automaticamente se deixado em branco">
+                                    <div class="form-text">
+                                        <i class="fas fa-magic"></i> Código único do produto (gerado automaticamente se não preenchido)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="codigo_barras" class="form-label">Código de Barras</label>
+                                    <input type="text" class="form-control" id="codigo_barras" name="codigo_barras" 
+                                           value="{% if produto %}{{ produto.codigo_barras }}{% endif %}">
+                                    <div class="form-text">Código de barras (opcional)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label required-field">Tipo do Produto</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione o tipo</option>
+                                        {% for value, label in tipos %}
+                                            <option value="{{ value }}" 
+                                                    {% if produto and produto.tipo == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Tipo do produto (Final, Comprado ou Serviço)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3">{% if produto %}{{ produto.descricao }}{% endif %}</textarea>
+                            <div class="form-text">Descrição detalhada do produto</div>
+                        </div>
+                    </div>
+
+                    <!-- Categoria e Unidade -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-tags"></i> Categoria e Unidade</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="categoria" class="form-label required-field">Categoria</label>
+                                    <select class="form-select" id="categoria" name="categoria" required>
+                                        <option value="">Selecione a categoria</option>
+                                        {% for categoria in categorias %}
+                                            <option value="{{ categoria.id }}" 
+                                                    {% if produto and produto.categoria.id == categoria.id %}selected{% endif %}>
+                                                {{ categoria.nome }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Categoria do produto</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unidade_medida" class="form-label required-field">Unidade de Medida</label>
+                                    <select class="form-select" id="unidade_medida" name="unidade_medida" required>
+                                        <option value="">Selecione a unidade</option>
+                                        {% for value, label in unidades %}
+                                            <option value="{{ value }}" 
+                                                    {% if produto and produto.unidade_medida == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Unidade de medida do produto</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preços -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-dollar-sign"></i> Preços</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="preco_custo" class="form-label required-field">Preço de Custo</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="preco_custo" name="preco_custo" 
+                                               value="{% if produto %}{{ produto.preco_custo }}{% endif %}" 
+                                               step="0.01" min="0.01" required>
+                                        <span class="input-group-text">MT</span>
+                                    </div>
+                                    <div class="form-text">Preço de custo do produto</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <!-- Campo removido: preco_venda não existe no modelo Item -->
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="margem_lucro" class="form-label">Margem de Lucro</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="margem_lucro" name="margem_lucro" 
+                                               value="{% if produto %}{{ produto.margem_lucro }}{% endif %}" 
+                                               step="0.01" min="0" max="999.99">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">Margem de lucro (calculada automaticamente)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estoque -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-warehouse"></i> Controle de Estoque</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+                                    <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" 
+                                           value="{% if produto %}{{ produto.estoque_minimo }}{% else %}0{% endif %}" 
+                                           min="0">
+                                    <div class="form-text">Quantidade mínima em estoque</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="estoque_maximo" class="form-label">Estoque Máximo</label>
+                                    <input type="number" class="form-control" id="estoque_maximo" name="estoque_maximo" 
+                                           value="{% if produto %}{{ produto.estoque_maximo }}{% else %}0{% endif %}" 
+                                           min="0">
+                                    <div class="form-text">Quantidade máxima em estoque</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label required-field">Status</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if produto and produto.status == value %}selected{% elif not produto and value == 'ATIVO' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Status do produto</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fornecedor -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-truck"></i> Fornecedor</h5>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Informação:</strong> O campo "Fornecedor Principal" não está disponível no modelo atual. 
+                                Use a seção de fornecedores para associar produtos aos fornecedores.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                        
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3">{% if produto %}{{ produto.observacoes }}{% endif %}</textarea>
+                            <div class="form-text">Observações adicionais sobre o produto</div>
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'stock:produtos' %}" class="btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            {% if produto %}Atualizar Produto{% else %}Criar Produto{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informações</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Tipos de Produto:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Produto Final:</strong> Produzido internamente</li>
+                        <li><strong>Produto Comprado:</strong> Comprado pronto para venda</li>
+                        <li><strong>Serviço:</strong> Serviços oferecidos</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6>Dicas:</h6>
+                    <ul class="list-unstyled">
+                        <li>• O código deve ser único</li>
+                        <li>• A margem de lucro é calculada automaticamente</li>
+                        <li>• Produtos finais podem ter receitas de produção</li>
+                        <li>• Defina estoque mínimo para alertas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Função removida: campos preco_venda e margem_lucro não existem no modelo
+    
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Converter vírgulas em pontos para campos numéricos
+        const precoCustoField = document.getElementById('preco_custo');
+        if (precoCustoField.value.includes(',')) {
+            precoCustoField.value = precoCustoField.value.replace(',', '.');
+        }
+        
+        const precoCusto = parseFloat(document.getElementById('preco_custo').value);
+        
+        if (precoCusto <= 0) {
+            e.preventDefault();
+            alert('O preço de custo deve ser maior que zero!');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,431 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Informações da Empresa{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+<link rel="stylesheet" href="{% static 'admin/css/nav_sidebar.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .empresa-container {
+        padding: 20px;
+    }
+
+    .nav-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #417690;
+        color: white;
+        margin-bottom: 20px;
+    }
+
+    .nav-top h1 {
+        color: white;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 300;
+        text-align: center;
+        flex: 1;
+    }
+
+    .back-button {
+        background: #79aec8;
+        padding: 10px 15px;
+        border-radius: 4px;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 400;
+        border: none;
+        transition: background 0.3s;
+    }
+
+    .back-button:hover {
+        background: #609ab6;
+        color: white;
+        text-decoration: none;
+    }
+
+    .empresa-info {
+        background: var(--bg-card);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .empresa-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .empresa-title {
+        font-size: 2em;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .sede-badge {
+        background: #48bb78;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .info-section {
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #4299e1;
+    }
+
+    .info-section h3 {
+        color: #2d3748;
+        margin: 0 0 15px 0;
+        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-section h3 i {
+        color: #4299e1;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #4a5568;
+        min-width: 120px;
+    }
+
+    .info-value {
+        color: #2d3748;
+        text-align: right;
+        flex: 1;
+    }
+
+    .sucursais-section {
+        background: var(--bg-card);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+
+    .sucursais-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sucursais-title {
+        font-size: 1.5em;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .sucursais-count {
+        background: #4299e1;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .sucursais-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .sucursal-card {
+        background: var(--bg-card);
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .sucursal-card:hover {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .sucursal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .sucursal-name {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .sucursal-type {
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .sucursal-details {
+        font-size: 0.9em;
+        color: #4a5568;
+    }
+
+    .sucursal-details div {
+        margin-bottom: 5px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #718096;
+    }
+
+    .empty-state i {
+        font-size: 3em;
+        margin-bottom: 15px;
+        color: #cbd5e0;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 10px 0;
+        color: #4a5568;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9em;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .sucursais-list {
+            grid-template-columns: 1fr;
+        }
+        
+        .empresa-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="empresa-container">
+    <div class="nav-top">
+        <h1>Informações da Empresa</h1>
+        <a href="{% url 'dashboard' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Voltar ao Dashboard
+        </a>
+    </div>
+
+    {% if dados_empresa %}
+    <div class="empresa-info">
+        <div class="empresa-header">
+            <h2 class="empresa-title">{{ dados_empresa.nome }}</h2>
+            <span class="sede-badge">
+                <i class="fas fa-building"></i>
+                Empresa Sede
+            </span>
+        </div>
+
+        <div class="info-grid">
+            <!-- Informações Básicas -->
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                <div class="info-item">
+                    <span class="info-label">NUIT:</span>
+                    <span class="info-value">{{ dados_empresa.nuit }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Alvará:</span>
+                    <span class="info-value">{{ dados_empresa.alvara }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tipo Societário:</span>
+                    <span class="info-value">{{ dados_empresa.get_tipo_societario_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data Constituição:</span>
+                    <span class="info-value">{{ dados_empresa.data_constituicao|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+
+            <!-- Registo Comercial -->
+            <div class="info-section">
+                <h3><i class="fas fa-file-alt"></i> Registo Comercial</h3>
+                <div class="info-item">
+                    <span class="info-label">Número:</span>
+                    <span class="info-value">{{ dados_empresa.numero_registro_comercial|default:"Não informado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data:</span>
+                    <span class="info-value">{{ dados_empresa.data_registro_comercial|date:"d/m/Y"|default:"Não informado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Actividade:</span>
+                    <span class="info-value">{{ dados_empresa.get_actividade_principal_display|default:"Não informado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Capital Social:</span>
+                    <span class="info-value">{{ dados_empresa.capital_social|floatformat:2 }} MT</span>
+                </div>
+            </div>
+
+            <!-- Localização -->
+            <div class="info-section">
+                <h3><i class="fas fa-map-marker-alt"></i> Localização</h3>
+                <div class="info-item">
+                    <span class="info-label">Província:</span>
+                    <span class="info-value">{{ dados_empresa.get_provincia_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cidade:</span>
+                    <span class="info-value">{{ dados_empresa.cidade }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Bairro:</span>
+                    <span class="info-value">{{ dados_empresa.bairro }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Endereço:</span>
+                    <span class="info-value">{{ dados_empresa.endereco }}</span>
+                </div>
+            </div>
+
+            <!-- Contacto -->
+            <div class="info-section">
+                <h3><i class="fas fa-phone"></i> Contacto</h3>
+                <div class="info-item">
+                    <span class="info-label">Telefone:</span>
+                    <span class="info-value">{{ dados_empresa.telefone }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ dados_empresa.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Website:</span>
+                    <span class="info-value">
+                        {% if dados_empresa.website %}
+                            <a href="{{ dados_empresa.website }}" target="_blank">{{ dados_empresa.website }}</a>
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sucursais -->
+    <div class="sucursais-section">
+        <div class="sucursais-header">
+            <h3 class="sucursais-title">Sucursais</h3>
+            <span class="sucursais-count">{{ sucursais|length }} sucursal{{ sucursais|length|pluralize:"es" }}</span>
+        </div>
+
+        {% if sucursais %}
+        <div class="sucursais-list">
+            {% for sucursal in sucursais %}
+            <div class="sucursal-card">
+                <div class="sucursal-header">
+                    <h4 class="sucursal-name">{{ sucursal.nome }}</h4>
+                    <span class="sucursal-type">{{ sucursal.get_tipo_display }}</span>
+                </div>
+                <div class="sucursal-details">
+                    <div><strong>Código:</strong> {{ sucursal.codigo }}</div>
+                    <div><strong>Responsável:</strong> {{ sucursal.responsavel }}</div>
+                    <div><strong>Província:</strong> {{ sucursal.get_provincia_display }}</div>
+                    <div><strong>Cidade:</strong> {{ sucursal.cidade }}</div>
+                    <div><strong>Telefone:</strong> {{ sucursal.telefone }}</div>
+                    <div><strong>Email:</strong> {{ sucursal.email }}</div>
+                    <div><strong>Status:</strong> 
+                        <span style="color: {% if sucursal.ativa %}#48bb78{% else %}#e53e3e{% endif %};">
+                            {% if sucursal.ativa %}Ativa{% else %}Inativa{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-building"></i>
+            <h3>Nenhuma sucursal encontrada</h3>
+            <p>Esta empresa ainda não possui sucursais cadastradas.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-building"></i>
+        <h3>Nenhuma empresa cadastrada</h3>
+        <p>Não há empresas cadastradas no sistema. Acesse o painel administrativo para cadastrar uma empresa.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
