@@ -41,6 +41,23 @@ jobs:
           coverage run --source=meuprojeto -m django test -v 2
           coverage xml -o coverage.xml
 
+      - name: Report coverage to GitHub Summary
+        run: |
+          python - << 'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          line_rate = root.get('line-rate')
+          pct = float(line_rate) * 100 if line_rate is not None else 0.0
+          summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+          if summary_path:
+              with open(summary_path, 'a', encoding='utf-8') as f:
+                  f.write(f"## Test Coverage\n\n{pct:.2f}%\n")
+          else:
+              print(f"Coverage: {pct:.2f}%")
+          PY
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
