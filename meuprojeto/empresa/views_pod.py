@@ -246,6 +246,9 @@ def adicionar_assinatura_pod(request, prova_id):
 @require_stock_access
 def validar_prova_entrega(request, prova_id):
     """Validar prova de entrega."""
+    # Obter a prova para ambos os casos (GET e POST)
+    prova = get_object_or_404(ProvaEntrega, id=prova_id)
+    
     if request.method == 'POST':
         try:
             # Usar request.POST para dados de formulário HTML
@@ -257,12 +260,10 @@ def validar_prova_entrega(request, prova_id):
             pod_service = PODService()
             
             # Debug: verificar documentos antes da validação
-            from meuprojeto.empresa.models_pod import ProvaEntrega
-            prova_debug = ProvaEntrega.objects.get(id=prova_id)
-            documentos_check = pod_service._verificar_documentos_obrigatorios(prova_debug)
+            documentos_check = pod_service._verificar_documentos_obrigatorios(prova)
             logger.info(f"Debug validação - Documentos: {documentos_check}")
             
-            prova = pod_service.validar_prova_entrega(
+            prova_validada = pod_service.validar_prova_entrega(
                 prova_id=prova_id,
                 validada_por_id=request.user.id,
                 observacoes_validacao=request.POST.get('observacoes_validacao', '')
@@ -274,8 +275,6 @@ def validar_prova_entrega(request, prova_id):
         except Exception as e:
             logger.error(f"Erro ao validar prova: {e}")
             messages.error(request, f'Erro ao validar prova: {str(e)}')
-    
-    prova = get_object_or_404(ProvaEntrega, id=prova_id)
     
     context = {
         'prova': prova,
