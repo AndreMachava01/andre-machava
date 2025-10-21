@@ -116,5 +116,8 @@ urlpatterns = [
     path('logistica/', include('meuprojeto.empresa.urls_logistica', namespace='logistica')),
     
     # Roteirização e Planejamento
-    path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
+    # path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
+    
+    # Exceções Logísticas
+    path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
 ]
