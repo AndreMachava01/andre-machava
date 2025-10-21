@@ -16,7 +16,7 @@ import json
 
 from .decorators import require_stock_access
 from .models_stock import (
-    Transportadora, RastreamentoEntrega, EventoRastreamento
+    Transportadora, RastreamentoEntrega, EventoRastreamento, VeiculoInterno
 )
 from .services.logistica_sync import (
     get_or_create_rastreamento_for_notificacao,
@@ -836,7 +836,7 @@ class RastreamentoForm(forms.ModelForm):
     class Meta:
         model = RastreamentoEntrega
         fields = [
-            'transportadora',
+            'transportadora', 'veiculo_interno',
             'destinatario_nome', 'destinatario_telefone',
             'endereco_entrega', 'cidade_entrega', 'provincia_entrega',
             'peso_total', 'valor_declarado', 'custo_envio',
@@ -844,6 +844,7 @@ class RastreamentoForm(forms.ModelForm):
         ]
         widgets = {
             'transportadora': forms.Select(attrs={'class': 'form-control'}),
+            'veiculo_interno': forms.Select(attrs={'class': 'form-control'}),
             'destinatario_nome': forms.TextInput(attrs={'class': 'form-control'}),
             'destinatario_telefone': forms.TextInput(attrs={'class': 'form-control'}),
             'endereco_entrega': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -861,6 +862,122 @@ class RastreamentoForm(forms.ModelForm):
         
         # Transportadoras ativas
         self.fields['transportadora'].queryset = Transportadora.objects.filter(status='ATIVA')
+        
+        # Veículos internos ativos
+        self.fields['veiculo_interno'].queryset = VeiculoInterno.objects.filter(status='ATIVO')
+        
+        # Tornar campos opcionais
+        self.fields['transportadora'].required = False
+        self.fields['veiculo_interno'].required = False
+        self.fields['peso_total'].required = False
+        self.fields['valor_declarado'].required = False
+        self.fields['custo_envio'].required = False
+        self.fields['data_entrega_prevista'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        transportadora = cleaned_data.get('transportadora')
+        veiculo_interno = cleaned_data.get('veiculo_interno')
+        
+        # Validar que apenas um tipo de transporte seja selecionado
+        if not transportadora and not veiculo_interno:
+            raise forms.ValidationError("Selecione uma transportadora ou veículo interno.")
+        
+        if transportadora and veiculo_interno:
+            raise forms.ValidationError("Selecione apenas uma transportadora OU um veículo interno.")
+        
+        return cleaned_data
+
+
+# =============================================================================
+# VIEWS PARA RASTREAMENTO DE ENTREGAS
+# =============================================================================
+
+@login_required
+@require_stock_access
+def rastreamento_create(request):
+    """Criar novo rastreamento de entrega."""
+    if request.method == 'POST':
+        form = RastreamentoForm(request.POST)
+        if form.is_valid():
+            try:
+                rastreamento = form.save(commit=False)
+                
+                # Gerar código de rastreamento único
+                rastreamento.codigo_rastreamento = _gerar_codigo_rastreamento()
+                rastreamento.criado_por = request.user
+                rastreamento.status_atual = 'PREPARANDO'
+                
+                rastreamento.save()
+                
+                messages.success(request, f'Rastreamento criado com sucesso! Código: {rastreamento.codigo_rastreamento}')
+                return redirect('stock:logistica:rastreamento_detail', id=rastreamento.id)
+                
+            except Exception as e:
+                logger.error(f"Erro ao criar rastreamento: {e}")
+                messages.error(request, f'Erro ao criar rastreamento: {str(e)}')
+    else:
+        form = RastreamentoForm()
+    
+    context = {
+        'form': form,
+        'title': 'Criar Rastreamento de Entrega',
+    }
+    
+    return render(request, 'stock/logistica/rastreamento_form.html', context)
+
+
+@login_required
+@require_stock_access
+def rastreamento_edit(request, id):
+    """Editar rastreamento de entrega."""
+    rastreamento = get_object_or_404(RastreamentoEntrega, id=id)
+    
+    if request.method == 'POST':
+        form = RastreamentoForm(request.POST, instance=rastreamento)
+        if form.is_valid():
+            try:
+                rastreamento = form.save()
+                messages.success(request, 'Rastreamento atualizado com sucesso!')
+                return redirect('stock:logistica:rastreamento_detail', id=rastreamento.id)
+                
+            except Exception as e:
+                logger.error(f"Erro ao atualizar rastreamento: {e}")
+                messages.error(request, f'Erro ao atualizar rastreamento: {str(e)}')
+    else:
+        form = RastreamentoForm(instance=rastreamento)
+    
+    context = {
+        'form': form,
+        'rastreamento': rastreamento,
+        'title': 'Editar Rastreamento de Entrega',
+    }
+    
+    return render(request, 'stock/logistica/rastreamento_form.html', context)
+
+
+def _gerar_codigo_rastreamento():
+    """Gera código único para rastreamento."""
+    import random
+    import string
+    
+    # Formato: RAST + ano + mês + 4 dígitos aleatórios
+    from django.utils import timezone
+    now = timezone.now()
+    
+    prefix = f"RAST{now.year}{now.month:02d}"
+    
+    # Gerar 4 dígitos aleatórios
+    random_suffix = ''.join(random.choices(string.digits, k=4))
+    
+    codigo = f"{prefix}{random_suffix}"
+    
+    # Verificar se já existe
+    while RastreamentoEntrega.objects.filter(codigo_rastreamento=codigo).exists():
+        random_suffix = ''.join(random.choices(string.digits, k=4))
+        codigo = f"{prefix}{random_suffix}"
+    
+    return codigo
 
 
 # =============================================================================

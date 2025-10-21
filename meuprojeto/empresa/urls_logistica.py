@@ -19,8 +19,9 @@ urlpatterns = [
     
     # Rastreamento de entregas
     path('rastreamento/', views_logistica.rastreamento_list, name='rastreamento_list'),
+    path('rastreamento/create/', views_logistica.rastreamento_create, name='rastreamento_create'),
     path('rastreamento/<int:id>/', views_logistica.rastreamento_detail, name='rastreamento_detail'),
-    # criação e adição de eventos desativadas (rastreamento vem das operações)
+    path('rastreamento/<int:id>/edit/', views_logistica.rastreamento_edit, name='rastreamento_edit'),
     
     # Transportadoras Externas
     path('transportadoras/', views_logistica.transportadoras_list, name='transportadoras_list'),
