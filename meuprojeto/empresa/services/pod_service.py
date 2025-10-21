@@ -122,7 +122,7 @@ class PODService:
         """Atualiza status do rastreamento baseado no tipo de entrega."""
         status_map = {
             'COMPLETA': 'ENTREGUE',
-            'PARCIAL': 'ENTREGUE_PARCIAL',
+            'PARCIAL': 'ENTREGUE',
             'RECUSADA': 'RECUSADA',
             'DEVOLVIDA': 'DEVOLVIDA',
         }
@@ -135,11 +135,11 @@ class PODService:
         # Criar evento de rastreamento
         EventoRastreamento.objects.create(
             rastreamento=rastreamento,
-            status_anterior=rastreamento.status_atual,
-            status_atual=novo_status,
+            tipo_evento=novo_status,
+            descricao=f"Status atualizado via POD - {tipo_entrega}",
+            localizacao="Sistema POD",
             data_evento=timezone.now(),
-            observacoes=f"Status atualizado via POD - {tipo_entrega}",
-            origem_evento='POD'
+            usuario=None  # Poderia ser passado como parâmetro se necessário
         )
     
     def adicionar_documento_pod(self,

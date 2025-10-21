@@ -120,38 +120,38 @@ def prova_entrega_create(request):
     """Criar nova prova de entrega."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
+            # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
+            
+            # Converter rastreamento_id para inteiro
+            rastreamento_id = int(request.POST.get('rastreamento_entrega'))
+            
             prova = pod_service.criar_prova_entrega(
-                rastreamento_id=data.get('rastreamento_id'),
-                tipo_entrega=data.get('tipo_entrega', 'COMPLETA'),
-                endereco_entrega=data.get('endereco_entrega', ''),
-                latitude=data.get('latitude'),
-                longitude=data.get('longitude'),
-                precisao_gps=data.get('precisao_gps'),
-                nome_destinatario=data.get('nome_destinatario', ''),
-                documento_destinatario=data.get('documento_destinatario', ''),
-                telefone_destinatario=data.get('telefone_destinatario', ''),
-                parentesco_destinatario=data.get('parentesco_destinatario', ''),
-                observacoes=data.get('observacoes', ''),
-                motivo_recusa=data.get('motivo_recusa', ''),
+                rastreamento_id=rastreamento_id,
+                tipo_entrega=request.POST.get('tipo_entrega', 'COMPLETA'),
+                endereco_entrega=request.POST.get('endereco_entrega', ''),
+                latitude=request.POST.get('latitude'),
+                longitude=request.POST.get('longitude'),
+                precisao_gps=request.POST.get('precisao_gps'),
+                nome_destinatario=request.POST.get('nome_destinatario', ''),
+                documento_destinatario=request.POST.get('documento_destinatario', ''),
+                telefone_destinatario=request.POST.get('telefone_destinatario', ''),
+                parentesco_destinatario=request.POST.get('parentesco_destinatario', ''),
+                observacoes=request.POST.get('observacoes', ''),
+                motivo_recusa=request.POST.get('motivo_recusa', ''),
                 entregue_por_id=request.user.id
             )
             
-            return JsonResponse({
-                'success': True,
-                'prova_id': prova.id,
-                'codigo': prova.codigo
-            })
+            messages.success(request, 'POD criada com sucesso!')
+            return redirect('stock:pod:prova_detail', prova_id=prova.id)
             
         except Exception as e:
             logger.error(f"Erro ao criar prova de entrega: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao criar POD: {str(e)}')
     
     # GET - mostrar formulário
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['EM_DISTRIBUICAO', 'TENTATIVA_ENTREGA']
+        status_atual__in=['EM_TRANSITO', 'EM_DISTRIBUICAO', 'ENTREGUE', 'PREPARANDO']
     ).select_related('transportadora', 'veiculo_interno')
     
     context = {
@@ -168,30 +168,23 @@ def adicionar_documento_pod(request, prova_id):
     """Adicionar documento à prova de entrega."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
-            # Decodificar arquivo base64
-            arquivo_data = base64.b64decode(data.get('arquivo_data', ''))
-            
+            # Usar request.FILES para upload de arquivos
             pod_service = PODService()
             documento = pod_service.adicionar_documento_pod(
                 prova_id=prova_id,
-                tipo=data.get('tipo', ''),
-                arquivo_data=arquivo_data,
-                nome_arquivo=data.get('nome_arquivo', ''),
-                descricao=data.get('descricao', ''),
-                observacoes=data.get('observacoes', '')
+                tipo=request.POST.get('tipo', ''),
+                arquivo_data=request.FILES.get('arquivo'),
+                nome_arquivo=request.POST.get('nome', ''),
+                descricao=request.POST.get('descricao', ''),
+                observacoes=request.POST.get('observacoes', '')
             )
             
-            return JsonResponse({
-                'success': True,
-                'documento_id': documento.id,
-                'message': 'Documento adicionado com sucesso.'
-            })
+            messages.success(request, 'Documento adicionado com sucesso!')
+            return redirect('stock:pod:prova_detail', prova_id=prova_id)
             
         except Exception as e:
             logger.error(f"Erro ao adicionar documento: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao adicionar documento: {str(e)}')
     
     prova = get_object_or_404(ProvaEntrega, id=prova_id)
     
@@ -209,32 +202,23 @@ def adicionar_assinatura_pod(request, prova_id):
     """Adicionar assinatura digital à prova de entrega."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
-            # Decodificar imagem da assinatura se fornecida
-            imagem_data = None
-            if data.get('imagem_assinatura'):
-                imagem_data = base64.b64decode(data.get('imagem_assinatura'))
-            
+            # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
             assinatura = pod_service.adicionar_assinatura_digital(
                 prova_id=prova_id,
-                dados_assinatura=data.get('dados_assinatura', {}),
-                imagem_assinatura_data=imagem_data,
-                dispositivo=data.get('dispositivo', ''),
-                navegador=data.get('navegador', ''),
+                dados_assinatura=request.POST.get('dados_assinatura', {}),
+                imagem_assinatura_data=request.FILES.get('imagem_assinatura'),
+                dispositivo=request.POST.get('dispositivo', ''),
+                navegador=request.POST.get('navegador', ''),
                 ip_address=request.META.get('REMOTE_ADDR', '')
             )
             
-            return JsonResponse({
-                'success': True,
-                'assinatura_id': assinatura.id,
-                'message': 'Assinatura adicionada com sucesso.'
-            })
+            messages.success(request, 'Assinatura adicionada com sucesso!')
+            return redirect('stock:pod:prova_detail', prova_id=prova_id)
             
         except Exception as e:
             logger.error(f"Erro ao adicionar assinatura: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao adicionar assinatura: {str(e)}')
     
     prova = get_object_or_404(ProvaEntrega, id=prova_id)
     
@@ -251,23 +235,20 @@ def validar_prova_entrega(request, prova_id):
     """Validar prova de entrega."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
+            # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
             prova = pod_service.validar_prova_entrega(
                 prova_id=prova_id,
                 validada_por_id=request.user.id,
-                observacoes_validacao=data.get('observacoes_validacao', '')
+                observacoes_validacao=request.POST.get('observacoes_validacao', '')
             )
             
-            return JsonResponse({
-                'success': True,
-                'message': 'Prova de entrega validada com sucesso.'
-            })
+            messages.success(request, 'Prova de entrega validada com sucesso!')
+            return redirect('stock:pod:prova_detail', prova_id=prova_id)
             
         except Exception as e:
             logger.error(f"Erro ao validar prova: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao validar prova: {str(e)}')
     
     prova = get_object_or_404(ProvaEntrega, id=prova_id)
     
@@ -362,35 +343,40 @@ def guia_remessa_create(request):
     """Criar nova guia de remessa."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
+            # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
+            
+            # Converter rastreamento_id para inteiro
+            rastreamento_id = int(request.POST.get('rastreamento_entrega'))
+            
+            # Converter data se necessário
+            data_prevista = request.POST.get('data_prevista_entrega')
+            if data_prevista:
+                data_prevista = datetime.strptime(data_prevista, '%Y-%m-%d').date()
+            
             guia = pod_service.gerar_guia_remessa(
-                rastreamento_id=data.get('rastreamento_id'),
-                data_prevista_entrega=datetime.strptime(data.get('data_prevista_entrega'), '%Y-%m-%d').date(),
-                nome_remetente=data.get('nome_remetente', ''),
-                endereco_remetente=data.get('endereco_remetente', ''),
-                telefone_remetente=data.get('telefone_remetente', ''),
-                descricao_produto=data.get('descricao_produto', ''),
-                peso=data.get('peso'),
-                valor_declarado=data.get('valor_declarado'),
-                instrucoes_especiais=data.get('instrucoes_especiais', ''),
-                observacoes=data.get('observacoes', '')
+                rastreamento_id=rastreamento_id,
+                data_prevista_entrega=data_prevista,
+                nome_remetente=request.POST.get('nome_remetente', ''),
+                endereco_remetente=request.POST.get('endereco_remetente', ''),
+                telefone_remetente=request.POST.get('telefone_remetente', ''),
+                descricao_produto=request.POST.get('descricao_produto', ''),
+                peso=request.POST.get('peso'),
+                valor_declarado=request.POST.get('valor_declarado'),
+                instrucoes_especiais=request.POST.get('instrucoes_especiais', ''),
+                observacoes=request.POST.get('observacoes', '')
             )
             
-            return JsonResponse({
-                'success': True,
-                'guia_id': guia.id,
-                'codigo': guia.codigo
-            })
+            messages.success(request, 'Guia criada com sucesso!')
+            return redirect('stock:pod:guia_detail', guia_id=guia.id)
             
         except Exception as e:
             logger.error(f"Erro ao criar guia: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao criar guia: {str(e)}')
     
     # GET - mostrar formulário
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['PENDENTE', 'EM_TRANSITO']
+        status_atual__in=['PREPARANDO', 'EM_TRANSITO', 'EM_DISTRIBUICAO']
     ).select_related('transportadora', 'veiculo_interno')
     
     context = {
@@ -497,24 +483,20 @@ def gerar_etiqueta_rastreamento(request, rastreamento_id):
     """Gerar etiqueta de rastreamento."""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            
+            # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
             etiqueta = pod_service.gerar_etiqueta_rastreamento(
                 rastreamento_id=rastreamento_id,
-                tipo=data.get('tipo', 'RASTREAMENTO'),
-                conteudo_personalizado=data.get('conteudo_personalizado')
+                tipo=request.POST.get('tipo', 'RASTREAMENTO'),
+                conteudo_personalizado=request.POST.get('conteudo_personalizado')
             )
             
-            return JsonResponse({
-                'success': True,
-                'etiqueta_id': etiqueta.id,
-                'codigo': etiqueta.codigo
-            })
+            messages.success(request, 'Etiqueta gerada com sucesso!')
+            return redirect('stock:pod:etiqueta_detail', etiqueta_id=etiqueta.id)
             
         except Exception as e:
             logger.error(f"Erro ao gerar etiqueta: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Erro ao gerar etiqueta: {str(e)}')
     
     rastreamento = get_object_or_404(RastreamentoEntrega, id=rastreamento_id)
     

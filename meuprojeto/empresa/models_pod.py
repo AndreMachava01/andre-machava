@@ -139,11 +139,13 @@ class ProvaEntrega(models.Model):
     
     def _gerar_codigo_pod(self):
         """Gera código único para POD."""
-        timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
-        count = ProvaEntrega.objects.filter(
-            codigo__startswith=f"POD-{timestamp}"
-        ).count()
-        return f"POD-{timestamp}-{count + 1:03d}"
+        import time
+        import random
+        
+        # Formato mais curto: POD + timestamp + random
+        timestamp = int(time.time())
+        random_num = random.randint(100, 999)
+        return f"POD{timestamp}{random_num}"
 
 
 class DocumentoPOD(models.Model):

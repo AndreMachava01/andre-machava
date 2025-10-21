@@ -73,20 +73,20 @@ class ExcecaoLogistica(models.Model):
         blank=True,
         related_name='excecoes'
     )
-    planejamento_entrega = models.ForeignKey(
-        'PlanejamentoEntrega',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='excecoes'
-    )
-    rota = models.ForeignKey(
-        'Rota',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='excecoes'
-    )
+    # planejamento_entrega = models.ForeignKey(
+    #     'PlanejamentoEntrega',
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True,
+    #     related_name='excecoes'
+    # )
+    # rota = models.ForeignKey(
+    #     'Rota',
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True,
+    #     related_name='excecoes'
+    # )
     
     # Detalhes da exceção
     descricao = models.TextField()

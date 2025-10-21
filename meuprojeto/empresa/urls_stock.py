@@ -119,8 +119,11 @@ urlpatterns = [
     # path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
     
     # Exceções Logísticas
-    path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
+    # path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
     
     # POD (Prova de Entrega)
     path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
+    
+    # Alocação Automática
+    path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
 ]
