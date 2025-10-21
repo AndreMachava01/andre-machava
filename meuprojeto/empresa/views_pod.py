@@ -123,16 +123,50 @@ def prova_entrega_create(request):
             # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
             
-            # Converter rastreamento_id para inteiro
-            rastreamento_id = int(request.POST.get('rastreamento_entrega'))
+            # Validar e converter rastreamento_id para inteiro
+            rastreamento_id_str = request.POST.get('rastreamento_entrega')
+            if not rastreamento_id_str:
+                raise ValueError("Rastreamento é obrigatório")
+            
+            try:
+                rastreamento_id = int(rastreamento_id_str)
+            except ValueError:
+                raise ValueError("ID de rastreamento inválido")
+            
+            # Validar e converter coordenadas GPS
+            latitude_str = request.POST.get('latitude')
+            longitude_str = request.POST.get('longitude')
+            precisao_gps_str = request.POST.get('precisao_gps')
+            
+            latitude = None
+            longitude = None
+            precisao_gps = None
+            
+            if latitude_str:
+                try:
+                    latitude = float(latitude_str)
+                except ValueError:
+                    raise ValueError("Latitude inválida")
+            
+            if longitude_str:
+                try:
+                    longitude = float(longitude_str)
+                except ValueError:
+                    raise ValueError("Longitude inválida")
+            
+            if precisao_gps_str:
+                try:
+                    precisao_gps = float(precisao_gps_str)
+                except ValueError:
+                    raise ValueError("Precisão GPS inválida")
             
             prova = pod_service.criar_prova_entrega(
                 rastreamento_id=rastreamento_id,
                 tipo_entrega=request.POST.get('tipo_entrega', 'COMPLETA'),
                 endereco_entrega=request.POST.get('endereco_entrega', ''),
-                latitude=request.POST.get('latitude'),
-                longitude=request.POST.get('longitude'),
-                precisao_gps=request.POST.get('precisao_gps'),
+                latitude=latitude,
+                longitude=longitude,
+                precisao_gps=precisao_gps,
                 nome_destinatario=request.POST.get('nome_destinatario', ''),
                 documento_destinatario=request.POST.get('documento_destinatario', ''),
                 telefone_destinatario=request.POST.get('telefone_destinatario', ''),
@@ -370,13 +404,44 @@ def guia_remessa_create(request):
             # Usar request.POST para dados de formulário HTML
             pod_service = PODService()
             
-            # Converter rastreamento_id para inteiro
-            rastreamento_id = int(request.POST.get('rastreamento_entrega'))
+            # Validar e converter rastreamento_id para inteiro
+            rastreamento_id_str = request.POST.get('rastreamento_entrega')
+            if not rastreamento_id_str:
+                raise ValueError("Rastreamento é obrigatório")
+            
+            try:
+                rastreamento_id = int(rastreamento_id_str)
+            except ValueError:
+                raise ValueError("ID de rastreamento inválido")
             
             # Converter data se necessário
             data_prevista = request.POST.get('data_prevista_entrega')
             if data_prevista:
-                data_prevista = datetime.strptime(data_prevista, '%Y-%m-%d').date()
+                try:
+                    data_prevista = datetime.strptime(data_prevista, '%Y-%m-%d').date()
+                except ValueError:
+                    raise ValueError("Data prevista inválida")
+            else:
+                raise ValueError("Data prevista é obrigatória")
+            
+            # Validar e converter peso e valor declarado
+            peso_str = request.POST.get('peso')
+            valor_declarado_str = request.POST.get('valor_declarado')
+            
+            peso = None
+            valor_declarado = None
+            
+            if peso_str:
+                try:
+                    peso = float(peso_str)
+                except ValueError:
+                    raise ValueError("Peso inválido")
+            
+            if valor_declarado_str:
+                try:
+                    valor_declarado = float(valor_declarado_str)
+                except ValueError:
+                    raise ValueError("Valor declarado inválido")
             
             guia = pod_service.gerar_guia_remessa(
                 rastreamento_id=rastreamento_id,
@@ -385,8 +450,8 @@ def guia_remessa_create(request):
                 endereco_remetente=request.POST.get('endereco_remetente', ''),
                 telefone_remetente=request.POST.get('telefone_remetente', ''),
                 descricao_produto=request.POST.get('descricao_produto', ''),
-                peso=request.POST.get('peso'),
-                valor_declarado=request.POST.get('valor_declarado'),
+                peso=peso,
+                valor_declarado=valor_declarado,
                 instrucoes_especiais=request.POST.get('instrucoes_especiais', ''),
                 observacoes=request.POST.get('observacoes', '')
             )
