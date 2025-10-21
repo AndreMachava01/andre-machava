@@ -285,18 +285,30 @@ class PODService:
         """Verifica se todos os documentos obrigatórios estão presentes."""
         documentos_presentes = set(prova.documentos.values_list('tipo', flat=True))
         
+        # Verificar se existe assinatura digital
+        tem_assinatura_digital = hasattr(prova, 'assinatura') and prova.assinatura is not None
+        
         obrigatorios = []
         if self.config_padrao.obrigatorio_foto:
             obrigatorios.append('FOTO_ENTREGA')
         if self.config_padrao.obrigatorio_assinatura:
             obrigatorios.append('ASSINATURA')
         
-        ausentes = [doc for doc in obrigatorios if doc not in documentos_presentes]
+        ausentes = []
+        for doc in obrigatorios:
+            if doc == 'ASSINATURA':
+                # Para assinatura, verificar se existe assinatura digital
+                if not tem_assinatura_digital:
+                    ausentes.append(doc)
+            else:
+                # Para outros documentos, verificar na tabela de documentos
+                if doc not in documentos_presentes:
+                    ausentes.append(doc)
         
         return {
             'completo': len(ausentes) == 0,
             'ausentes': ausentes,
-            'presentes': list(documentos_presentes)
+            'presentes': list(documentos_presentes) + (['ASSINATURA'] if tem_assinatura_digital else [])
         }
     
     def _enviar_notificacao_validacao(self, prova: ProvaEntrega):

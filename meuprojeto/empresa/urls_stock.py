@@ -132,4 +132,7 @@ urlpatterns = [
     
     # Dados Mestres (Masterdata)
     path('masterdata/', include('meuprojeto.empresa.urls_masterdata', namespace='masterdata')),
+    
+    # Observabilidade
+    path('observability/', include('meuprojeto.empresa.urls_observability', namespace='observability')),
 ]

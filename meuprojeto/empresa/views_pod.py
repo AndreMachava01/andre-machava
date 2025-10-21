@@ -211,14 +211,19 @@ def adicionar_assinatura_pod(request, prova_id):
             if not imagem_assinatura:
                 raise ValueError("Imagem da assinatura é obrigatória")
             
+            # Truncar user agent para caber no campo (max 100 chars)
+            user_agent = request.META.get('HTTP_USER_AGENT', '')[:100]
+            dispositivo = 'Web'[:100]  # Garantir que dispositivo também seja truncado
+            ip_address = request.META.get('REMOTE_ADDR', '')[:45]  # IPv6 pode ser até 45 chars
+            
             pod_service = PODService()
             assinatura = pod_service.adicionar_assinatura_digital(
                 prova_id=prova_id,
                 dados_assinatura={},
                 imagem_assinatura_data=imagem_assinatura.read(),
-                dispositivo='Web',
-                navegador=request.META.get('HTTP_USER_AGENT', ''),
-                ip_address=request.META.get('REMOTE_ADDR', '')
+                dispositivo=dispositivo,
+                navegador=user_agent,
+                ip_address=ip_address
             )
             
             messages.success(request, 'Assinatura adicionada com sucesso!')
@@ -244,7 +249,19 @@ def validar_prova_entrega(request, prova_id):
     if request.method == 'POST':
         try:
             # Usar request.POST para dados de formulário HTML
+            import importlib
+            import meuprojeto.empresa.services.pod_service
+            importlib.reload(meuprojeto.empresa.services.pod_service)
+            from meuprojeto.empresa.services.pod_service import PODService
+            
             pod_service = PODService()
+            
+            # Debug: verificar documentos antes da validação
+            from meuprojeto.empresa.models_pod import ProvaEntrega
+            prova_debug = ProvaEntrega.objects.get(id=prova_id)
+            documentos_check = pod_service._verificar_documentos_obrigatorios(prova_debug)
+            logger.info(f"Debug validação - Documentos: {documentos_check}")
+            
             prova = pod_service.validar_prova_entrega(
                 prova_id=prova_id,
                 validada_por_id=request.user.id,
