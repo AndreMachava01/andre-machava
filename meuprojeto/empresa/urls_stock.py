@@ -125,5 +125,8 @@ urlpatterns = [
     path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
     
     # Alocação Automática
-    path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
+    # path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
+    
+    # Custos e Faturamento
+    path('cost-billing/', include('meuprojeto.empresa.urls_cost_billing', namespace='cost_billing')),
 ]
