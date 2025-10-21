@@ -116,16 +116,16 @@ urlpatterns = [
     path('logistica/', include('meuprojeto.empresa.urls_logistica', namespace='logistica')),
     
     # Roteirização e Planejamento
-    # path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
+    path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
     
     # Exceções Logísticas
-    # path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
+    path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
     
     # POD (Prova de Entrega)
     path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
     
     # Alocação Automática
-    # path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
+    path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
     
     # Custos e Faturamento
     path('cost-billing/', include('meuprojeto.empresa.urls_cost_billing', namespace='cost_billing')),
@@ -135,4 +135,7 @@ urlpatterns = [
     
     # Observabilidade
     path('observability/', include('meuprojeto.empresa.urls_observability', namespace='observability')),
+    
+    # Escalabilidade
+    path('scalability/', include('meuprojeto.empresa.urls_scalability', namespace='scalability')),
 ]

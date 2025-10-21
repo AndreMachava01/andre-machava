@@ -518,4 +518,5 @@ class RoutingService:
 
 
 # Instância global do serviço (criada lazy quando necessário)
-# routing_service = RoutingService()
+# Instância global do serviço de roteirização
+routing_service = RoutingService()
