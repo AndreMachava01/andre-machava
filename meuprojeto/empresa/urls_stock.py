@@ -138,4 +138,10 @@ urlpatterns = [
     
     # Escalabilidade
     path('scalability/', include('meuprojeto.empresa.urls_scalability', namespace='scalability')),
+    
+    # Geolocalização
+    path('geolocation/', include('meuprojeto.empresa.urls_geolocation', namespace='geolocation')),
+    
+    # UX Mobile
+    path('mobile/', include('meuprojeto.empresa.urls_mobile', namespace='mobile')),
 ]
