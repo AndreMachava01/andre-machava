@@ -114,4 +114,7 @@ urlpatterns = [
     
     # Logística (integrada ao módulo de stock)
     path('logistica/', include('meuprojeto.empresa.urls_logistica', namespace='logistica')),
+    
+    # Roteirização e Planejamento
+    path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
 ]
