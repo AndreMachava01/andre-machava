@@ -144,4 +144,10 @@ urlpatterns = [
     
     # UX Mobile
     path('mobile/', include('meuprojeto.empresa.urls_mobile', namespace='mobile')),
+    
+    # Relatórios Logísticos
+    path('reports/', include('meuprojeto.empresa.urls_reports', namespace='reports')),
+    
+    # Notificações Push
+    path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
 ]
