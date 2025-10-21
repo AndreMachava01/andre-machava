@@ -150,4 +150,7 @@ urlpatterns = [
     
     # Notificações Push
     path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
+    
+    # Integrações com Transportadoras
+    path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
 ]
