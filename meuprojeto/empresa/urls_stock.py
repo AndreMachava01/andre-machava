@@ -120,4 +120,7 @@ urlpatterns = [
     
     # Exceções Logísticas
     path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
+    
+    # POD (Prova de Entrega)
+    path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
 ]

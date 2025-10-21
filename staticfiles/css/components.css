@@ -85,6 +85,29 @@
   box-shadow: var(--shadow-md);
 }
 
+.btn-info {
+  background: var(--gradient-info) !important;
+  color: white !important;
+  border-color: var(--accent-info) !important;
+  box-shadow: var(--shadow-sm) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-3) !important;
+  padding: var(--space-4) var(--space-6) !important;
+  border-radius: var(--radius-lg) !important;
+  text-decoration: none !important;
+  font-weight: var(--font-semibold) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-info:hover {
+  background: var(--accent-info-dark) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
 .btn-success {
   background: var(--gradient-success);
   color: white;
@@ -633,14 +656,84 @@
 }
 
 .action-buttons {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .action-buttons .btn {
   flex-shrink: 0;
+  min-height: 100px; /* Altura muito maior para botões descritivos */
+  font-weight: var(--font-semibold);
+  padding: var(--space-6) var(--space-8);
+  text-align: left;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.action-buttons .btn.btn-info {
+  background: var(--gradient-info) !important;
+  color: white !important;
+  border-color: var(--accent-info) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Botões pequenos em action-buttons (para tabelas) */
+.action-buttons .btn-sm {
+  min-height: auto !important;
+  padding: var(--space-2) var(--space-3) !important;
+  font-size: var(--text-xs) !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: var(--font-medium) !important;
+  gap: var(--space-1) !important;
+}
+
+.action-buttons .btn-sm i {
+  font-size: 0.8rem !important;
+  margin-top: 0 !important;
+}
+
+.action-buttons .btn i {
+  font-size: 2rem; /* Ícones maiores */
+  margin-top: var(--space-1);
+  flex-shrink: 0;
+}
+
+.btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.btn-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: inherit;
+  line-height: 1.2;
+}
+
+.btn-description {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  opacity: 0.8;
+  line-height: 1.3;
+  color: inherit;
+}
+
+/* Efeitos hover para botões descritivos */
+.action-buttons .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-buttons .btn:hover .btn-description {
+  opacity: 1;
+}
+
+.action-buttons .btn:hover i {
+  transform: scale(1.1);
 }
 
 /* =============================================================================
@@ -762,13 +855,27 @@
   }
   
   .action-buttons {
-    flex-direction: column;
-    width: 100%;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
   
   .action-buttons .btn {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
+    min-height: 80px; /* Altura menor em mobile */
+    padding: var(--space-4) var(--space-5);
+  }
+  
+  .action-buttons .btn i {
+    font-size: 1.5rem; /* Ícones menores em mobile */
+  }
+  
+  .btn-title {
+    font-size: var(--text-base);
+  }
+  
+  .btn-description {
+    font-size: var(--text-xs);
   }
   
   .breadcrumb-modern {
