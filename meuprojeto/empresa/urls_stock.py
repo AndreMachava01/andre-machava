@@ -129,4 +129,7 @@ urlpatterns = [
     
     # Custos e Faturamento
     path('cost-billing/', include('meuprojeto.empresa.urls_cost_billing', namespace='cost_billing')),
+    
+    # Dados Mestres (Masterdata)
+    path('masterdata/', include('meuprojeto.empresa.urls_masterdata', namespace='masterdata')),
 ]

@@ -45,11 +45,17 @@ class PODService:
             return ConfiguracaoPOD.objects.get(padrao=True, ativo=True)
         except ConfiguracaoPOD.DoesNotExist:
             # Criar configuração padrão se não existir
-            return ConfiguracaoPOD.objects.create(
+            config = ConfiguracaoPOD.objects.create(
                 nome='Configuração Padrão POD',
                 padrao=True,
-                ativo=True
+                ativo=True,
+                formatos_permitidos=['JPG', 'JPEG', 'PNG', 'PDF', 'DOC', 'DOCX'],
+                tamanho_maximo_mb=10,
+                obrigatorio_foto=True,
+                obrigatorio_assinatura=True,
+                obrigatorio_gps=False
             )
+            return config
     
     def criar_prova_entrega(self,
                            rastreamento_id: int,

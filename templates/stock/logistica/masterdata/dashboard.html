@@ -1,0 +1,454 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard Dados Mestres{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Dados Mestres</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-database"></i>
+                    Dashboard Dados Mestres
+                </h1>
+                <p class="page-subtitle">
+                    Gestão de Dados Fundamentais do Sistema Logístico
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:regiao_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i>
+                    Nova Região
+                </a>
+                <a href="{% url 'stock:masterdata:zona_create' %}" class="btn btn-primary">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Nova Zona
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.regioes.total }}</div>
+                <div class="stat-label">Regiões</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.zonas_entrega.total }}</div>
+                <div class="stat-label">Zonas de Entrega</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.hubs_logisticos.total }}</div>
+                <div class="stat-label">Hubs Logísticos</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-cube"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.catalogo_dimensoes.total }}</div>
+                <div class="stat-label">Dimensões</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas de Restrições -->
+    <div class="stats-grid">
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.restricoes_logisticas.total }}</div>
+                <div class="stat-label">Restrições</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-secondary">
+            <div class="stat-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.permissoes_logisticas.total }}</div>
+                <div class="stat-label">Permissões</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-map-pin"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.regioes.com_coordenadas }}</div>
+                <div class="stat-label">Com Coordenadas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.hubs_logisticos.funcionamento_24h }}</div>
+                <div class="stat-label">Hubs 24h</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Regiões Ativas -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-globe text-primary"></i>
+                        Regiões Ativas
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-primary btn-sm">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if regioes_ativas %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Província</th>
+                                        <th>Prioridade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for regiao in regioes_ativas %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ regiao.codigo }}</span>
+                                        </td>
+                                        <td>{{ regiao.nome }}</td>
+                                        <td>{{ regiao.provincia }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ regiao.prioridade }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'stock:masterdata:regiao_detail' regiao.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-globe fa-3x mb-3"></i>
+                            <p>Nenhuma região cadastrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Zonas de Entrega -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-map-marked-alt text-info"></i>
+                        Zonas de Entrega
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:masterdata:zonas_list' %}" class="btn btn-info btn-sm">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if zonas_ativas %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Região</th>
+                                        <th>Prazo</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for zona in zonas_ativas %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ zona.codigo }}</span>
+                                        </td>
+                                        <td>{{ zona.nome }}</td>
+                                        <td>{{ zona.regiao.nome }}</td>
+                                        <td>{{ zona.prazo_entrega_dias }} dias</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'stock:masterdata:zona_detail' zona.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                            <p>Nenhuma zona de entrega cadastrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hubs Logísticos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-warehouse text-success"></i>
+                        Hubs Logísticos
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:masterdata:hubs_list' %}" class="btn btn-success btn-sm">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if hubs_ativos %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Tipo</th>
+                                        <th>Cidade</th>
+                                        <th>Região</th>
+                                        <th>24h</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for hub in hubs_ativos %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ hub.codigo }}</span>
+                                        </td>
+                                        <td>{{ hub.nome }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if hub.tipo == 'ORIGEM' %}primary{% elif hub.tipo == 'DESTINO' %}success{% elif hub.tipo == 'CONSOLIDACAO' %}info{% else %}warning{% endif %}">
+                                                {{ hub.get_tipo_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ hub.cidade }}</td>
+                                        <td>{{ hub.regiao.nome }}</td>
+                                        <td>
+                                            {% if hub.funcionamento_24h %}
+                                                <i class="fas fa-check text-success"></i>
+                                            {% else %}
+                                                <i class="fas fa-times text-muted"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'stock:masterdata:hub_detail' hub.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-warehouse fa-3x mb-3"></i>
+                            <p>Nenhum hub logístico cadastrado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Recentes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history text-primary"></i>
+                        Logs Recentes de Masterdata
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:masterdata:logs' %}" class="btn btn-primary btn-sm">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if logs_recentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Operação</th>
+                                        <th>Modelo</th>
+                                        <th>Usuário</th>
+                                        <th>Data</th>
+                                        <th>Detalhes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs_recentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-{% if log.tipo_operacao == 'CRIAR' %}success{% elif log.tipo_operacao == 'EDITAR' %}warning{% elif log.tipo_operacao == 'EXCLUIR' %}danger{% else %}info{% endif %}">
+                                                {{ log.get_tipo_operacao_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ log.modelo_afetado }}</td>
+                                        <td>{{ log.usuario.username if log.usuario else 'Sistema' }}</td>
+                                        <td>{{ log.data_operacao|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" onclick="showLogDetails({{ log.id }})">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>Nenhum log de masterdata encontrado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Acesso Rápido
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-globe"></i><br>
+                                Regiões
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:zonas_list' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-map-marked-alt"></i><br>
+                                Zonas
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:hubs_list' %}" class="btn btn-outline-success btn-block">
+                                <i class="fas fa-warehouse"></i><br>
+                                Hubs
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:catalogo_dimensoes_list' %}" class="btn btn-outline-warning btn-block">
+                                <i class="fas fa-cube"></i><br>
+                                Dimensões
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:restricoes_list' %}" class="btn btn-outline-danger btn-block">
+                                <i class="fas fa-exclamation-triangle"></i><br>
+                                Restrições
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'stock:masterdata:validar_restricoes' %}" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-check-circle"></i><br>
+                                Validar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLogDetails(logId) {
+    // Implementar modal para mostrar detalhes do log
+    alert('Detalhes do log ' + logId);
+}
+</script>
+{% endblock %}

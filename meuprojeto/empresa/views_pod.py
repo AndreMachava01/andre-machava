@@ -169,12 +169,16 @@ def adicionar_documento_pod(request, prova_id):
     if request.method == 'POST':
         try:
             # Usar request.FILES para upload de arquivos
+            arquivo = request.FILES.get('arquivo')
+            if not arquivo:
+                raise ValueError("Arquivo é obrigatório")
+            
             pod_service = PODService()
             documento = pod_service.adicionar_documento_pod(
                 prova_id=prova_id,
                 tipo=request.POST.get('tipo', ''),
-                arquivo_data=request.FILES.get('arquivo'),
-                nome_arquivo=request.POST.get('nome', ''),
+                arquivo_data=arquivo.read(),
+                nome_arquivo=arquivo.name,
                 descricao=request.POST.get('descricao', ''),
                 observacoes=request.POST.get('observacoes', '')
             )
@@ -202,14 +206,18 @@ def adicionar_assinatura_pod(request, prova_id):
     """Adicionar assinatura digital à prova de entrega."""
     if request.method == 'POST':
         try:
-            # Usar request.POST para dados de formulário HTML
+            # Usar request.FILES para upload de arquivos
+            imagem_assinatura = request.FILES.get('imagem_assinatura')
+            if not imagem_assinatura:
+                raise ValueError("Imagem da assinatura é obrigatória")
+            
             pod_service = PODService()
             assinatura = pod_service.adicionar_assinatura_digital(
                 prova_id=prova_id,
-                dados_assinatura=request.POST.get('dados_assinatura', {}),
-                imagem_assinatura_data=request.FILES.get('imagem_assinatura'),
-                dispositivo=request.POST.get('dispositivo', ''),
-                navegador=request.POST.get('navegador', ''),
+                dados_assinatura={},
+                imagem_assinatura_data=imagem_assinatura.read(),
+                dispositivo='Web',
+                navegador=request.META.get('HTTP_USER_AGENT', ''),
                 ip_address=request.META.get('REMOTE_ADDR', '')
             )
             

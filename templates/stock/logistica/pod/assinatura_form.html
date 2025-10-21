@@ -61,34 +61,20 @@
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label for="{{ form.assinatura.id_for_label }}" class="form-label">
+                    <label for="imagem_assinatura" class="form-label">
                         <i class="fas fa-image"></i> Arquivo de Assinatura
                     </label>
-                    {{ form.assinatura }}
-                    {% if form.assinatura.errors %}
-                        <div class="form-errors">
-                            {% for error in form.assinatura.errors %}
-                                <span class="error-message">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+                    <input type="file" name="imagem_assinatura" id="imagem_assinatura" class="form-control" accept="image/*" required>
                     <small class="form-text text-muted">
                         Upload da imagem da assinatura digital
                     </small>
                 </div>
 
                 <div class="form-group">
-                    <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+                    <label for="observacoes" class="form-label">
                         <i class="fas fa-comment-alt"></i> Observações
                     </label>
-                    {{ form.observacoes }}
-                    {% if form.observacoes.errors %}
-                        <div class="form-errors">
-                            {% for error in form.observacoes.errors %}
-                                <span class="error-message">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+                    <textarea name="observacoes" id="observacoes" class="form-control" rows="3"></textarea>
                 </div>
 
                 <div class="form-actions">

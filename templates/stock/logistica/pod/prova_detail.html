@@ -43,15 +43,19 @@
             </div>
             <div class="header-actions">
                 {% if not prova.validada %}
+                    <a href="{% url 'stock:pod:adicionar_documento' prova.id %}" class="btn btn-info">
+                        <i class="fas fa-paperclip"></i>
+                        Adicionar Documento
+                    </a>
+                    <a href="{% url 'stock:pod:adicionar_assinatura' prova.id %}" class="btn btn-warning">
+                        <i class="fas fa-signature"></i>
+                        Adicionar Assinatura
+                    </a>
                     <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn btn-success">
                         <i class="fas fa-check"></i>
                         Validar POD
                     </a>
                 {% endif %}
-                <a href="{% url 'stock:pod:prova_edit' prova.id %}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i>
-                    Editar
-                </a>
                 <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i>
                     Voltar à Lista
