@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
-{% block title %}Adicionar Item - {{ requisicao.codigo }}{% endblock %}
+{% block title %}Adicionar|default:0 items - {{ requisicao.codigo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -21,10 +13,10 @@
     <div class="hero-section">
         <div class="hero-content">
             <h1 class="hero-title">
-                <i class="fas fa-plus me-2"></i>Adicionar Item - {{ requisicao.codigo }}
+                <i class="fas fa-plus me-2"></i>Adicionar|default:0 items - {{ requisicao.codigo }}
             </h1>
             <div class="hero-actions">
-                <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-modern btn-secondary-modern">
+                <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>Voltar à Requisição
                 </a>
             </div>
@@ -43,7 +35,7 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post" action="{% url 'stock:requisicoes:add_item' requisicao.id %}">
+            <form method="post" action="{% url 'stock:requisicoes:add_item' requisicao.id %}"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -51,8 +43,8 @@
                         <i class="fas fa-box"></i> Item
                     </label>
                     <select name="item" id="item" class="form-control-modern" required>
-                        <option value="">Selecione um item</option>
-                        {% for item in itens %}
+                        <option value="">Selecione um|default:0 items</option>
+                        {% for items in itens  %}
                             <option value="{{ item.id }}" 
                                     data-nome="{{ item.nome }}"
                                     data-codigo="{{ item.codigo }}"
@@ -64,7 +56,7 @@
                                 {{ item.nome }} ({{ item.codigo }}) - {{ item.get_tipo_display }}
                             </option>
                         {% endfor %}
-                        {% if item_sugerido and item_sugerido not in itens %}
+                        {% if items_sugerido and|default:0 items_sugerido not in itens  %}
                             <option value="{{ item_sugerido.id }}" 
                                     data-nome="{{ item_sugerido.nome }}"
                                     data-codigo="{{ item_sugerido.codigo }}"
@@ -78,7 +70,7 @@
                             </option>
                         {% endif %}
                     </select>
-                    <div class="form-help">Selecione o item que deseja solicitar</div>
+                    <div class="form-help">Selecione o|default:0 items que deseja solicitar</div>
                 </div>
 
                 <div class="form-group">
@@ -86,16 +78,16 @@
                         <i class="fas fa-warehouse"></i> Sucursal Fornecedora
                     </label>
                     <select name="sucursal_fornecedora" id="sucursal_fornecedora" class="form-control-modern" required>
-                        <option value="">Selecione a sucursal que tem o item</option>
+                        <option value="">Selecione a sucursal que tem o|default:0 items</option>
                         {% for sucursal in sucursais %}
                             <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
                         {% endfor %}
                     </select>
-                    <div class="form-help">Sucursal que tem o item disponível</div>
+                    <div class="form-help">Sucursal que tem o|default:0 items disponível</div>
                 </div>
 
                 <div id="item-info" class="item-info" style="display: none;">
-                    <h4><i class="fas fa-info-circle"></i> Informações do Item</h4>
+                    <h4><i class="fas fa-info-circle"></i> Informações do|default:0 items</h4>
                     <div class="item-details">
                         <div class="item-detail">
                             <span class="item-detail-label">Nome:</span>
@@ -167,16 +159,16 @@
                         <i class="fas fa-comment"></i> Observações
                     </label>
                     <textarea name="observacoes" id="observacoes" class="form-control-modern form-textarea" 
-                              placeholder="Observações sobre este item (opcional)"></textarea>
-                    <div class="form-help">Informações adicionais sobre este item</div>
+                              placeholder="Observações sobre este|default:0 items (opcional)"></textarea>
+                    <div class="form-help">Informações adicionais sobre este|default:0 items</div>
                 </div>
 
                 <div class="form-actions">
-                    <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-form btn-cancel">
+                    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn-form btn-submit">
-                        <i class="fas fa-plus"></i>Adicionar Item
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-plus"></i>Adicionar|default:0 items
                     </button>
                 </div>
             </form>
@@ -186,20 +178,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const itemSelect = document.getElementById('item');
+    const itemselect = document.getElementById('item');
     const sucursalSelect = document.getElementById('sucursal_fornecedora');
-    const itemInfo = document.getElementById('item-info');
+    const itemsInfo = document.getElementById('item-info');
     const stockWarning = document.getElementById('stock-warning');
     const quantidadeInput = document.getElementById('quantidade');
     const sugestoesContainer = document.getElementById('sugestoes-quantidade');
     
-    // Elementos para mostrar informações do item
-    const itemNome = document.getElementById('item-nome');
-    const itemCodigo = document.getElementById('item-codigo');
-    const itemTipo = document.getElementById('item-tipo');
-    const itemUnidade = document.getElementById('item-unidade');
-    const itemPreco = document.getElementById('item-preco');
-    const itemStock = document.getElementById('item-stock');
+    // Elementos para mostrar informações do|default:0 items
+    const itemsNome = document.getElementById('item-nome');
+    const itemsCodigo = document.getElementById('item-codigo');
+    const itemsTipo = document.getElementById('item-tipo');
+    const itemsUnidade = document.getElementById('item-unidade');
+    const itemsPreco = document.getElementById('item-preco');
+    const itemstock = document.getElementById('item-stock');
     
     // Elementos das sugestões
     const sugestaoMinima = document.getElementById('sugestao-minima');
@@ -211,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sucursalId = sucursalSelect.value;
         
         if (selectedOption.value && sucursalId) {
-            // Mostrar informações básicas do item
+            // Mostrar informações básicas do|default:0 items
             itemNome.textContent = selectedOption.dataset.nome;
             itemCodigo.textContent = selectedOption.dataset.codigo;
             itemTipo.textContent = selectedOption.dataset.tipo;
@@ -243,12 +235,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Atualizar informações de stock
-                itemStock.textContent = data.quantidade_disponivel;
+                // Atualizar informações de stock|default:0 itemstock.textContent = data.quantidade_disponivel;
                 
                 if (!data.disponivel || data.quantidade_disponivel === 0) {
                     // Item não disponível na sucursal selecionada
-                    stockWarning.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Este item não está disponível na sucursal ${data.sucursal_nome}!`;
+                    stockWarning.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Este|default:0 items não está disponível na sucursal ${data.sucursal_nome}!`;
                     stockWarning.style.display = 'block';
                     quantidadeInput.max = 0;
                     quantidadeInput.placeholder = 'Item não disponível';
@@ -328,14 +319,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Atualizar informações quando o item ou sucursal for selecionado
-    itemSelect.addEventListener('change', updateItemInfo);
+    // Atualizar informações quando o|default:0 items ou sucursal for selecionado|default:0 itemselect.addEventListener('change', updateItemInfo);
     sucursalSelect.addEventListener('change', updateItemInfo);
     
-    // Pré-selecionar item sugerido se existir
-    {% if item_sugerido %}
+    // Pré-selecionar|default:0 items sugerido se existir
+    {% if items_sugerido  %}
     document.addEventListener('DOMContentLoaded', function() {
-        const itemSugeridoId = {{ item_sugerido.id }};
+        const itemsugeridoId = {{ item_sugerido.id }};
         const option = itemSelect.querySelector(`option[value="${itemSugeridoId}"]`);
         if (option) {
             option.selected = true;
@@ -350,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const stockDisponivel = parseInt(itemStock.textContent) || 0;
         
         if (!itemSelect.value) {
-            alert('Por favor, selecione um item!');
+            alert('Por favor, selecione um|default:0 items!');
             e.preventDefault();
             return false;
         }
@@ -362,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (stockDisponivel === 0) {
-            alert('Este item não está disponível na sucursal selecionada!');
+            alert('Este|default:0 items não está disponível na sucursal selecionada!');
             e.preventDefault();
             return false;
         }

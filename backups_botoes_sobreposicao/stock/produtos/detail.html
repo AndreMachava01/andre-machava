@@ -1,0 +1,235 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Produto{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Produtos</a></li>
+            <li class="breadcrumb-item active">{{ produto.nome }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-box"></i> Detalhes do Produto</h2>
+            <div class="btn-group btn-responsive btn-responsive" role="button">
+                <a href="#"stock:produtos' %}" class="btn-outline-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <a href="#"stock:produto_edit' produto.id %}" class="btn btn-primary btn-responsive btn-responsive">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i> Informações Gerais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Código:</strong></td>
+                                    <td><span class="product-code">{{ produto.codigo }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td><span class="product-name">{{ produto.nome }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        {% if produto.tipo %}
+                                            <span class="badge bg-info">
+                                                {{ produto.get_tipo_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Não definido</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoria:</strong></td>
+                                    <td>
+                                        {% if produto.categoria %}
+                                            <span class="badge bg-secondary">{{ produto.categoria.nome }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Não definida</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidade:</strong></td>
+                                    <td>{{ produto.get_unidade_medida_display }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            {% if produto.descricao %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-align-left"></i> Descrição
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="description-text">{{ produto.descricao }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Internal Production -->
+            {% if produto.pode_ser_produzido %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs"></i> Produção Interna
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Este produto pode ser produzido internamente.
+                    </div>
+                    {% if produto.get_receita_ativa %}
+                        <p class="production-info"><strong>Receita Ativa:</strong> {{ produto.get_receita_ativa.nome }}</p>
+                        <p class="production-info"><strong>Custo de Produção:</strong> 
+                            <span class="price-value">{{ produto.get_receita_ativa.calcular_custo_total|floatformat:2 }} MT</span>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Stock Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-warehouse"></i> Estoque
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if stocks_sucursais %}
+                        <h6 class="mb-3" style="color: #d1d5db; font-weight: 600;">Stock por Sucursal:</h6>
+                        {% for stock in stocks_sucursais %}
+                        <div class="stock-sucursal">
+                            <div class="stock-sucursal-name">{{ stock.sucursal.nome }}:</div>
+                            <div class="stock-badges">
+                                <span class="badge bg-primary fs-6">{{ stock.quantidade_atual }} {{ produto.get_unidade_medida_display }}</span>
+                                {% if stock.quantidade_atual <= produto.estoque_minimo %}
+                                    <span class="badge bg-warning ms-2">Baixo</span>
+                                {% elif stock.quantidade_atual >= produto.estoque_maximo %}
+                                    <span class="badge bg-info ms-2">Alto</span>
+                                {% else %}
+                                    <span class="badge bg-success ms-2">Normal</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center mb-3">
+                            <h3>0</h3>
+                            <p class="text-muted">{{ produto.get_unidade_medida_display }}</p>
+                            <small class="text-muted">Nenhum stock registrado</small>
+                        </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    
+
+                    {% if stocks_sucursais %}
+                        {% for stock in stocks_sucursais %}
+                            {% if stock.quantidade_atual <= produto.estoque_minimo %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Estoque baixo em {{ stock.sucursal.nome }}! Abaixo do mínimo.
+                                </div>
+                            {% elif stock.quantidade_atual >= produto.estoque_maximo %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Estoque no máximo em {{ stock.sucursal.nome }}.
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Supplier Information -->
+            {% if produto.fornecedor_principal %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-truck"></i> Fornecedor Principal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="supplier-name">{{ produto.fornecedor_principal.nome }}</h6>
+                    <p class="text-muted mb-1">{{ produto.fornecedor_principal.get_tipo_display }}</p>
+                    {% if produto.fornecedor_principal.email %}
+                        <p class="supplier-info">
+                            <i class="fas fa-envelope"></i>{{ produto.fornecedor_principal.email }}
+                        </p>
+                    {% endif %}
+                    {% if produto.fornecedor_principal.telefone %}
+                        <p class="supplier-info">
+                            <i class="fas fa-phone"></i>{{ produto.fornecedor_principal.telefone }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notes -->
+            {% if produto.observacoes %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-sticky-note"></i> Observações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="notes-text">{{ produto.observacoes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

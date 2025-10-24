@@ -1,315 +1,20 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Nota de Recepção - {{ ordem_compra.codigo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
-    .page-subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1rem;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        flex-wrap: wrap;
-    }
-    
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-    
-    .btn-primary {
-        background: var(--accent-success);
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background: var(--accent-success-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-    
-    .btn-secondary {
-        background: var(--surface-medium);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-    }
-    
-    .btn-secondary:hover {
-        background: var(--surface-light);
-        transform: translateY(-2px);
-    }
-    
-    .btn-outline {
-        background: transparent;
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-    }
-    
-    .btn-outline:hover {
-        background: var(--surface-medium);
-        color: var(--text-primary);
-        transform: translateY(-2px);
-    }
-    
-    .print-container {
-        background: white;
-        color: #1f2937;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-top: 20px;
-    }
-    
-    .document-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    
-    .company-info h1 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0 0 5px 0;
-    }
-    
-    .company-info h2 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #6b7280;
-        margin: 0;
-    }
-    
-    .header-date {
-        font-size: 0.9rem;
-        color: #6b7280;
-        text-align: right;
-    }
-    
-    .receipt-info {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 25px;
-    }
-    
-    .receipt-info h3 {
-        color: #166534;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0 0 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .receipt-info p {
-        margin: 5px 0;
-        color: #15803d;
-        font-weight: 500;
-    }
-    
-    .section {
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .section:last-child {
-        border-bottom: none;
-    }
-    
-    .section h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin: 0 0 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-    }
-    
-    .info-item {
-        background: #f9fafb;
-        padding: 12px;
-        border-radius: 6px;
-        border-left: 3px solid var(--accent-primary);
-    }
-    
-    .info-item strong {
-        color: #374151;
-        font-weight: 600;
-    }
-    
-    .items-table {
-        overflow-x: auto;
-        margin-top: 15px;
-    }
-    
-    .items-table table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    
-    .items-table th {
-        background: #f3f4f6;
-        color: #374151;
-        font-weight: 600;
-        padding: 12px;
-        text-align: left;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    
-    .items-table td {
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-        vertical-align: top;
-    }
-    
-    .items-table tr:hover {
-        background: #f9fafb;
-    }
-    
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        background: #f9fafb;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    .summary-item {
-        text-align: center;
-    }
-    
-    .summary-item strong {
-        display: block;
-        color: #374151;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-    
-    .signatures {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 30px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 2px solid #e5e7eb;
-    }
-    
-    .signature-box {
-        text-align: center;
-    }
-    
-    .signature-box p {
-        margin: 0 0 10px 0;
-        font-weight: 600;
-        color: #374151;
-    }
-    
-    .signature-line {
-        height: 1px;
-        background: #d1d5db;
-        margin: 20px 0 10px 0;
-    }
-    
-    .signature-name {
-        font-weight: 500;
-        color: #6b7280;
-    }
-    
-    .document-footer {
-        text-align: center;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
-    
-    .observacoes-text {
-        background: #f9fafb;
-        padding: 15px;
-        border-radius: 6px;
-        border-left: 3px solid var(--accent-info);
-        margin: 0;
-        line-height: 1.6;
-    }
-    
-    @media print {
-        .action-buttons {
-            display: none !important;
-        }
-        
-        .print-container {
-            box-shadow: none;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .page-header {
-            display: none !important;
-        }
-        
-        .page-content {
-            padding: 0 !important;
-        }
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="page-container">
-    <!-- Header -->
+    
     <div class="page-header">
         <div class="breadcrumb-modern">
-            <a href="{% url 'stock:main' %}">Stock</a>
+            <a href="{% url "stock:main" %}">Stock</a>
             <span class="separator">›</span>
-            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+            <a href="">Requisições</a>
             <span class="separator">›</span>
             {% if ordem_compra.requisicao_origem %}
                 <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">{{ ordem_compra.requisicao_origem.codigo }}</a>
@@ -331,17 +36,17 @@
     <!-- Content -->
     <div class="page-content">
         <!-- Action Buttons -->
-        <div class="action-buttons">
-            <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn btn-secondary">
+        <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+            <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="document-btn document-btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-arrow-left"></i>Voltar à Ordem
             </a>
-            <a href="{% url 'stock:requisicoes:list' %}" class="btn btn-outline">
+            <a href="#"stock:requisicoes:list' %}" class="document-btn document-btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-list"></i>Lista de Requisições
             </a>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline">
+            <a href="#"dashboard' %}" class="document-btn document-btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-home"></i>Dashboard
             </a>
-            <button onclick="window.print()" class="btn btn-primary">
+            <button class="document-btn document-btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                 <i class="fas fa-print"></i>Imprimir
             </button>
         </div>
@@ -469,12 +174,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for item in itens %}
+                            {% for items in itens  %}
                             <tr>
                                 <td>
                                     <div style="display: flex; flex-direction: column;">
                                         <span style="font-weight: bold;">{{ item.descricao }}</span>
-                                        {% if item.produto.codigo %}
+                                        {% if items.produto.codigo  %}
                                         <span style="font-size: 0.85rem; color: #6b7280;">{{ item.produto.codigo }}</span>
                                         {% endif %}
                                     </div>
@@ -504,7 +209,7 @@
                         <span style="font-weight: 600;">{{ itens.count }}</span>
                     </div>
                     <div class="summary-item">
-                        <strong>Valor Total</strong>
+                        <strong>Valor|default:0 total</strong>
                         <span style="font-weight: 600; color: var(--accent-primary);">{{ ordem_compra.valor_total|floatformat:2 }} MT</span>
                     </div>
                 </div>

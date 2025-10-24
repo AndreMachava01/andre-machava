@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Nova Requisição de Stock{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -24,7 +16,7 @@
                 <i class="fas fa-plus me-2"></i>Nova Requisição de Stock
             </h1>
             <div class="hero-actions">
-                <a href="{% url 'stock:requisicoes:list' %}" class="btn-modern btn-secondary-modern">
+                <a href="#" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>Voltar às Requisições
                 </a>
             </div>
@@ -45,7 +37,7 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -56,7 +48,7 @@
                         <option value="interna">Requisição Interna</option>
                         <option value="externa" selected>Compra Externa</option>
                     </select>
-                    <div class="form-help">Escolha entre requisição interna (entre sucursais) ou compra externa (de fornecedores). Para requisições internas, você definirá quem fornece cada item ao adicionar os itens.</div>
+                    <div class="form-help">Escolha entre requisição interna (entre sucursais) ou compra externa (de fornecedores). Para requisições internas, você definirá quem fornece cada|default:0 items ao adicionar os itens.</div>
                 </div>
                 
                 <div class="form-group">
@@ -92,7 +84,7 @@
                     </select>
                     <div class="form-help">
                         <i class="fas fa-info-circle text-info"></i> 
-                        Deixe vazio para prioridade automática baseada no valor total, ou selecione uma prioridade específica
+                        Deixe vazio para prioridade automática baseada no valor|default:0 total, ou selecione uma prioridade específica
                     </div>
                 </div>
 
@@ -106,14 +98,14 @@
                     </div>
                 </div>
 
-                <!-- Sugestão de Item -->
-                {% if item_pre_selecionado %}
+                <!-- Sugestão de|default:0 items -->
+                {% if items_pre_selecionado  %}
                 <div class="form-group">
                     <div class="alert alert-info">
                         <i class="fas fa-exclamation-triangle"></i>
                         <strong>{{ item_pre_selecionado.nome }}</strong> foi identificado como tendo stock baixo.
                         <br><small>{{ item_pre_selecionado.codigo }} • {{ item_pre_selecionado.tipo }} • {{ item_pre_selecionado.unidade_medida }}</small>
-                        <br><small><i class="fas fa-lightbulb"></i> Após criar a requisição, você poderá adicionar este item com a quantidade desejada.</small>
+                        <br><small><i class="fas fa-lightbulb"></i> Após criar a requisição, você poderá adicionar este|default:0 items com a quantidade desejada.</small>
                     </div>
                 </div>
                 {% endif %}
@@ -128,10 +120,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="{% url 'stock:requisicoes:list' %}" class="btn-form btn-cancel">
+                    <a href="#"stock:requisicoes:list' %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn-form btn-submit">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i>Criar Requisição
                     </button>
                 </div>
@@ -176,22 +168,22 @@ document.addEventListener('DOMContentLoaded', function() {
         stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-spinner fa-spin"></i> Carregando informações de stock...</div>';
         stockInfoSection.style.display = 'block';
         
-        // Verificar se há um item pré-selecionado
-        const itemPreSelecionado = {{ item_pre_selecionado.id|default:"null" }};
+        // Verificar se há um|default:0 items pré-selecionado
+        const itemsPreSelecionado = {{ item_pre_selecionado.id }};
         const stockInfoLabel = document.getElementById('stock-info-label');
         
         if (itemPreSelecionado) {
-            // Se há item pré-selecionado, mostrar stock desse item em todas as sucursais
-            stockInfoLabel.innerHTML = '<i class="fas fa-search"></i> Stock do Item em Todas as Sucursais';
+            // Se há|default:0 items pré-selecionado, mostrar stock desse|default:0 items em todas as sucursais
+            stockInfoLabel.innerHTML = '<i class="fas fa-search"></i> Stock do|default:0 items em Todas as Sucursais';
             loadSpecificItemStock(itemPreSelecionado);
         } else {
-            // Se não há item específico, mostrar todos os itens da sucursal fornecedora
+            // Se não há|default:0 items específico, mostrar todos os itens da sucursal fornecedora
             stockInfoLabel.innerHTML = '<i class="fas fa-boxes"></i> Stock Disponível';
             loadAllItemsStock(sucursalFornecedoraId);
         }
     }
     
-    // Função para carregar stock de um item específico em todas as sucursais
+    // Função para carregar stock de um|default:0 items específico em todas as sucursais
     function loadSpecificItemStock(itemId) {
         const stockInfoContent = document.getElementById('stock-info-content');
         
@@ -208,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Exibir stock do item específico em todas as sucursais
+                // Exibir stock do|default:0 items específico em todas as sucursais
                 let html = `
                     <div class="stock-item-header">
                         <div class="stock-item-info">
@@ -262,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (data.itens.length === 0) {
-                    stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-box-open"></i> Nenhum item disponível nesta sucursal</div>';
+                    stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-box-open"></i> Nenhum|default:0 items disponível nesta sucursal</div>';
                     return;
                 }
                 

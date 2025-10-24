@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Enviar Ordem de Compra por Email{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -20,7 +12,7 @@
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
         <div class="breadcrumb-item">
-            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+            <a href="{% url "stock:requisicoes:list" %}">Requisições</a>
         </div>
         <div class="breadcrumb-item">
             <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">Compra Externa</a>
@@ -50,7 +42,7 @@
                 Configurações do Email
             </h3>
             
-            <form method="post">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -91,12 +83,12 @@
                               placeholder="Digite uma mensagem personalizada para o fornecedor..."></textarea>
                 </div>
 
-                <div class="actions-buttons">
-                    <button type="submit" class="btn-send">
+                <div class="actions-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-paper-plane"></i>
                         Enviar Email
                     </button>
-                    <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-back">
+                    <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-back btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-arrow-left"></i>
                         Voltar
                     </a>
@@ -134,8 +126,8 @@
             {% endfor %}
             
             <div style="text-align: center; margin-top: 20px;">
-                <a href="{% url 'stock:requisicoes:ordem_compra_historico_envios' ordem_compra.id %}" 
-                   class="btn-back" style="margin-right: 0;">
+                <a href="#"stock:requisicoes:ordem_compra_historico_envios' ordem_compra.id %}" 
+                   class="btn-back btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-right: 0;">
                     <i class="fas fa-list"></i>
                     Ver Histórico Completo
                 </a>

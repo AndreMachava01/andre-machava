@@ -1,0 +1,105 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Deletar Critério{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <!-- Cabeçalho da Página -->
+    <div class="header-section">
+        <h1 class="header-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Deletar Critério de Avaliação
+        </h1>
+        <p style="margin: 8px 0 0 0; opacity: 0.9;">Confirme a exclusão do critério selecionado</p>
+        <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+            <a href="#" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Critérios
+            </a>
+        </div>
+    </div>
+
+    <!-- Aviso de Confirmação -->
+    <div class="warning-card">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2 class="warning-title">Atenção!</h2>
+        <p class="warning-text">
+            Você está prestes a deletar permanentemente este critério de avaliação. 
+            Esta ação não pode ser desfeita e pode afetar avaliações existentes que utilizam este critério.
+        </p>
+
+        <!-- Informações do Critério -->
+        <div class="criterio-info">
+            <h3 style="margin: 0 0 15px 0; color: #374151; text-align: center;">Informações do Critério</h3>
+            <div class="info-item">
+                <span class="info-label">Nome:</span>
+                <span class="info-value">{{ criterio.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Descrição:</span>
+                <span class="info-value">
+                    {% if criterio.descricao %}
+                        {{ criterio.descricao|truncatewords:20 }}
+                    {% else %}
+                        <em style="color: #9ca3af;">Sem descrição</em>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Peso:</span>
+                <span class="info-value">{{ criterio.peso }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                    <span class="status-badge status-{% if criterio.ativo %}ativo{% else %}inativo{% endif %}">
+                        {% if criterio.ativo %}Ativo{% else %}Inativo{% endif %}
+                    </span>
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Data de Criação:</span>
+                <span class="info-value">{{ criterio.data_criacao|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="#"rh:criterios' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar confirmação adicional
+    const deleteButton = document.querySelector('.btn-danger');
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (confirm('Tem certeza absoluta que deseja deletar este critério? Esta ação é irreversível!')) {
+            this.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

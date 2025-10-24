@@ -1,172 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Confirmar Itens Recebidos - {{ ordem_compra.codigo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
-    .page-subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1rem;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .item-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-    }
-    
-    .item-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    .item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-    
-    .item-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #f3f4f6;
-        margin-bottom: 5px;
-    }
-    
-    .item-code {
-        font-size: 0.9rem;
-        color: #9ca3af;
-        font-family: 'Courier New', monospace;
-    }
-    
-    .item-details {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .detail-item {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        border-radius: 8px;
-    }
-    
-    .detail-label {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .detail-value {
-        font-size: 0.95rem;
-        color: #f3f4f6;
-        font-weight: 500;
-    }
-    
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-    
-    .help-section {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 30px;
-    }
-    
-    .help-title {
-        color: #60a5fa;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .help-content {
-        color: #d1d5db;
-        line-height: 1.6;
-        font-size: 0.95rem;
-    }
-    
-    .help-content ul {
-        margin: 10px 0;
-        padding-left: 20px;
-    }
-    
-    .help-content li {
-        margin-bottom: 8px;
-    }
-    
-    .recebimento-info {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .recebimento-title {
-        color: #34d399;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .recebimento-content {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .recebimento-icon {
-        font-size: 2rem;
-    }
-    
-    .recebimento-text h4 {
-        color: #d1d5db;
-        margin-bottom: 5px;
-        font-size: 1rem;
-    }
-    
-    .recebimento-text p {
-        color: #9ca3af;
-        font-size: 0.9rem;
-        margin: 0;
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -174,9 +12,9 @@
     <!-- Header -->
     <div class="page-header">
         <div class="breadcrumb-modern">
-            <a href="{% url 'stock:main' %}">Stock</a>
+            <a href="{% url "stock:main" %}">Stock</a>
             <span class="separator">›</span>
-            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+            <a href="{% url "stock:requisicoes:list" %}">Requisições</a>
             <span class="separator">›</span>
             {% if ordem_compra.requisicao_origem %}
                 <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">{{ ordem_compra.requisicao_origem.codigo }}</a>
@@ -247,7 +85,7 @@
                     
                     {% if ordem_compra.valor_total %}
                     <div class="info-item">
-                        <div class="info-label">Valor Total</div>
+                        <div class="info-label">Valor|default:0 total</div>
                         <div class="info-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
                     </div>
                     {% endif %}
@@ -288,17 +126,17 @@
                 </h3>
             </div>
             <div class="card-content">
-                <form method="post" class="modern-form">
+                <form method="post" class="modern-form"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     <!-- Campo oculto para manter o tipo de recebimento já definido -->
                     <input type="hidden" name="tipo_recebimento" value="{% if ordem_compra.notificacao_logistica_unificada %}COLETAR{% else %}ENTREGA{% endif %}">
                     
-                    {% for item in itens %}
+                    {% for items in itens  %}
                     <div class="item-card">
                         <div class="item-header">
                             <div>
                                 <div class="item-name">{{ item.descricao }}</div>
-                                {% if item.produto.codigo %}
+                                {% if items.produto.codigo  %}
                                 <div class="item-code">{{ item.produto.codigo }}</div>
                                 {% endif %}
                             </div>
@@ -351,7 +189,7 @@
                             <div class="form-group">
                                 <label for="estado_item_{{ item.id }}" class="form-label">
                                     <i class="fas fa-clipboard-check"></i>
-                                    Estado do Item *
+                                    Estado do|default:0 items *
                                 </label>
                                 <select 
                                     id="estado_item_{{ item.id }}" 
@@ -366,7 +204,7 @@
                                 </select>
                                 <div class="form-help">
                                     <i class="fas fa-info-circle text-info"></i> 
-                                    Estado em que o item foi recebido
+                                    Estado em que o|default:0 items foi recebido
                                 </div>
                             </div>
                         </div>
@@ -374,12 +212,12 @@
                     {% endfor %}
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-modern btn-primary-modern">
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                             <i class="fas fa-check"></i>
                             Finalizar Recebimento
                         </button>
                         
-                        <a href="{% url 'stock:requisicoes:ordem_compra_receive' ordem_compra.id %}" class="btn-modern btn-secondary-modern">
+                        <a href="#"stock:requisicoes:ordem_compra_receive' ordem_compra.id %}" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-arrow-left"></i>
                             Voltar
                         </a>
@@ -396,8 +234,8 @@
             </div>
             <div class="help-content">
                 <ul>
-                    <li><strong>Quantidade Recebida:</strong> Digite a quantidade efetivamente recebida de cada item. Se recebeu menos do que solicitado, ajuste o valor.</li>
-                    <li><strong>Estado do Item:</strong> Selecione o estado em que cada item foi recebido:
+                    <li><strong>Quantidade Recebida:</strong> Digite a quantidade efetivamente recebida de cada|default:0 items. Se recebeu menos do que solicitado, ajuste o valor.</li>
+                    <li><strong>Estado do|default:0 items:</strong> Selecione o estado em que cada|default:0 items foi recebido:
                         <ul>
                             <li><strong>Bom:</strong> Item em perfeitas condições</li>
                             <li><strong>Danificado:</strong> Item com danos visíveis mas utilizável</li>

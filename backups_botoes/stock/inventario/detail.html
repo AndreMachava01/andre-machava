@@ -1,0 +1,1080 @@
+<script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const progressBar = document.querySelector('.progress-bar-fill[data-progress]');
+                if (progressBar) {
+                    const progress = progressBar.getAttribute('data-progress');
+                    progressBar.style.setProperty('--progress-value', progress);
+                }
+            });
+
+let currentInventarioId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contagem-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Coletar dados de todos os inputs
+            const inputs = document.querySelectorAll('.quantidade-input');
+            const dados = {};
+            
+            inputs.forEach(input => {
+                const itemsId = input.dataset.itemId;
+                const quantidade = input.value.trim();
+                if (quantidade) {
+                    dados[`quantidade_${itemId}`] = quantidade;
+                }
+            });
+            
+            // Adicionar dados ao formulário
+            Object.keys(dados).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = dados[key];
+                form.appendChild(input);
+            });
+            
+            // Submeter via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.action === 'ask_stock_adjustment') {
+                    currentInventarioId = data.inventario_id;
+                    document.getElementById("itemsWithDifferences").textContent = 
+                        `${data.items_with_differences} item(s) têm diferenças em relação ao sistema.`;
+                    document.getElementById('stockAdjustmentModal').style.display = 'flex';
+                } else {
+                    // Recarregar página para mostrar mensagens
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                // Em caso de erro, submeter normalmente
+                form.submit();
+            });
+        });
+    }
+});
+
+function closeStockModal() {
+    document.getElementById('stockAdjustmentModal').style.display = 'none';
+}
+
+function finalizarInventario() {
+    const stockAction = document.querySelector('input[name="stock_action"]:checked').value;
+    const ajustarStock = stockAction === 'adjust';
+    
+    // Criar formulário para finalização
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/stock/inventario/${currentInventarioId}/finalizar-com-ajuste/`;
+    
+    // Adicionar CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Adicionar parâmetro de ajuste
+    const ajusteInput = document.createElement('input');
+    ajusteInput.type = 'hidden';
+    ajusteInput.name = 'ajustar_stock';
+    ajusteInput.value = ajustarStock;
+    form.appendChild(ajusteInput);
+    
+    // Submeter formulário
+    document.body.appendChild(form);
+    form.submit();
+}
+
+</script>
+
+{% extends "base_detail.html" %}
+{% load static %}
+
+{% block title %}Detalhes do Inventário{% endblock %}
+
+{% block detail_cards %}
+<!-- Informações Básicas -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-list"></i>Informações Básicas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-hashtag"></i>Código:
+            </span>
+            <span class="info-value">{{ inventario.codigo }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-tag"></i>Nome:
+            </span>
+            <span class="info-value">{{ inventario.nome }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-building"></i>Sucursal:
+            </span>
+            <span class="info-value">{{ inventario.sucursal.nome }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar"></i>Data de Início:
+            </span>
+            <span class="info-value">{{ inventario.data_inicio|date:"d/m/Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar-check"></i>Data de Fim:
+            </span>
+            <span class="info-value">{{ inventario.data_fim|date:"d/m/Y"|default:"Em andamento" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-toggle-on"></i>Status:
+            </span>
+            <span class="badge {% if inventario.status == 'ABERTO' %}bg-warning{% elif inventario.status == 'FECHADO' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ inventario.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas do Inventário -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-bar"></i>Estatísticas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-boxes"></i>Total de Itens:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #495057;">
+                {{ total_itens|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-check-circle"></i>Itens Contados:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #28a745;">
+                {{ itens_contados|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-percentage"></i>Progresso:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #17a2b8;">
+                {% if total_itens > 0 %}
+                    {% widthratio itens_contados total_itens 100 as progresso %}
+                    {{ progresso }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-user"></i>Responsável:
+            </span>
+            <span class="info-value">{{ inventario.responsavel.nome_completo|default:"Não definido" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Detalhes da Contagem -->
+{% if contagem_stats %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list-check"></i>Detalhes da Contagem
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-check"></i>Itens Conformes:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #28a745;">
+                {{ contagem_stats.itens_conformes|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-exclamation-triangle"></i>Itens com Diferença:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #ffc107;">
+                {{ contagem_stats.itens_com_diferenca|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-times"></i>Itens Não Encontrados:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #dc3545;">
+                {{ contagem_stats.itens_nao_encontrados|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-plus"></i>Itens Extras:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #17a2b8;">
+                {{ contagem_stats.itens_extras|default:"0" }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Itens do Inventário -->
+{% if itens_inventario %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i>Itens do Inventário
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Código</th>
+                        <th><i class="fas fa-tag"></i> Nome</th>
+                        <th><i class="fas fa-boxes"></i> Quantidade Sistema</th>
+                        <th><i class="fas fa-check"></i> Quantidade Contada</th>
+                        <th><i class="fas fa-calculator"></i> Diferença</th>
+                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_inventario %}
+                    <tr>
+                        <td><strong>{{ item.produto.codigo }}</strong></td>
+                        <td>{{ item.produto.nome }}</td>
+                        <td>{{ item.quantidade_sistema }} {{ item.produto.get_unidade_medida_display }}</td>
+                        <td>{{ item.quantidade_contada|default:"-" }} {{ item.produto.get_unidade_medida_display }}</td>
+                        <td>
+                            {% if item.quantidade_contada %}
+                                {% with item.quantidade_contada|add:0|sub:item.quantidade_sistema as diferenca %}
+                                    {% if diferenca > 0 %}
+                                        <span style="color: #28a745;">+{{ diferenca }}</span>
+                                    {% elif diferenca < 0 %}
+                                        <span style="color: #dc3545;">{{ diferenca }}</span>
+                                    {% else %}
+                                        <span style="color: #6c757d;">0</span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span style="color: #6c757d;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.quantidade_contada %}
+                                {% with item.quantidade_contada|add:0|sub:item.quantidade_sistema as diferenca %}
+                                    {% if diferenca == 0 %}
+                                        <span class="badge bg-success">Conforme</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Diferença</span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span class="badge bg-secondary">Pendente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Observações -->
+{% if inventario.observacoes %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-sticky-note"></i>Observações
+        </h5>
+    </div>
+    <div class="card-body">
+        <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-style: italic; color: #374151;">{{ inventario.observacoes }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+        opacity: 0.3;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 2;
+        margin-top: 15px;
+    }
+
+    .btn-modern {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-modern.btn-primary-modern {
+        background: var(--success-gradient);
+        border-color: transparent;
+    }
+
+    .btn-modern.btn-primary-modern:hover {
+        background: var(--success-gradient);
+        filter: brightness(1.1);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 30px;
+        background: #1f2937;
+        border-bottom: 1px solid #4b5563;
+    }
+
+    /* Usar o sistema unificado de contadores do components.css */
+
+    .stat-card:nth-child(1) { border-left: 4px solid #3b82f6; }
+    .stat-card:nth-child(2) { border-left: 4px solid #10b981; }
+    .stat-card:nth-child(3) { border-left: 4px solid #f59e0b; }
+    .stat-card:nth-child(4) { border-left: 4px solid #ef4444; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #f9fafb;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #d1d5db;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Progress Bar */
+    .progress-section {
+        padding: 20px 30px;
+        background: #374151;
+        border-bottom: 1px solid #4b5563;
+    }
+
+    .progress-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .progress-bar-container {
+        background: #4b5563;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        transition: width 0.3s ease;
+        position: relative;
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* Content Area */
+    .content-area {
+        flex: 1;
+        overflow-y: auto;
+        background: #1f2937;
+        padding: 20px;
+    }
+
+    .table-container {
+        background: #374151;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #4b5563;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern th {
+        background: #4b5563;
+        color: #d1d5db;
+        font-weight: 600;
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .table-modern td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #4b5563;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-planejado { background: #3b82f6; color: white; }
+    .status-em_andamento { background: #f59e0b; color: white; }
+    .status-concluido { background: #10b981; color: white; }
+    .status-cancelado { background: #ef4444; color: white; }
+    
+    /* Contagem Badges */
+    .contagem-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .contagem-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        min-width: 40px;
+        text-align: center;
+    }
+    
+    .contagem-0 { background: #6b7280; color: white; }
+    .contagem-1 { background: #3b82f6; color: white; }
+    .contagem-2 { background: #f59e0b; color: white; }
+    .contagem-3 { background: #10b981; color: white; }
+    
+    .recontagem-badge {
+        color: #f59e0b;
+        font-size: 0.8rem;
+    }
+    
+    .finalizado-badge {
+        color: #10b981;
+        font-size: 0.8rem;
+    }
+    
+    /* Status Badges Updated */
+    .status-success { background: #10b981; color: white; }
+    .status-warning { background: #f59e0b; color: white; }
+    .status-info { background: #3b82f6; color: white; }
+    .status-pending { background: #6b7280; color: white; }
+    
+    .finalizado-text {
+        color: #10b981;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Form Styles */
+    .form-inline {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .form-control-small {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        border-radius: 6px;
+        padding: 8px 10px;
+        color: #f9fafb;
+        font-size: 0.9rem;
+        width: 80px;
+    }
+
+    .form-control-small:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-action.btn-save {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-action.btn-finalizar {
+        background: var(--success-gradient);
+        color: white;
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-action.btn-disabled {
+        background: #6b7280;
+        color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .btn-action.btn-disabled:hover {
+        transform: none;
+        box-shadow: var(--shadow-light);
+    }
+    
+    /* Estilos para Sistema de Fases */
+    .fase-card.fase-ativa {
+        background: #dbeafe;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+    
+    .fase-card.fase-concluida {
+        background: #dcfce7;
+        border-color: #10b981 !important;
+        box-shadow: 0 4px 12px var(--bg-white-transparent-light);
+    }
+    
+    .fase-card.fase-pendente {
+        background: #f8fafc;
+        border-color: #e2e8f0 !important;
+        opacity: 0.7;
+    }
+    
+    .fase-numero {
+        color: #1e293b;
+    }
+    
+    .fase-card.fase-ativa 
+    
+    .fase-card.fase-concluida 
+    
+    .fase-card.fase-pendente 
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #d1d5db;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+
+    }
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 10px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    background: #8b5cf6;
+    color: white;
+    padding: 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.close {
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 20px;
+    color: #333;
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.stock-options {
+    margin: 20px 0;
+}
+
+.radio-option {
+    display: block;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.radio-label {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-primary:hover {
+    background: #7c3aed;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-clipboard-check"></i>
+            {{ inventario.codigo }} - {{ inventario.nome }}
+        </h1>
+        <p class="hero-subtitle">
+            {{ inventario.sucursal.nome }} • {{ inventario.get_status_display }}
+        </p>
+        <div class="hero-actions">
+            <a href="#"stock:inventario:list' %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+            <a href="#"stock:inventario:relatorio' inventario.id %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-chart-bar"></i>
+                Relatório
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.total|default:"0" }}</div>
+            <div class="stat-label">Total de Itens</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_contados }}</div>
+            <div class="stat-label">Itens Contados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.progresso }}%</div>
+            <div class="stat-label">Progresso</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_com_diferenca }}</div>
+            <div class="stat-label">Com Diferenças</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_para_recontar }}</div>
+            <div class="stat-label">Para Recontagem</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_finalizados }}</div>
+            <div class="stat-label">Finalizados (3x)</div>
+        </div>
+    </div>
+
+    <!-- Sistema de Fases -->
+    <div class="fases-container" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border: 2px solid #e2e8f0;">
+        <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.2rem;">
+            <i class="fas fa-layer-group"></i> Sistema de Fases de Contagem
+        </h3>
+        
+        <div class="fases-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <!-- Fase 1 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 1 %}fase-ativa{% elif contagem_stats.fase_atual > 1 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 1 %}✓{% else %}{{ contagem_stats.fase_atual|default:"1" }}{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">1ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem inicial de todos os itens</div>
+                {% if contagem_stats.fase_atual == 1 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 1 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Fase 2 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 2 %}fase-ativa{% elif contagem_stats.fase_atual > 2 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 2 %}✓{% else %}{{ contagem_stats.fase_atual|default:"1"|add:1 }}{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">2ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Recontagem dos itens com diferenças</div>
+                {% if contagem_stats.fase_atual == 2 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 2 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% elif contagem_stats.fase_atual == 1 and contagem_stats.itens_com_diferenca > 0 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-clock"></i> PRÓXIMA
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Fase 3 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 3 %}fase-ativa{% elif contagem_stats.fase_atual > 3 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 3 %}✓{% else %}3{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">3ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem final obrigatória</div>
+                {% if contagem_stats.fase_atual == 3 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 3 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% elif contagem_stats.fase_atual == 2 and contagem_stats.itens_com_diferenca > 0 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-clock"></i> PRÓXIMA
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Informação da Fase Atual -->
+        <div class="fase-info" style="margin-top: 15px; padding: 12px; background: #e0f2fe; border-radius: 8px; border-left: 4px solid #0284c7;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-info-circle" style="color: #0284c7;"></i>
+                <strong style="color: #0c4a6e;">Fase Atual:</strong>
+                <span style="color: #0c4a6e;">
+                    {% if contagem_stats.fase_atual == 1 %}
+                        Primeira contagem - Digite as quantidades encontradas em todos os itens
+                    {% elif contagem_stats.fase_atual == 2 %}
+                        Segunda contagem - Recontagem apenas dos itens com diferenças
+                    {% elif contagem_stats.fase_atual == 3 %}
+                        Terceira contagem - Contagem final obrigatória dos itens com diferenças
+                    {% else %}
+                        Inventário concluído - Todos os itens foram contados corretamente
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+        <h3 class="progress-title">
+            <i class="fas fa-tasks"></i>
+            Progresso do Inventário
+        </h3>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" data-progress="{{ progresso|default:0 }}">
+                <div class="progress-text">{{ progresso|default:0 }}%</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    {% if inventario.status == 'EM_ANDAMENTO' %}
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+        {% if contagem_stats.pode_finalizar %}
+        <form method="post" action="{% url 'stock:inventario:finalizar' inventario.id %}" style="display: inline;"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <button type="submit" class="btn-action btn-finalizar" onclick=" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-check"></i>
+                Finalizar Inventário
+            </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if contagem_stats.fase_atual == 2 or contagem_stats.fase_atual == 3 %}
+        <div class="alert alert-warning" style="background: #f59e0b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Modo de Recontagem:</strong> Apenas itens com diferenças são exibidos para recontagem. Complete a contagem dos itens mostrados para continuar.
+        </div>
+        {% endif %}
+        
+        {% if itens_inventario %}
+            <div class="table-container">
+
+        <!-- Botões de Ação -->
+        {% if inventario.status in 'PLANEJADO,EM_ANDAMENTO' %}
+        <div class="action-btns-container -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-top: 20px; text-align: center;" role="button" role="button" role="button" role="button" role="button">
+            <!-- Botão de Impressão da Contagem Atual -->
+            <div class="print-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-bottom: 20px;" role="button" role="button" role="button" role="button" role="button">
+                <h4 style="color: #374151; margin-bottom: 15px; font-size: 16px; font-weight: 600;">
+                    <i class="fas fa-print"></i> Documento para Contagem Manual
+                </h4>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <!-- Botão da Contagem Atual -->
+                    <a href="#"stock:inventario:imprimir_contagem' inventario.id contagem_stats.fase_atual %}" 
+                       target="_blank" 
+                       class="btn-action btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
+                       style="padding: 15px 25px; font-size: 1.1rem; text-decoration: none; font-weight: 600; min-width: 140px;">
+                        <i class="fas fa-file-alt" style="margin-right: 8px;"></i> 
+                        {% if contagem_stats.fase_atual == 1 %}
+                            1ª Contagem
+                        {% elif contagem_stats.fase_atual == 2 %}
+                            2ª Contagem
+                        {% elif contagem_stats.fase_atual == 3 %}
+                            3ª Contagem
+                        {% else %}
+                            Contagem Atual
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Botão Submeter Contagem -->
+            <div class="submit-container">
+                
+            </div>
+        </div>
+        {% endif %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check"></i>
+                <h3>Nenhum item encontrado</h3>
+                <p>Este inventário não possui itens para contagem.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Ajuste de Stock -->
+<div id="stockAdjustmentModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Finalizar Inventário</h3>
+            <span class="close" onclick="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Todas as 3 contagens foram realizadas!</p>
+            <p id="itemsWithDifferences"></p>
+            <p><strong>O que deseja fazer com o stock?</strong></p>
+            <div class="stock-options">
+                <label class="radio-option">
+                    <input type="radio" name="stock_action" value="adjust" checked>
+                    <span class="radio-label">
+                        <strong>Ajustar stock</strong> - Atualizar quantidades conforme contagem física
+                    </span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="stock_action" value="keep">
+                    <span class="radio-label">
+                        <strong>Manter stock</strong> - Manter quantidades do sistema
+                    </span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick=" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Finalizar</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

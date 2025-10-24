@@ -1,0 +1,348 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Calcular Folha Salarial{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .info-item {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .info-label {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-value {
+        display: block;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-aberta {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .status-fechada {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+    
+    .status-paga {
+        background: #e8f5e8;
+        color: #388e3c;
+    }
+    
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .warning-box h4 {
+        color: #856404;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .warning-box p {
+        color: #856404;
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .calculo-steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .calculo-step {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        opacity: 0.6;
+    }
+    
+    .calculo-step.active {
+        opacity: 1;
+        border-color: var(--primary-color);
+        background: var(--primary-light);
+    }
+    
+    .calculo-step.completed {
+        opacity: 1;
+        border-color: var(--success-color);
+        background: var(--success-light);
+    }
+    
+    .step-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .calculo-step.completed 
+    
+    .step-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+    
+    .step-description {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'rh:main' %}">RH</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'rh:folha_salarial' %}">Folha Salarial</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'rh:folha_detail' folha.id %}">{{ folha.mes_referencia|date:"F/Y" }}</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Calcular</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>
+                <i class="fas fa-calculator"></i>
+                Calcular Folha Salarial
+            </h1>
+            <p>Processar cálculos automáticos para {{ folha.mes_referencia|date:"F/Y" }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Informações da Folha -->
+    <div class="content-section">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Folha
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Mês de Referência</span>
+                        <span class="info-value">{{ folha.mes_referencia|date:"F/Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="status-badge status-{{ folha.status|lower }}">
+                            {{ folha.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Bruto</span>
+                        <span class="info-value">{{ folha.total_bruto|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Descontos</span>
+                        <span class="info-value">{{ folha.total_descontos|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Líquido</span>
+                        <span class="info-value">{{ folha.total_liquido|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total de Funcionários</span>
+                        <span class="info-value">{{ folha.total_funcionarios }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso -->
+    <div class="content-section">
+        <div class="warning-box">
+            <h4>
+                <i class="fas fa-exclamation-triangle"></i>
+                Aviso Importante
+            </h4>
+            <p>
+                O cálculo da folha salarial irá processar todos os funcionários ativos e calcular 
+                automaticamente salários, benefícios, descontos e valores líquidos. Esta operação 
+                não pode ser desfeita facilmente.
+            </p>
+        </div>
+    </div>
+
+    <!-- Seção de Cálculo -->
+    <div class="content-section">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-cogs"></i>
+                    Processo de Cálculo
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="calculo-steps">
+                    <div class="calculo-step active">
+                        <div class="step-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="step-title">1. Funcionários</div>
+                        <div class="step-description">Identificar funcionários ativos</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="step-title">2. Salários</div>
+                        <div class="step-description">Calcular salários base</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="step-title">3. Benefícios</div>
+                        <div class="step-description">Aplicar benefícios</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-minus-circle"></i>
+                        </div>
+                        <div class="step-title">4. Descontos</div>
+                        <div class="step-description">Aplicar descontos</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="step-title">5. Totais</div>
+                        <div class="step-description">Calcular totais finais</div>
+                    </div>
+                </div>
+
+                <!-- Formulário de Cálculo -->
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="observacoes">Observações do Cálculo (Opcional)</label>
+                        <textarea name="observacoes" id="observacoes" rows="3" 
+                            placeholder="Adicione observações sobre este cálculo..."></textarea>
+                        <div class="help-text">
+                            Observações serão salvas no histórico da folha salarial
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'rh:folha_detail' folha.id %}" class="btn-modern btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn-modern btn-primary" 
+                            onclick="return confirm('Tem certeza que deseja calcular esta folha salarial? Esta operação irá processar todos os funcionários ativos.')">
+                            <i class="fas fa-calculator"></i>
+                            Calcular Folha
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação dos passos do cálculo
+    const steps = document.querySelectorAll('.calculo-step');
+    let currentStep = 0;
+    
+    function animateSteps() {
+        steps.forEach((step, index) => {
+            if (index <= currentStep) {
+                step.classList.add('active');
+                if (index < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                }
+            } else {
+                step.classList.remove('active', 'completed');
+            }
+        });
+    }
+    
+    // Simular progresso (opcional)
+    const interval = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            animateSteps();
+        } else {
+            clearInterval(interval);
+        }
+    }, 1000);
+    
+    // Parar animação se o usuário interagir
+    document.addEventListener('click', () => {
+        clearInterval(interval);
+        steps.forEach(step => {
+            step.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

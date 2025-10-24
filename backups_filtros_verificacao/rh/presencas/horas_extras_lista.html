@@ -1,0 +1,147 @@
+{% extends "base_list.html" %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+
+{% block title %}Lista de Horas Extras{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url "rh:main" %}">RH</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url "rh:presencas" %}">Presenças</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Horas Extras</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Lista de Horas Extras"
+%}
+    <!-- Tabela de Horas Extras -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-clock"></i>
+                Horas Extras Registradas
+            </h3>
+            <div class="table-actions">
+                <a href="" class="btn-action">
+                    <i class="fas fa-plus"></i>
+                    Nova
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            {% if horas_extras %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Horário</th>
+                            <th>Quantidade</th>
+                            <th>Valor/Hora</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hora_extra in horas_extras %}
+                            <tr>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.funcionario.nome_completo }}</div>
+                                    <div class="cell-tertiary">{{ hora_extra.funcionario.codigo_funcionario }}</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.data|date:"d/m/Y" }}</div>
+                                    <div class="cell-tertiary">{{ hora_extra.data|date:"l" }}</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if hora_extra.tipo == 'DI' %}aprovado{% elif hora_extra.tipo == 'NO' %}pendente{% else %}rejeitado{% endif %}">
+                                        {% if hora_extra.tipo == 'DI' %}Diurno{% elif hora_extra.tipo == 'NO' %}Noturno{% else %}Extraordinário{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.hora_inicio|time:"H:i" }} - {{ hora_extra.hora_fim|time:"H:i" }}</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.quantidade_horas }}h</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.valor_por_hora|floatformat:2 }} MT</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.valor_total|floatformat:2 }} MT</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if hora_extra.aprovado %}aprovado{% else %}pendente{% endif %}">
+                                        {% if hora_extra.aprovado %}Aprovado{% else %}Pendente{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <a href="{% url 'rh:horas_extras_editar' hora_extra.id %}" class="btn-action secondary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#"rh:horas_extras_excluir' hora_extra.id %}" class="btn-action secondary" title="Excluir" href="#" onclick="event.preventDefault(); return "Tem certeza que deseja excluir esta horas extras?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="table-empty">
+                    <i class="fas fa-clock"></i>
+                    <h3>Nenhuma horas extras encontrada</h3>
+                    <p>Não há horas extras registradas para os filtros selecionados.</p>
+                    <a href="{% url "rh:horas_extras_nova" %}" class="btn-action">
+                        <i class="fas fa-plus"></i>
+                        Registrar Primeira Horas Extras
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if horas_extras.has_other_pages %}
+            <div class="pagination-modern">
+                {% if horas_extras.has_previous %}
+                    <a href="?page=1{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ horas_extras.previous_page_number }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                <span class="page-info">
+                    Página {{ horas_extras.number }} de {{ horas_extras.paginator.num_pages }}
+                </span>
+                
+                {% if horas_extras.has_next %}
+                    <a href="?page={{ horas_extras.next_page_number }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ horas_extras.paginator.num_pages }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

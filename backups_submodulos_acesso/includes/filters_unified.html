@@ -1,0 +1,581 @@
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters('{{ entity_name }}');
+});
+
+function initializeFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Configurar layout das colunas baseado no número de filtros
+    const filterGroups = form.querySelectorAll('.filter-group');
+    const filterCount = filterGroups.length;
+    
+    console.log('Filtros encontrados:', filterCount); // Debug
+    
+    // Remover classes existentes
+    form.classList.remove('filters-1-col', 'filters-2-col', 'filters-3-col', 'filters-4-col', 'filters-5-col', 'filters-6-col');
+    
+    // Aplicar classe baseada no número de filtros
+    if (filterCount === 1) {
+        form.classList.add('filters-1-col');
+    } else if (filterCount === 2) {
+        form.classList.add('filters-2-col');
+    } else if (filterCount === 3) {
+        form.classList.add('filters-3-col');
+    } else if (filterCount === 4) {
+        form.classList.add('filters-4-col');
+    } else if (filterCount === 5) {
+        form.classList.add('filters-5-col');
+    } else if (filterCount >= 6) {
+        form.classList.add('filters-6-col');
+    }
+    
+    console.log('Classes aplicadas:', form.className); // Debug
+    
+    // Auto-submit em mudanças de select (exceto pesquisa)
+    const selects = form.querySelectorAll('select[data-filter-field]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Resetar página para 1 ao filtrar
+            const pageInput = document.getElementById('page-input-' + entityName);
+            if (pageInput) pageInput.value = '1';
+            form.submit();
+        });
+    });
+    
+    // Debounce para campo de pesquisa
+    const searchInput = form.querySelector('input[type="text"][data-filter-field]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const pageInput = document.getElementById('page-input-' + entityName);
+                if (pageInput) pageInput.value = '1';
+                form.submit();
+            }, 500); // 500ms de delay
+        });
+    }
+}
+
+function clearFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Limpar todos os campos
+    form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+    form.querySelectorAll('select').forEach(select => {
+        if (select.multiple) {
+            Array.from(select.options).forEach(option => option.selected = false);
+        } else {
+            select.selectedIndex = 0;
+        }
+    });
+    form.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+    
+    // Resetar página
+    document.getElementById('page-input-' + entityName).value = '1';
+    
+    // Submeter formulário
+    form.submit();
+}
+
+function toggleFilters(entityName) {
+    const filtersSection = document.querySelector('#filters-form-' + entityName).closest('.filters-section');
+    const toggleBtn = filtersSection.querySelector('.btn-toggle-filters');
+    const icon = toggleBtn.querySelector('i');
+    
+    if (filtersSection.classList.contains('filters-collapsed')) {
+        filtersSection.classList.remove('filters-collapsed');
+        icon.className = 'fas fa-chevron-up';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar Filtros';
+    } else {
+        filtersSection.classList.add('filters-collapsed');
+        icon.className = 'fas fa-chevron-down';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Mostrar Filtros';
+    }
+}
+
+}');
+    const button = document.querySelector('.btn-toggle-filters');
+    const icon = button.querySelector('i');
+    const text = button.querySelector('span');
+    
+    if (container.classList.contains('collapsed')) {
+        container.classList.remove('collapsed');
+        button.classList.remove('collapsed');
+        icon.style.transform = 'rotate(0deg)';
+        text.textContent = 'Ocultar';
+    } else {
+        container.classList.add('collapsed');
+        button.classList.add('collapsed');
+        icon.style.transform = 'rotate(180deg)';
+        text.textContent = 'Mostrar';
+    }
+}
+
+}');
+    const inputs = form.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        if (input.type === 'text' || input.type === 'search') {
+            input.value = '';
+        } else if (input.type === 'date') {
+            input.value = '';
+        } else if (input.tagName === 'SELECT') {
+            input.selectedIndex = 0;
+        }
+    });
+    
+    // Submeter o formulário após limpar
+    form.submit();
+}
+
+// Auto-submit em mudanças de select
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filters-form-{{ entity_name }}');
+    if (form) {
+        const selects = form.querySelectorAll('select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                form.submit();
+            });
+        });
+        
+        // Debounce para input de pesquisa
+        const searchInput = form.querySelector('input[type="text"], input[type="search"]');
+        if (searchInput) {
+            let timeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    form.submit();
+                }, 500);
+            });
+        }
+    }
+});
+
+</script>
+
+<style>
+
+.filters-section {
+    background: var(--surface-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--border-color);
+}
+
+.filters-compact {
+    padding: var(--space-4);
+}
+
+.filters-collapsed .filters-row {
+    display: none;
+}
+
+.filters-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Layout específico para diferentes números de filtros */
+.filters-row.filters-1-col {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+}
+
+.filters-row.filters-2-col {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.filters-row.filters-3-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filters-row.filters-4-col {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.filters-row.filters-5-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filters-row.filters-6-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filter-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+
+.table-search {
+    position: relative;
+}
+
+.table-search-icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    z-index: 2;
+}
+
+.table-search input {
+    padding-left: calc(var(--space-3) + 1.5rem);
+}
+
+.date-range-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.date-separator {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Linha de botões de ação */
+.filter-actions-row {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+}
+
+.filter-actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn-filter {
+    min-width: 120px;
+}
+
+.filter-help-text {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    margin-top: var(--space-1);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+
+    .filters-row.filters-3-col,
+    .filters-row.filters-5-col,
+    .filters-row
+}
+
+@media (max-width: 768px) {
+
+    .filter-actions .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+}
+
+/* Layout Horizontal Profissional */
+.filters-section-professional {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.filters-section-professional:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filters-title i {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.btn-toggle-filters {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-toggle-filters:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.filters-container-professional {
+    padding: 1.5rem;
+    background: white;
+}
+
+.filters-form-horizontal {
+    width: 100%;
+}
+
+.filters-row-professional {
+    display: flex;
+    align-items: end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-field-search {
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+    z-index: 2;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+.filters-group-horizontal {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: end;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.65rem 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+    min-width: 140px;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-select {
+    cursor: pointer;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-left: auto;
+}
+
+.btn-search {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-clear {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+
+}
+
+@media (max-width: 768px) {
+
+}
+
+@media (max-width: 480px) {
+
+    .btn-search,
+    
+}
+
+/* Animação de toggle */
+.filters-container-professional.collapsed {
+    display: none;
+}
+
+.btn-toggle-filters i {
+    transition: transform 0.3s ease;
+}
+
+.btn-toggle-filters.collapsed i {
+    transform: rotate(180deg);
+}
+
+</style>
+
+{% comment %}
+SISTEMA UNIFICADO DE FILTROS DE BUSCA - LAYOUT HORIZONTAL PROFISSIONAL
+Template centralizado para todas as seções de filtros do sistema
+
+Uso:
+    {% include 'includes/filters_unified.html' with entity_name='produtos' %}
+
+Parâmetros:
+    - entity_name: Nome da entidade (obrigatório)
+    - filter_config: Configuração de filtros (opcional, será obtida automaticamente)
+    - custom_filters: Filtros customizados adicionais (opcional)
+    - show_title: Mostrar título da seção (padrão: true)
+    - compact_mode: Modo compacto (padrão: false)
+{% endcomment %}
+
+{% load static %}
+
+<div class="filters-section-professional {% if compact_mode %}filters-compact{% endif %}">
+    {% if show_title|default:true %}
+        <div class="filters-header">
+            <h3 class="filters-title">
+                <i class="fas fa-search"></i>
+                Filtros de Busca
+            </h3>
+            <button type="button" class="btn-toggle-filters" onclick=" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button type="submit" class="btn btn-primary btn-filter" form="filters-form-{{ entity_name }}" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:-2"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-search"></i>
+                Buscar
+            </button>
+            
+            <button type="button" class="btn btn btn-secondary btn-clear-filters" 
+                    onclick="{{ entity_name }}')" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button type="button" class="btn btn-outline-secondary btn-toggle-filters" 
+                        onclick="{{ entity_name }}')" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:-2"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-chevron-up"></i>
+                    Ocultar Filtros
+                </button>
+            {% endif %}
+        </div>
+    </div>
+        
+        <!-- Campos ocultos para manter paginação -->
+        <input type="hidden" name="page" value="1" id="page-input-{{ entity_name }}">
+    </form>
+</div>
+
+<!-- Scripts para funcionalidade dos filtros -->
+
+<!-- Estilos específicos para filtros -->
+
+<!-- CSS para Layout Horizontal Profissional -->
+
+<!-- JavaScript para Layout Horizontal Profissional -->
+
+{% endif %}

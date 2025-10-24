@@ -1,5 +1,5 @@
-{% extends "base_admin.html" %}
-{% load static %}
+{% extends "base_list.html" %}
+
 
 {% block title %}Gestão de Presenças{% endblock %}
 
@@ -18,130 +18,66 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-calendar-check"></i>
-                    Gestão de Presenças
-                </h1>
-                <p class="page-subtitle">
-                    Controle de presenças e frequência dos funcionários
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'rh:main' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar ao RH
-                </a>
-                <a href="{% url 'rh:presenca_add' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Nova Presença
-                </a>
-                <a href="{% url 'rh:calendario_presencas' %}" class="btn btn-primary">
-                    <i class="fas fa-calendar"></i>
-                    Calendário
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Gestão de Presenças"
+    subtitle="Controle de presenças e frequência dos funcionários"
+    icon="fas fa-calendar-check"
+%}    </div>
     
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_presencas|default:"0" }}</h3>
-                <p class="stat-label">Total de Presenças</p>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_presencas|default:"0" }}</h3>
+                    <p class="stat-label">Total de Presenças</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-day"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ presencas_hoje|default:"0" }}</h3>
-                <p class="stat-label">Presenças Hoje</p>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ presencas_hoje|default:"0" }}</h3>
+                    <p class="stat-label">Presenças Hoje</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ presencas_mes|default:"0" }}</h3>
-                <p class="stat-label">Este Mês</p>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ presencas_mes|default:"0" }}</h3>
+                    <p class="stat-label">Este Mês</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ funcionarios_ativos|default:"0" }}</h3>
-                <p class="stat-label">Funcionários Ativos</p>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ funcionarios_ativos|default:"0" }}</h3>
+                    <p class="stat-label">Funcionários Ativos</p>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <h3 class="filters-title">
-            <i class="fas fa-filter"></i>
-            Filtros de Busca
-        </h3>
-        <form method="get" class="filters-row">
-            <div class="filter-group">
-                <label class="filter-label">Buscar Funcionário</label>
-                <div class="table-search">
-                    <i class="fas fa-search table-search-icon"></i>
-                    <input type="text" name="q" value="{{ search_query|default:'' }}" 
-                           class="form-control" placeholder="Nome do funcionário...">
-                </div>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Data Início</label>
-                <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}">
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Data Fim</label>
-                <input type="date" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}">
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Tipo de Presença</label>
-                <select name="tipo" class="form-select">
-                    <option value="">Todos os tipos</option>
-                    {% for tipo in tipos_presenca %}
-                    <option value="{{ tipo.id }}" {% if tipo_id == tipo.id %}selected{% endif %}>
-                        {{ tipo.nome }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-actions">
-                <button type="submit" class="btn-search">
-                    <i class="fas fa-search"></i>
-                    Filtrar
-                </button>
-                
-                {% if search_query or data_inicio or data_fim or tipo_id %}
-                    <a href="{% url 'rh:presencas' %}" class="btn-clear">
-                        <i class="fas fa-times"></i>
-                        Limpar
-                    </a>
-                {% endif %}
-            </div>
-        </form>
-    </div>
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='presencas' %}
     
     <!-- Resumo Mensal (compacto) -->
     <div class="table-container">
@@ -177,26 +113,26 @@
                             <div class="cell-tertiary">{{ resumo.primeiro_dia|date:"d/m" }} - {{ resumo.ultimo_dia|date:"d/m" }}</div>
                         </td>
                         <td>{{ resumo.dias_uteis }}</td>
-                        <td><span class="status-badge status-active">{{ resumo.total_presente|default:0 }}</span></td>
-                        <td><span class="status-badge status-inactive">{{ resumo.total_ausente|default:0 }}</span></td>
-                        <td>{{ resumo.total_falta_justificada|default:0 }}</td>
-                        <td><span class="status-badge status-warning">{{ resumo.total_atraso|default:0 }}</span></td>
-                        <td>{{ resumo.total_licenca|default:0 }}</td>
-                        <td>{{ resumo.total_ferias|default:0 }}</td>
+                        <td><span class="status-badge status-active">{{ resumo.total|default:0_presente|default:0 }}</span></td>
+                        <td><span class="status-badge status-inactive">{{ resumo.total|default:0_ausente|default:0 }}</span></td>
+                        <td>{{ resumo.total|default:0_falta_justificada|default:0 }}</td>
+                        <td><span class="status-badge status-warning">{{ resumo.total|default:0_atraso|default:0 }}</span></td>
+                        <td>{{ resumo.total|default:0_licenca|default:0 }}</td>
+                        <td>{{ resumo.total|default:0_ferias|default:0 }}</td>
                         <td>
-                            {% if resumo.total_horas_extras %}
-                                {{ resumo.total_horas_extras }}h
+                            {% if resumo.total|default:0_horas_extras %}
+                                {{ resumo.total|default:0_horas_extras }}h
                             {% else %}
                                 0
                             {% endif %}
                         </td>
-                        <td>{{ resumo.total_registros|default:0 }}</td>
+                        <td>{{ resumo.total|default:0_registros|default:0 }}</td>
                         <td>
                             <div class="cell-actions" style="position: relative; z-index: 10;">
-                                <a href="{% url 'rh:detalhes_mes' ano resumo.mes_num %}" class="btn-action secondary" title="Ver detalhes do mês" style="display: inline-block; padding: 8px; margin: 2px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; position: relative; z-index: 10;">
+                                <a href="#"rh:detalhes_mes' ano resumo.mes_num %}" class="btn-action-sm secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes do mês">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{% url 'rh:calendario_presencas' %}?mes={{ resumo.mes_num }}&ano={{ ano }}" class="btn-action primary" title="Ver calendário do mês" style="display: inline-block; padding: 8px; margin: 2px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; position: relative; z-index: 10;">
+                                <a href="#"rh:calendario_presencas' %}?mes={{ resumo.mes_num }}&ano={{ ano }}" class="btn-action-sm primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver calendário do mês">
                                     <i class="fas fa-calendar"></i>
                                 </a>
                             </div>

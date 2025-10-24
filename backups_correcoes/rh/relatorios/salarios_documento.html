@@ -1,0 +1,544 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        .action-buttons {
+            display: none !important;
+        }
+    }
+
+
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-card);
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background: var(--bg-card);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-at {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-in {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-su {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+        
+        .print-actions {
+            display: none;
+        }
+    }
+    
+    @media screen {
+        .print-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-at {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-in {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-su {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+        
+        .print-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+    }
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Relatório de Salários{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="{% url 'rh:main' %}" class="btn btn-outline">
+        <i class="fas fa-users"></i>RH
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE SALÁRIOS</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Salários e Remunerações
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_relatorio|date:"Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Folhas:</strong> {{ total_folhas }}
+            </div>
+            <div class="summary-item">
+                <strong>Folhas Calculadas:</strong> {{ folhas_calculadas }}
+            </div>
+            <div class="summary-item">
+                <strong>Folhas Fechadas:</strong> {{ folhas_fechadas }}
+            </div>
+            <div class="summary-item">
+                <strong>Total de Funcionários:</strong> {{ total_funcionarios_folha }}
+            </div>
+            <div class="summary-item">
+                <strong>Valor Total Bruto:</strong> {{ valor_total_bruto|floatformat:2 }} MT
+            </div>
+            <div class="summary-item">
+                <strong>Valor Total Líquido:</strong> {{ valor_total_liquido|floatformat:2 }} MT
+            </div>
+            <div class="summary-item">
+                <strong>Total de Descontos:</strong> {{ valor_total_descontos|floatformat:2 }} MT
+            </div>
+            <div class="summary-item">
+                <strong>Total de Benefícios:</strong> {{ total_beneficios|floatformat:2 }} MT
+            </div>
+        </div>
+    </div>
+
+    <!-- Salários Extremos -->
+    <div class="section">
+        <h3>Salários Extremos</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Maior Salário:</strong> 
+                {% if funcionarios_maiores_salarios %}
+                    {{ funcionarios_maiores_salarios.0.salario_liquido|floatformat:2 }} MT - {{ funcionarios_maiores_salarios.0.funcionario.nome_completo }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="summary-item">
+                <strong>Menor Salário:</strong> 
+                {% if funcionarios_menores_salarios %}
+                    {{ funcionarios_menores_salarios.0.salario_liquido|floatformat:2 }} MT - {{ funcionarios_menores_salarios.0.funcionario.nome_completo }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Folhas Salariais -->
+    <div class="section">
+        <h3>Lista de Folhas Salariais</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Mês/Ano</th>
+                    <th>Status</th>
+                    <th>Total Bruto</th>
+                    <th>Total Líquido</th>
+                    <th>Total Descontos</th>
+                    <th>Funcionários</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for folha in folhas %}
+                <tr>
+                    <td>{{ folha.mes_referencia|date:"m/Y" }}</td>
+                    <td class="text-center">
+                        <span class="status-badge status-{{ folha.status|lower }}">
+                            {{ folha.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-right">{{ folha.total_bruto|floatformat:2 }} MT</td>
+                    <td class="text-right">{{ folha.total_liquido|floatformat:2 }} MT</td>
+                    <td class="text-right">{{ folha.total_descontos|floatformat:2 }} MT</td>
+                    <td class="text-center">{{ folha.funcionarios.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Salários por Departamento -->
+    <div class="section">
+        <h3>Salários por Departamento</h3>
+        
+    </div>
+
+    <!-- Footer -->
+    <div class="document-footer">
+        <p>Documento gerado automaticamente em {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<!-- Botão de Impressão -->
+<div class="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Relatório
+    </button>
+</div>
+
+
+{% endblock %}

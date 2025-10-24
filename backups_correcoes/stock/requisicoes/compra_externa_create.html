@@ -1,0 +1,107 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Nova Requisição de Compra Externa{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-shopping-cart me-2"></i>Nova Requisição de Compra Externa
+            </h1>
+            <div class="hero-actions">
+                <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn-modern btn-secondary-modern">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Stock Baixo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        {% if messages %}
+            <div class="messages-container mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="sucursal_id">
+                        <i class="fas fa-building"></i> Sucursal Solicitante
+                    </label>
+                    <select name="sucursal_id" id="sucursal_id" class="form-control" required>
+                        <option value="">Selecione a sucursal</option>
+                        {% for sucursal in sucursais %}
+                            <option value="{{ sucursal.id }}" {% if sucursal_pre_selecionada and sucursal.id == sucursal_pre_selecionada.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">Sucursal que está solicitando a compra</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="item_id">
+                        <i class="fas fa-box"></i> Item
+                    </label>
+                    <select name="item_id" id="item_id" class="form-control" required>
+                        <option value="">Selecione o item</option>
+                        {% for item in itens %}
+                            <option value="{{ item.id }}" {% if item_pre_selecionado and item.id == item_pre_selecionado.id %}selected{% endif %}>{{ item.nome }} ({{ item.codigo }}) - {{ item.get_tipo_display }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">Item que será solicitado para compra externa</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="quantidade">
+                        <i class="fas fa-hashtag"></i> Quantidade Solicitada
+                    </label>
+                    <input type="number" name="quantidade" id="quantidade" class="form-control" 
+                           min="1" required placeholder="Digite a quantidade desejada">
+                    <div class="form-help">Quantidade que deseja solicitar</div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="form-label" for="observacoes">
+                        <i class="fas fa-comment"></i> Observações
+                    </label>
+                    <textarea name="observacoes" id="observacoes" class="form-control form-textarea" 
+                              placeholder="Observações sobre esta requisição de compra externa (opcional)"></textarea>
+                    <div class="form-help">Informações adicionais sobre esta requisição</div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn-form btn-cancel">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-form btn-submit">
+                        <i class="fas fa-save"></i> Criar Requisição de Compra Externa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

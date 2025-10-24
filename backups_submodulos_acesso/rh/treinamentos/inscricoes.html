@@ -1,0 +1,319 @@
+<script>
+
+$(document).ready(function() {
+    // Inicializa o Select2 para o campo de pesquisa
+    $('#search').select2({
+        placeholder: 'Digite o nome do funcionário...',
+        width: '100%',
+        allowClear: true
+    });
+    
+    // Auto-submit do formulário quando o Select2 muda
+    $('#search').on('change', function() {
+        $(this).closest('form').submit();
+    });
+
+});
+
+function alterarStatus(inscricaoId) {
+    document.getElementById('statusForm').action = '{% url "rh:inscricao_alterar_status" 0 %}'.replace('0', inscricaoId);
+    document.getElementById('statusModal').style.display = 'block';
+}
+
+function fecharModal() {
+    document.getElementById('statusModal').style.display = 'none';
+}
+
+// Fechar modal clicando fora
+document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
+
+</script>
+
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        min-width: 400px;
+        max-width: 500px;
+        width: 90%;
+    }
+    
+    .modal-title {
+        margin: 0 0 20px 0;
+        color: #374151;
+        font-size: 1.25rem;
+    }
+    
+    .modal-form-group {
+        margin-bottom: 20px;
+    }
+    
+    .modal-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .modal-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: var(--bg-card) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+        background-size: 16px 16px;
+        padding-right: 40px;
+        height: 48px;
+        min-height: 48px;
+        color: #1f2937;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    .modal-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .modal-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-btn-cancel {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .modal-btn-cancel:hover {
+        background: #4b5563;
+    }
+    
+    .modal-btn-submit {
+        background: #8b5cf6;
+        color: white;
+    }
+    
+    .modal-btn-submit:hover {
+        background: #7c3aed;
+    }
+
+</style>
+
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Inscrições - {{ treinamento.nome }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block content %}
+<div class="inscricoes-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div>
+            <a href="{% url 'rh:treinamento_detail' treinamento.id %}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Voltar aos Detalhes
+            </a>
+            <h1 class="header-title">
+                <i class="fas fa-users"></i>
+                Inscrições - {{ treinamento.nome }}
+            </h1>
+            <div class="action-buttons">
+                <a href="{% url 'rh:treinamento_inscrever' treinamento.id %}" class="btn -success">
+                    <i class="fas fa-user-plus"></i>
+                    Inscrever Funcionários
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-section">
+        <div class="summary-card">
+            <div class="summary-value">{{ total_inscricoes }}</div>
+            <div class="summary-card h3">Total de Inscrições</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ confirmadas }}</div>
+            <div class="summary-card h3">Confirmadas</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ pendentes }}</div>
+            <div class="summary-card h3">Pendentes</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ treinamento.vagas_disponiveis }}</div>
+            <div class="summary-card h3">Vagas Disponíveis</div>
+        </div>
+    </div>
+
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='inscricoes_treinamento' %}
+
+    <!-- Tabela de Inscrições -->
+    <div class="table-container">
+        {% if inscricoes %}
+        <table class="inscricoes-table">
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Status</th>
+                    <th>Data de Inscrição</th>
+                    <th>Nota Final</th>
+                    <th>Frequência</th>
+                    <th>Aprovado</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscricao in inscricoes %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                {{ inscricao.funcionario.nome_completo|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ inscricao.funcionario.nome_completo }}</strong>
+                                <br><small class="text-muted">{{ inscricao.funcionario.cargo.nome }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ inscricao.status|lower }}">
+                            {{ inscricao.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ inscricao.data_inscricao|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if inscricao.nota_final %}
+                            <span style="font-weight: 600; color: #8b5cf6;">{{ inscricao.nota_final|floatformat:1 }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if inscricao.frequencia_percentual %}
+                            <span style="font-weight: 600; color: #8b5cf6;">{{ inscricao.frequencia_percentual|floatformat:1 }}%</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if inscricao.aprovado %}
+                            <i class="fas fa-check-circle" style="color: #10b981; font-size: 18px;"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle" style="color: #ef4444; font-size: 18px;"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'rh:inscricao_avaliar' inscricao.id %}" class="action-button btn-evaluate" title="Avaliar">
+                            <i class="fas fa-star"></i>
+                        </a>
+                        <a href="#" onclick="event.preventDefault(); alterarStatus({{ inscricao.id }})" class="action-button btn-status" title="Alterar Status">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'rh:inscricao_deletar' inscricao.id %}" class="action-button btn-delete" title="Remover">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-slash"></i>
+            <h3>Nenhuma inscrição encontrada</h3>
+            <p>Não há inscrições para os filtros selecionados.</p>
+            <a href="{% url 'rh:treinamento_inscrever' treinamento.id %}" class="btn -success">
+                <i class="fas fa-user-plus"></i>
+                Inscrever Primeiro Funcionário
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estilos para o modal -->
+
+<!-- Modal para alterar status -->
+<div id="statusModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Alterar Status da Inscrição</h3>
+        <form id="statusForm" method="post">
+            {% csrf_token %}
+            <div class="modal-form-group">
+                <label class="modal-label">Novo Status:</label>
+                <select name="status" class="modal-select">
+                    {% for codigo, nome in status_choices %}
+                    <option value="{{ codigo }}">{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-actions">
+                {% button_unified type="confirmation" action="cancel" text="Cancelar" icon="fas fa-times" %}
+                <button type="submit" class="modal-btn modal--submit">
+                    Alterar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+

@@ -1,0 +1,29 @@
+{% comment %}
+BOTÕES DE CONFIRMAÇÃO
+Template específico para botões de confirmação (Guardar, Cancelar, Confirmar, etc.)
+
+Parâmetros:
+- confirmations: lista de botões de confirmação
+- layout: layout dos botões (inline, centered, justified)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+<div class="confirmations-container{% if layout == 'centered' %} confirmations-centered{% elif layout == 'justified' %} confirmations-justified{% endif %}{% if class %} {{ class }}{% endif %}">
+    {% for confirmation in confirmations %}
+        {% include 'components/button_unified.html' with 
+            type='confirmation' 
+            action=confirmation.action 
+            size='md' 
+            text=confirmation.text 
+            icon=confirmation.icon 
+            url=confirmation.url 
+            onclick=confirmation.onclick 
+            disabled=confirmation.disabled 
+            loading=confirmation.loading 
+            class='btn-confirmation-main' %}
+    {% endfor %}
+</div>
+
+

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atraso na Entrega</title>
+    
+</head>
+<body>
+    <div class="header">
+        <h1>{{ company_name }}</h1>
+        <h2>Atraso na Entrega</h2>
+    </div>
+    
+    <div class="content">
+        <div class="warning-icon">⚠</div>
+        
+        <div class="tracking-code">
+            Código de Rastreamento: {{ tracking_code }}
+        </div>
+        
+        <div class="date-comparison">
+            <div class="date-box">
+                <div class="original-date">
+                    <strong>Data Original</strong><br>
+                    {{ original_date }}
+                </div>
+            </div>
+            <div class="date-box">
+                <div class="new-date">
+                    <strong>Nova Data</strong><br>
+                    {{ new_date }}
+                </div>
+            </div>
+        </div>
+        
+        {% if reason %}
+        <div class="info-box">
+            <strong>Motivo do Atraso:</strong><br>
+            {{ reason }}
+        </div>
+        {% endif %}
+        
+        <div class="info-box">
+            <strong>Acompanhe seu pedido:</strong><br>
+            <a href="{{ tracking_url|default:'https://empresa.com/rastreamento' }}" 
+               style="color: #3498db; text-decoration: none;">
+                Clique aqui para rastrear
+            </a>
+        </div>
+        
+        <div class="info-box">
+            <strong>Pedimos desculpas pelo inconveniente.</strong><br>
+            Estamos trabalhando para resolver a situação o mais rapidamente possível.
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Este é um email automático. Por favor, não responda.</p>
+        <p>{{ company_name }} - Logística</p>
+    </div>
+</body>
+</html>

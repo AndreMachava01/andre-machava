@@ -1,0 +1,162 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Atribuir Transporte{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:main" %}">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:operacoes_list" %}">
+            <i class="fas fa-tasks"></i>
+            Operações
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Atribuir Transporte</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Atribuir Transporte"
+    subtitle="{{ notificacao.get_tipo_operacao_display }} - {{ notificacao.codigo_operacao }}"
+    icon="fas fa-truck-loading"
+%}    </div>
+
+    <!-- Formulário -->
+    <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        {% csrf_token %}
+        
+        <div class="form-card">
+            <h3><i class="fas fa-truck"></i> Tipo de Transporte</h3>
+            
+            <div class="transport-options">
+                <div class="transport-option" onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                    <h4><i class="fas fa-car"></i> Veículo Interno</h4>
+                    <p>Utilizar uma viatura interna da empresa para realizar o transporte.</p>
+                    <label>
+                        <input type="radio" name="tipo_transporte" value="VEICULO_INTERNO" required>
+                        Selecionar Veículo Interno
+                    </label>
+                </div>
+                
+                <div class="transport-option" onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                    <h4><i class="fas fa-building"></i> Transportadora Externa</h4>
+                    <p>Contratar uma transportadora externa para realizar o transporte.</p>
+                    <label>
+                        <input type="radio" name="tipo_transporte" value="TRANSPORTADORA_EXTERNA" required>
+                        Selecionar Transportadora Externa
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Veículos Internos -->
+        <div class="form-card" id="veiculos-internos" style="display: none;">
+            <h3><i class="fas fa-car"></i> Veículos Internos Disponíveis</h3>
+            
+            <div class="form-group">
+                <label for="veiculo_interno" class="form-label">Selecionar Veículo</label>
+                <select name="veiculo_interno" id="veiculo_interno" class="form-select">
+                    <option value="">Selecione um veículo...</option>
+                    {% for veiculo in veiculos_internos %}
+                    <option value="{{ veiculo.id }}">
+                        {{ veiculo.nome }} - {{ veiculo.placa }} ({{ veiculo.get_tipo_display }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Apenas veículos ativos estão listados.</div>
+            </div>
+        </div>
+
+        <!-- Transportadoras Externas -->
+        <div class="form-card" id="transportadoras-externas" style="display: none;">
+            <h3><i class="fas fa-building"></i> Transportadoras Externas Disponíveis</h3>
+            
+            <div class="form-group">
+                <label for="transportadora_externa" class="form-label">Selecionar Transportadora</label>
+                <select name="transportadora_externa" id="transportadora_externa" class="form-select">
+                    <option value="">Selecione uma transportadora...</option>
+                    {% for transportadora in transportadoras_externas %}
+                    <option value="{{ transportadora.id }}">
+                        {{ transportadora.nome }} ({{ transportadora.get_tipo_display }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Apenas transportadoras ativas estão listadas.</div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="form-card">
+            <h3><i class="fas fa-sticky-note"></i> Observações</h3>
+            
+            <div class="form-group">
+                <label for="observacoes" class="form-label">Observações Adicionais</label>
+                <textarea name="observacoes" id="observacoes" class="form-control" rows="4" placeholder="Adicione observações sobre o transporte..."></textarea>
+                <div class="form-text">Informações adicionais sobre a operação logística.</div>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-check"></i>
+                Atribuir Transporte
+            </button>
+            <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+<script>
+function selectTransport(tipo) {
+    // Remover seleção anterior
+    document.querySelectorAll('.transport-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Adicionar seleção atual
+    event.currentTarget.classList.add('selected');
+    
+    // Marcar radio button
+    document.querySelector(`input[value="${tipo}"]`).checked = true;
+    
+    // Mostrar/esconder seções
+    if (tipo === 'VEICULO_INTERNO') {
+        document.getElementById('veiculos-internos').style.display = 'block';
+        document.getElementById('transportadoras-externas').style.display = 'none';
+        document.getElementById('transportadora_externa').value = '';
+    } else {
+        document.getElementById('veiculos-internos').style.display = 'none';
+        document.getElementById('transportadoras-externas').style.display = 'block';
+        document.getElementById('veiculo_interno').value = '';
+    }
+}
+</script>
+{% endblock %}
+
+

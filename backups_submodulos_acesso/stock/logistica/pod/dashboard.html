@@ -1,0 +1,290 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard POD & Documentos Logísticos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>POD & Documentos</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-signature"></i>
+                    Dashboard POD & Documentos Logísticos
+                </h1>
+                <p class="page-subtitle">
+                    Gerenciamento de Provas de Entrega e Guias de Transporte
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#"stock:logistica:rastreamento_create' %}" class="btn btn btn-success btn-responsive -responsive">
+                    <i class="fas fa-truck"></i>
+                    Novo Rastreamento
+                </a>
+                <a href="#"stock:pod:guia_create' %}" class="btn btn btn-primary btn-responsive -responsive">
+                    <i class="fas fa-file-alt"></i>
+                    Nova Guia
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.provas_validadas }}</div>
+                <div class="stat-label">Provas Validadas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.provas_pendentes }}</div>
+                <div class="stat-label">Provas Pendentes</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.provas_com_gps }}</div>
+                <div class="stat-label">Com GPS</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-signature"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.provas_com_assinatura }}</div>
+                <div class="stat-label">Com Assinatura</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Provas Pendentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clock text-warning"></i>
+                        Provas Pendentes de Validação
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-warning btn-sm btn-responsive -responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if provas_pendentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código POD</th>
+                                        <th>Rastreamento</th>
+                                        <th>Destinatário</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prova in provas_pendentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ prova.codigo }}</span>
+                                        </td>
+                                        <td>{{ prova.rastreamento_entrega.codigo_rastreamento }}</td>
+                                        <td>{{ prova.nome_destinatario }}</td>
+                                        <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <div class="action-btns -responsive">
+                                                <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn-info btn-sm btn-responsive -responsive">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#"stock:pod:validar_prova' prova.id %}" class="btn btn btn-success btn-sm btn-responsive -responsive">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhuma prova pendente de validação</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Provas Recentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history text-primary"></i>
+                        Provas Recentes (24h)
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-primary btn-sm btn-responsive -responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if provas_recentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>Nenhuma prova nas últimas 24h</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Guias Pendentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-print text-info"></i>
+                        Guias Pendentes de Impressão
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-info btn-sm btn-responsive -responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if guias_pendentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhuma guia pendente de impressão</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Etiquetas Pendentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-tags text-secondary"></i>
+                        Etiquetas Pendentes de Impressão
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-secondary btn-sm btn-responsive -responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if etiquetas_pendentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhuma etiqueta pendente de impressão</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Acesso Rápido
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive">
+                                <i class="fas fa-truck"></i><br>
+                                Rastreamentos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"stock:pod:provas_list' %}" class="btn btn-outline-warning btn-block btn-responsive -responsive">
+                                <i class="fas fa-file-signature"></i><br>
+                                Provas de Entrega
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"stock:pod:guias_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive">
+                                <i class="fas fa-file-alt"></i><br>
+                                Guias de Remessa
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"stock:pod:etiquetas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive">
+                                <i class="fas fa-tags"></i><br>
+                                Etiquetas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

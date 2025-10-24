@@ -1,0 +1,101 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Rejeitar Promoção{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="nav-top">
+    <h1>
+        <i class="fas fa-times-circle"></i>
+        Rejeitar Promoção
+    </h1>
+    <div class="header-actions">
+        <a href="#"rh:promocao_detail' promocao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="form-container">
+    <!-- Informações da Promoção -->
+    <div class="promocao-info">
+        <h3>Informações da Promoção</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Funcionário</span>
+                <span class="info-value">{{ promocao.funcionario.nome_completo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tipo</span>
+                <span class="info-value">{{ promocao.get_tipo_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Salário Anterior</span>
+                <span class="info-value">{{ promocao.salario_anterior|floatformat:2 }} MT</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Salário Novo</span>
+                <span class="info-value">{{ promocao.salario_novo|floatformat:2 }} MT</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Aumento</span>
+                <span class="info-value">{{ promocao.valor_aumento|floatformat:2 }} MT ({{ promocao.percentual_aumento|floatformat:1 }}%)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Data da Solicitação</span>
+                <span class="info-value">{{ promocao.data_solicitacao|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Motivo da Rejeição -->
+    <div class="alert alert-warning">
+        <strong>Atenção:</strong> Esta ação não pode ser desfeita. A promoção/aumento será rejeitada e o funcionário será notificado.
+    </div>
+    
+    <form method="POST"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="motivo_rejeicao">Motivo da Rejeição <span class="required">*</span></label>
+            <textarea name="motivo_rejeicao" id="motivo_rejeicao" class="form-control" rows="4" required
+                      placeholder="Descreva o motivo da rejeição da promoção/aumento..."></textarea>
+            <div class="help-text">Este motivo será registrado no histórico e pode ser usado para feedback ao funcionário.</div>
+        </div>
+        
+        <div class="form-actions">
+            <a href="#"rh:promocao_detail' promocao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-times-circle me-2"></i>Rejeitar Promoção
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const motivoRejeicao = document.getElementById('motivo_rejeicao');
+    
+    form.addEventListener('submit', function(e) {
+        if (motivoRejeicao.value.trim().length < 10) {
+            e.preventDefault();
+            alert('O motivo da rejeição deve ter pelo menos 10 caracteres.');
+            motivoRejeicao.focus();
+            return false;
+        }
+        
+        if (!confirm('Tem certeza que deseja rejeitar esta promoção/aumento? Esta ação não pode ser desfeita.')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

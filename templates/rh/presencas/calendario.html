@@ -1,557 +1,43 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Calendário de Presenças{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header {
-        background: var(--blue-gradient);
-    }
-    
-    /* Estilos específicos do calendário */
-    .calendario-container {
-        padding: 20px;
-        max-width: 100%;
-        overflow-x: auto;
-    }
-    
-    .calendario-controls {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding: 20px;
-        background: var(--surface-medium);
-        border-radius: var(--radius-xl);
-        border: 1px solid var(--border-color);
-    }
-    
-    .btn-nav {
-        background: var(--gradient-primary);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: var(--radius-lg);
-        cursor: pointer;
-        font-weight: 600;
-        transition: all var(--transition-fast);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-nav:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-    
-    .mes-ano {
-        font-size: var(--text-xl);
-        font-weight: var(--font-bold);
-        color: var(--text-primary);
-        text-align: center;
-        min-width: 200px;
-    }
-    
-    .btn-marcar-todos,
-    .btn-marcar-finais,
-    .btn-marcar-feriados,
-    .btn-feriados {
-        background: var(--gradient-success);
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: var(--radius-lg);
-        cursor: pointer;
-        font-weight: 600;
-        transition: all var(--transition-fast);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        font-size: var(--text-sm);
-    }
-    
-    .btn-marcar-finais {
-        background: var(--gradient-warning);
-    }
-    
-    .btn-marcar-feriados {
-        background: var(--gradient-info);
-    }
-    
-    .btn-feriados {
-        background: var(--gradient-secondary);
-    }
-    
-    .btn-marcar-todos:hover,
-    .btn-marcar-finais:hover,
-    .btn-marcar-feriados:hover,
-    .btn-feriados:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        color: white;
-        text-decoration: none;
-    }
-    
-    .filters-section {
-        background: var(--surface-medium);
-        border-radius: var(--radius-xl);
-        padding: 20px;
-        margin-bottom: 25px;
-        border: 1px solid var(--border-color);
-    }
-    
-    .filters-section h3 {
-        color: var(--text-primary);
-        margin-bottom: 15px;
-        font-size: var(--text-lg);
-        font-weight: var(--font-semibold);
-    }
-    
-    .filtros {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        align-items: end;
-    }
-    
-    .filtro-grupo {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .filtro-grupo label {
-        font-weight: var(--font-semibold);
-        color: var(--text-primary);
-        font-size: var(--text-sm);
-    }
-    
-    .filtro-grupo select {
-        padding: 10px 12px;
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        background: var(--surface-light);
-        color: var(--text-primary);
-        font-size: var(--text-sm);
-        transition: all var(--transition-fast);
-    }
-    
-    .filtro-grupo select:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    }
-    
-    .filtro-acoes {
-        display: flex;
-        gap: 10px;
-        align-items: end;
-    }
-    
-    .legenda-section,
-    .legenda-visual-section {
-        background: var(--surface-medium);
-        border-radius: var(--radius-xl);
-        padding: 20px;
-        margin-bottom: 25px;
-        border: 1px solid var(--border-color);
-    }
-    
-    .legenda-section h3,
-    .legenda-visual-section h3 {
-        color: var(--text-primary);
-        margin-bottom: 15px;
-        font-size: var(--text-lg);
-        font-weight: var(--font-semibold);
-    }
-    
-    .legenda {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 10px;
-    }
-    
-    .legenda-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        background: var(--surface-light);
-        border-radius: var(--radius-md);
-        font-size: var(--text-sm);
-    }
-    
-    .legenda-item i {
-        color: var(--accent-primary);
-        width: 16px;
-        text-align: center;
-    }
-    
-    .legenda-visual {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-    }
-    
-    .legenda-item-visual {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        background: var(--surface-light);
-        border-radius: var(--radius-md);
-        font-size: var(--text-sm);
-    }
-    
-    .presenca-indicator {
-        width: 30px;
-        height: 30px;
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--text-xs);
-        font-weight: var(--font-bold);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        border: 2px solid transparent;
-    }
-    
-    .presenca-indicator:hover {
-        transform: scale(1.1);
-        box-shadow: var(--shadow-md);
-    }
-    
-    .presenca-indicator.vazio {
-        background: var(--surface-light);
-        border-color: var(--border-color);
-        color: var(--text-tertiary);
-    }
-    
-    .presenca-indicator.presente {
-        background: var(--accent-success);
-        color: white;
-    }
-    
-    .presenca-indicator.ausente {
-        background: var(--accent-danger);
-        color: white;
-    }
-    
-    .presenca-indicator.falta-justificada {
-        background: var(--accent-warning);
-        color: white;
-    }
-    
-    .presenca-indicator.ferias {
-        background: var(--accent-primary);
-        color: white;
-    }
-    
-    .presenca-indicator.folga {
-        background: var(--accent-secondary);
-        color: white;
-    }
-    
-    .presenca-indicator.feriado {
-        background: var(--accent-info);
-        color: white;
-    }
-    
-    .presenca-indicator.atraso {
-        background: var(--accent-warning);
-        color: white;
-    }
-    
-    /* Estilos para seleção múltipla */
-    .presenca-indicator.selecionado {
-        border: 3px solid var(--accent-primary);
-        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
-        transform: scale(1.05);
-    }
-    
-    .presenca-indicator.arrastando {
-        opacity: 0.7;
-        border: 2px dashed var(--accent-primary);
-    }
-    
-    .selecao-ativa {
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-    }
-    
-    .batch-actions {
-        background: var(--gradient-warning);
-        color: white;
-        padding: 15px 20px;
-        border-radius: var(--radius-xl);
-        margin-bottom: 25px;
-        box-shadow: var(--shadow-md);
-    }
-    
-    .batch-actions-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    
-    .batch-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: var(--font-semibold);
-    }
-    
-    .batch-buttons {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .calendario-grid {
-        background: var(--surface-medium);
-        border-radius: var(--radius-xl);
-        padding: 20px;
-        border: 1px solid var(--border-color);
-        overflow-x: auto;
-    }
-    
-    .calendario-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: var(--surface-light);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-    }
-    
-    .calendario-table th {
-        background: var(--accent-primary);
-        color: white;
-        padding: 12px 8px;
-        text-align: center;
-        font-weight: var(--font-semibold);
-        font-size: var(--text-sm);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .calendario-table th.funcionario-cell {
-        background: var(--accent-primary-dark);
-        text-align: left;
-        min-width: 200px;
-    }
-    
-    .calendario-table th.fim-semana {
-        background: var(--accent-secondary);
-    }
-    
-    .calendario-table td {
-        padding: 8px;
-        text-align: center;
-        border: 1px solid var(--border-color);
-        background: var(--surface-light);
-    }
-    
-    .calendario-table td.funcionario-cell {
-        text-align: left;
-        background: var(--surface-medium);
-        font-weight: var(--font-semibold);
-    }
-    
-    .calendario-table td.fim-semana {
-        background: var(--surface-dark);
-    }
-    
-    .dia-semana {
-        font-size: var(--text-xs);
-        opacity: 0.8;
-        margin-top: 2px;
-    }
-    
-    .loading {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: var(--surface-medium);
-        padding: 20px 30px;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-lg);
-        z-index: 1000;
-        display: none;
-        align-items: center;
-        gap: 15px;
-        font-weight: var(--font-semibold);
-        color: var(--text-primary);
-    }
-    
-    .loading.show {
-        display: flex;
-    }
-    
-    .loading i {
-        font-size: var(--text-lg);
-        color: var(--accent-primary);
-    }
-    
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-    
-    .modal-content {
-        background: var(--surface-medium);
-        margin: 5% auto;
-        padding: 0;
-        border-radius: var(--radius-xl);
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-lg);
-    }
-    
-    .modal-header {
-        background: var(--gradient-primary);
-        color: white;
-        padding: 20px;
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-title {
-        margin: 0;
-        font-size: var(--text-lg);
-        font-weight: var(--font-semibold);
-    }
-    
-    .close {
-        font-size: var(--text-xl);
-        font-weight: var(--font-bold);
-        cursor: pointer;
-        opacity: 0.8;
-    }
-    
-    .close:hover {
-        opacity: 1;
-    }
-    
-    .modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        padding: 20px;
-        background: var(--surface-light);
-        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-    }
-    
-    @media (max-width: 768px) {
-        .calendario-controls {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .filtros {
-            grid-template-columns: 1fr;
-        }
-        
-        .filtro-acoes {
-            flex-direction: column;
-        }
-        
-        .legenda,
-        .legenda-visual {
-            grid-template-columns: 1fr;
-        }
-        
-        .batch-actions-content {
-            flex-direction: column;
-            text-align: center;
-        }
-        
-        .calendario-table {
-            font-size: var(--text-xs);
-        }
-        
-        .presenca-indicator {
-            width: 25px;
-            height: 25px;
-            font-size: 10px;
-        }
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="modern-container">
     <!-- Breadcrumb Navigation -->
     <div class="breadcrumb-nav">
-        <a href="{% url 'rh:main' %}">
+        <a href="{% url "rh:main" %}">
             <i class="fas fa-home"></i> RH
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'rh:presencas' %}">Presenças</a>
+        <a href="">Presenças</a>
         <i class="fas fa-chevron-right"></i>
         <span>Calendário</span>
     </div>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-calendar-check"></i>
-                    Calendário de Presenças
-                </h1>
-                <p class="page-subtitle">
-                    Controle interativo de presenças e frequência dos funcionários
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'rh:presencas' %}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar às Presenças
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Calendário de Presenças"
+    subtitle="Controle interativo de presenças e frequência dos funcionários"
+    icon="fas fa-calendar-check"
+%}    </div>
 
     <div class="calendario-container">
         <!-- Controles do Calendário -->
         <div class="calendario-controls">
-            <button class="btn-nav" onclick="navegarMes(-1)" id="btn-anterior">
-                <i class="fas fa-chevron-left"></i> Anterior
-            </button>
-            <div class="mes-ano" id="mes-ano">{{ mes_nome|title }} {{ ano }}</div>
-            <button class="btn-nav" onclick="navegarMes(1)" id="btn-proximo">
+            <button class="btn-nav" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="btn-nav" onclick=" id="btn-proximo" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                 Próximo <i class="fas fa-chevron-right"></i>
             </button>
-            <button class="btn-marcar-todos" onclick="marcarTodosDiasUteis()" title="Marcar todos os dias úteis do mês como Presente. Se nenhum funcionário estiver selecionado, marca para todos os funcionários visíveis.">
-                <i class="fas fa-calendar-check"></i> Dias Úteis
-            </button>
-            <a href="{% url 'rh:horas_extras' %}" class="btn-marcar-finais" title="Ver lista de horas extras registradas">
-                <i class="fas fa-clock"></i> Horas Extras
-            </a>
-             <button class="btn-marcar-feriados" onclick="marcarFeriadosAutomaticos()" title="Marcar automaticamente todos os feriados do ano. Se nenhum funcionário estiver selecionado, marca para todos os funcionários visíveis.">
+            <button class="btn-marcar-todos" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="btn-marcar-feriados" onclick=" title="Marcar automaticamente todos os feriados do ano. Se nenhum funcionário estiver selecionado, marca para todos os funcionários visíveis." class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                  <i class="fas fa-calendar-check"></i> Marcar Feriados
              </button>
-            <a href="{% url 'rh:feriados' %}" class="btn-feriados" title="Gerenciar feriados">
+            <a href="#"rh:feriados' %}" class="btn-feriados btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Gerenciar feriados">
                 <i class="fas fa-calendar-alt"></i> Feriados
             </a>
         </div>
@@ -563,303 +49,20 @@
                     <i class="fas fa-check-circle"></i>
                     <span id="batchCount">0</span> campos selecionados
                 </div>
-                <div class="batch-buttons">
-                    <button class="batch-btn" onclick="aplicarPresencaLote('P')">
-                        <i class="fas fa-check"></i> Presença
-                    </button>
-                    <button class="batch-btn" onclick="aplicarPresencaLote('A')">
+                <div class="batch-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                    <button class="batch-btn" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="batch-btn" onclick="A')" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                         <i class="fas fa-times"></i> Ausente
                     </button>
-                    <button class="batch-btn" onclick="aplicarPresencaLote('FJ')">
-                        <i class="fas fa-file-medical"></i> Falta Justificada
-                    </button>
-                    <button class="batch-btn" onclick="aplicarPresencaLote('F')">
+                    <button class="batch-btn" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="batch-btn" onclick="F')" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                         <i class="fas fa-clock"></i> Férias
                     </button>
-                    <button class="batch-btn danger" onclick="limparSelecao()">
-                        <i class="fas fa-times"></i> Limpar Seleção
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filters-section">
-            <h3>
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
-            <div class="filtros">
-                <div class="filtro-grupo">
-                    <label for="funcionario">Funcionário</label>
-                    <select id="funcionario" onchange="filtrarFuncionario()">
-                        <option value="">Todos os Funcionários</option>
-                        {% for func in funcionarios %}
-                        <option value="{{ func.id }}" {% if func.id == funcionario_id|add:0 %}selected{% endif %}>
-                            {{ func.nome_completo }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filtro-grupo">
-                    <label for="mes">Mês</label>
-                    <select id="mes" onchange="filtrarMes()">
-                        {% for m in meses %}
-                        <option value="{{ forloop.counter }}" {% if forloop.counter == mes|add:0 %}selected{% endif %}>
-                            {{ m }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filtro-grupo">
-                    <label for="ano">Ano</label>
-                    <select id="ano" onchange="filtrarAno()">
-                        {% for a in anos %}
-                        <option value="{{ a }}" {% if a == ano|add:0 %}selected{% endif %}>
-                            {{ a }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filtro-acoes">
-                    <button type="button" class="btn btn-primary" onclick="recarregarCalendario()" title="Atualizar calendário">
-                        <i class="fas fa-sync-alt"></i>
-                        Atualizar
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="carregarPresencas()" title="Recarregar presenças">
-                        <i class="fas fa-refresh"></i>
-                        Recarregar Presenças
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Instruções de Uso -->
-        <div class="legenda-section">
-            <h3>
-                <i class="fas fa-info-circle"></i>
-                Como Usar
-            </h3>
-            <div class="legenda">
-                <div class="legenda-item">
-                    <i class="fas fa-mouse-pointer"></i>
-                    <span><strong>Clique normal:</strong> Marcar presença (cicla entre tipos)</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-hand-paper"></i>
-                    <span><strong>Arrastar:</strong> Selecionar múltiplos campos arrastando o mouse</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-keyboard"></i>
-                    <span><strong>Ctrl + Clique:</strong> Adicionar/remover campos individuais da seleção</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-hand-point-up"></i>
-                    <span><strong>Clique direito:</strong> Remover marcação</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-save"></i>
-                    <span><strong>Guardar Todas:</strong> Salva todas as alterações pendentes na base de dados</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-undo"></i>
-                    <span><strong>Cancelar Todas:</strong> Desfaz todas as alterações pendentes</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-info-circle"></i>
-                    <span><strong>Ordem do ciclo:</strong> Vazio → PR (Presente) → AU (Ausente) → FJ (Falta Justificada) → FE (Férias) → FG (Folga) → FD (Feriado) → AT (Atraso)</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-calendar-week"></i>
-                    <span><strong>Duplo clique:</strong> Marca do dia clicado até sexta-feira da mesma semana. O sistema pergunta qual tipo de presença marcar e respeita dias já marcados.</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-lightbulb"></i>
-                    <span><strong>Exemplo prático:</strong> Funcionário está vazio na segunda → duplo clique → marca Presente de segunda a sexta. Na quarta está Presente → duplo clique → marca Ausente de quarta a sexta.</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span><strong>Falta Justificada:</strong> É obrigatório informar a justificativa antes de salvar</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-calendar-check"></i>
-                    <span><strong>Dias Úteis:</strong> Marca automaticamente todos os dias úteis do mês como Presente. Se nenhum funcionário estiver selecionado, marca para todos os funcionários visíveis</span>
-                </div>
-                <div class="legenda-item">
-                    <i class="fas fa-calendar-times"></i>
-                    <span><strong>Finais de Semana:</strong> Marca automaticamente todos os finais de semana do mês</span>
-                </div>
-                 <div class="legenda-item">
-                     <i class="fas fa-calendar-check"></i>
-                     <span><strong>Marcar Feriados:</strong> Marca automaticamente todos os feriados do ano para todos os funcionários. Os feriados SEMPRE sobrescrevem qualquer tipo de presença existente. Feriados em domingo são automaticamente transferidos para segunda-feira.</span>
-                 </div>
-                <div class="legenda-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span><strong>Feriados:</strong> Gerencia feriados nacionais, regionais e da empresa</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Legenda Visual -->
-        <div class="legenda-visual-section">
-            <h3>
-                <i class="fas fa-palette"></i>
-                Legenda de Cores e Códigos
-            </h3>
-            <div class="legenda-visual">
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator vazio" style="margin: 0;"></div>
-                    <span>Vazio</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator presente" style="margin: 0;">PR</div>
-                    <span>Presente</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator ausente" style="margin: 0;">AU</div>
-                    <span>Ausente</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator falta-justificada" style="margin: 0;">FJ</div>
-                    <span>Falta Justificada</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator ferias" style="margin: 0;">FE</div>
-                    <span>Férias</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator feriado" style="margin: 0;">FD</div>
-                    <span>Feriado</span>
-                </div>
-                <div class="legenda-item-visual">
-                    <div class="presenca-indicator atraso" style="margin: 0;">AT</div>
-                    <span>Atraso</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Botões de Ação em Lote -->
-        <div class="batch-actions" id="batch-actions" style="display: none;">
-            <div class="batch-actions-content">
-                <div class="batch-info">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Você tem <strong id="batch-count">0</strong> alterações pendentes</span>
-                </div>
-                <div class="batch-buttons">
-                    <button class="btn btn-success" onclick="guardarTodasAlteracoes()">
+                    <button class="batch-btn danger" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn btn-success" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                         <i class="fas fa-save"></i> Guardar Todas
                     </button>
-                    <button class="btn btn-warning" onclick="cancelarTodasAlteracoes()">
-                        <i class="fas fa-undo"></i> Cancelar Todas
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="loading" id="loading">
-            <i class="fas fa-spinner fa-spin"></i> Carregando...
-        </div>
-
-        <!-- Grid do Calendário -->
-        <div class="calendario-grid" id="calendario-grid">
-            <table class="calendario-table">
-                <thead>
-                    <tr>
-                        <th class="funcionario-cell">Funcionário</th>
-                        {% for dia in dias_detalhados %}
-                        <th class="{% if dia.e_fim_semana %}fim-semana{% endif %}">
-                            <div>{{ dia.dia }}</div>
-                            <div class="dia-semana">
-                                {% if dia.dia_semana == 0 %}Seg
-                                {% elif dia.dia_semana == 1 %}Ter
-                                {% elif dia.dia_semana == 2 %}Qua
-                                {% elif dia.dia_semana == 3 %}Qui
-                                {% elif dia.dia_semana == 4 %}Sex
-                                {% elif dia.dia_semana == 5 %}Sáb
-                                {% elif dia.dia_semana == 6 %}Dom
-                                {% endif %}
-                            </div>
-                        </th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for funcionario in funcionarios_exibir %}
-                    <tr>
-                        <td class="funcionario-cell">
-                            <strong>{{ funcionario.nome_completo }}</strong>
-                            <br><small style="color: #6c757d;">{{ funcionario.codigo_funcionario }}</small>
-                        </td>
-                        {% for dia in dias_detalhados %}
-                        <td class="dia-cell {% if dia.e_fim_semana %}fim-semana{% endif %}">
-                            <div class="presenca-indicator vazio" 
-                                 data-funcionario="{{ funcionario.id }}" 
-                                 data-dia="{{ dia.dia }}"
-                                 data-mes="{{ mes }}"
-                                 data-ano="{{ ano }}"
-                                 data-data="{{ ano }}-{{ mes|stringformat:'02d' }}-{{ dia.dia|stringformat:'02d' }}"
-                                 data-dia-semana="{{ dia.dia_semana }}"
-                                 onmousedown="iniciarSelecao(this, event)"
-                                 onmouseenter="continuarSelecao(this)"
-                                 onmouseup="finalizarSelecao(this)"
-                                 onclick="selecionarElemento(this, event)"
-                                 ondblclick="marcarSemanaCompleta(this, event)"
-                                 oncontextmenu="event.preventDefault(); removerPresencaRapida(this);">
-                            </div>
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para marcar presença -->
-<div id="modal-presenca" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">Marcar Presença</h3>
-            <span class="close" onclick="fecharModal()">×</span>
-        </div>
-        <div id="modal-body" style="padding: 20px;">
-            <div class="form-group">
-                <label>Funcionário:</label>
-                <input type="text" id="modal-funcionario" readonly style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-            </div>
-            <div class="form-group">
-                <label>Data:</label>
-                <input type="text" id="modal-data" readonly style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-            </div>
-            <div class="form-group">
-                <label>Tipo de Presença:</label>
-                <select id="modal-tipo-presenca" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-                    <option value="">Selecione um tipo</option>
-                    {% for tipo in tipos_presenca %}
-                    <option value="{{ tipo.id }}" data-cor="{{ tipo.cor }}">{{ tipo.nome }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Horas Extras (opcional):</label>
-                <input type="number" id="modal-horas-extras" step="0.5" min="0" max="24" placeholder="Ex: 2.5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-            </div>
-            <div class="form-group">
-                <label>Observações:</label>
-                <textarea id="modal-observacoes" placeholder="Observações sobre a presença..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; resize: vertical; min-height: 60px;"></textarea>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-primary" onclick="salvarPresenca()" style="background: #79aec8; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                    <button class="btn btn btn btn btn btn btn btn btn-warning" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                     <i class="fas fa-save"></i> Salvar
                 </button>
-                <button class="btn btn-danger" onclick="removerPresenca()" id="btn-remover" style="display: none; background: #ba2121; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                    <i class="fas fa-trash"></i> Remover
-                </button>
-                <button class="btn btn-secondary" onclick="fecharModal()" style="background: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                <button class="btn btn btn btn btn btn btn btn btn-danger" onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="btn btn btn-secondary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
             </div>
@@ -973,7 +176,7 @@ function inicializarCalendario() {
     console.log('Calendário inicializado:', mesAtual, anoAtual);
     atualizarTituloMes();
     
-    // Aguardar um pouco para garantir que o DOM esteja totalmente carregado
+    // Aguardar um pouco para garantir que o DOM esteja|default:0 totalmente carregado
     setTimeout(() => {
         console.log('=== INICIANDO CARREGAMENTO DAS PRESENÇAS ===');
         carregarPresencas();
@@ -1240,7 +443,7 @@ async function salvarFeriadosAutomaticamente() {
                 if (!funcionarioIdAtual) continue;
                 
                 try {
-                    const response = await fetch('{% url "rh:marcar_feriados_automaticos" %}', {
+                    const response = await fetch('', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1270,7 +473,7 @@ async function salvarFeriadosAutomaticamente() {
         // Funcionário específico selecionado
         console.log('Salvando feriados automaticamente no banco de dados (sobrescrevendo presenças existentes)...');
         
-        const response = await fetch('{% url "rh:marcar_feriados_automaticos" %}', {
+        const response = await fetch('', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1417,8 +620,8 @@ function atualizarBarraAcoes() {
     const batchActions = document.getElementById('batchActions');
     const batchCount = document.getElementById('batchCount');
     
-    if (elementosSelecionados.size > 0) {
-        batchCount.textContent = elementosSelecionados.size;
+    if (elementosSelecionados.size|default:0 > 0) {
+        batchCount.textContent = elementosSelecionados.size|default:0;
         batchActions.style.display = 'block';
     } else {
         batchActions.style.display = 'none';
@@ -1427,7 +630,7 @@ function atualizarBarraAcoes() {
 
 // Aplicar presença em lote
 async function aplicarPresencaLote(tipoCodigo) {
-    console.log('=== APLICAR PRESENÇA EM LOTE ===', tipoCodigo, elementosSelecionados.size);
+    console.log('=== APLICAR PRESENÇA EM LOTE ===', tipoCodigo, elementosSelecionados.size|default:0);
     
     if (elementosSelecionados.size === 0) {
         alert('Nenhum campo selecionado.');
@@ -1497,7 +700,7 @@ async function aplicarPresencaLote(tipoCodigo) {
             
             console.log('Dados enviados:', dados);
             
-            const response = await fetch('{% url "rh:salvar_presenca_calendario" %}', {
+            const response = await fetch('', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1556,7 +759,7 @@ async function aplicarPresencaLote(tipoCodigo) {
     // Esconder loading
     loading.classList.remove('show');
     
-    // Mostrar resultado
+    // Mostrar|default:0 resultsado
     console.log(`Resultado final: ${sucessos} sucessos, ${erros} erros`);
     if (erros === 0) {
         alert(`✅ Sucesso! ${sucessos} campos marcados como "${tipoPresencaObj.nome}"!`);
@@ -1681,7 +884,7 @@ async function removerPresencaRapida(elemento, silencioso = false) {
     }
     
     try {
-        const response = await fetch('{% url "rh:remover_presenca_calendario" %}', {
+        const response = await fetch('', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1756,7 +959,7 @@ async function salvarPresenca() {
     };
     
     try {
-        const response = await fetch('{% url "rh:salvar_presenca_calendario" %}', {
+        const response = await fetch('', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1802,7 +1005,7 @@ async function removerPresenca() {
     }
     
     try {
-        const response = await fetch('{% url "rh:remover_presenca_calendario" %}', {
+        const response = await fetch('', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1910,7 +1113,7 @@ async function marcarTodosDiasUteis() {
                         observacoes: 'Marcado automaticamente para todos'
                     };
 
-                    const response = await fetch('{% url "rh:salvar_presenca_calendario" %}', {
+                    const response = await fetch('', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1966,7 +1169,7 @@ async function marcarTodosDiasUteis() {
                     observacoes: 'Marcado automaticamente'
                 };
 
-                const response = await fetch('{% url "rh:salvar_presenca_calendario" %}', {
+                const response = await fetch('', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2010,7 +1213,7 @@ async function marcarTodosDiasUteis() {
 
     loading.classList.remove('show');
 
-    // Mostrar resultado
+    // Mostrar|default:0 resultsado
     if (erros === 0) {
         if (marcarParaTodos) {
             alert(`✅ Todos os ${sucessos} dias úteis foram marcados como Presente para ${funcionariosProcessados} funcionários!`);
@@ -2068,8 +1271,8 @@ async function marcarFeriadosAutomaticos() {
             }
             
             let funcionariosProcessados = 0;
-            let totalSucessos = 0;
-            let totalErros = 0;
+            let|default:0 totalSucessos = 0;
+            let|default:0 totalErros = 0;
             
             for (const funcionarioCell of funcionariosVisiveis) {
                 const funcionarioRow = funcionarioCell.closest('tr');
@@ -2082,7 +1285,7 @@ async function marcarFeriadosAutomaticos() {
                 if (!funcionarioIdAtual) continue;
                 
                 try {
-                    const response = await fetch('{% url "rh:marcar_feriados_automaticos" %}', {
+                    const response = await fetch('', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2145,7 +1348,7 @@ async function marcarFeriadosAutomaticos() {
                     const data = JSON.parse(responseText);
                     
                     if (data && data.success) {
-                        alert(`✅ Sucesso! ${data.message || 'Feriados marcados com sucesso.'}\n\n📊 Estatísticas:\n• Feriados processados: ${data.total_feriados || 0}\n• Presenças criadas: ${data.criadas || 0}\n• Presenças atualizadas: ${data.atualizadas || 0}`);
+                        alert(`✅ Sucesso! ${data.message || 'Feriados marcados com sucesso.'}\n\n📊 Estatísticas:\n• Feriados processados: ${data.total|default:0_feriados || 0}\n• Presenças criadas: ${data.criadas || 0}\n• Presenças atualizadas: ${data.atualizadas || 0}`);
                         window.location.reload();
                     } else {
                         const errorMsg = data && data.error ? data.error : 'Resposta inválida do servidor';
@@ -2382,7 +1585,7 @@ async function marcarSemanaCompleta(elemento, event) {
                     : 'Marcado por semana (duplo clique)'
             };
             
-            const response = await fetch('{% url "rh:salvar_presenca_calendario" %}', {
+            const response = await fetch('', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2431,7 +1634,7 @@ async function marcarSemanaCompleta(elemento, event) {
     // Esconder loading
     loading.classList.remove('show');
     
-    // Mostrar resultado
+    // Mostrar|default:0 resultsado
     let mensagem = `✅ ${sucessos} dia(s) marcado(s) com sucesso!`;
     if (ignorados > 0) {
         mensagem += `\n⚠️ ${ignorados} dia(s) já tinham presença marcada (ignorados).`;
@@ -2447,8 +1650,8 @@ function mostrarBotoesAcao() {
     const batchActions = document.getElementById('batch-actions');
     const batchCount = document.getElementById('batch-count');
     
-    if (alteracoesPendentes.size > 0) {
-        batchCount.textContent = alteracoesPendentes.size;
+    if (alteracoesPendentes.size|default:0 > 0) {
+        batchCount.textContent = alteracoesPendentes.size|default:0;
         batchActions.style.display = 'block';
     } else {
         batchActions.style.display = 'none';
@@ -2591,10 +1794,10 @@ function contarPresencasAusencias() {
     try {
         const elementosPresenca = document.querySelectorAll('.presenca-indicator[data-funcionario]');
         
-        let totalPresencas = 0;
-        let totalAusencias = 0;
-        let totalFeriados = 0;
-        let totalFaltas = 0;
+        let|default:0 totalPresencas = 0;
+        let|default:0 totalAusencias = 0;
+        let|default:0 totalFeriados = 0;
+        let|default:0 totalFaltas = 0;
         
         elementosPresenca.forEach(elemento => {
             const tipoPresenca = elemento.dataset.tipoAtual;

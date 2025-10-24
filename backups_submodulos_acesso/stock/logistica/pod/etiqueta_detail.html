@@ -1,0 +1,194 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes da Etiqueta - {{ etiqueta.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Etiquetas</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ etiqueta.codigo }}</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-tags"></i>
+                    Detalhes da Etiqueta - {{ etiqueta.codigo }}
+                </h1>
+                <p class="page-subtitle">
+                    Informações completas da Etiqueta
+                </p>
+            </div>
+            <div class="header-actions">
+                {% if not etiqueta.impressa %}
+                    <a href="#"stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn btn-success btn-responsive -responsive">
+                        <i class="fas fa-print"></i>
+                        Imprimir Etiqueta
+                    </a>
+                {% endif %}
+                <a href="#" class="btn btn btn-secondary btn-responsive -responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Principais -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações da Etiqueta
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Código</div>
+                                <div class="info-value">
+                                    <span class="badge badge-secondary">{{ etiqueta.codigo }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Tipo</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if etiqueta.tipo == 'RASTREAMENTO' %}primary{% elif etiqueta.tipo == 'ENVIO' %}info{% elif etiqueta.tipo == 'PRODUTO' %}success{% else %}secondary{% endif %}">
+                                        {{ etiqueta.get_tipo_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data de Criação</div>
+                                <div class="info-value">{{ etiqueta.data_criacao|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Impressa</div>
+                                <div class="info-value">
+                                    {% if etiqueta.impressa %}
+                                        <i class="fas fa-check text-success"></i> Sim
+                                    {% else %}
+                                        <i class="fas fa-clock text-warning"></i> Não
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conteúdo da Etiqueta -->
+            {% if etiqueta.conteudo %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-text"></i>
+                        Conteúdo da Etiqueta
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="etiqueta-preview">
+                        {{ etiqueta.conteudo|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Ações Rápidas -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i>
+                        Ações Rápidas
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-btns-vertical -responsive">
+                        {% if not etiqueta.impressa %}
+                            <a href="#"stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn btn-success btn-block btn-responsive -responsive">
+                                <i class="fas fa-print"></i>
+                                Imprimir Etiqueta
+                            </a>
+                        {% endif %}
+                        <a href="#"stock:pod:etiquetas_list' %}" class="btn btn btn-secondary btn-block btn-responsive -responsive">
+                            <i class="fas fa-list"></i>
+                            Ver Todas as Etiquetas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.action-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.etiqueta-preview {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    background: var(--bg-secondary);
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+</style>
+{% endblock %}

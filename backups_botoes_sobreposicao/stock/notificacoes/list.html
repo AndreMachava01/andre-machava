@@ -1,0 +1,203 @@
+{% extends 'base_list.html' %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Notificações - Sistema de Gestão{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-bell"></i>
+                Notificações
+            </h1>
+            <p>Gerencie suas notificações do sistema</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-modern btn btn-secondary-modern" onclick=" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-check-double"></i>
+                Marcar Todas como Lidas
+            </button>
+            <a href="#"stock:notificacoes_dashboard' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                <i class="fas fa-chart-bar"></i>
+                Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="content-area">
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-title">Total de Notificações</div>
+            <div class="stat-value">{{ total_notificacoes }}</div>
+            <i class="fas fa-bell stat-icon"></i>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-title">Não Lidas</div>
+            <div class="stat-value">{{ nao_lidas }}</div>
+            <i class="fas fa-exclamation-triangle stat-icon"></i>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-title">Lidas</div>
+            <div class="stat-value">{{ total_notificacoes }}</div>
+            <i class="fas fa-check-circle stat-icon"></i>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-title">Críticas</div>
+            <div class="stat-value">{{ criticas_count|default:0 }}</div>
+            <i class="fas fa-exclamation-circle stat-icon"></i>
+        </div>
+    </div>
+
+    <!-- Lista de Notificações -->
+    <div class="notifications-container">
+        <div class="notifications-header">
+            <h3 class="notifications-title">Notificações</h3>
+        </div>
+        <div class="notifications-body">
+            {% if page_obj %}
+                {% for notificacao in page_obj %}
+                <div class="notification-card {% if not notificacao.lida %}unread{% endif %}">
+                    <div class="notification-content">
+                        <div class="notification-icon {{ notificacao.tipo }}">
+                            {% if notificacao.tipo == 'stock_baixo' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% elif notificacao.tipo == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% elif notificacao.tipo == 'error' %}
+                                <i class="fas fa-times-circle"></i>
+                            {% elif notificacao.tipo == 'info' %}
+                                <i class="fas fa-info-circle"></i>
+                            {% elif notificacao.tipo == 'requisicao_pendente' %}
+                                <i class="fas fa-clock"></i>
+                            {% elif notificacao.tipo == 'sistema' %}
+                                <i class="fas fa-cog"></i>
+                            {% else %}
+                                <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="notification-details">
+                            <div class="notification-title">
+                                {% if not notificacao.lida %}
+                                    <span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 8px;">Nova</span>
+                                {% endif %}
+                                {{ notificacao.titulo }}
+                            </div>
+                            <div class="notification-message">{{ notificacao.mensagem|truncatewords:30 }}</div>
+                            <div class="notification-meta">
+                                <span class="notification-type">{{ notificacao.get_tipo_display }}</span>
+                                <span class="notification-time">
+                                    <i class="fas fa-clock"></i>
+                                    {{ notificacao.data_criacao|timesince }} atrás
+                                </span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            {% if notificacao.url %}
+                            <a href="#" class="btn-action btn-link btn-responsive btn-responsive" title="Abrir Link">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            {% endif %}
+                            <a href="#"stock:notificacao_detail' notificacao.id %}" class="btn-action btn-view btn-responsive btn-responsive" title="Ver Detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if not notificacao.lida %}
+                            <button class="btn-action btn-mark-read" onclick=" title="Marcar como Lida" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h5>Nenhuma notificação encontrada</h5>
+                    <p>Não há notificações que correspondam aos filtros selecionados.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-modern">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Primeira</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Anterior</a>
+            {% endif %}
+            
+            <span class="active">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Próxima</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Última</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function marcarLida(notificacaoId) {
+    fetch(`/stock/notificacoes/${notificacaoId}/marcar-lida/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erro ao marcar notificação como lida');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao marcar notificação como lida');
+    });
+}
+
+function marcarTodasLidas() {
+    if (confirm('Tem certeza que deseja marcar todas as notificações como lidas?')) {
+        fetch('/stock/notificacoes/marcar-todas-lidas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao marcar notificações como lidas');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao marcar notificações como lidas');
+        });
+    }
+}
+</script>
+{% endblock %}

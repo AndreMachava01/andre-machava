@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
-{% block title %}Adicionar Item - {{ transferencia.codigo }}{% endblock %}
+{% block title %}Adicionar|default:0 items - {{ transferencia.codigo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -22,7 +14,7 @@
         <div class="hero-content">
             <div>
                 <h1 class="hero-title">
-                    <i class="fas fa-plus"></i>Adicionar Item
+                    <i class="fas fa-plus"></i>Adicionar|default:0 items
                 </h1>
                 <div class="hero-subtitle">
                     <i class="fas fa-exchange-alt"></i>
@@ -30,7 +22,7 @@
                 </div>
             </div>
             <div class="hero-actions">
-                <a href="{% url 'stock:transferencias:detail' transferencia.id %}" class="btn-modern btn-primary-modern">
+                <a href="#"stock:transferencias:detail' transferencia.id %}" class="btn-modern btn btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>Voltar
                 </a>
             </div>
@@ -44,15 +36,15 @@
             <div class="form-card">
                 <h3 class="form-title">
                     <i class="fas fa-box"></i>
-                    Dados do Item
+                    Dados do|default:0 items
                 </h3>
 
-                <form method="post">
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     
                     <div class="alert-info">
                         <i class="fas fa-info-circle"></i>
-                        <span>Se este item já estiver na transferência, a quantidade será adicionada à quantidade existente.</span>
+                        <span>Se este|default:0 items já estiver na transferência, a quantidade será adicionada à quantidade existente.</span>
                     </div>
 
                     <div class="form-group">
@@ -61,7 +53,7 @@
                         </label>
                         <select class="form-control-modern" id="item" name="item" required>
                             <option value="">Selecione um produto/material</option>
-                            {% for item in itens %}
+                            {% for items in itens  %}
                                 <option value="{{ item.id }}" 
                                         data-estoque="{{ item.stocks_sucursais.first.quantidade_atual|default:0 }}"
                                         data-tipo="{{ item.tipo }}">
@@ -86,16 +78,16 @@
                     <div class="form-group">
                         <label for="observacoes" class="form-label">Observações</label>
                         <textarea class="form-control-modern" id="observacoes" name="observacoes" 
-                                  rows="3" placeholder="Observações sobre este item (opcional)"></textarea>
-                        <div class="form-text">Informações adicionais sobre este item</div>
+                                  rows="3" placeholder="Observações sobre este|default:0 items (opcional)"></textarea>
+                        <div class="form-text">Informações adicionais sobre este|default:0 items</div>
                     </div>
 
                     <div class="form-actions">
-                        <a href="{% url 'stock:transferencias:detail' transferencia.id %}" class="btn-form btn-cancel">
+                        <a href="#"stock:transferencias:detail' transferencia.id %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-times"></i>Cancelar
                         </a>
-                        <button type="submit" class="btn-form btn-submit">
-                            <i class="fas fa-save"></i>Adicionar Item
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-save"></i>Adicionar|default:0 items
                         </button>
                     </div>
                 </form>
@@ -168,7 +160,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const itemSelect = document.getElementById('item');
+    const itemselect = document.getElementById('item');
     const quantidadeInput = document.getElementById('quantidade');
     
     itemSelect.addEventListener('change', function() {

@@ -1,0 +1,448 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Ordem de Compra - Impressão{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Estilos para o documento de impressão */
+    .print-container {
+        background: white;
+        color: black;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 8px;
+        line-height: 1.2;
+    }
+
+    .document-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #8b5cf6;
+    }
+
+    .company-info h1 {
+        color: #8b5cf6;
+        font-size: 16px;
+        font-weight: bold;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .company-info h2 {
+        color: #374151;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 5px 0 0 0;
+    }
+
+    .header-date {
+        color: #6b7280;
+        font-size: 8px;
+        font-weight: 500;
+    }
+
+    .section {
+        margin-bottom: 15px;
+        background: #f9fafb;
+        border-radius: 6px;
+        padding: 10px;
+        border-left: 2px solid #8b5cf6;
+    }
+
+    .section h3 {
+        color: #8b5cf6;
+        font-size: 9px;
+        font-weight: bold;
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 8px;
+    }
+
+    .info-item {
+        background: white;
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #e5e7eb;
+        font-size: 8px;
+    }
+
+    .info-item strong {
+        color: #374151;
+        font-weight: 600;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        margin-top: 8px;
+    }
+
+    .items-table thead th {
+        background: #8b5cf6;
+        color: white;
+        padding: 6px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 8px;
+    }
+
+    .items-table tbody td {
+        padding: 6px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 8px;
+    }
+
+    .items-table tbody tr:nth-child(even) {
+        background: #f9fafb;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    .total-row {
+        background: #8b5cf6 !important;
+        color: white !important;
+        font-weight: 700;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+    }
+
+    .summary-item {
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #8b5cf6;
+        margin-bottom: 5px;
+    }
+
+    .summary-label {
+        font-size: 8px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .signatures {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .signature-space {
+        text-align: center;
+    }
+
+    .signature-line {
+        height: 1px;
+        background: #374151;
+        margin: 10px 0 5px 0;
+    }
+
+    .signature-name {
+        font-weight: 600;
+        color: #8b5cf6;
+        margin: 0;
+        font-size: 8px;
+    }
+
+    .document-footer {
+        text-align: center;
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 8px;
+    }
+
+    .document-footer p {
+        margin: 5px 0;
+    }
+
+    @media print {
+        .action-buttons {
+            display: none !important;
+        }
+        
+        .print-container {
+            box-shadow: none;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        body {
+            background: white;
+            color: black;
+        }
+        
+        .section {
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Ação Padronizados -->
+<div class="action-buttons">
+    <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="document-btn document-btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar ao Preview
+    </a>
+    <button onclick="window.print()" class="document-btn document-btn-primary">
+        <i class="fas fa-print"></i> Imprimir Ordem
+    </button>
+    <a href="{% url 'stock:main' %}" class="document-btn document-btn-outline">
+        <i class="fas fa-home"></i> Dashboard Stock
+    </a>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>ORDEM DE COMPRA</h1>
+            <h2>{{ ordem_compra.codigo }} - {{ ordem_compra.fornecedor.nome }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ ordem_compra.data_criacao|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Requisição Origem:</strong> {{ ordem_compra.requisicao_origem.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Número da Cotação:</strong> {{ ordem_compra.numero_cotacao }}
+            </div>
+            <div class="info-item">
+                <strong>Data da Cotação:</strong> {{ ordem_compra.data_cotacao|date:"d/m/Y H:i"|default:"N/A" }}
+            </div>
+            <div class="info-item">
+                <strong>Criado por:</strong> {{ ordem_compra.criado_por.get_full_name|default:ordem_compra.criado_por.username }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> {{ ordem_compra.get_status_display }}
+            </div>
+            <div class="info-item">
+                <strong>Sucursal Destino:</strong> {{ ordem_compra.sucursal_destino.nome }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Fornecedor -->
+    <div class="section">
+        <h3>🏢 Informações do Fornecedor</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Nome:</strong> {{ ordem_compra.fornecedor.nome }}
+            </div>
+            <div class="info-item">
+                <strong>NUIT:</strong> {{ ordem_compra.fornecedor.nuit }}
+            </div>
+            <div class="info-item">
+                <strong>Email:</strong> {{ ordem_compra.fornecedor.email }}
+            </div>
+            <div class="info-item">
+                <strong>Telefone:</strong> {{ ordem_compra.fornecedor.telefone }}
+            </div>
+            <div class="info-item">
+                <strong>Endereço:</strong> {{ ordem_compra.fornecedor.endereco }}
+            </div>
+            <div class="info-item">
+                <strong>Cidade:</strong> {{ ordem_compra.fornecedor.cidade }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens da Ordem -->
+    <div class="section">
+        <h3>📦 Itens da Ordem</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Código</th>
+                    <th>Categoria</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.descricao }}</td>
+                    <td>{{ item.produto.codigo|default:"N/A" }}</td>
+                    <td class="text-center">{{ item.categoria }}</td>
+                    <td class="text-center">{{ item.quantidade_solicitada }}</td>
+                    <td class="text-right">{{ item.preco_unitario|floatformat:2|default:"N/A" }} MT</td>
+                    <td class="text-right">{{ item.preco_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <th colspan="5" class="text-right">Total Geral:</th>
+                    <th class="text-right">{{ ordem_compra.valor_total|floatformat:2 }} MT</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Resumo da Ordem -->
+    <div class="section">
+        <h3>📊 Resumo da Ordem</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value">{{ itens.count }}</div>
+                <div class="summary-label">Total de Itens</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
+                <div class="summary-label">Valor Total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observações -->
+    {% if ordem_compra.observacoes %}
+    <div class="section">
+        <h3>💬 Observações</h3>
+        <div class="info-item">
+            {{ ordem_compra.observacoes }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Assinaturas -->
+    <div class="signatures">
+        <div class="signature-space">
+            <div class="signature-line"></div>
+            <p class="signature-name">{{ ordem_compra.sucursal_destino.nome }}</p>
+            <p style="font-size: 8px; color: #6b7280; margin: 5px 0 0 0;">Responsável pela Compra</p>
+        </div>
+
+        <div class="signature-space">
+            <div class="signature-line"></div>
+            <p class="signature-name">{{ ordem_compra.fornecedor.nome }}</p>
+            <p style="font-size: 8px; color: #6b7280; margin: 5px 0 0 0;">Fornecedor</p>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="document-footer">
+        <p><strong>Data de Geração:</strong> {{ "now"|date:"d/m/Y H:i" }}</p>
+        <p><strong>Sistema de Gestão de Stock</strong> - Conception</p>
+    </div>
+</div>
+
+<script>
+// Auto-print quando acessado via parâmetro
+if (window.location.search.includes('print=true')) {
+    window.onload = function() {
+        window.print();
+    }
+}
+</script>
+{% endblock %}

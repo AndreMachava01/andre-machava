@@ -21,7 +21,7 @@
     <div class="empresa-sucursais">
         <div class="sucursal-header">
             <span class="sucursal-title">Sucursais</span>
-            <a href="javascript:void(0)" class="add-sucursal-btn" onclick="showSucursalForm()">
+            <a href="#" class="add-sucursal-btn" href="#" onclick="event.preventDefault(); showSucursalForm()">
                 <i class="fas fa-plus"></i> Nova Sucursal
             </a>
         </div>
@@ -43,15 +43,15 @@
                     <p><strong>Localização:</strong> {{ sucursal.cidade }} - {{ sucursal.get_provincia_display }}</p>
                 </div>
                 <div class="sucursal-actions">
-                    <a href="javascript:void(0)" onclick="editSucursal('{{ sucursal.id }}')" class="action-btn edit-btn">
+                    <a href="#" href="#" onclick="event.preventDefault(); editSucursal("{{ sucursal.id }}')" class="action-btn edit-">
                         <i class="fas fa-edit"></i> Editar
                     </a>
                     {% if sucursal.ativa %}
-                    <a href="javascript:void(0)" onclick="desativarSucursal('{{ sucursal.id }}')" class="action-btn delete-btn">
+                    <a href="#" href="#" onclick="event.preventDefault(); desativarSucursal("{{ sucursal.id }}')" class="action-btn delete-">
                         <i class="fas fa-times"></i> Desativar
                     </a>
                     {% else %}
-                    <a href="javascript:void(0)" onclick="ativarSucursal('{{ sucursal.id }}')" class="action-btn edit-btn">
+                    <a href="#" href="#" onclick="event.preventDefault(); ativarSucursal("{{ sucursal.id }}')" class="action-btn edit-">
                         <i class="fas fa-check"></i> Ativar
                     </a>
                     {% endif %}

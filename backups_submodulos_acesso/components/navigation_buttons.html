@@ -1,0 +1,64 @@
+{% comment %}
+BOTÕES DE NAVEGAÇÃO
+Template específico para botões de navegação (Voltar, Próximo, Anterior, etc.)
+
+Parâmetros:
+- navigation: lista de botões de navegação
+- position: posição dos botões (top, bottom, both)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+{% if position == 'top' or position == 'both' %}
+<div class="navigation-top{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=navigation layout='horizontal' %}
+</div>
+{% endif %}
+
+{% if position == 'bottom' or position == 'both' %}
+<div class="navigation-bottom{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=navigation layout='horizontal' %}
+</div>
+{% endif %}
+
+<style>
+.navigation-top,
+.navigation-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.navigation-bottom {
+    border-bottom: none;
+    border-top: 1px solid #eee;
+}
+
+.navigation-top .btn-group,
+.navigation-bottom .btn-group {
+    gap: 0.5rem;
+}
+
+.navigation-top .btn-group .btn,
+.navigation-bottom .btn-group .btn {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .navigation-top,
+    .navigation-bottom {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .navigation-top .btn-group,
+    .navigation-bottom .btn-group {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>

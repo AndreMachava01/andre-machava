@@ -1,0 +1,341 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if cargo %}Editar{% else %}Adicionar{% endif %} Cargo{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Form Container */
+    .form-container {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--border-color);
+        margin-top: 20px;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: var(--text-color);
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 8px 12px;
+        height: 36px;
+        line-height: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--bg-input);
+        color: var(--text-color);
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234b5563' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        cursor: pointer;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(65, 118, 144, 0.15);
+    }
+
+    .form-group textarea {
+        height: auto;
+        min-height: 80px;
+        resize: vertical;
+        background-image: none;
+    }
+
+    .form-group input[type="text"] {
+        background-image: none;
+    }
+
+    .help-text {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+        line-height: 1.3;
+    }
+
+    .info-text {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--bg-secondary);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .form-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .form-check label {
+        font-size: 12px;
+        color: var(--text-color);
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 8px 16px;
+        height: 36px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .btn-outline:hover {
+        background: var(--bg-hover);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .required {
+        color: #e53e3e;
+        font-weight: 600;
+    }
+
+    /* Dark mode adjustments */
+    @media (prefers-color-scheme: dark) {
+        .form-container {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background-color: var(--bg-input);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .info-text {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:cargos' %}">Cargos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if cargo %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-briefcase"></i>
+                    {% if cargo %}Editar{% else %}Adicionar{% endif %} Cargo
+                </h1>
+                <p class="page-subtitle">
+                    {% if cargo %}Editar informações do cargo{% else %}Adicionar novo cargo{% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:cargos' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Container -->
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome do Cargo <span class="required">*</span></label>
+                    <input type="text" id="nome" name="nome" value="{{ cargo.nome|default:'' }}" required>
+                    <div class="help-text">Nome completo do cargo na empresa</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Código do Cargo</label>
+                    <div class="info-text">
+                        <i class="fas fa-tag"></i> {{ cargo.codigo_cargo|default:"Será gerado automaticamente" }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nivel">Nível Hierárquico <span class="required">*</span></label>
+                    <select id="nivel" name="nivel" required>
+                        <option value="">Selecione o nível</option>
+                        <option value="EST" {% if cargo.nivel == 'EST' %}selected{% endif %}>Estagiário</option>
+                        <option value="APR" {% if cargo.nivel == 'APR' %}selected{% endif %}>Aprendiz</option>
+                        <option value="AUX" {% if cargo.nivel == 'AUX' %}selected{% endif %}>Auxiliar</option>
+                        <option value="ASS" {% if cargo.nivel == 'ASS' %}selected{% endif %}>Assistente</option>
+                        <option value="ANA" {% if cargo.nivel == 'ANA' %}selected{% endif %}>Analista</option>
+                        <option value="TCN" {% if cargo.nivel == 'TCN' %}selected{% endif %}>Técnico</option>
+                        <option value="ESP" {% if cargo.nivel == 'ESP' %}selected{% endif %}>Especialista</option>
+                        <option value="SUP" {% if cargo.nivel == 'SUP' %}selected{% endif %}>Supervisor</option>
+                        <option value="CRD" {% if cargo.nivel == 'CRD' %}selected{% endif %}>Coordenador</option>
+                        <option value="GER" {% if cargo.nivel == 'GER' %}selected{% endif %}>Gestor</option>
+                        <option value="DIR" {% if cargo.nivel == 'DIR' %}selected{% endif %}>Director</option>
+                    </select>
+                    <div class="help-text">Nível hierárquico do cargo na organização</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoria Funcional <span class="required">*</span></label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Selecione a categoria</option>
+                        <option value="OP" {% if cargo.categoria == 'OP' %}selected{% endif %}>Operacional</option>
+                        <option value="ADM" {% if cargo.categoria == 'ADM' %}selected{% endif %}>Administrativo</option>
+                        <option value="TEC" {% if cargo.categoria == 'TEC' %}selected{% endif %}>Técnico</option>
+                        <option value="GES" {% if cargo.categoria == 'GES' %}selected{% endif %}>Gestão</option>
+                        <option value="EXE" {% if cargo.categoria == 'EXE' %}selected{% endif %}>Executivo</option>
+                    </select>
+                    <div class="help-text">Categoria funcional do cargo</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="departamento">Departamento <span class="required">*</span></label>
+                    <select id="departamento" name="departamento" required>
+                        <option value="">Selecione um departamento</option>
+                        {% for departamento in departamentos %}
+                            <option value="{{ departamento.id }}" {% if cargo.departamento.id == departamento.id %}selected{% endif %}>
+                                {{ departamento.nome }} 
+                                {% if departamento.sucursal.id == sucursal_atual.id %}
+                                    (Local)
+                                {% else %}
+                                    ({{ departamento.sucursal.nome }})
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Departamento ao qual o cargo pertence</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" placeholder="Descreva as responsabilidades do cargo...">{{ cargo.descricao|default:'' }}</textarea>
+                    <div class="help-text">Descrição detalhada das responsabilidades e atribuições do cargo</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" id="ativo" name="ativo" {% if not cargo or cargo.ativo %}checked{% endif %}>
+                    <label for="ativo">Cargo Ativo</label>
+                </div>
+                <div class="help-text">Marque se o cargo está ativo e pode ser atribuído a funcionários</div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% if cargo %}Atualizar{% else %}Adicionar{% endif %}
+                </button>
+                <a href="{% url 'rh:cargos' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Horários de Expediente - {{ sucursal.nome }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Horários de Expediente</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Horários de Expediente"
+    subtitle="Configure os dias e horários de trabalho para cada sucursal"
+    icon="fas fa-clock"
+%}    </div>
+    
+    <!-- Seletor de Sucursal -->
+    <div class="form-container">
+        <div class="form-group">
+            <label for="sucursal-select">Selecionar Sucursal</label>
+            <select id="sucursal-select" onchange="mudarSucursal()">
+                {% for s in sucursais %}
+                    <option value="{{ s.id }}" {% if s.id == sucursal.id %}selected{% endif %}>
+                        {{ s.codigo }} - {{ s.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+            <div class="help-text">Selecione a sucursal para configurar os horários</div>
+        </div>
+    </div>
+    
+    <!-- Informações -->
+    <div class="form-container">
+        <div class="info-text">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>Como usar:</strong><br>
+                • Marque os dias que são dias de trabalho<br>
+                • Configure os horários específicos para cada dia<br>
+                • Defina a duração do almoço (formato HH:MM:SS)<br>
+                • Os horários são aplicados automaticamente no calendário de presenças
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário de Horários -->
+    <form method="post" class="form-container"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        {% csrf_token %}
+        
+        <!-- Configurações Padrão -->
+        <div class="form-group">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-cog"></i> Configurações Padrão
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="hora_inicio_padrao">Hora de Início</label>
+                <input type="time" 
+                       name="hora_inicio_padrao" 
+                       id="hora_inicio_padrao"
+                       value="{{ sucursal.hora_inicio_expediente|time:'H:i' }}">
+                <div class="help-text">Horário padrão de início do expediente</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="hora_fim_padrao">Hora de Fim</label>
+                <input type="time" 
+                       name="hora_fim_padrao" 
+                       id="hora_fim_padrao"
+                       value="{{ sucursal.hora_fim_expediente|time:'H:i' }}">
+                <div class="help-text">Horário padrão de fim do expediente</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="duracao_almoco_padrao">Duração do Almoço</label>
+                <input type="text" 
+                       name="duracao_almoco_padrao" 
+                       id="duracao_almoco_padrao"
+                       value="{% if sucursal.duracao_almoco %}{{ sucursal.duracao_almoco }}{% else %}01:00:00{% endif %}"
+                       placeholder="01:00:00">
+                <div class="help-text">Duração do intervalo de almoço (formato HH:MM:SS)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="horas_trabalho_dia">Horas por Dia</label>
+                <input type="text" 
+                       name="horas_trabalho_dia" 
+                       id="horas_trabalho_dia"
+                       value="{% if sucursal.horas_trabalho_dia %}{{ sucursal.horas_trabalho_dia }}{% else %}08:00:00{% endif %}"
+                       placeholder="08:00:00">
+                <div class="help-text">Total de horas de trabalho por dia (formato HH:MM:SS)</div>
+            </div>
+        </div>
+        
+        <!-- Dias da Semana -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-calendar-week"></i> Dias de Trabalho
+            </h3>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            {% for dia_semana, nome_dia in dias_semana %}
+            <div class="form-check">
+                <input type="checkbox" 
+                       name="ativo_{{ dia_semana }}" 
+                       id="ativo_{{ dia_semana }}"
+                       value="on"
+                       {% if dia_semana in dias_ativos %}checked{% endif %}>
+                <label for="ativo_{{ dia_semana }}">
+                    {{ nome_dia }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Ações -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="button" class="btn btn-outline" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-undo"></i>
+                Resetar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function mudarSucursal() {
+    const select = document.getElementById('sucursal-select');
+    const sucursalId = select.value;
+    window.location.href = `{% url 'rh:horarios_expediente_sucursal' 0 %}`.replace('0', sucursalId);
+}
+
+function resetForm() {
+    if (confirm('Tem certeza que deseja resetar todos os horários para os valores padrão?')) {
+        location.reload();
+    }
+}
+
+// Adicionar event listeners para mudanças visuais
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar listeners para checkboxes
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const container = this.closest('.form-check');
+            
+            if (this.checked) {
+                container.classList.add('checked');
+            } else {
+                container.classList.remove('checked');
+            }
+        });
+    });
+    
+    // Aplicar estilos iniciais
+    checkboxes.forEach(checkbox => {
+        const container = checkbox.closest('.form-check');
+        if (checkbox.checked) {
+            container.classList.add('checked');
+        }
+    });
+});
+</script>
+{% endblock %}

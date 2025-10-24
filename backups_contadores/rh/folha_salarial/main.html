@@ -1,0 +1,206 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Folha Salarial{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Folha Salarial</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Folha Salarial
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie folhas salariais e pagamentos dos funcionários
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar ao RH
+                </a>
+                <a href="" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Folha
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_folhas }}</h3>
+                <p class="stat-label">Total de Folhas</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folhas_abertas }}</h3>
+                <p class="stat-label">Folhas Abertas</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folhas_fechadas }}</h3>
+                <p class="stat-label">Folhas Fechadas</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ folhas_pagas }}</h3>
+                <p class="stat-label">Folhas Pagas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='folha_salarial' %}
+
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if page_obj %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Folhas Salariais
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} folhas
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Mês de Referência</th>
+                            <th>Status</th>
+                            <th>Trabalhadores</th>
+                            <th>Total Bruto</th>
+                            <th>Total Descontos</th>
+                            <th>Total Líquido</th>
+                            <th>Data Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for folha in page_obj %}
+                            <tr>
+                                <td>
+                                    <strong>{{ folha.mes_referencia|date:"m/Y" }}</strong>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ folha.status|lower }}">
+                                        {{ folha.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ folha.total_funcionarios }}</td>
+                                <td>
+                                    <strong>{{ folha.total_bruto|floatformat:2 }} MT</strong>
+                                </td>
+                                <td>{{ folha.total_descontos|floatformat:2 }} MT</td>
+                                <td>
+                                    <strong>{{ folha.total_liquido|floatformat:2 }} MT</strong>
+                                </td>
+                                <td>{{ folha.data_criacao|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="cell-actions">
+                                        <a href="{% url 'rh:folha_detail' folha.id %}" 
+                                           class="btn-action secondary" title="Ver Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'rh:folha_edit' folha.id %}" 
+                                           class="btn-action primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'rh:folha_calcular' folha.id %}" 
+                                           class="btn-action success" title="Recalcular">
+                                            <i class="fas fa-calculator"></i>
+                                        </a>
+                                        <a href="{% url 'rh:folha_pdf' folha.id %}" 
+                                           class="btn-action info" title="Exportar PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                        <a href="{% url 'rh:folha_delete' folha.id %}" 
+                                           class="btn-action danger" title="Deletar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}{% if filtros.search %}&search={{ filtros.search }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h4>Nenhuma folha encontrada</h4>
+                <p>Não há folhas salariais cadastradas ou que correspondam aos filtros aplicados.</p>
+                <a href="{% url 'rh:folha_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Criar Primeira Folha
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

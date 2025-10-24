@@ -1,0 +1,198 @@
+{% extends "base_list.html" %}
+
+{% block title %}Gestão de Funcionários - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:main' %}">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Funcionários</span>
+    </nav>
+    
+    <!-- Page Header -->
+    {% load static %}
+{% include "includes/header.html" with
+    title="Gestão de Funcionários"
+    subtitle="Gerencie funcionários, departamentos e cargos da empresa"
+    icon="fas fa-users"
+%}    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_funcionarios|default:"0" }}</h3>
+                    <p class="stat-label">Total de Funcionários</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ funcionarios_ativos|default:"0" }}</h3>
+                    <p class="stat-label">Funcionários Ativos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_departamentos|default:"0" }}</h3>
+                    <p class="stat-label">Departamentos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_cargos|default:"0" }}</h3>
+                    <p class="stat-label">Cargos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='funcionarios' %}
+    
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                Lista de Funcionários
+            </h3>
+            <div class="table-actions">
+                <a href="#"rh:funcionario_add' %}" class="btn btn-sm btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-plus"></i>
+                    Novo Funcionário
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Departamento</th>
+                        <th>Cargo</th>
+                        <th>Status</th>
+                        <th>Data Admissão</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for funcionario in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="cell-primary">{{ funcionario.nome_completo }}</div>
+                            <div class="cell-tertiary">{{ funcionario.codigo_funcionario }}</div>
+                        </td>
+                        <td>{{ funcionario.email }}</td>
+                        <td>
+                            <span class="badge badge-primary">{{ funcionario.departamento.nome|default:"N/A" }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ funcionario.cargo.nome|default:"N/A" }}</span>
+                        </td>
+                        <td>
+                            {% if funcionario.status == 'AT' %}
+                                <span class="status-badge status-success">Ativo</span>
+                            {% elif funcionario.status == 'AF' %}
+                                <span class="status-badge status-warning">Afastado</span>
+                            {% elif funcionario.status == 'FE' %}
+                                <span class="status-badge status-info">Férias</span>
+                            {% else %}
+                                <span class="status-badge status-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ funcionario.data_admissao|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="#"rh:funcionario_detail' funcionario.id %}" class="btn-action-sm success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#"rh:funcionario_edit' funcionario.id %}" class="btn-action-sm secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#"rh:funcionario_delete' funcionario.id %}" class="btn-action-sm danger btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i>
+                            Nenhum funcionário encontrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} funcionários
+            </div>
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-btn active btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

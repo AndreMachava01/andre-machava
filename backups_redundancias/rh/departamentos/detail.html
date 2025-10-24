@@ -1,0 +1,194 @@
+{% extends "base_detail.html" %}
+{% load static %}
+
+{% block title %}Detalhes do Departamento{% endblock %}
+
+{% block detail_cards %}
+<!-- Informações Básicas -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-building"></i>Informações Básicas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-hashtag"></i>Código:
+            </span>
+            <span class="info-value">{{ departamento.codigo }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-tag"></i>Nome:
+            </span>
+            <span class="info-value">{{ departamento.nome }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-align-left"></i>Descrição:
+            </span>
+            <span class="info-value">{{ departamento.descricao|default:"Não informado" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-building"></i>Sucursal:
+            </span>
+            <span class="info-value">{{ departamento.sucursal.nome|default:"Não definida" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-user-tie"></i>Responsável:
+            </span>
+            <span class="info-value">{{ departamento.responsavel.nome_completo|default:"Não definido" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-toggle-on"></i>Status:
+            </span>
+            <span class="badge {% if departamento.ativo %}bg-success{% else %}bg-secondary{% endif %}">
+                {% if departamento.ativo %}Ativo{% else %}Inativo{% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas do Departamento -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-bar"></i>Estatísticas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-users"></i>Total de Funcionários:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #495057;">
+                {{ total_funcionarios|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-user-tie"></i>Total de Cargos:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #17a2b8;">
+                {{ total_cargos|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar"></i>Data de Criação:
+            </span>
+            <span class="info-value">{{ departamento.data_criacao|date:"d/m/Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar-check"></i>Última Atualização:
+            </span>
+            <span class="info-value">{{ departamento.data_atualizacao|date:"d/m/Y H:i" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Funcionários do Departamento -->
+{% if funcionarios %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-users"></i>Funcionários do Departamento
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Código</th>
+                        <th><i class="fas fa-user"></i> Nome</th>
+                        <th><i class="fas fa-user-tie"></i> Cargo</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                        <th><i class="fas fa-calendar"></i> Admissão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for funcionario in funcionarios %}
+                    <tr>
+                        <td><strong>{{ funcionario.codigo_funcionario }}</strong></td>
+                        <td>{{ funcionario.nome_completo }}</td>
+                        <td>{{ funcionario.cargo.nome|default:"N/A" }}</td>
+                        <td>{{ funcionario.email|default:"N/A" }}</td>
+                        <td>
+                            <span class="badge {% if funcionario.status == 'AT' %}bg-success{% elif funcionario.status == 'AF' %}bg-warning{% elif funcionario.status == 'FE' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ funcionario.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ funcionario.data_admissao|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Cargos do Departamento -->
+{% if cargos %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-user-tie"></i>Cargos do Departamento
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Código</th>
+                        <th><i class="fas fa-tag"></i> Nome</th>
+                        <th><i class="fas fa-align-left"></i> Descrição</th>
+                        <th><i class="fas fa-dollar-sign"></i> Salário Base</th>
+                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cargo in cargos %}
+                    <tr>
+                        <td><strong>{{ cargo.codigo }}</strong></td>
+                        <td>{{ cargo.nome }}</td>
+                        <td>{{ cargo.descricao|default:"N/A" }}</td>
+                        <td>{{ cargo.salario_base|floatformat:2 }} MT</td>
+                        <td>
+                            <span class="badge {% if cargo.ativo %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if cargo.ativo %}Ativo{% else %}Inativo{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Observações -->
+{% if departamento.observacoes %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-sticky-note"></i>Observações
+        </h5>
+    </div>
+    <div class="card-body">
+        <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-style: italic; color: #374151;">{{ departamento.observacoes }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

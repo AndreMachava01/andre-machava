@@ -1,0 +1,401 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+        }
+
+        @media print {
+            
+        }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: #d4edda;
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background: #d4edda;
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+        }
+        
+        .info-item {
+            padding: 3px;
+            background: #d4edda;
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 3px;
+            border: 1px solid #333;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            padding: 3px;
+            text-align: left;
+            font-size: 8px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+        
+        .items-table td {
+            padding: 3px;
+            border: 1px solid #333;
+            font-size: 8px;
+            vertical-align: top;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+
+        .signature-line {
+            height: 20px;
+            border-bottom: 1px solid #333;
+            margin: 5px 0 3px 0;
+        }
+        
+        .signature-name {
+            font-size: 8px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .document-footer {
+            margin-top: 5px;
+            padding-top: 3px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            color: #999;
+            font-size: 7px;
+        }
+    }
+
+    @media screen {
+        body {
+            background: #1f2937;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .company-info h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        .section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+
+        .items-table th {
+            background: #d4edda;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+        
+        .items-table td {
+            padding: 10px;
+            border: 1px solid #333;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+
+    }
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Requisição de Compra Externa - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
+    </a>
+    <a href="{% url 'stock:requisicoes:list' %}" class="btn btn-outline">
+        <i class="fas fa-list"></i>Lista de Requisições
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>Requisição de Compra Externa</h1>
+            <h2>{{ requisicao.codigo }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ requisicao.data_criacao|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Código da Requisição:</strong> {{ requisicao.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Data de Criação:</strong> {{ requisicao.data_criacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Criado por:</strong> {{ requisicao.criado_por.get_full_name|default:requisicao.criado_por.username }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> {{ requisicao.get_status_display }}
+            </div>
+            {% if requisicao.data_aprovacao %}
+            <div class="info-item">
+                <strong>Data de Aprovação:</strong> {{ requisicao.data_aprovacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Aprovado por:</strong> {{ requisicao.aprovado_por.get_full_name|default:requisicao.aprovado_por.username }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Informações da Requisição -->
+    <div class="section">
+        <h3>Informações da Requisição</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Empresa Solicitante:</strong> Conception
+            </div>
+            <div class="info-item">
+                <strong>Sucursal:</strong> {{ requisicao.sucursal_solicitante.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Endereço:</strong> {{ requisicao.sucursal_solicitante.endereco|default:"Não informado" }}
+            </div>
+            <div class="info-item">
+                <strong>Total de Itens:</strong> {{ requisicao.itens.count }}
+            </div>
+            {% if requisicao.fornecedor %}
+            <div class="info-item">
+                <strong>Fornecedor:</strong> {{ requisicao.fornecedor.nome }}
+            </div>
+            <div class="info-item">
+                <strong>NUIT:</strong> {{ requisicao.fornecedor.nuit }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Itens Solicitados -->
+    <div class="section">
+        <h3>Itens Solicitados</h3>
+        {% if requisicao.itens.exists %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for|default:0 items in requisicao.itens.all %}
+                <tr>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: bold; font-size: 8px;">{{ item.item.nome }}</span>
+                            <span style="font-size: 7px; color: #666;">{{ item.item.codigo }} - {{ item.item.get_tipo_display }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center; font-size: 8px;">{{ item.item.descricao|default:"-" }}</td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 8px;">{{ item.quantidade_solicitada }} {{ item.item.unidade_medida }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 20px; font-size: 8px;">
+            <strong>Nenhum|default:0 items adicionado</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-name">Responsável pela Requisição</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-name">Autorização</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Documento gerado automaticamente em {{ requisicao.data_criacao|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% endblock %}

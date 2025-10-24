@@ -1,0 +1,1235 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados - Usando sistema unificado */
+    .action-buttons {
+        display: flex;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+        padding: var(--space-4);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-lg);
+        backdrop-filter: var(--blur-medium);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        flex-wrap: wrap;
+    }
+
+    /* Usando classes unificadas do sistema - removendo estilos duplicados */
+
+    @media print {
+        .action-buttons {
+            display: none !important;
+        }
+    }
+
+
+    /* CSS Variables */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --error-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --transfer-gradient: linear-gradient(135deg, #00cec9 0%, #55a3ff 100%);
+        
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #ffffff;
+        --text-secondary: #b0b3b8;
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.15);
+        --border-radius: 15px;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+    }
+
+    .transfer-preview-container {
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    /* Professional Header */
+    .page-header-professional {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%, #f093fb 100%);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: headerFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes headerFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .page-header-professional::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .header-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .document-type-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: var(--blur-medium);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+
+    .header-title h1 {
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(45deg, #fff, #f8f9fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .header-title p {
+        margin: 0.5rem 0 0 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .header-date {
+        text-align: right;
+        font-size: 9px;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    /* Cards Container */
+    .cards-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Status Card */
+    .status-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: var(--shadow-medium);
+        transition: all 0.3s ease;
+    }
+
+    .status-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-heavy);
+    }
+
+    .status-icon-animated {
+        width: 60px;
+        height: 60px;
+        background: var(--transfer-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 206, 201, 0.7); }
+        50% { box-shadow: 0 0 0 10px rgba(0, 206, 201, 0); }
+    }
+
+    .status-content h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+    }
+
+    .status-content p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    /* Info Card */
+    .info-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--shadow-medium);
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-heavy);
+    }
+
+    .info-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--info-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 9px;
+    }
+
+    .info-header h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .badge-status-custom {
+        background: var(--success-gradient);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Transfer Flow */
+    .transfer-flow {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .transfer-step {
+        text-align: center;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .transfer-step:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 1rem auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        position: relative;
+    }
+
+    .step-icon.origin {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .step-icon.transfer {
+        background: var(--transfer-gradient);
+        color: white;
+        animation: arrow-pulse 1.5s infinite;
+    }
+
+    .step-icon.destination {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    @keyframes arrow-pulse {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(5deg) scale(1.1); }
+    }
+
+    .step-content h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .step-description {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .supplier-selection {
+        margin-top: 1rem;
+    }
+
+    .form-select-modern {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        color: var(--text-primary);
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .form-select-modern:focus {
+        outline: none;
+        border-color: #00cec9;
+        box-shadow: 0 0 0 2px rgba(0, 206, 201, 0.2);
+    }
+
+    .selection-hint {
+        display: block;
+        margin-top: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* Items Section */
+    .items-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        margin: 0 2rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-medium);
+    }
+
+    .items-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .items-header h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .items-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--info-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 9px;
+    }
+
+    .status-summary {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-executable {
+        color: #10b981;
+    }
+
+    .status-blocked {
+        color: #f59e0b;
+    }
+
+    /* Modern Table */
+    .modern-table {
+        overflow-x: auto;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .items-table th {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .items-table td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+
+    .item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .item-name {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .item-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .type-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .type-badge.product {
+        background: rgba(139, 92, 246, 0.2);
+        color: #a78bfa;
+    }
+
+    .type-badge.material {
+        background: var(--bg-white-transparent-light);
+        color: #4ade80;
+    }
+
+    .quantity-badge {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .stock-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .stock-badge.available {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .stock-badge.unavailable {
+        background: var(--error-gradient);
+        color: white;
+    }
+
+    .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-badge.success {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .status-badge.error {
+        background: var(--error-gradient);
+        color: white;
+    }
+
+    .supplier-info {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .no-supplier {
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .success-row {
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .error-row {
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    /* Summary Section */
+    .summary-section {
+        background: rgba(16, 185, 129, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--bg-white-transparent-light);
+        margin: 0 2rem;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .summary-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .summary-col h4 {
+        font-size: 9px;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+        color: var(--text-primary);
+    }
+
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .summary-item.error {
+        border-color: rgba(239, 68, 68, 0.2);
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .summary-item.success {
+        border-color: var(--bg-white-transparent-light);
+        background: rgba(16, 185, 129, 0.05);
+        color: #10b981;
+    }
+
+    .item-quantity {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Actions Section */
+    .actions-section {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius);
+        margin: 2rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-medium);
+    }
+
+    .actions-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .document-status {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .status-icon-large {
+        width: 50px;
+        height: 50px;
+        background: var(--transfer-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+    }
+
+    .status-text h4 {
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .status-text p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .actions-buttons {
+        display: flex;
+        gap: 30px;
+    }
+
+    .btn-main-action {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-main-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-main-action:hover::before {
+        left: 100%;
+    }
+
+    .btn-icon-wrapper {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .btn-content {
+        text-align: left;
+    }
+
+    .btn-title {
+        display: block;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .btn-subtitle {
+        display: block;
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+
+    .btn-arrow {
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-cancel {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+    }
+
+    .btn-cancel:hover {
+        background: var(--error-gradient);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-execute {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 4px 15px var(--border-green-medium);
+    }
+
+    .btn-execute:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px var(--border-green-heavy);
+    }
+
+    .btn-execute:hover .btn-arrow {
+        transform: translateX(5px);
+    }
+
+    .btn-cancel:hover .btn-arrow {
+        transform: translateX(-5px);
+    }
+
+    .btn-disabled {
+        background: rgba(107, 114, 128, 0.1);
+        border: 1px solid rgba(107, 114, 128, 0.3);
+        color: #6b7280;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .cards-container {
+            padding: 1rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .transfer-flow {
+            grid-template-columns: 1fr;
+        }
+
+        .header-main {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .actions-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .actions-buttons {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .summary-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .modern-table {
+            font-size: 0.8rem;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header-professional {
+            padding: 1.5rem;
+        }
+
+        .header-title h1 {
+            font-size: 16px;
+        }
+
+        .btn-main-action {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon-wrapper {
+            padding: 0.5rem;
+        }
+    }
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Preview da Transferência - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Ação Padronizados -->
+<div class="action-buttons">
+    <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="document-btn document-btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar à Requisição
+    </a>
+    <button onclick="window.print()" class="document-btn document-btn-primary">
+        <i class="fas fa-print"></i> Imprimir Transferência
+    </button>
+    <a href="{% url 'stock:main' %}" class="document-btn document-btn-outline">
+        <i class="fas fa-home"></i> Dashboard Stock
+    </a>
+</div>
+
+<div class="transfer-preview-container">
+    <!-- Header Profissional -->
+    <div class="page-header-professional">
+        <div class="header-main">
+            <div class="header-content">
+                <div class="document-type-badge">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>TRANSFERÊNCIA DE STOCK</span>
+                </div>
+                <div class="header-title">
+                    <h1>Preview da Transferência</h1>
+                    <p>{{ requisicao.codigo }} • Execução de Transferência Interna</p>
+                </div>
+            </div>
+            <div class="header-date">
+                <strong>{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Container -->
+    <div class="cards-container">
+        <!-- Status Card -->
+        <div class="status-card">
+            <div class="status-icon-animated">
+                <i class="fas fa-hand-point-right"></i>
+            </div>
+            <div class="status-content">
+                <h3>Transferência Preparada</h3>
+                <p>A transferência está pronta para execução após revisão das informações</p>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3>Informações da Requisição</h3>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ requisicao.codigo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="badge-status-custom">{{ requisicao.status }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Criado por:</span>
+                    <span class="info-value">{{ requisicao.criado_por.username }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total de Itens:</span>
+                    <span class="info-value">{{ requisicao.itens.count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer Flow Card -->
+        <div class="info-card">
+            <div class="info-header">
+                <div class="info-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <h3>Fluxo da Transferência</h3>
+            </div>
+            <div class="transfer-flow">
+                <div class="transfer-step">
+                    <div class="step-icon origin">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="step-content">
+                        <h4>Sucursal Fornecedora</h4>
+                        {% if sucursais_disponiveis %}
+                            <div class="supplier-selection">
+                                <select class="form-select-modern" id="sucursal-fornecedora">
+                                    <option value="">Automática (Recomendado)</option>
+                                    {% for sucursal in sucursais_disponiveis %}
+                                    <option value="{{ sucursal.id }}" 
+                                            data-stock="{{ sucursal.stock_disponivel }}"
+                                            {% if sucursal.recomendada %}selected{% endif %}>
+                                        {{ sucursal.nome }} ({{ sucursal.stock_disponivel }} unidades)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="selection-hint">Deixe em "Automática" para otimização</small>
+                            </div>
+                        {% else %}
+                            <p class="step-description">Será determinada automaticamente</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="transfer-step">
+                    <div class="step-icon transfer">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="step-content">
+                        <h4>Transferência</h4>
+                        <p class="step-description">Stock será movido entre sucursais</p>
+                    </div>
+                </div>
+
+                <div class="transfer-step">
+                    <div class="step-icon destination">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="step-content">
+                        <h4>{{ requisicao.sucursal_origem.nome }}</h4>
+                        <p class="step-description">Destino fixo (não pode ser alterado)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Section -->
+    <div class="items-section">
+        <div class="items-header">
+            <div class="items-icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <h3>Análise de Stock</h3>
+            <div class="status-summary">
+                {% if pode_executar %}
+                    <span class="status-executable">
+                        <i class="fas fa-check-circle"></i> Transferência Executável
+                    </span>
+                {% else %}
+                    <span class="status-blocked">
+                        <i class="fas fa-exclamation-triangle"></i> Problemas Encontrados
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modern-table">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade Necessária</th>
+                        <th>Stock Disponível</th>
+                        <th>Status</th>
+                        <th>Sucursal Fornecedora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in analise_stock %}
+                    <tr class="item-row {% if item.pode_atender %}success-row{% else %}error-row{% endif %}">
+                        <td>
+                            <div class="item-info">
+                                <div class="item-name">
+                                    <strong>{{ item.item.nome }}</strong>
+                                    <span class="item-badge">{{ item.item.codigo }}</span>
+                                </div>
+                                <div class="item-type">
+                                    {% if item.item.tipo == 'PRODUTO' %}
+                                        <span class="type-badge product">Produto</span>
+                                    {% else %}
+                                        <span class="type-badge material">Material</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="quantity-badge">{{ item.quantidade_necessaria }}</span>
+                        </td>
+                        <td>
+                            {% if item.stock_disponivel %}
+                                <span class="stock-badge available">{{ item.stock_disponivel }}</span>
+                            {% else %}
+                                <span class="stock-badge unavailable">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.pode_atender %}
+                                <span class="status-badge success">
+                                    <i class="fas fa-check"></i> Pode Atender
+                                </span>
+                            {% else %}
+                                <span class="status-badge error">
+                                    <i class="fas fa-times"></i> Stock Insuficiente
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.sucursal_fornecedora %}
+                                <span class="supplier-info">{{ item.sucursal_fornecedora.nome }}</span>
+                            {% else %}
+                                <span class="no-supplier">Nenhuma</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="summary-section">
+        <div class="summary-summary">
+            <div class="summary-col">
+                <h4>✅ Itens Prontos para Transferência</h4>
+                <div class="item-list">
+                    {% for item in analise_stock %}
+                        {% if item.pode_atender %}
+                        <div class="summary-item">
+                            <span class="item-name">{{ item.item.nome }}</span>
+                            <span class="item-quantity">{{ item.quantidade_necessaria }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="summary-col">
+                <h4>⚠️ Itens com Problemas</h4>
+                <div class="item-list">
+                    {% for item in analise_stock %}
+                        {% if not item.pode_atender %}
+                        <div class="summary-item error">
+                            <span class="item-name">{{ item.item.nome }}</span>
+                            <span class="item-quantity">{{ item.quantidade_necessaria }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    {% if pode_executar %}
+                    <div class="summary-item success">
+                        <span class="item-name">
+                            <i class="fas fa-check-circle"></i> Nenhum problema encontrado
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="actions-section">
+        <div class="actions-container">
+            <div class="document-status">
+                <div class="status-icon-large">
+                    {% if pode_executar %}
+                        <i class="fas fa-rocket"></i>
+                    {% else %}
+                        <i class="fas fa-ban"></i>
+                    {% endif %}
+                </div>
+                <div class="status-text">
+                    <h4>{% if pode_executar %}Transferência Pronta{% else %}Transferência Bloqueada{% endif %}</h4>
+                    <p>{% if pode_executar %}Todos os itens podem ser atendidos com sucesso{% else %}Alguns itens não podem ser transferidos{% endif %}</p>
+                </div>
+            </div>
+            
+            <div class="actions-buttons">
+                <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-main-action btn-cancel">
+                    <div class="btn-icon-wrapper">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="btn-content">
+                        <span class="btn-title">Cancelar</span>
+                        <span class="btn-subtitle">Voltar à requisição</span>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                </a>
+                
+                {% if pode_executar %}
+                <form method="post" action="{% url 'stock:requisicoes:transfer_stock' requisicao.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-main-action btn-execute" 
+                            onclick="return confirm('Tem certeza que deseja executar a transferência de stock? Esta ação não pode ser desfeita.')">
+                        <div class="btn-icon-wrapper">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="btn-content">
+                            <span class="btn-title">Executar Transferência</span>
+                            <span class="btn-subtitle">Processar transferência</span>
+                        </div>
+                        <div class="btn-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn-main-action btn-disabled" disabled>
+                    <div class="btn-icon-wrapper">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="btn-content">
+                        <span class="btn-title">Não é Possível Executar</span>
+                        <span class="btn-subtitle">Corrija os problemas antes</span>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sucursalSelect = document.getElementById('sucursal-fornecedora');
+    const executeButton = document.querySelector('button[type="submit"]');
+    
+    if (sucursalSelect && executeButton) {
+        // Adicionar validação quando a sucursal é selecionada
+        sucursalSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const stockDisponivel = selectedOption.getAttribute('data-stock');
+            
+            if (this.value && stockDisponivel) {
+                // Mostrar informação do stock disponível
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'mt-2 p-2 bg-info text-white rounded';
+                infoDiv.innerHTML = `<small><i class="fas fa-info-circle"></i> Stock disponível: ${stockDisponivel} unidades</small>`;
+                
+                // Remover informação anterior se existir
+                const existingInfo = this.parentNode.querySelector('.bg-info');
+                if (existingInfo) {
+                    existingInfo.remove();
+                }
+                
+                this.parentNode.appendChild(infoDiv);
+            } else {
+                // Remover informação se voltar para automático
+                const existingInfo = this.parentNode.querySelector('.bg-info');
+                if (existingInfo) {
+                    existingInfo.remove();
+                }
+            }
+        });
+        
+        // Modificar o formulário para incluir a sucursal selecionada
+        const form = executeButton.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const sucursalId = sucursalSelect.value;
+                if (sucursalId) {
+                    // Adicionar campo hidden com a sucursal selecionada
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'sucursal_fornecedora_id';
+                    hiddenInput.value = sucursalId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

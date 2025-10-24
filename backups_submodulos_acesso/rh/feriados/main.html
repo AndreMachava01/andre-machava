@@ -1,0 +1,218 @@
+{% extends 'base_list.html' %}
+{% load static %}
+
+{% block title %}Gestão de Feriados{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Feriados</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Gestão de Feriados
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie feriados nacionais, regionais, municipais e da empresa
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="" class="btn -primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Feriado
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_feriados|default:"0" }}</h3>
+                <p class="stat-label">Total de Feriados</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ feriados_ativos|default:"0" }}</h3>
+                <p class="stat-label">Feriados Ativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ feriados_inativos|default:"0" }}</h3>
+                <p class="stat-label">Feriados Inativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ feriados_ano_atual|default:"0" }}</h3>
+                <p class="stat-label">Este Ano</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='feriados' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if page_obj %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Feriados
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} feriados
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feriado in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">{{ feriado.nome }}</div>
+                            </td>
+                            <td>{{ feriado.data|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="cell-code">{{ feriado.get_tipo_display }}</span>
+                            </td>
+                            <td>
+                                {% if feriado.ativo %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if feriado.descricao %}
+                                    <div class="cell-tertiary">{{ feriado.descricao|truncatechars:50 }}</div>
+                                {% else %}
+                                    <div class="cell-tertiary">-</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="/rh/feriados/{{ feriado.id }}/edit/" class="btn-action secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn-action danger" title="Excluir" 
+                                       onclick="event.preventDefault(); return "Tem certeza que deseja excluir este feriado?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-calendar-times"></i>
+                <h4>Nenhum feriado encontrado</h4>
+                <p>Tente ajustar os filtros de busca ou adicione um novo feriado.</p>
+                <a href="{% url 'rh:feriado_add' %}" class="btn -primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Feriado
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-submit filters
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="tipo"], select[name="ano"], select[name="status"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

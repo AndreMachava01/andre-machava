@@ -1,0 +1,267 @@
+{% extends 'base_list.html' %}
+
+{% block title %}Gestão de Fornecedores - Stock{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">Stock</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Fornecedores</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-truck"></i>
+                    Gestão de Fornecedores
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie fornecedores e parceiros comerciais
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:fornecedor_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Fornecedor
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ page_obj.paginator.count|default:"0" }}</h3>
+                <p class="stat-label">Total de Fornecedores</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ fornecedores_ativos|default:"0" }}</h3>
+                <p class="stat-label">Fornecedores Ativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ fornecedores_preferenciais|default:"0" }}</h3>
+                <p class="stat-label">Preferenciais</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ fornecedores_locais|default:"0" }}</h3>
+                <p class="stat-label">Locais</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='fornecedores' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if page_obj %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Fornecedores
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} fornecedores
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Produtos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fornecedor in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="cell-code">{{ fornecedor.codigo }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-primary">{{ fornecedor.nome }}</div>
+                                {% if fornecedor.nome_fantasia %}
+                                    <div class="cell-tertiary">{{ fornecedor.nome_fantasia }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-primary">{{ fornecedor.email|default:"N/A" }}</div>
+                                {% if fornecedor.telefone %}
+                                    <div class="cell-tertiary">{{ fornecedor.telefone }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ fornecedor.get_tipo_display|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                {% if fornecedor.status == 'ATIVO' %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="cell-primary">{{ fornecedor.produtos_count|default:"0" }}</span>
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:fornecedor_detail' fornecedor.id %}?v={{ timestamp }}" class="btn-action-sm success" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'stock:fornecedor_edit' fornecedor.id %}" class="btn-action-sm secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'stock:fornecedor_delete' fornecedor.id %}" class="btn-action-sm danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-truck"></i>
+                <h4>Nenhum fornecedor encontrado</h4>
+                <p>
+                    {% if search_query or status or tipo %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    adicione o primeiro fornecedor.
+                </p>
+                <a href="{% url 'stock:fornecedor_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Fornecedor
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Função para limpar filtros
+function clearFilters() {
+    document.querySelector('input[name="q"]').value = '';
+    document.querySelector('select[name="status"]').value = '';
+    document.querySelector('select[name="tipo"]').value = '';
+    document.querySelector('form').submit();
+}
+
+// Auto-submit nos filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.querySelector('select[name="status"]');
+    const tipoSelect = document.querySelector('select[name="tipo"]');
+    
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            document.querySelector('form').submit();
+        });
+    }
+    
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', function() {
+            document.querySelector('form').submit();
+        });
+    }
+    
+    // Busca inteligente
+    const searchInput = document.querySelector('input[name="q"]');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
+                    document.querySelector('form').submit();
+                }
+            }, 500);
+        });
+    }
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

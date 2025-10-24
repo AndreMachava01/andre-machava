@@ -1,0 +1,109 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Calendário de Presenças - Minimal{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Calendário de Presenças - Versão Minimal</h2>
+    
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="funcionario">Funcionário:</label>
+            <select id="funcionario" class="form-control">
+                <option value="">Todos</option>
+                {% for funcionario in funcionarios %}
+                <option value="{{ funcionario.id }}" {% if funcionario.id|stringformat:"s" == funcionario_id %}selected{% endif %}>
+                    {{ funcionario.nome_completo }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    {% for dia in dias_detalhados %}
+                    <th class="text-center {% if dia.e_fim_semana %}table-warning{% endif %}">
+                        {{ dia.dia }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcionario in funcionarios_exibir %}
+                <tr>
+                    <td>{{ funcionario.nome_completo }}</td>
+                    {% for dia in dias_detalhados %}
+                    <td class="text-center {% if dia.e_fim_semana %}table-warning{% endif %}">
+                        <div class="presenca-indicator vazio"
+                             data-funcionario="{{ funcionario.id }}"
+                             data-dia="{{ dia.dia }}"
+                             data-mes="{{ mes }}"
+                             data-ano="{{ ano }}"
+                             onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+console.log('=== CALENDÁRIO MINIMAL INICIANDO ===');
+
+// Dados das presenças
+const presencasData = {{ presencas_dict }};
+console.log('Dados de presenças:', presencasData);
+
+// Dados dos feriados
+const feriadosData = {{ feriados_dict }};
+console.log('Dados dos feriados:', feriadosData);
+
+// Tipos de presença
+const tiposPresenca = [
+    {% for tipo in tipos_presenca %}
+    {
+        id: {{ tipo.id }},
+        nome: "{{ tipo.nome|escapejs }}",
+        codigo: "{{ tipo.codigo|escapejs }}",
+        cor: "{{ tipo.cor|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+console.log('Tipos de presença:', tiposPresenca);
+
+// Função principal
+function ciclarPresenca(elemento) {
+    console.log('Função ciclarPresenca chamada!', elemento);
+    alert('Clique funcionou! Elemento: ' + elemento.dataset.funcionario + ' - Dia: ' + elemento.dataset.dia);
+}
+
+// Função para mostrar feriados
+function mostrarFeriados() {
+    console.log('=== FERIADOS DO MÊS ===');
+    Object.keys(feriadosData).forEach(key => {
+        const feriado = feriadosData[key];
+        console.log(`${key}: ${feriado.nome} (${feriado.tipo})`);
+    });
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Calendário minimal inicializado');
+    console.log('Indicadores encontrados:', document.querySelectorAll('.presenca-indicator').length);
+    mostrarFeriados();
+});
+</script>
+{% endblock %}
+

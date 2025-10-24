@@ -1,0 +1,109 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Editar Associação{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "stock:main" %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:fornecedores" %}">Fornecedores</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedor_detail' fornecedor.id %}">{{ fornecedor.nome }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedor_produtos' fornecedor.id %}">Itens</a></li>
+            <li class="breadcrumb-item active">Editar Associação</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="modern-container">
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-edit"></i>
+                Editar Associação
+            </h1>
+            <p class="hero-subtitle">
+                Edite os detalhes da associação entre {{ fornecedor.nome }} e {{ associacao.item.nome }}
+            </p>
+            <div class="hero-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <a href="#"stock:fornecedor_produtos' fornecedor.id %}" class="btn-modern btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Itens
+                </a>
+                <a href="#"stock:fornecedor_detail' fornecedor.id %}" class="btn-modern btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-user"></i>
+                    Detalhes do Fornecedor
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="item-info">
+            <div class="item-name">{{ associacao.item.nome }}</div>
+            <div class="item-details">
+                <span>Código:</span> {{ associacao.item.codigo }} | 
+                <span>Tipo:</span> {{ associacao.tipo_item }} | 
+                <span>Fornecedor:</span> {{ fornecedor.nome }}
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="preco_fornecedor" class="form-label">
+                        <i class="fas fa-dollar-sign"></i>
+                        Preço do Fornecedor (MT)
+                    </label>
+                    <input type="number" 
+                           name="preco_fornecedor" 
+                           id="preco_fornecedor" 
+                           class="form-control" 
+                           value="{{ associacao.preco_fornecedor }}"
+                           step="0.01"
+                           min="0.01"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="prazo_entrega" class="form-label">
+                        <i class="fas fa-clock"></i>
+                        Prazo de Entrega (dias)
+                    </label>
+                    <input type="number" 
+                           name="prazo_entrega" 
+                           id="prazo_entrega" 
+                           class="form-control" 
+                           value="{{ associacao.prazo_entrega }}"
+                           min="1"
+                           required>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" 
+                           name="ativo" 
+                           id="ativo" 
+                           class="form-check-input"
+                           {% if associacao.ativo %}checked{% endif %}>
+                    <label for="ativo" class="form-check-label">
+                        <i class="fas fa-check-circle"></i>
+                        Associação Ativa
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    Salvar Alterações
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

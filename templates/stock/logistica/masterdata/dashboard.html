@@ -1,0 +1,336 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Dashboard Dados Mestres{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Dados Mestres</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Dashboard Dados Mestres"
+    subtitle="Gestão de Dados Fundamentais do Sistema Logístico"
+    icon="fas fa-database"
+%}    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.regioes.total }}</div>
+                <div class="stat-label">Regiões</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.zonas_entrega.total }}</div>
+                <div class="stat-label">Zonas de Entrega</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.hubs_logisticos.total }}</div>
+                <div class="stat-label">Hubs Logísticos</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-cube"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.catalogo_dimensoes.total }}</div>
+                <div class="stat-label">Dimensões</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas de Restrições -->
+    <div class="stats-grid">
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.restricoes_logisticas.total }}</div>
+                <div class="stat-label">Restrições</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-secondary">
+            <div class="stat-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.permissoes_logisticas.total }}</div>
+                <div class="stat-label">Permissões</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-map-pin"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.regioes.com_coordenadas }}</div>
+                <div class="stat-label">Com Coordenadas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.hubs_logisticos.funcionamento_24h }}</div>
+                <div class="stat-label">Hubs 24h</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Regiões Ativas -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-globe text-primary"></i>
+                        Regiões Ativas
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if regioes_ativas %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Província</th>
+                                        <th>Prioridade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for regiao in regioes_ativas %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ regiao.codigo }}</span>
+                                        </td>
+                                        <td>{{ regiao.nome }}</td>
+                                        <td>{{ regiao.provincia }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ regiao.prioridade }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                                <a href="#"stock:masterdata:regiao_detail' regiao.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-globe fa-3x mb-3"></i>
+                            <p>Nenhuma região cadastrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Zonas de Entrega -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-map-marked-alt text-info"></i>
+                        Zonas de Entrega
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if zonas_ativas %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                            <p>Nenhuma zona de entrega cadastrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hubs Logísticos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-warehouse text-success"></i>
+                        Hubs Logísticos
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if hubs_ativos %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-warehouse fa-3x mb-3"></i>
+                            <p>Nenhum hub logístico cadastrado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Recentes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history text-primary"></i>
+                        Logs Recentes de Masterdata
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#"stock:masterdata:logs' %}" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if logs_recentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>Nenhum log de masterdata encontrado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Acesso Rápido
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:regioes_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-globe"></i><br>
+                                Regiões
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:zonas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-map-marked-alt"></i><br>
+                                Zonas
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:hubs_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-warehouse"></i><br>
+                                Hubs
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:catalogo_dimensoes_list' %}" class="btn btn-outline-warning btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-cube"></i><br>
+                                Dimensões
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:restricoes_list' %}" class="btn btn-outline-danger btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-exclamation-triangle"></i><br>
+                                Restrições
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:masterdata:validar_restricoes' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-check-circle"></i><br>
+                                Validar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLogDetails(logId) {
+    // Implementar modal para mostrar detalhes do log
+    alert('Detalhes do log ' + logId);
+}
+</script>
+{% endblock %}

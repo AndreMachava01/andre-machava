@@ -1,0 +1,204 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Receber Transferência {{ transferencia.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Receber Transferência"
+    subtitle="<i class="fas fa-exchange-alt"></i>
+                    {{ transferencia.codigo }} - {{ transferencia.sucursal_origem.nome }} → {{ transferencia.sucursal_destino.nome }}"
+    icon="fas fa-download"
+%}    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Form Container -->
+        <div class="form-container">
+            <div class="form-header">
+                <h3 class="form-title">
+                    <i class="fas fa-boxes"></i>Confirmar Recebimento dos Itens
+                </h3>
+            </div>
+            
+            <div class="form-body">
+                <div class="alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Confirme as quantidades recebidas para cada|default:0 items. Ajuste conforme necessário.</span>
+                </div>
+
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h4 class="table-title">
+                                <i class="fas fa-list"></i>Itens da Transferência
+                            </h4>
+                        </div>
+                        
+                        <div class="table-wrapper">
+                            <table class="table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Solicitada</th>
+                                        <th>Já Recebida</th>
+                                        <th>Quantidade Recebida</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for items in itens  %}
+                                    <tr>
+                                        <td class="product-cell">
+                                            <div class="product-info">
+                                                <span class="product-name">{{ item.item.nome }}</span>
+                                                <span class="product-code">{{ item.item.codigo }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="quantity-cell">
+                                            <span class="quantity-badge badge-secondary">{{ item.quantidade_solicitada }}</span>
+                                        </td>
+                                        <td class="quantity-cell">
+                                            <span class="quantity-badge badge-success">{{ item.quantidade_recebida }}</span>
+                                        </td>
+                                        <td class="quantity-cell">
+                                            <input type="number" 
+                                                   class="form-control-modern" 
+                                                   name="quantidade_recebida_{{ item.id }}" 
+                                                   value="{{ item.quantidade_pendente }}"
+                                                   min="0" 
+                                                   max="{{ item.quantidade_pendente }}"
+                                                   required>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="#"stock:transferencias:detail' transferencia.id %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-check"></i>Confirmar Recebimento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-card">
+                <h3 class="info-title">
+                    <i class="fas fa-info-circle"></i>Informações da Transferência
+                </h3>
+                
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ transferencia.codigo }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Origem:</span>
+                    <span class="info-value">{{ transferencia.sucursal_origem.nome }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Destino:</span>
+                    <span class="info-value">{{ transferencia.sucursal_destino.nome }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status-badge status-enviada">Enviada</span>
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Data de Envio:</span>
+                    <span class="info-value">{{ transferencia.data_envio|date:"d/m/Y H:i" }}</span>
+                </div>
+
+                <div class="route-info">
+                    <i class="fas fa-building text-primary"></i>
+                    <span>{{ transferencia.sucursal_origem.nome }}</span>
+                    <i class="fas fa-arrow-right route-arrow"></i>
+                    <i class="fas fa-building text-success"></i>
+                    <span>{{ transferencia.sucursal_destino.nome }}</span>
+                </div>
+
+                {% if transferencia.observacoes %}
+                <div class="info-item">
+                    <span class="info-label">Observações:</span>
+                    <span class="info-value">{{ transferencia.observacoes }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h4 class="summary-title">
+                    <i class="fas fa-calculator"></i>Resumo do Recebimento
+                </h4>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Total de Itens:</span>
+                    <span class="summary-value">{{ itens.count }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Unidades Solicitadas:</span>
+                    <span class="summary-value">
+                        {% for items in itens  %}
+                            {% if forloop.first %}{{ item.quantidade_solicitada }}{% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Unidades Pendentes:</span>
+                    <span class="summary-value">
+                        {% for items in itens  %}
+                            {% if forloop.first %}{{ item.quantidade_pendente }}{% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação das quantidades
+    const inputs = document.querySelectorAll('input[name^="quantidade_recebida_"]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const max = parseInt(this.getAttribute('max'));
+            const value = parseInt(this.value);
+            
+            if (value > max) {
+                this.value = max;
+            }
+            
+            if (value < 0) {
+                this.value = 0;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

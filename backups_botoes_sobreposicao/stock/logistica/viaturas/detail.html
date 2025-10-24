@@ -1,0 +1,547 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ viatura.nome }} - Detalhes{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .page-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+    }
+
+    .page-header {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .page-header button,
+    .page-header a {
+        pointer-events: auto !important;
+        z-index: 1001 !important;
+        position: relative !important;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-content {
+        padding: 30px;
+        background: #1f2937;
+    }
+
+    /* Cards de informação */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .info-card {
+        background: #374151;
+        border-radius: 16px;
+        border: 1px solid #4b5563;
+        padding: 25px;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: #06b6d4;
+    }
+
+    .info-card h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #4b5563;
+        padding-bottom: 15px;
+    }
+
+    .info-card h3 i {
+        color: #06b6d4;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #4b5563;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #f9fafb;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: white;
+        text-align: center;
+    }
+
+    .status-badge.status-active {
+        background: var(--success-gradient);
+    }
+
+    .status-badge.status-warning {
+        background: var(--warning-gradient);
+    }
+
+    .status-badge.status-inactive {
+        background: var(--danger-gradient);
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 4px;
+    }
+
+    .badge-info {
+        color: #fff;
+        background-color: #06b6d4;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: #374151;
+        border-radius: 12px;
+        border: 1px solid #4b5563;
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .summary-card .icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #06b6d4;
+    }
+
+    .summary-card .number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f9fafb;
+        margin-bottom: 5px;
+    }
+
+    .summary-card .label {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    /* Botões */
+    .btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--cyan-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .btn-secondary {
+        background: #4b5563;
+        color: #f9fafb;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background: #6b7280;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: var(--danger-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+        
+        
+
+        
+
+        
+
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-car"></i>
+                    {{ viatura.nome }}
+                </h1>
+                <p class="page-subtitle">
+                    Detalhes da viatura interna da empresa
+                </p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center; position: relative; z-index: 1000;">
+                <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    <i class="fas fa-edit"></i>
+                    Editar
+                </a>
+                <a href="" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="summary-card">
+                <div class="icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="number">{{ viatura.quilometragem_atual|default:"0" }}</div>
+                <div class="label">Quilometragem Atual</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">
+                    <i class="fas fa-weight"></i>
+                </div>
+                <div class="number">{{ viatura.capacidade_kg|default:"N/A" }}</div>
+                <div class="label">Capacidade (kg)</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div class="number">{{ viatura.ano_fabricacao|default:"N/A" }}</div>
+                <div class="label">Ano de Fabricação</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="number">{{ viatura.prazo_entrega_padrao|default:"N/A" }}</div>
+                <div class="label">Prazo Padrão (dias)</div>
+            </div>
+        </div>
+
+        <!-- Informações da Viatura -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                <div class="info-item">
+                    <span class="info-label">Código</span>
+                    <span class="info-value">{{ viatura.codigo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nome</span>
+                    <span class="info-value">{{ viatura.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Categoria</span>
+                    <span class="info-value">
+                        <span class="badge badge-info">{{ viatura.categoria_veiculo }}</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Placa</span>
+                    <span class="info-value">{{ viatura.placa }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Marca</span>
+                    <span class="info-value">{{ viatura.marca }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Modelo</span>
+                    <span class="info-value">{{ viatura.modelo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ano de Fabricação</span>
+                    <span class="info-value">{{ viatura.ano_fabricacao }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        {% if viatura.status == 'ATIVA' %}
+                            <span class="status-badge status-active">{{ viatura.get_status_display }}</span>
+                        {% elif viatura.status == 'MANUTENCAO' %}
+                            <span class="status-badge status-warning">{{ viatura.get_status_display }}</span>
+                        {% else %}
+                            <span class="status-badge status-inactive">{{ viatura.get_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ativa</span>
+                    <span class="info-value">
+                        {% if viatura.ativa %}
+                            <i class="fas fa-check-circle" style="color: #10b981;"></i> Sim
+                        {% else %}
+                            <i class="fas fa-times-circle" style="color: #ef4444;"></i> Não
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-user"></i> Motorista Responsável</h3>
+                <div class="info-item">
+                    <span class="info-label">Nome do Motorista</span>
+                    <span class="info-value">{{ viatura.motorista_responsavel }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Telefone</span>
+                    <span class="info-value">{{ viatura.telefone_motorista }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-cogs"></i> Especificações Técnicas</h3>
+                <div class="info-item">
+                    <span class="info-label">Capacidade</span>
+                    <span class="info-value">{{ viatura.capacidade_kg|default:"N/A" }} kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Quilometragem Atual</span>
+                    <span class="info-value">{{ viatura.quilometragem_atual|default:"0" }} km</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Próxima Revisão</span>
+                    <span class="info-value">
+                        {% if viatura.proxima_revisao %}
+                            {{ viatura.proxima_revisao|date:"d/m/Y" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-dollar-sign"></i> Custos e Prazos</h3>
+                <div class="info-item">
+                    <span class="info-label">Prazo de Entrega Padrão</span>
+                    <span class="info-value">{{ viatura.prazo_entrega_padrao|default:"N/A" }} dias</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Custo por Kg</span>
+                    <span class="info-value">
+                        {% if viatura.custo_por_kg %}
+                            {{ viatura.custo_por_kg }} MT/kg
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Custo Fixo</span>
+                    <span class="info-value">
+                        {% if viatura.custo_fixo %}
+                            {{ viatura.custo_fixo }} MT
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        {% if viatura.observacoes %}
+        <div class="info-card">
+            <h3><i class="fas fa-sticky-note"></i> Observações</h3>
+            <p style="color: #d1d5db; line-height: 1.6; margin: 0;">{{ viatura.observacoes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Botões de Ação -->
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+            <a href="#"stock:logistica:viatura_edit' viatura.id %}" class="btn btn btn-primary btn-responsive btn-responsive">
+                <i class="fas fa-edit"></i>
+                Editar Viatura
+            </a>
+            <button type="button" class="btn btn btn-danger" onclick=" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-trash"></i>
+                Excluir Viatura
+            </button>
+            <a href="#"stock:logistica:viaturas_list' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Lista
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div id="modalExclusao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
+    <div style="background: #374151; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid #4b5563; box-shadow: var(--shadow-heavy);">
+        <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+            Confirmar Exclusão
+        </h3>
+        <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.6;">
+            Tem certeza que deseja excluir a viatura <strong>{{ viatura.nome }}</strong>?
+            <br><br>
+            <span style="color: #f59e0b; font-weight: 600;">Esta ação não pode ser desfeita!</span>
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+            {% button_unified type="confirmation" action="cancel" text="Cancelar" icon="fas fa-times" %}
+            <form method="POST" action="{% url 'stock:logistica:viatura_delete' viatura.id %}" style="display: inline;"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                <button type="submit"  class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Excluir
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao() {
+    document.getElementById('modalExclusao').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('modalExclusao').style.display = 'none';
+}
+</script>
+{% endblock %}
+

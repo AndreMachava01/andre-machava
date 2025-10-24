@@ -1,0 +1,374 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Adicionar|default:0 items - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-plus me-2"></i>Adicionar|default:0 items - {{ requisicao.codigo }}
+            </h1>
+            <div class="hero-actions">
+                <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar à Requisição
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <div class="form-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'stock:requisicoes:add_item' requisicao.id %}"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="item">
+                        <i class="fas fa-box"></i> Item
+                    </label>
+                    <select name="item" id="item" class="form-control-modern" required>
+                        <option value="">Selecione um|default:0 items</option>
+                        {% for items in itens  %}
+                            <option value="{{ item.id }}" 
+                                    data-nome="{{ item.nome }}"
+                                    data-codigo="{{ item.codigo }}"
+                                    data-tipo="{{ item.tipo }}"
+                                    data-unidade="{{ item.unidade_medida }}"
+                                    data-preco="{{ item.preco_custo }}"
+                                    data-stock="0"
+                                    data-stock-disponivel="0">
+                                {{ item.nome }} ({{ item.codigo }}) - {{ item.get_tipo_display }}
+                            </option>
+                        {% endfor %}
+                        {% if items_sugerido and|default:0 items_sugerido not in itens  %}
+                            <option value="{{ item_sugerido.id }}" 
+                                    data-nome="{{ item_sugerido.nome }}"
+                                    data-codigo="{{ item_sugerido.codigo }}"
+                                    data-tipo="{{ item_sugerido.tipo }}"
+                                    data-unidade="{{ item_sugerido.unidade_medida }}"
+                                    data-preco="{{ item_sugerido.preco_custo }}"
+                                    data-stock="0"
+                                    data-stock-disponivel="0"
+                                    style="background-color: #fef3c7; color: #92400e;">
+                                {{ item_sugerido.nome }} ({{ item_sugerido.codigo }}) - {{ item_sugerido.get_tipo_display }} - Stock: 0 (Não disponível)
+                            </option>
+                        {% endif %}
+                    </select>
+                    <div class="form-help">Selecione o|default:0 items que deseja solicitar</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sucursal_fornecedora">
+                        <i class="fas fa-warehouse"></i> Sucursal Fornecedora
+                    </label>
+                    <select name="sucursal_fornecedora" id="sucursal_fornecedora" class="form-control-modern" required>
+                        <option value="">Selecione a sucursal que tem o|default:0 items</option>
+                        {% for sucursal in sucursais %}
+                            <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">Sucursal que tem o|default:0 items disponível</div>
+                </div>
+
+                <div id="item-info" class="item-info" style="display: none;">
+                    <h4><i class="fas fa-info-circle"></i> Informações do|default:0 items</h4>
+                    <div class="item-details">
+                        <div class="item-detail">
+                            <span class="item-detail-label">Nome:</span>
+                            <span class="item-detail-value" id="item-nome">-</span>
+                        </div>
+                        <div class="item-detail">
+                            <span class="item-detail-label">Código:</span>
+                            <span class="item-detail-value" id="item-codigo">-</span>
+                        </div>
+                        <div class="item-detail">
+                            <span class="item-detail-label">Tipo:</span>
+                            <span class="item-detail-value" id="item-tipo">-</span>
+                        </div>
+                        <div class="item-detail">
+                            <span class="item-detail-label">Unidade:</span>
+                            <span class="item-detail-value" id="item-unidade">-</span>
+                        </div>
+                        <div class="item-detail">
+                            <span class="item-detail-label">Preço:</span>
+                            <span class="item-detail-value" id="item-preco">-</span>
+                        </div>
+                        <div class="item-detail">
+                            <span class="item-detail-label">Stock Disponível:</span>
+                            <span class="item-detail-value" id="item-stock">-</span>
+                        </div>
+                    </div>
+                    <div id="stock-warning" class="stock-warning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Atenção: O stock disponível é limitado!
+                    </div>
+                </div>
+
+                <!-- Sugestões de Quantidade -->
+                <div id="sugestoes-quantidade" class="form-group" style="display: none;">
+                    <label class="form-label">
+                        <i class="fas fa-lightbulb"></i> Sugestões de Quantidade
+                    </label>
+                    <div class="sugestoes-container">
+                        <div class="sugestao-item" data-quantidade="minima">
+                            <div class="sugestao-label">Mínima</div>
+                            <div class="sugestao-desc">Para atingir estoque mínimo</div>
+                            <div class="sugestao-valor" id="sugestao-minima">-</div>
+                        </div>
+                        <div class="sugestao-item" data-quantidade="recomendada">
+                            <div class="sugestao-label">Recomendada</div>
+                            <div class="sugestao-desc">Para estoque equilibrado</div>
+                            <div class="sugestao-valor" id="sugestao-recomendada">-</div>
+                        </div>
+                        <div class="sugestao-item" data-quantidade="maxima">
+                            <div class="sugestao-label">Máxima</div>
+                            <div class="sugestao-desc">Para atingir estoque máximo</div>
+                            <div class="sugestao-valor" id="sugestao-maxima">-</div>
+                        </div>
+                    </div>
+                    <div class="form-help">Clique em uma sugestão para usar a quantidade</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="quantidade">
+                        <i class="fas fa-hashtag"></i> Quantidade Solicitada
+                    </label>
+                    <input type="number" name="quantidade" id="quantidade" class="form-control-modern" 
+                           min="1" required placeholder="Digite a quantidade desejada">
+                    <div class="form-help">Quantidade que deseja solicitar</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="observacoes">
+                        <i class="fas fa-comment"></i> Observações
+                    </label>
+                    <textarea name="observacoes" id="observacoes" class="form-control-modern form-textarea" 
+                              placeholder="Observações sobre este|default:0 items (opcional)"></textarea>
+                    <div class="form-help">Informações adicionais sobre este|default:0 items</div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-plus"></i>Adicionar|default:0 items
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemselect = document.getElementById('item');
+    const sucursalSelect = document.getElementById('sucursal_fornecedora');
+    const itemsInfo = document.getElementById('item-info');
+    const stockWarning = document.getElementById('stock-warning');
+    const quantidadeInput = document.getElementById('quantidade');
+    const sugestoesContainer = document.getElementById('sugestoes-quantidade');
+    
+    // Elementos para mostrar informações do|default:0 items
+    const itemsNome = document.getElementById('item-nome');
+    const itemsCodigo = document.getElementById('item-codigo');
+    const itemsTipo = document.getElementById('item-tipo');
+    const itemsUnidade = document.getElementById('item-unidade');
+    const itemsPreco = document.getElementById('item-preco');
+    const itemstock = document.getElementById('item-stock');
+    
+    // Elementos das sugestões
+    const sugestaoMinima = document.getElementById('sugestao-minima');
+    const sugestaoRecomendada = document.getElementById('sugestao-recomendada');
+    const sugestaoMaxima = document.getElementById('sugestao-maxima');
+    
+    function updateItemInfo() {
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+        const sucursalId = sucursalSelect.value;
+        
+        if (selectedOption.value && sucursalId) {
+            // Mostrar informações básicas do|default:0 items
+            itemNome.textContent = selectedOption.dataset.nome;
+            itemCodigo.textContent = selectedOption.dataset.codigo;
+            itemTipo.textContent = selectedOption.dataset.tipo;
+            itemUnidade.textContent = selectedOption.dataset.unidade;
+            itemPreco.textContent = parseFloat(selectedOption.dataset.preco).toFixed(2) + ' MT';
+            
+            itemInfo.style.display = 'block';
+            
+            // Buscar stock da sucursal selecionada
+            fetchStockInfo(selectedOption.value, sucursalId);
+        } else {
+            itemInfo.style.display = 'none';
+            stockWarning.style.display = 'none';
+            sugestoesContainer.style.display = 'none';
+        }
+    }
+    
+    function fetchStockInfo(itemId, sucursalId) {
+        fetch(`/stock/requisicoes/api/stock-item-sucursal/?item_id=${itemId}&sucursal_id=${sucursalId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Erro ao buscar stock:', data.error);
+                    itemStock.textContent = 'Erro';
+                    stockWarning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao buscar informações de stock!';
+                    stockWarning.style.display = 'block';
+                    quantidadeInput.disabled = true;
+                    sugestoesContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Atualizar informações de stock|default:0 itemstock.textContent = data.quantidade_disponivel;
+                
+                if (!data.disponivel || data.quantidade_disponivel === 0) {
+                    // Item não disponível na sucursal selecionada
+                    stockWarning.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Este|default:0 items não está disponível na sucursal ${data.sucursal_nome}!`;
+                    stockWarning.style.display = 'block';
+                    quantidadeInput.max = 0;
+                    quantidadeInput.placeholder = 'Item não disponível';
+                    quantidadeInput.disabled = true;
+                    sugestoesContainer.style.display = 'none';
+                } else {
+                    // Item disponível
+                    quantidadeInput.disabled = false;
+                    if (data.quantidade_disponivel < 10) {
+                        stockWarning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Atenção: O stock disponível é limitado!';
+                        stockWarning.style.display = 'block';
+                    } else {
+                        stockWarning.style.display = 'none';
+                    }
+                    
+                    // Definir quantidade máxima baseada no stock disponível
+                    quantidadeInput.max = data.quantidade_disponivel;
+                    quantidadeInput.placeholder = `Máximo: ${data.quantidade_disponivel}`;
+                    
+                    // Carregar sugestões de quantidade apenas se disponível
+                    loadSugestoesQuantidade(itemId);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar stock:', error);
+                itemStock.textContent = 'Erro';
+                stockWarning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao buscar informações de stock!';
+                stockWarning.style.display = 'block';
+                quantidadeInput.disabled = true;
+                sugestoesContainer.style.display = 'none';
+            });
+    }
+    
+    // Função para carregar sugestões de quantidade
+    function loadSugestoesQuantidade(itemId) {
+        const sucursalDestinoId = sucursalSelect.value;
+        
+        if (!sucursalDestinoId) {
+            sugestoesContainer.style.display = 'none';
+            return;
+        }
+        
+        fetch(`/stock/requisicoes/api/sugestao-quantidade/?item_id=${itemId}&sucursal_destino_id=${sucursalDestinoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Erro ao carregar sugestões:', data.error);
+                    sugestoesContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Atualizar valores das sugestões
+                sugestaoMinima.textContent = data.sugestoes.minima;
+                sugestaoRecomendada.textContent = data.sugestoes.recomendada;
+                sugestaoMaxima.textContent = data.sugestoes.maxima;
+                
+                // Mostrar container de sugestões
+                sugestoesContainer.style.display = 'block';
+                
+                // Adicionar event listeners para seleção
+                document.querySelectorAll('.sugestao-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const quantidade = this.querySelector('.sugestao-valor').textContent;
+                        if (quantidade !== '-') {
+                            quantidadeInput.value = quantidade;
+                            
+                            // Destacar sugestão selecionada
+                            document.querySelectorAll('.sugestao-item').forEach(i => i.classList.remove('selected'));
+                            this.classList.add('selected');
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar sugestões:', error);
+                sugestoesContainer.style.display = 'none';
+            });
+    }
+    
+    // Atualizar informações quando o|default:0 items ou sucursal for selecionado|default:0 itemselect.addEventListener('change', updateItemInfo);
+    sucursalSelect.addEventListener('change', updateItemInfo);
+    
+    // Pré-selecionar|default:0 items sugerido se existir
+    {% if items_sugerido  %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const itemsugeridoId = {{ item_sugerido.id }};
+        const option = itemSelect.querySelector(`option[value="${itemSugeridoId}"]`);
+        if (option) {
+            option.selected = true;
+            updateItemInfo();
+        }
+    });
+    {% endif %}
+    
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const quantidade = parseInt(quantidadeInput.value);
+        const stockDisponivel = parseInt(itemStock.textContent) || 0;
+        
+        if (!itemSelect.value) {
+            alert('Por favor, selecione um|default:0 items!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!sucursalSelect.value) {
+            alert('Por favor, selecione uma sucursal fornecedora!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (stockDisponivel === 0) {
+            alert('Este|default:0 items não está disponível na sucursal selecionada!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!quantidade || quantidade <= 0) {
+            alert('Por favor, digite uma quantidade válida!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (quantidade > stockDisponivel) {
+            alert(`A quantidade solicitada (${quantidade}) não pode ser maior que o stock disponível (${stockDisponivel})!`);
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

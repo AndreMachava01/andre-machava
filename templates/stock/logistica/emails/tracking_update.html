@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualização de Rastreamento</title>
+    
+</head>
+<body>
+    <div class="header">
+        <h1>{{ company_name }}</h1>
+        <h2>Atualização de Rastreamento</h2>
+    </div>
+    
+    <div class="content">
+        <div class="tracking-code">
+            Código de Rastreamento: {{ tracking_code }}
+        </div>
+        
+        <div class="status">
+            Status: {{ status }}
+        </div>
+        
+        {% if location %}
+        <div class="info-box">
+            <strong>Localização Atual:</strong><br>
+            {{ location }}
+        </div>
+        {% endif %}
+        
+        {% if estimated_delivery %}
+        <div class="info-box">
+            <strong>Entrega Estimada:</strong><br>
+            {{ estimated_delivery }}
+        </div>
+        {% endif %}
+        
+        <div class="info-box">
+            <strong>Acompanhe seu pedido:</strong><br>
+            <a href="{{ tracking_url|default:'https://empresa.com/rastreamento' }}" 
+               style="color: #3498db; text-decoration: none;">
+                Clique aqui para rastrear
+            </a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Este é um email automático. Por favor, não responda.</p>
+        <p>{{ company_name }} - Logística</p>
+    </div>
+</body>
+</html>

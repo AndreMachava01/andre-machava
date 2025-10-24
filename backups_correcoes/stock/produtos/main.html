@@ -1,0 +1,224 @@
+{% extends 'base_list.html' %}
+{% load static %}
+
+{% comment %}
+LISTA DE PRODUTOS - VERSÃO SIMPLIFICADA COM SISTEMA UNIFICADO
+Este template usa o sistema unificado de listas de forma mais simples
+{% endcomment %}
+
+{% block title %}Gestão de Produtos - Stock{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Produtos</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-boxes"></i>
+                    Gestão de Produtos
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie o catálogo de produtos e controle de estoque
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:produto_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Produto
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ produtos_ativos|default:0 }}</div>
+                <div class="stats-label">Produtos Ativos</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ produtos_inativos|default:0 }}</div>
+                <div class="stats-label">Produtos Inativos</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ produtos_pendentes|default:0 }}</div>
+                <div class="stats-label">Pendentes</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ produtos_estoque_baixo|default:0 }}</div>
+                <div class="stats-label">Estoque Baixo</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='produtos' %}
+    
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                Lista de Produtos
+            </h3>
+            <div class="table-actions">
+                <a href="{% url 'stock:produto_add' %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus"></i>
+                    Novo Produto
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="cell-code">{{ produto.codigo }}</div>
+                            {% if produto.codigo_barras %}
+                                <div class="cell-tertiary">{{ produto.codigo_barras }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="cell-primary">{{ produto.nome }}</div>
+                            {% if produto.descricao %}
+                                <div class="cell-tertiary" title="{{ produto.descricao }}">
+                                    {{ produto.descricao|truncatechars:50 }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ produto.categoria.nome|default:"N/A" }}</span>
+                        </td>
+                        <td>
+                            {% if produto.preco_venda %}
+                                <span class="cell-primary">{{ produto.preco_venda|floatformat:2 }} MT</span>
+                            {% else %}
+                                <span class="cell-tertiary">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="stock-info">
+                                <span class="status-badge {% if produto.quantidade_atual <= produto.estoque_minimo %}status-warning{% elif produto.quantidade_atual <= produto.estoque_maximo %}status-success{% else %}status-info{% endif %}">
+                                    {{ produto.quantidade_atual|default:"0" }}
+                                </span>
+                                {% if produto.estoque_minimo or produto.estoque_maximo %}
+                                    <div class="cell-tertiary">
+                                        Min: {{ produto.estoque_minimo|default:"0" }} | Max: {{ produto.estoque_maximo|default:"0" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ produto.status|lower }}">
+                                {{ produto.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:produto_detail' produto.id %}?v={{ timestamp }}" class="btn-action-sm success" title="Ver detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'stock:produto_edit' produto.id %}" class="btn-action-sm secondary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'stock:produto_delete' produto.id %}" class="btn-action-sm danger" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i>
+                            Nenhum produto encontrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} produtos
+            </div>
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="page-btn">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-btn active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-btn">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

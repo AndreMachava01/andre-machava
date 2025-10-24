@@ -1,0 +1,162 @@
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+{% block title %}Etiquetas de Rastreamento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Etiquetas de Rastreamento</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Etiquetas de Rastreamento"
+    subtitle="Gerencie todas as etiquetas de rastreamento para suas operações logísticas"
+    icon="fas fa-tags"
+%}    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Etiquetas List -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list"></i>
+                Lista de Etiquetas
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Rastreamento</th>
+                                <th>Data Criação</th>
+                                <th>Impressa</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etiqueta in page_obj %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-secondary">{{ etiqueta.codigo }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{% if etiqueta.tipo == 'RASTREAMENTO' %}primary{% elif etiqueta.tipo == 'ENTREGA' %}success{% elif etiqueta.tipo == 'RETORNO' %}warning{% else %}secondary{% endif %}">
+                                        {{ etiqueta.get_tipo_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if etiqueta.rastreamento_entrega %}
+                                        <a href="{% url 'stock:logistica:rastreamento_detail' etiqueta.rastreamento_entrega.id %}" class="text-primary">
+                                            {{ etiqueta.rastreamento_entrega.codigo_rastreamento }}
+                                        </a>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ etiqueta.data_criacao|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if etiqueta.impressa %}
+                                        <i class="fas fa-check-circle text-success"></i> Sim
+                                    {% else %}
+                                        <i class="fas fa-clock text-warning"></i> Não
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                        <a href="#"stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if not etiqueta.impressa %}
+                                            <a href="#"stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Imprimir Etiqueta">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Anterior</span>
+                            </li>
+                        {% endif %}
+
+                        {% for i in page_obj.paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Próxima</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i>
+                    Nenhuma etiqueta encontrada com os filtros aplicados.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

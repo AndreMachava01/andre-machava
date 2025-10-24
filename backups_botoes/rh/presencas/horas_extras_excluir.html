@@ -1,0 +1,119 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Excluir Horas Extras{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="excluir-container">
+    <div class="header-section">
+        <a href="#" class="back-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+        <h1 class="header-title">
+            <i class="fas fa-trash"></i>
+            Excluir Horas Extras
+        </h1>
+    </div>
+
+    <div class="confirm-section">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2 class="confirm-title">Confirmar Exclusão</h2>
+        
+        <p class="confirm-message">
+            Tem certeza que deseja excluir este registro de horas extras?<br>
+            Esta ação não pode ser desfeita.
+        </p>
+
+        <!-- Detalhes do registro -->
+        <div class="details-section">
+            <h3 class="details-title">
+                <i class="fas fa-info-circle"></i>
+                Detalhes do Registro
+            </h3>
+            
+            <div class="details-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Funcionário</div>
+                    <div class="detail-value">{{ horas_extras.funcionario.nome_completo }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Código</div>
+                    <div class="detail-value">{{ horas_extras.funcionario.codigo_funcionario }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Data</div>
+                    <div class="detail-value">{{ horas_extras.data|date:"d/m/Y" }}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Tipo</div>
+                    <div class="detail-value">
+                        <span class="badge badge-{{ horas_extras.tipo|lower }}">
+                            {{ horas_extras.get_tipo_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Horário</div>
+                    <div class="detail-value">
+                        {% if horas_extras.hora_inicio and horas_extras.hora_fim %}
+                            {{ horas_extras.hora_inicio|time:"H:i" }} - {{ horas_extras.hora_fim|time:"H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Quantidade</div>
+                    <div class="detail-value">{{ horas_extras.quantidade_horas }}h</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Valor/Hora</div>
+                    <div class="detail-value">{{ horas_extras.valor_por_hora|floatformat:2 }} MT</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Valor|default:0 total</div>
+                    <div class="detail-value"><strong>{{ horas_extras.valor_total|floatformat:2 }} MT</strong></div>
+                </div>
+            </div>
+            
+            {% if horas_extras.observacoes %}
+            <div style="margin-top: 16px;">
+                <div class="detail-label">Observações</div>
+                <div class="detail-value">{{ horas_extras.observacoes }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="POST"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-actions">
+                <a href="#"rh:horas_extras' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

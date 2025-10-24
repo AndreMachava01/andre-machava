@@ -1,0 +1,468 @@
+{% extends 'base_list.html' %}
+{% load static %}
+
+{% block title %}Transportadoras Externas{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .page-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+    }
+
+    .page-header {
+        background: var(--cyan-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .page-header button,
+    .page-header a {
+        pointer-events: auto !important;
+        z-index: 1001 !important;
+        position: relative !important;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-content {
+        padding: 30px;
+        background: #1f2937;
+    }
+
+    }
+    
+    /* Tabela */
+    .table-container {
+        background: #374151;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-light);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background: #4b5563;
+        color: #d1d5db;
+        font-weight: 600;
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #4b5563;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+    }
+
+    .table tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badges */
+    .type-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .type-badge.type-transportadora {
+        background: rgba(6, 182, 212, 0.1);
+        color: #06b6d4;
+        border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .type-badge.type-viatura {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .status-badge.status-ativa {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.status-inativa {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-badge.status-suspensa {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+
+    /* Paginação */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 20px;
+        background: #4b5563;
+    }
+
+    .pagination a {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background: #374151;
+        color: #d1d5db;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #4b5563;
+    }
+
+    .pagination a:hover {
+        background: #06b6d4;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .pagination .current {
+        background: var(--cyan-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Estado vazio */
+    .no-data {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .no-data i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+        color: #6b7280;
+    }
+
+    .no-data h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #d1d5db;
+    }
+
+    .no-data p {
+        font-size: 1rem;
+        color: #9ca3af;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+
+    @media (max-width: 480px) {
+        
+        
+        .table th,
+        .table td {
+            padding: 10px 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-truck"></i>
+                    Transportadoras Externas
+                </h1>
+                <p class="page-subtitle">
+                    Gestão de transportadoras e fornecedores logísticos externos
+                </p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center; position: relative; z-index: 1000;">
+                <a href="{% url 'stock:logistica:main' %}" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+    <!-- Botões de ação -->
+        <div style="margin-bottom: 30px; display: flex; gap: 15px;">
+            <a href="{% url 'stock:logistica:transportadora_create' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 10px;">
+                <i class="fas fa-plus"></i>
+                Nova Transportadora Externa
+            </a>
+        </div>
+
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='transportadoras' %}
+
+    <!-- Tabela de transportadoras -->
+    <div class="table-container">
+        {% if page_obj %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Localização</th>
+                    <th>Contato</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transportadora in page_obj %}
+                <tr>
+                    <td>
+                        <strong>{{ transportadora.codigo }}</strong>
+                    </td>
+                    <td>
+                        <div>
+                            <strong>{{ transportadora.nome }}</strong>
+                            {% if transportadora.nuit %}
+                                <br><small style="color: #9ca3af;">NUIT: {{ transportadora.nuit }}</small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="type-badge type-{{ transportadora.tipo|lower }}">
+                            {{ transportadora.get_tipo_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ transportadora.status|lower }}">
+                            {{ transportadora.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if transportadora.cidade %}
+                            {{ transportadora.cidade }}
+                            {% if transportadora.provincia %}
+                                    <br><small style="color: #9ca3af;">{{ transportadora.provincia }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if transportadora.telefone %}
+                            <div>{{ transportadora.telefone }}</div>
+                        {% endif %}
+                        {% if transportadora.email %}
+                                <div><small style="color: #9ca3af;">{{ transportadora.email }}</small></div>
+                        {% endif %}
+                        {% if not transportadora.telefone and not transportadora.email %}
+                                <span style="color: #9ca3af;">-</span>
+                        {% endif %}
+                    </td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:logistica:transportadora_detail' transportadora.id %}" 
+                                   class="btn-action primary" title="Ver detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'stock:logistica:transportadora_edit' transportadora.id %}" 
+                                   class="btn-action secondary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn-action danger" 
+                                        data-id="{{ transportadora.id }}" 
+                                        data-nome="{{ transportadora.nome }}" 
+                                        onclick="confirmarExclusao(this)" 
+                                        title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}">&laquo; Primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}">Anterior</a>
+            {% endif %}
+
+            <span class="current">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}">Próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}">Última &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-truck"></i>
+            <h3>Nenhuma transportadora encontrada</h3>
+            <p>Não há transportadoras que correspondam aos filtros aplicados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div id="modalExclusao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
+    <div style="background: #374151; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid #4b5563; box-shadow: var(--shadow-heavy);">
+        <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+            Confirmar Exclusão
+        </h3>
+        <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.6;">
+            Tem certeza que deseja excluir a transportadora <strong id="nomeTransportadora"></strong>?
+            <br><br>
+            <span style="color: #f59e0b; font-weight: 600;">Esta ação não pode ser desfeita!</span>
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+            <button type="button" onclick="fecharModal()" style="background: #4b5563; color: #f9fafb; border: 1px solid #6b7280; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Cancelar
+            </button>
+            <form id="formExclusao" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background: var(--danger-gradient); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-trash"></i>
+                    Excluir
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(button) {
+    const id = button.getAttribute('data-id');
+    const nome = button.getAttribute('data-nome');
+    
+    document.getElementById('nomeTransportadora').textContent = nome;
+    document.getElementById('formExclusao').action = `/stock/logistica/transportadoras/${id}/delete/`;
+    document.getElementById('modalExclusao').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('modalExclusao').style.display = 'none';
+}
+
+// Fechar modal ao clicar fora
+document.getElementById('modalExclusao').addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
+</script>
+{% endblock %}
+

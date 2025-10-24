@@ -1,0 +1,78 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'empresa/css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="empresa-admin-container">
+    <!-- Coluna da Esquerda - Dados da Empresa -->
+    <div class="empresa-dados">
+        <div class="form-container">
+            {{ block.super }}
+        </div>
+    </div>
+
+    <!-- Coluna da Direita - Sucursais -->
+    {% if original and original.is_sede %}
+    <div class="empresa-sucursais">
+        <div class="sucursal-header">
+            <span class="sucursal-title">Sucursais</span>
+            <a href="#" class="add-sucursal-btn" onclick="event.preventDefault(); showSucursalForm()">
+                <i class="fas fa-plus"></i> Nova Sucursal
+            </a>
+        </div>
+        
+        <div class="sucursal-list">
+            {% for sucursal in original.sucursais.all %}
+            <div class="sucursal-item">
+                <div class="sucursal-item-header">
+                    <div>
+                        <strong>{{ sucursal.nome }}</strong>
+                        <span class="sucursal-codigo">{{ sucursal.codigo }}</span>
+                    </div>
+                    <span class="sucursal-status {% if sucursal.ativa %}status-ativa{% else %}status-inativa{% endif %}">
+                        {{ sucursal.ativa|yesno:"Ativa,Inativa" }}
+                    </span>
+                </div>
+                <div>
+                    <p><strong>Responsável:</strong> {{ sucursal.responsavel }}</p>
+                    <p><strong>Localização:</strong> {{ sucursal.cidade }} - {{ sucursal.get_provincia_display }}</p>
+                </div>
+                <div class="sucursal-actions">
+                    <a href="#" onclick="event.preventDefault(); editSucursal("{{ sucursal.id }}')" class="action-btn edit-">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    {% if sucursal.ativa %}
+                    <a href="#" onclick="event.preventDefault(); desativarSucursal("{{ sucursal.id }}')" class="action-btn delete-">
+                        <i class="fas fa-times"></i> Desativar
+                    </a>
+                    {% else %}
+                    <a href="#" onclick="event.preventDefault(); ativarSucursal("{{ sucursal.id }}')" class="action-btn edit-">
+                        <i class="fas fa-check"></i> Ativar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p>Nenhuma sucursal cadastrada.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal para formulário de sucursal -->
+<div id="sucursalFormModal" class="modal-overlay" style="display: none;">
+    <div class="sucursal-form-modal">
+        <h2>Nova Sucursal</h2>
+        <form id="sucursalForm">
+            {% csrf_token %}
+            <!-- O formulário será carregado dinamicamente aqui -->
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.summary-stats {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.stat-item {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1976d2;
+    display: block;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #424242;
+    margin-top: 5px;
+}
+
+/* Estilos para agrupamento visual */
+#result_list tbody tr {
+    border-left: 4px solid transparent;
+}
+
+#result_list tbody tr[data-empresa] {
+    border-left-color: #007bff;
+}
+
+#result_list tbody tr[data-empresa]:first-child {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+#result_list tbody tr[data-empresa]:first-child td {
+    border-top: 2px solid #007bff;
+}
+
+#result_list tbody tr[data-empresa]:first-child td:first-child {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+#result_list tbody tr[data-empresa]:first-child td:first-child::before {
+    content: "🏢 ";
+}
+
+/* Estilos para sucursais */
+#result_list tbody tr[data-sucursal] {
+    background-color: #fafafa;
+}
+
+#result_list tbody tr[data-sucursal] td:first-child {
+    padding-left: 30px;
+}
+
+#result_list tbody tr[data-sucursal] td:first-child::before {
+    content: "📍 ";
+    color: #6c757d;
+}
+
+/* Status visual */
+.status-ativa {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-inativa {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .summary-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .stat-item {
+        flex: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="summary-stats">
+    <div class="stat-item">
+        <span class="summary-value">{{ total_empresas }}</span>
+        <div class="summary-card h3">Empresas</div>
+    </div>
+    <div class="stat-item">
+        <span class="summary-value">{{ total_sucursais }}</span>
+        <div class="summary-card h3">Total de Sucursais</div>
+    </div>
+    <div class="stat-item">
+        <span class="summary-value">{{ empresas_com_sucursais|length }}</span>
+        <div class="summary-card h3">Empresas com Sucursais</div>
+    </div>
+</div>
+
+{{ block.super }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agrupar visualmente as sucursais por empresa
+    const rows = document.querySelectorAll('#result_list tbody tr');
+    let currentEmpresa = null;
+    
+    rows.forEach(function(row) {
+        const empresaCell = row.querySelector('td:nth-child(3)'); // Coluna empresa_sede
+        if (empresaCell) {
+            const empresaNome = empresaCell.textContent.trim();
+            
+            if (empresaNome !== currentEmpresa) {
+                // Nova empresa encontrada
+                currentEmpresa = empresaNome;
+                row.setAttribute('data-empresa', 'true');
+                row.style.borderTop = '2px solid #007bff';
+            } else {
+                // Sucursal da mesma empresa
+                row.setAttribute('data-sucursal', 'true');
+            }
+        }
+    });
+    
+    // Adicionar ícones de status
+    const statusCells = document.querySelectorAll('#result_list tbody tr td:nth-child(8)');
+    statusCells.forEach(function(cell) {
+        const status = cell.textContent.trim();
+        if (status === 'Ativa') {
+            cell.classList.add('status-ativa');
+        } else if (status === 'Inativa') {
+            cell.classList.add('status-inativa');
+        }
+    });
+});
+</script>
+{% endblock %}

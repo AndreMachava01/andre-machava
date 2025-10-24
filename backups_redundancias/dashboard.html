@@ -1,0 +1,612 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Dashboard - Sistema de Gestão{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do dashboard */
+    .dashboard-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .dashboard-sidebar {
+        width: 280px;
+        background: var(--surface-dark);
+        border-right: 1px solid var(--border-color);
+        padding: var(--space-6);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 1000;
+        transition: transform var(--transition-normal);
+    }
+    
+    .dashboard-main {
+        margin-left: 280px;
+        flex: 1;
+        min-height: 100vh;
+    }
+    
+    .dashboard-content {
+        padding: var(--space-8);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .sidebar-header {
+        margin-bottom: var(--space-8);
+        padding-bottom: var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+    
+    .sidebar-logo i {
+        font-size: var(--text-2xl);
+        color: var(--accent-primary);
+    }
+    
+    .sidebar-logo h1 {
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .sidebar-subtitle {
+        color: var(--text-tertiary);
+        font-size: var(--text-sm);
+        font-weight: var(--font-medium);
+    }
+    
+    .sidebar-nav {
+        margin-bottom: var(--space-8);
+    }
+    
+    .nav-section {
+        margin-bottom: var(--space-6);
+    }
+    
+    .nav-section-title {
+        font-size: var(--text-xs);
+        font-weight: var(--font-semibold);
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--space-3);
+    }
+    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-normal);
+        margin-bottom: var(--space-1);
+    }
+    
+    .nav-item:hover {
+        background: var(--surface-medium);
+        color: var(--text-primary);
+        transform: translateX(4px);
+    }
+    
+    .nav-item i {
+        font-size: var(--text-lg);
+        width: 20px;
+        text-align: center;
+    }
+    
+    .sidebar-toggle {
+        position: fixed;
+        top: var(--space-4);
+        left: var(--space-4);
+        z-index: 1001;
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-medium);
+        transition: all var(--transition-normal);
+    }
+    
+    .sidebar-toggle:hover {
+        background: var(--accent-primary-dark);
+        transform: scale(1.05);
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+        color: white;
+        padding: var(--space-12) 0;
+        margin-bottom: var(--space-8);
+        border-radius: var(--radius-2xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+    }
+    
+    .user-details h2 {
+        margin: 0;
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+    }
+    
+    .user-details p {
+        margin: var(--space-1) 0 0 0;
+        opacity: 0.8;
+    }
+    
+    .admin-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: var(--space-1) var(--space-3);
+        border-radius: var(--radius-full);
+        font-size: var(--text-sm);
+        font-weight: var(--font-medium);
+        margin-left: var(--space-2);
+    }
+    
+    .hero-title {
+        font-size: var(--text-4xl);
+        font-weight: var(--font-bold);
+        margin: 0 0 var(--space-4) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
+    
+    .hero-subtitle {
+        font-size: var(--text-lg);
+        opacity: 0.9;
+        margin: 0;
+        max-width: 600px;
+    }
+    
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: var(--space-6);
+        margin-bottom: var(--space-8);
+    }
+    
+    .module-card {
+        background: var(--surface-dark);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-6);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all var(--transition-normal);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-heavy);
+        border-color: var(--accent-primary);
+    }
+    
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    }
+    
+    .module-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--space-4);
+    }
+    
+    .module-icon i {
+        font-size: var(--text-2xl);
+        color: white;
+    }
+    
+    .module-title {
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+        margin: 0 0 var(--space-3) 0;
+    }
+    
+    .module-description {
+        color: var(--text-secondary);
+        margin: 0 0 var(--space-4) 0;
+        line-height: 1.6;
+    }
+    
+    .module-stats {
+        display: flex;
+        gap: var(--space-4);
+    }
+    
+    .module-stat {
+        text-align: center;
+    }
+    
+    .module-stat-number {
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+        color: var(--accent-primary);
+    }
+    
+    .module-stat-label {
+        font-size: var(--text-sm);
+        color: var(--text-tertiary);
+    }
+    
+    .info-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-8);
+    }
+    
+    .info-card {
+        background: var(--surface-dark);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: var(--space-4);
+        text-align: center;
+    }
+    
+    .info-card h3 {
+        font-size: var(--text-sm);
+        font-weight: var(--font-semibold);
+        color: var(--text-tertiary);
+        margin: 0 0 var(--space-2) 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .info-card p {
+        font-size: var(--text-lg);
+        font-weight: var(--font-bold);
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .demo-alert {
+        background: linear-gradient(135deg, var(--accent-warning), var(--accent-warning-light));
+        color: white;
+        padding: var(--space-4);
+        border-radius: var(--radius-xl);
+        margin-bottom: var(--space-6);
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+    }
+    
+    .demo-alert i {
+        font-size: var(--text-xl);
+    }
+    
+    /* Responsividade */
+    @media (max-width: 1024px) {
+        .dashboard-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .dashboard-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .dashboard-main {
+            margin-left: 0;
+        }
+        
+        .sidebar-toggle {
+            display: flex;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-content {
+            padding: var(--space-4);
+        }
+        
+        .modules-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .hero-title {
+            font-size: var(--text-2xl);
+        }
+        
+        .user-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-building"></i>
+                <h1>Conception</h1>
+            </div>
+            <p class="sidebar-subtitle">Sistema de Gestão Empresarial</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <h3 class="nav-section-title">Módulos Principais</h3>
+                <a href="/rh/" class="nav-item">
+                    <i class="fas fa-users-cog"></i>
+                    Gestão de RH
+                </a>
+                <a href="/stock/" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    Gestão de Stock e Logística
+                </a>
+                <a href="/admin/empresa/dadosempresa/" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    Empresas e Sucursais
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <h3 class="nav-section-title">Configurações</h3>
+                <a href="/admin/auth/user/" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Utilizadores
+                </a>
+                <a href="/admin/empresa/" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    Configurações
+                </a>
+            </div>
+        </nav>
+    </aside>
+    
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" id="sidebarToggle" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-content">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            {{ username|first|upper }}
+                        </div>
+                        <div class="user-details">
+                            <h2>
+                                Bem-vindo, {{ username }}
+                                {% if is_admin %}
+                                <span class="admin-badge">Administrador</span>
+                                {% endif %}
+                            </h2>
+                            <p>Último login: {{ last_login|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <h1 class="hero-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard Principal
+                    </h1>
+                    <p class="hero-subtitle">
+                        Gerencie todos os aspectos da sua empresa de forma integrada e eficiente
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Demo Alert -->
+            {% if demo %}
+            <div class="demo-alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Modo Demo:</strong> Você está no modo demonstração. Algumas funcionalidades podem ser limitadas.
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Modules Grid -->
+            <section class="modules-grid">
+                <a href="/rh/" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3 class="module-title">Gestão de RH</h3>
+                    <p class="module-description">
+                        Gerencie funcionários, departamentos, presenças, salários e todos os aspectos de recursos humanos.
+                    </p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-number">{{ total_users|default:"0" }}</div>
+                            <div class="module-stat-label">Funcionários</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-number">12</div>
+                            <div class="module-stat-label">Módulos</div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/stock/" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <h3 class="module-title">Gestão de Stock e Logística</h3>
+                    <p class="module-description">
+                        Sistema integrado de gestão de inventário, transporte, distribuição e logística completa.
+                    </p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-number">0</div>
+                            <div class="module-stat-label">Produtos</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-number">8</div>
+                            <div class="module-stat-label">Módulos</div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/admin/empresa/dadosempresa/" class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="module-title">Empresas</h3>
+                    <p class="module-description">
+                        Gestão de empresas, sucursais e configurações gerais do sistema.
+                    </p>
+                    <div class="module-stats">
+                        <div class="module-stat">
+                            <div class="module-stat-number">1</div>
+                            <div class="module-stat-label">Empresa</div>
+                        </div>
+                        <div class="module-stat">
+                            <div class="module-stat-number">3</div>
+                            <div class="module-stat-label">Módulos</div>
+                        </div>
+                    </div>
+                </a>
+            </section>
+            
+            <!-- Info Cards -->
+            <section class="info-cards">
+                <div class="info-card">
+                    <h3>Horário Atual</h3>
+                    <p>{{ current_time|date:"d/m/Y H:i" }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Total de Utilizadores</h3>
+                    <p>{{ total_users|default:"0" }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Status do Sistema</h3>
+                    <p>Online</p>
+                </div>
+                <div class="info-card">
+                    <h3>Versão</h3>
+                    <p>2.0.0</p>
+                </div>
+            </section>
+            
+            <!-- Admin Info -->
+            {% if is_admin %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Informações de Administrador
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>Como administrador, você tem acesso total ao sistema.</p>
+                    <p>Use o painel admin para gerenciar utilizadores e configurações avançadas.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<script>
+// Sidebar Toggle
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+});
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebarToggle');
+    
+    if (window.innerWidth <= 1024 && 
+        !sidebar.contains(e.target) && 
+        !toggle.contains(e.target) && 
+        sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+    }
+});
+
+// Animate cards on load
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.module-card, .info-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Confirmar Itens Recebidos - {{ ordem_compra.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="breadcrumb-modern">
+            <a href="{% url "stock:main" %}">Stock</a>
+            <span class="separator">›</span>
+            <a href="{% url "stock:requisicoes:list" %}">Requisições</a>
+            <span class="separator">›</span>
+            {% if ordem_compra.requisicao_origem %}
+                <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">{{ ordem_compra.requisicao_origem.codigo }}</a>
+                <span class="separator">›</span>
+            {% endif %}
+            <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">{{ ordem_compra.codigo }}</a>
+            <span class="separator">›</span>
+            <a href="{% url 'stock:requisicoes:ordem_compra_receive' ordem_compra.id %}">Receber Stock</a>
+            <span class="separator">›</span>
+            <span class="current">Confirmar Itens</span>
+        </div>
+        <div class="page-title">
+            <h1>
+                <i class="fas fa-check-circle"></i>
+                Confirmar Itens Recebidos
+            </h1>
+            <p class="page-subtitle">{{ ordem_compra.codigo }} - Fatura: {{ ordem_compra.numero_fatura }}</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Informações da Ordem -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Recepção
+                </h3>
+            </div>
+            <div class="card-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Código da Ordem</div>
+                        <div class="info-value">{{ ordem_compra.codigo }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Número da Fatura</div>
+                        <div class="info-value">{{ ordem_compra.numero_fatura }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Fornecedor</div>
+                        <div class="info-value">{{ ordem_compra.fornecedor.nome }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Sucursal Destino</div>
+                        <div class="info-value">{{ ordem_compra.sucursal_destino.nome }}</div>
+                    </div>
+                    
+                    {% if ordem_compra.data_criacao %}
+                    <div class="info-item">
+                        <div class="info-label">Data de Criação</div>
+                        <div class="info-value">{{ ordem_compra.data_criacao|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ordem_compra.valor_total %}
+                    <div class="info-item">
+                        <div class="info-label">Valor|default:0 total</div>
+                        <div class="info-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Informação do Tipo de Recebimento -->
+        <div class="recebimento-info">
+            <div class="recebimento-title">
+                <i class="fas fa-info-circle"></i>
+                Tipo de Recebimento
+            </div>
+            
+            <div class="recebimento-content">
+                {% if ordem_compra.notificacao_logistica_unificada %}
+                    <i class="fas fa-truck recebimento-icon" style="color: #06b6d4;"></i>
+                    <div class="recebimento-text">
+                        <h4>Coleta</h4>
+                        <p>Esta ordem foi marcada para <strong>coleta</strong>. A empresa irá coletar os produtos no fornecedor.</p>
+                    </div>
+                {% else %}
+                    <i class="fas fa-shipping-fast recebimento-icon" style="color: #10b981;"></i>
+                    <div class="recebimento-text">
+                        <h4>Fornecedor Entrega</h4>
+                        <p>Esta ordem foi marcada para <strong>entrega</strong>. O fornecedor entregou os produtos na empresa.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i>
+                    Itens para Confirmação
+                </h3>
+            </div>
+            <div class="card-content">
+                <form method="post" class="modern-form"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    <!-- Campo oculto para manter o tipo de recebimento já definido -->
+                    <input type="hidden" name="tipo_recebimento" value="{% if ordem_compra.notificacao_logistica_unificada %}COLETAR{% else %}ENTREGA{% endif %}">
+                    
+                    {% for items in itens  %}
+                    <div class="item-card">
+                        <div class="item-header">
+                            <div>
+                                <div class="item-name">{{ item.descricao }}</div>
+                                {% if items.produto.codigo  %}
+                                <div class="item-code">{{ item.produto.codigo }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="item-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Categoria</div>
+                                <div class="detail-value">{{ item.categoria }}</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">Quantidade Solicitada</div>
+                                <div class="detail-value">{{ item.quantidade_solicitada }}</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">Preço Unitário</div>
+                                <div class="detail-value">{{ item.preco_unitario|default:"N/A" }} MT</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">Total</div>
+                                <div class="detail-value">{{ item.preco_total }} MT</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="quantidade_recebida_{{ item.id }}" class="form-label">
+                                    <i class="fas fa-boxes"></i>
+                                    Quantidade Recebida *
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="quantidade_recebida_{{ item.id }}" 
+                                    name="quantidade_recebida_{{ item.id }}" 
+                                    class="form-control-modern" 
+                                    min="0" 
+                                    max="{{ item.quantidade_solicitada }}"
+                                    value="{{ item.quantidade_solicitada }}"
+                                    required
+                                >
+                                <div class="form-help">
+                                    <i class="fas fa-info-circle text-info"></i> 
+                                    Quantidade efetivamente recebida (máximo: {{ item.quantidade_solicitada }})
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="estado_item_{{ item.id }}" class="form-label">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    Estado do|default:0 items *
+                                </label>
+                                <select 
+                                    id="estado_item_{{ item.id }}" 
+                                    name="estado_item_{{ item.id }}" 
+                                    class="form-control-modern" 
+                                    required
+                                >
+                                    <option value="">Selecione o estado...</option>
+                                    {% for codigo, nome in estados_item %}
+                                    <option value="{{ codigo }}">{{ nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-help">
+                                    <i class="fas fa-info-circle text-info"></i> 
+                                    Estado em que o|default:0 items foi recebido
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-check"></i>
+                            Finalizar Recebimento
+                        </button>
+                        
+                        <a href="#"stock:requisicoes:ordem_compra_receive' ordem_compra.id %}" class="btn-modern btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Ajuda -->
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-lightbulb"></i>
+                Instruções Importantes
+            </div>
+            <div class="help-content">
+                <ul>
+                    <li><strong>Quantidade Recebida:</strong> Digite a quantidade efetivamente recebida de cada|default:0 items. Se recebeu menos do que solicitado, ajuste o valor.</li>
+                    <li><strong>Estado do|default:0 items:</strong> Selecione o estado em que cada|default:0 items foi recebido:
+                        <ul>
+                            <li><strong>Bom:</strong> Item em perfeitas condições</li>
+                            <li><strong>Danificado:</strong> Item com danos visíveis mas utilizável</li>
+                            <li><strong>Incompleto:</strong> Item faltando peças ou componentes</li>
+                            <li><strong>Defeituoso:</strong> Item não funcionando ou inutilizável</li>
+                        </ul>
+                    </li>
+                    <li><strong>Finalizar:</strong> Após confirmar todos os itens, clique em "Finalizar Recebimento" para que o stock seja adicionado ao sistema da empresa.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-selecionar "Bom" como estado padrão
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelects = document.querySelectorAll('select[name^="estado_item_"]');
+    estadoSelects.forEach(select => {
+        if (!select.value) {
+            select.value = 'BOM';
+        }
+    });
+    
+    // Validação de quantidade
+    const quantidadeInputs = document.querySelectorAll('input[name^="quantidade_recebida_"]');
+    quantidadeInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const maxValue = parseInt(this.getAttribute('max'));
+            const currentValue = parseInt(this.value);
+            
+            if (currentValue > maxValue) {
+                this.value = maxValue;
+                alert(`A quantidade recebida não pode ser maior que ${maxValue}`);
+            }
+            
+            if (currentValue < 0) {
+                this.value = 0;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

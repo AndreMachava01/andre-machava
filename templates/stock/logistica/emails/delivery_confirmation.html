@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrega Confirmada</title>
+    
+</head>
+<body>
+    <div class="header">
+        <h1>{{ company_name }}</h1>
+        <h2>Entrega Confirmada</h2>
+    </div>
+    
+    <div class="content">
+        <div class="success-icon">✓</div>
+        
+        <div class="tracking-code">
+            Código de Rastreamento: {{ tracking_code }}
+        </div>
+        
+        <div class="info-box">
+            <strong>Data da Entrega:</strong><br>
+            {{ delivery_date }}
+        </div>
+        
+        {% if signature_name %}
+        <div class="info-box">
+            <strong>Assinado por:</strong><br>
+            {{ signature_name }}
+        </div>
+        {% endif %}
+        
+        <div class="info-box">
+            <strong>Obrigado por escolher {{ company_name }}!</strong><br>
+            Esperamos que tenha ficado satisfeito com nosso serviço.
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Este é um email automático. Por favor, não responda.</p>
+        <p>{{ company_name }} - Logística</p>
+    </div>
+</body>
+</html>

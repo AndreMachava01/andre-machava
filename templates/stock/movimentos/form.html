@@ -1,400 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}{% if movimento %}Editar{% else %}Nova{% endif %} Movimentação de Stock{% endblock %}
 
 {% block extra_style %}
-<style>
-    :root {
-        /* Cores funcionais para botões */
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-        --primary-color: #8b5cf6;
-        --secondary-color: #6b7280;
-        
-        /* Cores vibrantes */
-        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
-        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
-        
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
 
-    body {
-        background: #1f2937;
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: white;
-    }
-
-    .modern-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 20px;
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .hero-section {
-        background: var(--purple-gradient);
-        padding: 40px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 1;
-    }
-
-    .hero-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 20px;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-title i {
-        margin-right: 15px;
-        color: #fbbf24;
-    }
-
-    .hero-actions {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 30px;
-    }
-
-    .btn-modern {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-modern::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn-modern:hover::before {
-        left: 100%;
-    }
-
-    .btn-primary-modern {
-        background: var(--green-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-secondary-modern {
-        background: var(--blue-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-secondary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .content-section {
-        padding: 30px;
-        background: #374151;
-    }
-
-    .form-container {
-        background: #4b5563;
-        border-radius: 16px;
-        padding: 30px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-        margin-bottom: 30px;
-    }
-
-    .form-section {
-        margin-bottom: 30px;
-    }
-
-    .form-section h5 {
-        color: #fbbf24;
-        font-weight: 700;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 2px solid #6b7280;
-        padding-bottom: 10px;
-    }
-
-    .form-section h5 i {
-        color: #8b5cf6;
-    }
-
-    .form-label {
-        color: #d1d5db;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
-    }
-
-    .required-field::after {
-        content: " *";
-        color: #ef4444;
-    }
-
-    .form-control, .form-select {
-        background: #374151;
-        border: 2px solid #6b7280;
-        border-radius: 10px;
-        color: white;
-        padding: 12px 16px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        outline: none;
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        background: #374151;
-        color: white;
-    }
-
-    .form-control::placeholder {
-        color: #9ca3af;
-    }
-
-    .form-check {
-        margin-bottom: 15px;
-    }
-
-    .form-check-input {
-        background: #374151;
-        border: 2px solid #6b7280;
-    }
-
-    .form-check-input:checked {
-        background: var(--purple-gradient);
-        border-color: #8b5cf6;
-    }
-
-    .form-check-label {
-        color: #d1d5db;
-        font-weight: 500;
-    }
-
-    .alert {
-        background: #374151;
-        border: 1px solid #6b7280;
-        border-radius: 10px;
-        color: #d1d5db;
-        padding: 15px;
-    }
-
-    .alert-info {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.1);
-    }
-
-    .search-container {
-        position: relative;
-    }
-
-    .search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: #374151;
-        border: 1px solid #6b7280;
-        border-top: none;
-        border-radius: 0 0 10px 10px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 1000;
-        display: none;
-    }
-
-    .search-result-item {
-        padding: 12px 16px;
-        cursor: pointer;
-        border-bottom: 1px solid #4b5563;
-        transition: background 0.3s ease;
-    }
-
-    .search-result-item:hover {
-        background: #4b5563;
-    }
-
-    .search-result-item:last-child {
-        border-bottom: none;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: space-between;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 2px solid #6b7280;
-    }
-
-    .btn-primary, .btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-primary {
-        background: var(--green-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-secondary {
-        background: var(--red-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-secondary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .info-card {
-        background: #4b5563;
-        border-radius: 16px;
-        padding: 25px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-    }
-
-    .info-card .card-header {
-        border-bottom: 2px solid #6b7280;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-
-    .info-card h5 {
-        color: #fbbf24;
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .info-card h5 i {
-        color: #8b5cf6;
-    }
-
-    .info-card h6 {
-        color: #d1d5db;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .info-card ul {
-        color: #9ca3af;
-        padding-left: 20px;
-    }
-
-    .info-card li {
-        margin-bottom: 8px;
-    }
-
-    .info-card hr {
-        border-color: #6b7280;
-        margin: 20px 0;
-    }
-
-    .is-invalid {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .hero-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-        }
-        
-        .content-section {
-            padding: 20px;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -407,7 +17,7 @@
                 {% if movimento %}Editar{% else %}Nova{% endif %} Movimentação de Stock
             </h1>
             <div class="hero-actions">
-                <a href="{% url 'stock:movimentos' %}" class="btn-modern btn-secondary-modern">
+                <a href="#" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>
                     Voltar às Movimentações
                 </a>
@@ -421,7 +31,7 @@
         <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="form-container">
-                <form method="post">
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     
                      <!-- Informações Básicas -->
@@ -454,13 +64,13 @@
                                              {% endif %}
                                          </strong>
                                          <br>
-                                         <small class="text-muted">O item não pode ser alterado após a criação da movimentação.</small>
+                                         <small class="text-muted">O|default:0 items não pode ser alterado após a criação da movimentação.</small>
                                      </div>
                                  </div>
                                  {% else %}
                                  <!-- Campo para escolher produto/material (apenas para nova movimentação) -->
                                  <div class="mb-3">
-                                     <label class="form-label required-field">Tipo de Item:</label>
+                                     <label class="form-label required-field">Tipo de|default:0 items:</label>
                                      <div class="row">
                                          <div class="col-6">
                                              <div class="form-check">
@@ -571,11 +181,11 @@
                     </div>
 
                          <!-- Botões de Ação -->
-                         <div class="action-buttons">
-                             <a href="{% url 'stock:movimentos' %}" class="btn-secondary">
+                         <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                             <a href="#"stock:movimentos' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                  <i class="fas fa-times"></i> Cancelar
                              </a>
-                             <button type="submit" class="btn-primary">
+                             <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                                  <i class="fas fa-save"></i>
                                  {% if movimento %}
                                      Atualizar Movimentação
@@ -663,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         if (filtered.length === 0) {
-            resultsContainer.innerHTML = '<div class="no-results">Nenhum item encontrado</div>';
+            resultsContainer.innerHTML = '<div class="no-results">Nenhum|default:0 items encontrado</div>';
         } else {
             resultsContainer.innerHTML = filtered.map(item => `
                 <div class="search-item" data-id="${item.id}" data-name="${item.nome}" data-code="${item.codigo}">
@@ -686,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Event listener para seleção
         document.addEventListener('click', function(e) {
             if (e.target.closest('#produto_results .search-item')) {
-                const item = e.target.closest('.search-item');
+                const items = e.target.closest('.search-item');
                 produtoSearch.value = item.dataset.name;
                 produtoHidden.value = item.dataset.id;
                 document.getElementById('produto_results').style.display = 'none';
@@ -704,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Event listener para seleção
         document.addEventListener('click', function(e) {
             if (e.target.closest('#material_results .search-item')) {
-                const item = e.target.closest('.search-item');
+                const items = e.target.closest('.search-item');
                 materialSearch.value = item.dataset.name;
                 materialHidden.value = item.dataset.id;
                 document.getElementById('material_results').style.display = 'none';
@@ -736,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fechar resultados ao clicar fora
+    // Fechar|default:0 resultsados ao clicar fora
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.search-container')) {
             document.querySelectorAll('.search-results').forEach(result => {
@@ -745,13 +355,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Calcular valor total automaticamente
+    // Calcular valor|default:0 total automaticamente
     function calcularValorTotal() {
         const quantidade = parseFloat(quantidadeInput.value) || 0;
         const precoUnitario = parseFloat(precoUnitarioInput.value) || 0;
         const valorTotal = quantidade * precoUnitario;
         
-        // Atualizar placeholder ou mostrar valor total
+        // Atualizar placeholder ou mostrar valor|default:0 total
         if (valorTotal > 0) {
             precoUnitarioInput.setAttribute('data-valor-total', valorTotal.toFixed(2));
         }

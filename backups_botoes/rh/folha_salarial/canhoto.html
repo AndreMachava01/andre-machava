@@ -1,0 +1,94 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Canhoto de Salário - {{ funcionario_folha.funcionario.nome_completo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"rh:folha_detail' folha.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
+    </a>
+    <a href="#"rh:folha_salarial' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-list"></i>Lista de Folhas
+    </a>
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="canhoto-container">
+    <!-- Cabeçalho -->
+    <div class="canhoto-header">
+        <div class="logo-section">
+            <img src="{% static 'empresa/img/LOGO DA CONCEPTION.jpg' %}" alt="Logo Conception" class="logo">
+        </div>
+        <div class="title-section">
+            <h1 class="canhoto-title">RECIBO DE SALÁRIO</h1>
+            <p class="canhoto-subtitle">Mês de Referência: {{ folha.mes_referencia|date:"F Y" }}</p>
+        </div>
+        <div class="info-section">
+            <div>Recibo Nº: {{ folha.id }}</div>
+            <div>Data: {% now "d/m/Y" %}</div>
+        </div>
+    </div>
+    
+    <!-- Dados do Trabalhador e Empregador (lado a lado) -->
+    <h2 class="section-title">DADOS DO TRABALHADOR E EMPREGADOR</h2>
+    <table class="dados-horizontais">
+        <thead>
+            <tr>
+                <th>🧑‍💼 TRABALHADOR</th>
+                <th>🏢 EMPREGADOR</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>Nome:</strong> {{ funcionario_folha.funcionario.nome_completo }}<br>
+                    <strong>Código:</strong> {{ funcionario_folha.funcionario.codigo_funcionario }}<br>
+                    <strong>Cargo:</strong> {{ funcionario_folha.funcionario.cargo.nome|default:"N/A" }}<br>
+                    <strong>Departamento:</strong> {{ funcionario_folha.funcionario.departamento.nome|default:"N/A" }}<br>
+                    <strong>Sucursal:</strong> {{ funcionario_folha.funcionario.sucursal.nome|default:"N/A" }}<br>
+                    <strong>Data Admissão:</strong> {{ funcionario_folha.funcionario.data_admissao|date:"d/m/Y"|default:"N/A" }}
+                </td>
+                <td>
+                    <strong>Nome da Empresa:</strong> {{ empresa.nome|default:"[Nome da Entidade Empregadora]" }}<br>
+                    <strong>NUIT:</strong> {{ empresa.nuit|default:"[Número Único de Identificação Tributária]" }}<br>
+                    <strong>Endereço:</strong> {{ empresa.endereco|default:"[Rua, Bairro, Cidade]" }}{% if empresa.bairro %}, {{ empresa.bairro }}{% endif %}{% if empresa.cidade %}, {{ empresa.cidade }}{% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- Resumo Salarial -->
+    <h2 class="section-title">💰 RESUMO SALARIAL</h2>
+
+    <!-- Resumo Final Simplificado -->
+    <h2 class="section-title">💵 RESUMO FINAL</h2>
+
+    <!-- Declaração -->
+    <div class="declaracao">
+        <h2 class="section-title">📝 DECLARAÇÃO</h2>
+        <p>Declaro ter recebido o valor líquido de <strong>{{ funcionario_folha.salario_liquido|floatformat:2 }} MT</strong> 
+        referente ao mês de <strong>{{ folha.mes_referencia|date:"F/Y" }}</strong>, conforme os termos legais vigentes.</p>
+    </div>
+    
+    <!-- Assinatura -->
+    <div class="assinatura-section">
+        
+    </div>
+    
+    <!-- Rodapé -->
+    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #6b7280;">
+        Recibo gerado em: {% now "d/m/Y H:i" %}
+    </div>
+</div>
+{% endblock %}

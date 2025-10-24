@@ -1,0 +1,29 @@
+<!-- EXEMPLO DE USO DO SISTEMA DE FILTROS ORGANIZADOS EM COLUNAS -->
+
+<!-- Para usar o sistema de filtros unificado em qualquer template: -->
+{% include 'includes/filters_unified.html' with entity_name='produtos' %}
+
+<!-- O sistema automaticamente organizará os filtros em colunas baseado no número de filtros: -->
+
+<!-- 1 Filtro: 1 coluna (max-width: 400px) -->
+<!-- 2 Filtros: 2 colunas lado a lado -->
+<!-- 3 Filtros: 3 colunas lado a lado -->
+<!-- 4 Filtros: 2 colunas (2x2) -->
+<!-- 5+ Filtros: 3 colunas -->
+
+<!-- Responsividade automática: -->
+<!-- Desktop (>1200px): Layout completo -->
+<!-- Tablet (768px-1200px): 2 colunas -->
+<!-- Mobile (<768px): 1 coluna -->
+
+<!-- Estrutura esperada no contexto: -->
+<!-- 
+context = {
+    'entity_name': 'produtos',
+    'filter_config': FilterSetConfig(...),
+    'categorias': CategoriaProduto.objects.all(),
+    'status_choices': [('ativo', 'Ativo'), ('inativo', 'Inativo')],
+    'compact_mode': False,  # opcional
+    'show_title': True,     # opcional
+}
+-->

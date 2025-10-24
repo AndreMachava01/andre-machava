@@ -1,0 +1,176 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Inscrever Funcionários - {{ treinamento.nome }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header {
+        background: var(--blue-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="{% url 'rh:main' %}">
+            <i class="fas fa-home"></i> RH
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:treinamentos' %}">Treinamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:treinamento_detail' treinamento.id %}">{{ treinamento.nome }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Inscrever Funcionários</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-user-plus"></i>
+                    Inscrever Funcionários - {{ treinamento.nome }}
+                </h1>
+                <p class="page-subtitle">
+                    Selecione os funcionários para inscrever no treinamento
+                </p>
+            </div>
+                   <div class="header-actions">
+                       <a href="#"rh:treinamento_detail' treinamento.id %}" class="btn btn btn-primary btn-responsive -responsive">
+                           <i class="fas fa-arrow-left"></i>
+                           Voltar aos Detalhes
+                       </a>
+                   </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Informações do Treinamento -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-graduation-cap"></i>
+                Informações do Treinamento
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Status:</strong> 
+                        <span class="badge badge-{% if treinamento.status == 'EM_ANDAMENTO' %}success{% elif treinamento.status == 'PLANEJADO' %}warning{% elif treinamento.status == 'CONCLUIDO' %}primary{% else %}secondary{% endif %}">
+                            {{ treinamento.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Data de Início:</strong> {{ treinamento.data_inicio|date:"d/m/Y" }}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Capacidade:</strong> {{ treinamento.inscricoes.count }}/{{ treinamento.capacidade_maxima }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Vagas Disponíveis:</strong> {{ treinamento.vagas_disponiveis }}
+                    </div>
+                    
+                    {% if treinamento.data_limite_inscricao %}
+                    <div class="info-item">
+                        <strong>Limite de Inscrição:</strong> {{ treinamento.data_limite_inscricao|date:"d/m/Y" }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='treinamentos_inscrever' %}
+
+    <!-- Lista de Funcionários -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-users"></i>
+                Funcionários Disponíveis ({{ funcionarios.count }})
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if funcionarios %}
+            <div class="row">
+                {% for funcionario in funcionarios %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-circle me-3">
+                                    {{ funcionario.nome_completo|first|upper }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">{{ funcionario.nome_completo }}</h5>
+                                    <small class="text-muted">{{ funcionario.cargo.nome }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="mb-1">
+                                    <strong>Departamento:</strong> {{ funcionario.cargo.departamento.nome }}
+                                </div>
+                                <div class="mb-1">
+                                    <strong>Email:</strong> {{ funcionario.email|default:"-" }}
+                                </div>
+                                <div class="mb-1">
+                                    <strong>Telefone:</strong> {{ funcionario.telefone|default:"-" }}
+                                </div>
+                            </div>
+                            
+                            <form method="post"action="."method="post">{% csrf_token %}
+                                {% csrf_token %}
+                                <input type="hidden" name="funcionario" value="{{ funcionario.id }}">
+                                <button type="submit" class="btn btn btn-success w-100" 
+                                        {% if treinamento.vagas_disponiveis <= 0 %}disabled{% endif %} class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                    <i class="fas fa-user-plus"></i>
+                                    {% if treinamento.vagas_disponiveis <= 0 %}
+                                        Sem Vagas
+                                    {% else %}
+                                        Inscrever
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-slash"></i>
+                <h4>Nenhum funcionário disponível</h4>
+                <p>Não há funcionários disponíveis para inscrição ou todos já estão inscritos.</p>
+                <a href="#"rh:treinamento_inscricoes' treinamento.id %}" class="btn btn btn-primary btn-responsive -responsive">
+                    <i class="fas fa-list"></i>
+                    Ver Inscrições
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

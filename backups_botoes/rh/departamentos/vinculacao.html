@@ -1,0 +1,142 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Gerenciar Vinculações - {{ departamento.nome }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Departamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Vinculações</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Gerenciar Vinculações"
+    subtitle="Vincule este departamento a outras sucursais da empresa"
+    icon="fas fa-link"
+%}    </div>
+
+    <!-- Informações do Departamento -->
+    <div class="info-card">
+        <h3>
+            <i class="fas fa-building"></i>
+            Informações do Departamento
+        </h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Nome</span>
+                <span class="info-value">{{ departamento.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Código</span>
+                <span class="info-value">{{ departamento.codigo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Sucursal Original</span>
+                <span class="info-value">{{ departamento.sucursal.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tipo</span>
+                <span class="info-value">{{ departamento.get_tipo_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Vincular Nova Sucursal -->
+    <div class="section">
+        <h3>
+            <i class="fas fa-link"></i>
+            Vincular a Nova Sucursal
+        </h3>
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <input type="hidden" name="acao" value="vincular">
+            
+            <div class="form-group">
+                <label for="sucursal">Selecionar Sucursal</label>
+                <select id="sucursal" name="sucursal" required>
+                    <option value="">Escolha uma sucursal...</option>
+                    {% for sucursal in sucursais_disponiveis %}
+                        <option value="{{ sucursal.id }}">
+                            {{ sucursal.nome }} ({{ sucursal.codigo }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-link"></i>
+                    Vincular Sucursal
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sucursais Vinculadas -->
+    <div class="section">
+        <h3>
+            <i class="fas fa-list"></i>
+            Sucursais Vinculadas
+        </h3>
+        
+        {% if vinculacoes %}
+            <div class="vinculacoes-list">
+                {% for vinculacao in vinculacoes %}
+                    <div class="vinculacao-item">
+                        <div class="vinculacao-info">
+                            <div class="vinculacao-sucursal">
+                                <i class="fas fa-building"></i>
+                                {{ vinculacao.sucursal.nome }}
+                            </div>
+                            <div class="vinculacao-data">
+                                Vinculado em: {{ vinculacao.data_criacao|date:"d/m/Y H:i" }}
+                                {% if vinculacao.ativo %}
+                                    <span style="color: #10b981; font-weight: 600;">• Ativo</span>
+                                {% else %}
+                                    <span style="color: #ef4444; font-weight: 600;">• Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="vinculacao-actions">
+                            
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-unlink"></i>
+                <h4>Nenhuma Sucursal Vinculada</h4>
+                <p>Este departamento ainda não foi vinculado a outras sucursais.</p>
+                <p>Use o formulário acima para vincular a sucursais desejadas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

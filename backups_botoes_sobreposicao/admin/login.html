@@ -1,0 +1,36 @@
+{% extends "admin/login.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+    <form action="{{ app_path }}" method="post" id="login-form"action="."method="post">{% csrf_token %}{% csrf_token %}
+        <div class="form-row">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }} {{ form.username }}
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            {{ form.password.label_tag }} {{ form.password }}
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}" class="btn btn btn-primary btn-responsive btn-responsive">
+        </div>
+        <input type="hidden" name="next" value="/dashboard/">
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick=" 
+                 class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">
+            Bypass Login
+        </button>
+    </div>
+</div>
+
+<script>
+function bypassLogin() {
+    document.getElementById('id_username').value = 'admin';
+    document.getElementById('id_password').value = 'admin123';
+    document.getElementById('login-form').submit();
+}
+</script>
+{% endblock %}

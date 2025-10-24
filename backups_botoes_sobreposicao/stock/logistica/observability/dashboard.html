@@ -1,0 +1,344 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard Observabilidade{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Observabilidade</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard Observabilidade
+                </h1>
+                <p class="page-subtitle">
+                    Monitoramento e Análise do Sistema Logístico
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn-success btn-responsive btn-responsive">
+                    <i class="fas fa-calculator"></i>
+                    Calcular Métricas
+                </a>
+                <a href="#" class="btn btn btn-primary btn-responsive btn-responsive">
+                    <i class="fas fa-file-alt"></i>
+                    Relatórios
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.auditoria.total|default:0_registros }}</div>
+                <div class="stat-label">Auditorias</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.metricas.total|default:0_metricas }}</div>
+                <div class="stat-label">Métricas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.relatorios.total|default:0_relatorios }}</div>
+                <div class="stat-label">Relatórios</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.api_logs.total|default:0_logs }}</div>
+                <div class="stat-label">API Logs</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas de Performance -->
+    <div class="stats-grid">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.auditoria.taxa_sucesso|floatformat:1 }}%</div>
+                <div class="stat-label">Taxa Sucesso</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.api_logs.tempo_resposta_medio|floatformat:0 }}ms</div>
+                <div class="stat-label">Tempo Resposta</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.auditoria.ultimos_30_dias }}</div>
+                <div class="stat-label">Últimos 30 dias</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-secondary">
+            <div class="stat-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.relatorios.execucoes_concluidas }}</div>
+                <div class="stat-label">Execuções OK</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Auditorias Recentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history text-primary"></i>
+                        Auditorias Recentes
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-primary btn-sm btn-responsive btn-responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if auditorias_recentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Operação</th>
+                                        <th>Modelo</th>
+                                        <th>Usuário</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for auditoria in auditorias_recentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-{% if auditoria.tipo_operacao == 'STATUS_CHANGE' %}info{% elif auditoria.tipo_operacao == 'ALLOCATION' %}success{% elif auditoria.tipo_operacao == 'EXCEPTION' %}warning{% else %}secondary{% endif %}">
+                                                {{ auditoria.get_tipo_operacao_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ auditoria.modelo_afetado }}</td>
+                                        <td>{{ auditoria.usuario.username if auditoria.usuario else 'Sistema' }}</td>
+                                        <td>
+                                            {% if auditoria.sucesso %}
+                                                <i class="fas fa-check text-success"></i>
+                                            {% else %}
+                                                <i class="fas fa-times text-danger"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ auditoria.data_operacao|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>Nenhuma auditoria encontrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Métricas Recentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar text-info"></i>
+                        Métricas Recentes
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-info btn-sm btn-responsive btn-responsive">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if metricas_recentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                            <p>Nenhuma métrica encontrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execuções de Relatórios -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt text-success"></i>
+                        Execuções de Relatórios
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-success btn-sm btn-responsive btn-responsive">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if execucoes_recentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                            <p>Nenhuma execução encontrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs de API -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-code text-warning"></i>
+                        Logs de API
+                    </h3>
+                    <div class="card-actions">
+                        <a href="#" class="btn btn btn-warning btn-sm btn-responsive btn-responsive">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if logs_api_recentes %}
+                        <div class="table-responsive">
+                            
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-code fa-3x mb-3"></i>
+                            <p>Nenhum log de API encontrado</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Acesso Rápido
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:observability:auditoria_list' %}" class="btn btn-outline-primary btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-history"></i><br>
+                                Auditoria
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:observability:metricas_list' %}" class="btn btn-outline-info btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-chart-bar"></i><br>
+                                Métricas
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:observability:relatorios_list' %}" class="btn btn-outline-success btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-file-alt"></i><br>
+                                Relatórios
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:observability:api_logs_list' %}" class="btn btn-outline-warning btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-code"></i><br>
+                                API Logs
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#"stock:observability:calcular_metricas' %}" class="btn btn-outline-secondary btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-calculator"></i><br>
+                                Calcular
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="#" class="btn btn-outline-dark btn-block btn-responsive btn-responsive">
+                                <i class="fas fa-cog"></i><br>
+                                Configurações
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

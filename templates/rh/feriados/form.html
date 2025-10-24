@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}
@@ -6,15 +6,7 @@
 {% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -25,7 +17,7 @@
     </h1>
     
     <div style="margin-top: 15px;">
-        <a href="{% url 'rh:feriados' %}" class="back-button">
+        <a href="#" class="back-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-arrow-left"></i>
             Voltar para Feriados
         </a>
@@ -38,7 +30,7 @@
 </div>
 
 <div class="form-container">
-    <form method="post">
+    <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
         {% csrf_token %}
         
         <div class="form-grid">
@@ -60,73 +52,7 @@
                            min="2000-01-01"
                            max="2100-12-31"
                            aria-describedby="data-help">
-                    <button type="button" class="date-today" aria-label="Definir para hoje">
-                        <i class="fas fa-calendar-day"></i>
-                    </button>
-                </div>
-                <div id="data-help" class="help-text">Data do feriado (formato: DD/MM/AAAA)</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="tipo">Tipo de Feriado <span class="required">*</span></label>
-                <div class="select-wrapper">
-                    <select id="tipo" name="tipo" required 
-                            aria-required="true"
-                            aria-describedby="tipo-help"
-                            title="Selecione o tipo de feriado">
-                        <option value="">Selecione o tipo</option>
-                        {% for codigo, nome in tipos_feriado %}
-                        <option value="{{ codigo }}" 
-                                {% if feriado.tipo == codigo %}selected{% endif %}
-                                data-description="{{ codigo|lower|capfirst }}">
-                            {{ nome }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <div class="select-arrow">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div id="tipo-help" class="help-text">Categoria do feriado (nacional, regional, etc.)</div>
-                <div id="tipo-description" class="help-text description-text"></div>
-            </div>
-            
-            <div class="form-group">
-                <label for="ativo">Status do Feriado</label>
-                <div class="switch-container">
-                    <label class="switch">
-                        <input type="checkbox" 
-                               id="ativo" 
-                               name="ativo" 
-                               {% if not feriado or feriado.ativo %}checked{% endif %}
-                               aria-describedby="status-help">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="switch-label">Feriado ativo</span>
-                </div>
-                <div id="status-help" class="help-text">Feriados inativos não são considerados nos cálculos de presença</div>
-            </div>
-            
-            <div class="form-group full-width">
-                <label for="descricao">Descrição Detalhada</label>
-                <div class="textarea-wrapper">
-                    <textarea id="descricao" 
-                              name="descricao" 
-                              placeholder="Forneça detalhes adicionais sobre este feriado..."
-                              aria-describedby="descricao-help"
-                              maxlength="500">{{ feriado.descricao|default:'' }}</textarea>
-                    <div class="char-counter"><span id="char-count">0</span>/500</div>
-                </div>
-                <div id="descricao-help" class="help-text">Informações adicionais sobre o feriado (opcional, máximo 500 caracteres)</div>
-            </div>
-        </div>
-        
-        <div class="form-actions">
-            <a href="{% url 'rh:feriados' %}" class="btn btn-secondary">
-                <i class="fas fa-times"></i>
-                Cancelar
-            </a>
-            <button type="submit" class="btn btn-primary">
+                    <button type="button" class="date-today" aria-label="Definir para hoje" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i>
                 {% if feriado %}Atualizar Feriado{% else %}Adicionar Feriado{% endif %}
             </button>

@@ -1,0 +1,334 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-section h5 {
+        color: #495057;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 8px;
+    }
+    
+    .transportation-type {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .transportation-option {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .transportation-option:hover {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .transportation-option.selected {
+        border-color: #007bff;
+        background: #e3f2fd;
+    }
+    
+    .transportation-option h6 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+    
+    .required {
+        color: #dc3545;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:logistica:main' %}">Logística</a></li>
+            <li class="breadcrumb-item"><a href="">Rastreamentos</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ title }}</h2>
+        <a href="#" class="btn btn btn-secondary btn-responsive -responsive">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" id="rastreamentoForm"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                
+                <!-- Tipo de Transporte -->
+                <div class="form-section">
+                    <h5><i class="fas fa-truck"></i> Tipo de Transporte</h5>
+                    <div class="transportation-type">
+                        <div class="transportation-option" data-type="transportadora">
+                            <h6><i class="fas fa-shipping-fast"></i> Transportadora Externa</h6>
+                            <div class="form-group">
+                                {{ form.transportadora.label_tag }}
+                                {{ form.transportadora }}
+                                {% if form.transportadora.errors %}
+                                    <div class="text-danger">{{ form.transportadora.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="transportation-option" data-type="veiculo_interno">
+                            <h6><i class="fas fa-car"></i> Veículo Interno</h6>
+                            <div class="form-group">
+                                {{ form.veiculo_interno.label_tag }}
+                                {{ form.veiculo_interno }}
+                                {% if form.veiculo_interno.errors %}
+                                    <div class="text-danger">{{ form.veiculo_interno.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações do Destinatário -->
+                <div class="form-section">
+                    <h5><i class="fas fa-user"></i> Informações do Destinatário</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.destinatario_nome.label_tag }}
+                                {{ form.destinatario_nome }}
+                                {% if form.destinatario_nome.errors %}
+                                    <div class="text-danger">{{ form.destinatario_nome.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.destinatario_telefone.label_tag }}
+                                {{ form.destinatario_telefone }}
+                                {% if form.destinatario_telefone.errors %}
+                                    <div class="text-danger">{{ form.destinatario_telefone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endereço de Entrega -->
+                <div class="form-section">
+                    <h5><i class="fas fa-map-marker-alt"></i> Endereço de Entrega</h5>
+                    <div class="form-group">
+                        {{ form.endereco_entrega.label_tag }}
+                        {{ form.endereco_entrega }}
+                        {% if form.endereco_entrega.errors %}
+                            <div class="text-danger">{{ form.endereco_entrega.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.cidade_entrega.label_tag }}
+                                {{ form.cidade_entrega }}
+                                {% if form.cidade_entrega.errors %}
+                                    <div class="text-danger">{{ form.cidade_entrega.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.provincia_entrega.label_tag }}
+                                {{ form.provincia_entrega }}
+                                {% if form.provincia_entrega.errors %}
+                                    <div class="text-danger">{{ form.provincia_entrega.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações do Envio -->
+                <div class="form-section">
+                    <h5><i class="fas fa-box"></i> Informações do Envio</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.peso_total.label_tag }}
+                                {{ form.peso_total }}
+                                {% if form.peso_total.errors %}
+                                    <div class="text-danger">{{ form.peso_total.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.valor_declarado.label_tag }}
+                                {{ form.valor_declarado }}
+                                {% if form.valor_declarado.errors %}
+                                    <div class="text-danger">{{ form.valor_declarado.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.custo_envio.label_tag }}
+                                {{ form.custo_envio }}
+                                {% if form.custo_envio.errors %}
+                                    <div class="text-danger">{{ form.custo_envio.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.data_entrega_prevista.label_tag }}
+                        {{ form.data_entrega_prevista }}
+                        {% if form.data_entrega_prevista.errors %}
+                            <div class="text-danger">{{ form.data_entrega_prevista.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-section">
+                    <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                    <div class="form-group">
+                        {{ form.observacoes.label_tag }}
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}
+                            <div class="text-danger">{{ form.observacoes.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="btn-group btn-responsive -responsive" role="button">
+                    <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn btn-secondary btn-responsive -responsive">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-save"></i> Salvar Rastreamento
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar com informações -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informações</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> <span class="badge badge-warning">Preparando</span></p>
+                    <p><strong>Código:</strong> Será gerado automaticamente</p>
+                    <p><strong>Criado por:</strong> {{ user.get_full_name }}</p>
+                    <p><strong>Data:</strong> {{ "now"|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> Dicas</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Selecione apenas uma transportadora OU um veículo interno</li>
+                        <li><i class="fas fa-check text-success"></i> Campos marcados com <span class="required">*</span> são obrigatórios</li>
+                        <li><i class="fas fa-check text-success"></i> O código de rastreamento será gerado automaticamente</li>
+                        <li><i class="fas fa-check text-success"></i> Após criar, você poderá gerar PODs para este rastreamento</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidade para seleção de tipo de transporte
+    const transportationOptions = document.querySelectorAll('.transportation-option');
+    const transportadoraSelect = document.getElementById('id_transportadora');
+    const veiculoInternoSelect = document.getElementById('id_veiculo_interno');
+
+    transportationOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const type = this.dataset.type;
+            
+            // Remover seleção anterior
+            transportationOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Adicionar seleção atual
+            this.classList.add('selected');
+            
+            // Limpar o outro campo
+            if (type === 'transportadora') {
+                veiculoInternoSelect.value = '';
+            } else {
+                transportadoraSelect.value = '';
+            }
+        });
+    });
+
+    // Verificar seleção inicial
+    if (transportadoraSelect.value) {
+        document.querySelector('[data-type="transportadora"]').classList.add('selected');
+    } else if (veiculoInternoSelect.value) {
+        document.querySelector('[data-type="veiculo_interno"]').classList.add('selected');
+    }
+
+    // Validação do formulário
+    document.getElementById('rastreamentoForm').addEventListener('submit', function(e) {
+        const transportadora = transportadoraSelect.value;
+        const veiculoInterno = veiculoInternoSelect.value;
+        
+        if (!transportadora && !veiculoInterno) {
+            e.preventDefault();
+            alert('Selecione uma transportadora ou veículo interno.');
+            return false;
+        }
+        
+        if (transportadora && veiculoInterno) {
+            e.preventDefault();
+            alert('Selecione apenas uma transportadora OU um veículo interno.');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

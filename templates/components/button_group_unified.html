@@ -1,0 +1,34 @@
+{% comment %}
+GRUPO UNIFICADO DE BOTÕES
+Template para renderizar grupos de botões padronizados
+
+Parâmetros:
+- buttons: lista de botões com suas configurações
+- layout: layout do grupo (horizontal, vertical, grid)
+- class: classes CSS adicionais (opcional)
+- id: ID único (opcional)
+{% endcomment %}
+
+{% load static %}
+
+<div class="btn-group{% if layout ==  btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive"vertical' %}-vertical{% elif layout == 'grid' %}-grid{% endif %}{% if class %} {{ class }}{% endif %}"{% if id %} id="{{ id }}"{% endif %} role="button" role="button" role="button" role="button" role="button" role="button">
+    {% for button in buttons %}
+        {% include 'components/button_unified.html' with 
+            type=button.type 
+            action=button.action 
+            size=button.size 
+            text=button.text 
+            icon=button.icon 
+            url=button.url 
+            onclick=button.onclick 
+            disabled=button.disabled 
+            loading=button.loading 
+            class=button.class 
+            id=button.id 
+            data=button.data %}
+    {% endfor %}
+</div>
+
+{% if layout == 'grid' %}
+
+{% endif %}

@@ -1,0 +1,153 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Excluir Desconto{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1 class="header-title">
+        <i class="fas fa-exclamation-triangle"></i>
+        Excluir Desconto
+    </h1>
+    
+    <div style="margin-top: 15px;">
+        <a href="" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Voltar para Descontos
+        </a>
+    </div>
+</div>
+
+<div class="confirmation-container">
+    <div class="warning-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    
+    <h2 class="confirmation-title">Confirmar Exclusão</h2>
+    
+    <p class="confirmation-message">
+        Tem certeza que deseja excluir este desconto? Esta ação não pode ser desfeita.
+    </p>
+    
+    <div class="desconto-info">
+        <div class="info-item">
+            <span class="info-label">Nome:</span>
+            <span class="info-value"><strong>{{ desconto.nome }}</strong></span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Código:</span>
+            <span class="info-value"><code>{{ desconto.codigo }}</code></span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Tipo:</span>
+            <span class="info-value">
+                <span class="tipo-badge">{{ desconto.get_tipo_display }}</span>
+            </span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Valor Fixo:</span>
+            <span class="info-value">
+                {% if desconto.valor_fixo %}
+                    <span class="value-currency">{{ desconto.valor_fixo }}</span>
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Percentual:</span>
+            <span class="info-value">
+                {% if desconto.percentual %}
+                    <span class="value-percent">{{ desconto.percentual }}</span>
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Base de Cálculo:</span>
+            <span class="info-value">
+                {% if desconto.base_calculo %}
+                    {{ desconto.base_calculo }}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Status:</span>
+            <span class="info-value">
+                <span class="status-badge status-{% if desconto.ativo %}ativo{% else %}inativo{% endif %}">
+                    {% if desconto.ativo %}Ativo{% else %}Inativo{% endif %}
+                </span>
+            </span>
+        </div>
+        
+        {% if desconto.observacoes %}
+        <div class="info-item">
+            <span class="info-label">Observações:</span>
+            <span class="info-value">{{ desconto.observacoes }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="info-item">
+            <span class="info-label">Criado em:</span>
+            <span class="info-value">{{ desconto.data_criacao|date:"d/m/Y H:i" }}</span>
+        </div>
+    </div>
+    
+    <div class="impact-warning">
+        <h4><i class="fas fa-info-circle"></i> Impacto da Exclusão</h4>
+        <p>Este desconto será removido permanentemente. Todos os salários que utilizam este desconto serão afetados. Esta ação pode impactar cálculos de folha de pagamento.</p>
+    </div>
+    
+    <form method="post" class="form-actions">
+        {% csrf_token %}
+        
+        <a href="{% url 'rh:descontos_salariais' %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i>
+            Cancelar
+        </a>
+        
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza absoluta que deseja excluir este desconto?')">
+            <i class="fas fa-trash"></i>
+            Excluir Desconto
+        </button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação adicional ao clicar no botão de exclusão
+    const deleteButton = document.querySelector('.btn-danger');
+    
+    deleteButton.addEventListener('click', function(e) {
+        const descontoNome = '{{ desconto.nome }}';
+        const descontoCodigo = '{{ desconto.codigo }}';
+        const confirmMessage = `ATENÇÃO: Você está prestes a excluir permanentemente o desconto "${descontoNome}" (${descontoCodigo}).\n\nEsta ação NÃO PODE ser desfeita e pode afetar salários existentes.\n\nTem certeza absoluta?`;
+        
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

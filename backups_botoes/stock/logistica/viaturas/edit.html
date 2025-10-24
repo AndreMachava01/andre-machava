@@ -1,0 +1,385 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Editar {{ viatura.nome }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-edit"></i>
+                    Editar Viatura: {{ viatura.nome }}
+                </h1>
+                <p class="page-subtitle">
+                    Atualize as informações da viatura interna {{ viatura.codigo }}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#"stock:logistica:viatura_detail' viatura.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-eye"></i>
+                    Ver Detalhes
+                </a>
+                <a href="#"stock:logistica:viaturas_list' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-list"></i>
+                    Lista de Viaturas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{{ message.tags|lower }}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Informação:</strong> Editando viatura interna da empresa
+        </div>
+
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <!-- Informações Básicas da Viatura -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Informações da Viatura</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}">
+                            <i class="fas fa-car-side"></i> Nome da Viatura
+                        </label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}<ul class="errorlist">{% for error in form.nome.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                        <small class="text-muted">Exemplo: Van de Entregas - Matola</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.codigo.id_for_label }}">
+                            <i class="fas fa-tag"></i> Código
+                        </label>
+                        {{ form.codigo }}
+                        {% if form.codigo.errors %}<ul class="errorlist">{% for error in form.codigo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.tipo.id_for_label }}">
+                            <i class="fas fa-tags"></i> Tipo de Viatura <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}<ul class="errorlist">{% for error in form.tipo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                        <small class="text-muted">Selecione se é para entregas ou executivo</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.sucursal.id_for_label }}">
+                            <i class="fas fa-building"></i> Sucursal <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.sucursal }}
+                        {% if form.sucursal.errors %}<ul class="errorlist">{% for error in form.sucursal.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                        <small class="text-muted">Selecione a sucursal responsável pela viatura</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.categoria_veiculo.id_for_label }}">
+                            <i class="fas fa-truck-pickup"></i> Categoria <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.categoria_veiculo }}
+                        {% if form.categoria_veiculo.errors %}<ul class="errorlist">{% for error in form.categoria_veiculo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.placa.id_for_label }}">
+                            <i class="fas fa-id-card"></i> Placa <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.placa }}
+                        {% if form.placa.errors %}<ul class="errorlist">{% for error in form.placa.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.marca.id_for_label }}">
+                            <i class="fas fa-industry"></i> Marca <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.marca }}
+                        <small class="text-muted">Selecione a marca do veículo</small>
+                        {% if form.marca.errors %}<ul class="errorlist">{% for error in form.marca.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.modelo.id_for_label }}">
+                            <i class="fas fa-car-alt"></i> Modelo <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.modelo }}
+                        {% if form.modelo.errors %}<ul class="errorlist">{% for error in form.modelo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.ano_fabricacao.id_for_label }}">
+                            <i class="fas fa-calendar-check"></i> Ano de Fabricação <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.ano_fabricacao }}
+                        <small class="text-muted">Selecione o ano de fabricação do veículo</small>
+                        {% if form.ano_fabricacao.errors %}<ul class="errorlist">{% for error in form.ano_fabricacao.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.capacidade_kg.id_for_label }}">
+                            <i class="fas fa-weight-hanging"></i> Capacidade (kg)
+                        </label>
+                        {{ form.capacidade_kg }}
+                        {% if form.capacidade_kg.errors %}<ul class="errorlist">{% for error in form.capacidade_kg.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Motorista e Manutenção -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-user-tie"></i>
+                        <h3>Motorista e Manutenção</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.motorista_responsavel.id_for_label }}">
+                            <i class="fas fa-user"></i> Motorista Responsável <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.motorista_responsavel }}
+                        {% if form.motorista_responsavel.errors %}<ul class="errorlist">{% for error in form.motorista_responsavel.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                        <small class="text-muted">Selecione o funcionário responsável pela viatura</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.telefone_motorista.id_for_label }}">
+                            <i class="fas fa-phone"></i> Telefone do Motorista
+                        </label>
+                        {{ form.telefone_motorista }}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> Preenchido automaticamente com o telefone do funcionário selecionado
+                        </small>
+                        {% if form.telefone_motorista.errors %}<ul class="errorlist">{% for error in form.telefone_motorista.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.quilometragem_atual.id_for_label }}">
+                            <i class="fas fa-tachometer-alt"></i> Quilometragem Atual
+                        </label>
+                        {{ form.quilometragem_atual }}
+                        <small>km</small>
+                        {% if form.quilometragem_atual.errors %}<ul class="errorlist">{% for error in form.quilometragem_atual.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.proxima_revisao.id_for_label }}">
+                            <i class="fas fa-wrench"></i> Próxima Revisão
+                        </label>
+                        {{ form.proxima_revisao }}
+                        {% if form.proxima_revisao.errors %}<ul class="errorlist">{% for error in form.proxima_revisao.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">
+                            <i class="fas fa-power-off"></i> Status
+                        </label>
+                        {{ form.status }}
+                        <small class="text-muted">Selecione o status atual da viatura</small>
+                        {% if form.status.errors %}<ul class="errorlist">{% for error in form.status.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.ativa }}
+                            <label class="form-check-label" for="{{ form.ativa.id_for_label }}">
+                                <i class="fas fa-toggle-on"></i> Viatura Ativa
+                            </label>
+                        </div>
+                        {% if form.ativa.errors %}<ul class="errorlist">{% for error in form.ativa.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Custos e Prazos -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Custos e Prazos</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.prazo_entrega_padrao.id_for_label }}">
+                            <i class="fas fa-calendar-day"></i> Prazo de Entrega Padrão
+                        </label>
+                        {{ form.prazo_entrega_padrao }}
+                        <small>dias</small>
+                        {% if form.prazo_entrega_padrao.errors %}<ul class="errorlist">{% for error in form.prazo_entrega_padrao.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.custo_por_kg.id_for_label }}">
+                            <i class="fas fa-money-bill-wave"></i> Custo por Kg
+                        </label>
+                        {{ form.custo_por_kg }}
+                        <small>MT/kg</small>
+                        {% if form.custo_por_kg.errors %}<ul class="errorlist">{% for error in form.custo_por_kg.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.custo_fixo.id_for_label }}">
+                            <i class="fas fa-hand-holding-usd"></i> Custo Fixo
+                        </label>
+                        {{ form.custo_fixo }}
+                        <small>MT</small>
+                        {% if form.custo_fixo.errors %}<ul class="errorlist">{% for error in form.custo_fixo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-sticky-note"></i>
+                        <h3>Observações</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.observacoes.id_for_label }}">
+                            <i class="fas fa-comment"></i> Observações Adicionais
+                        </label>
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}<ul class="errorlist">{% for error in form.observacoes.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-btns-bottom -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+                <a href="#"stock:logistica:viatura_detail' viatura.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Melhorar experiência dos dropdowns
+    const dropdowns = document.querySelectorAll('select.form-control');
+    
+    dropdowns.forEach(function(dropdown) {
+        // Adicionar classe para estilização
+        dropdown.classList.add('enhanced-dropdown');
+        
+        // Adicionar evento de mudança para feedback visual
+        dropdown.addEventListener('change', function() {
+            if (this.value !== '') {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+        
+        // Verificar se já tem valor ao carregar
+        if (dropdown.value !== '') {
+            dropdown.classList.add('has-value');
+        }
+    });
+    
+    // Melhorar campo de modelo baseado na marca selecionada
+    const marcaField = document.getElementById('id_marca');
+    const modeloField = document.getElementById('id_modelo');
+    
+    if (marcaField && modeloField) {
+        marcaField.addEventListener('change', function() {
+            if (this.value === 'OUTRA') {
+                modeloField.placeholder = 'Digite o modelo do veículo';
+                modeloField.title = 'Digite o modelo do veículo';
+            } else {
+                modeloField.placeholder = 'Digite o modelo específico';
+                modeloField.title = 'Digite o modelo específico da marca selecionada';
+            }
+        });
+    }
+
+        // Atualizar telefone automaticamente quando motorista mudar
+        const motoristaField = document.getElementById('id_motorista_responsavel');
+        const telefoneField = document.getElementById('id_telefone_motorista');
+        
+        if (motoristaField && telefoneField) {
+            motoristaField.addEventListener('change', function() {
+                const selectedMotorista = this.value;
+                if (selectedMotorista) {
+                    // Fazer requisição AJAX para buscar telefone do funcionário
+                    fetch(`/stock/logistica/get-funcionario-telefone/?nome=${encodeURIComponent(selectedMotorista)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.telefone) {
+                                telefoneField.value = data.telefone;
+                            }
+                        })
+                        .catch(error => {
+                            console.log('Erro ao buscar telefone:', error);
+                        });
+                } else {
+                    telefoneField.value = '';
+                }
+            });
+        }
+    const sucursalField = document.getElementById('id_sucursal');
+    const categoriaField = document.getElementById('id_categoria_veiculo');
+    const nomeField = document.getElementById('id_nome');
+    
+    function gerarNomeAutomatico() {
+        if (sucursalField.value && categoriaField.value) {
+            const sucursalText = sucursalField.options[sucursalField.selectedIndex].text;
+            const categoriaValue = categoriaField.value;
+            
+            // Mapear categorias para abreviações
+            const categoriaAbrev = {
+                'AUTOMOVEL': 'AUTO',
+                'MOTOCICLETA': 'MOTO',
+                'VAN': 'VAN',
+                'CAMINHAO': 'CAM',
+                'BICICLETA': 'BIC',
+                'PICKUP': 'PIC',
+                'CAMINHONETE': 'CAM',
+                'ONIBUS': 'ONI',
+                'AMBULANCIA': 'AMB',
+            };
+            
+            const abrevCategoria = categoriaAbrev[categoriaValue] || 'VEI';
+            const abrevSucursal = sucursalText.split(' ')[0].substring(0, 3).toUpperCase();
+            
+            // Gerar nome temporário (o número será ajustado no backend)
+            const nomeTemporario = `${abrevSucursal}-${abrevCategoria}-01`;
+            nomeField.value = nomeTemporario;
+            nomeField.title = 'Nome gerado automaticamente baseado na sucursal e categoria';
+        }
+    }
+    
+    if (sucursalField && categoriaField && nomeField) {
+        sucursalField.addEventListener('change', gerarNomeAutomatico);
+        categoriaField.addEventListener('change', gerarNomeAutomatico);
+        
+        // Gerar nome inicial se ambos campos já tiverem valor
+        if (sucursalField.value && categoriaField.value) {
+            gerarNomeAutomatico();
+        }
+    }
+});
+</script>
+{% endblock %}

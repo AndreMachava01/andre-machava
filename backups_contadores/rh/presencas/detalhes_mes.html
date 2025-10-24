@@ -1,0 +1,188 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Detalhes de {{ mes_nome }} {{ ano }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Presenças</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ mes_nome }} {{ ano }}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Detalhes de {{ mes_nome }} {{ ano }}
+                </h1>
+                <p class="page-subtitle">
+                    Análise detalhada das presenças e horas extras do mês selecionado
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:presencas' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar para Resumo
+                </a>
+                <a href="{% url 'rh:calendario_presencas' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar"></i>
+                    Calendário
+                </a>
+                <a href="" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Presença
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ resumo_mes.total_registros|default:"0" }}</h3>
+                <p class="stat-label">Presenças Registradas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ dias_uteis }}</h3>
+                <p class="stat-label">Dias Úteis</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_funcionarios }}</h3>
+                <p class="stat-label">Funcionários Ativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ resumo_mes.total_horas_extras|default:"0" }}h</h3>
+                <p class="stat-label">Horas Extras</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo por Tipo -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-chart-pie"></i>
+                Resumo por Tipo de Presença
+            </h3>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Total</th>
+                        <th>Percentagem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in resumo_por_tipo %}
+                    <tr>
+                        <td>
+                            <span class="status-badge {% if item.tipo_presenca__codigo == 'PR' %}status-active{% elif item.tipo_presenca__codigo == 'AU' %}status-inactive{% elif item.tipo_presenca__codigo == 'FJ' %}status-warning{% else %}status-info{% endif %}">
+                                {{ item.tipo_presenca__nome }}
+                            </span>
+                        </td>
+                        <td>{{ item.total }}</td>
+                        <td>
+                            {% if resumo_mes.total_registros > 0 %}
+                                {% widthratio item.total 1 resumo_mes.total_registros as percent %}
+                                {{ percent|floatformat:1 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Resumo por Funcionário -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-users"></i>
+                Resumo por Funcionário
+            </h3>
+        </div>
+        
+        {% if resumo_por_funcionario %}
+        <div class="table-wrapper">
+            
+        </div>
+        {% else %}
+        <div class="table-empty">
+            <i class="fas fa-users"></i>
+            <h4>Nenhum funcionário com registros</h4>
+            <p>Não há registros de presença para este mês.</p>
+            <a href="" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Nova Presença
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Registros Individuais -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                Registros Individuais
+            </h3>
+        </div>
+        
+        {% if presencas_mes %}
+        <div class="table-wrapper">
+            
+        </div>
+        {% else %}
+        <div class="table-empty">
+            <i class="fas fa-calendar-times"></i>
+            <h4>Nenhum registro encontrado</h4>
+            <p>Não há registros de presença para este mês.</p>
+            <a href="{% url 'rh:presenca_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Nova Presença
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

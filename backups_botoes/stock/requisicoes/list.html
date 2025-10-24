@@ -1,0 +1,201 @@
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Requisições de Stock" entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Requisições de Stock{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stat-number">{{ total_requisicoes }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ requisicoes_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="stat-number">{{ requisicoes_aprovadas }}</div>
+            <div class="stat-label">Aprovadas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <div class="stat-number">{{ requisicoes_atendidas }}</div>
+            <div class="stat-label">Atendidas</div>
+        </div>
+    </div>
+
+    <!-- Results|default:0 counter -->
+    {% if search_query or status or sucursal_id %}
+    <div class="results-counter">
+        {% if search_query %}
+            Pesquisando por: "{{ search_query }}"
+        {% endif %}
+        {% if status %}
+            | Status: {{ requisicoes.first.get_status_display }}
+        {% endif %}
+        {% if sucursal_id %}
+            | Sucursal: {{ sucursais|first }}
+        {% endif %}
+        | {{ requisicoes.paginator.count }} resultado(s) encontrado(s)
+    </div>
+    {% endif %}
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if requisicoes %}
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Solicitante</th>
+                            <th>Fornecedora</th>
+                            <th>Status</th>
+                            <th>Itens</th>
+                            <th>Valor|default:0 total</th>
+                            <th>Criado por</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for requisicao in requisicoes %}
+                        <tr>
+                            <td>
+                                <strong>{{ requisicao.codigo }}</strong>
+                            </td>
+                            <td>
+                                {% if requisicao.sucursal_origem %}
+                                    {{ requisicao.sucursal_origem.nome }}
+                                {% elif requisicao.sucursal_solicitante %}
+                                    {{ requisicao.sucursal_solicitante.nome }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if requisicao.sucursal_destino %}
+                                    {{ requisicao.sucursal_destino.nome }}
+                                {% elif requisicao.sucursal_solicitante %}
+                                    <span class="text-muted">Compra Externa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ requisicao.status|lower }}">
+                                    {{ requisicao.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ requisicao.itens.count }} item(s)</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ requisicao.valor_total|floatformat:2 }} MT</span>
+                            </td>
+                            <td>{{ requisicao.criado_por.username|default:"-" }}</td>
+                            <td>{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                                    {% if requisicao.sucursal_solicitante %}
+                                        <!-- Requisição de Compra Externa -->
+                                        <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" 
+                                           class="btn-action btn-view btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if requisicao.status == 'RASCUNHO' %}
+                                            <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" 
+                                               class="btn-action btn-edit btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" action="{% url 'stock:requisicoes:compra_externa_delete' requisicao.id %}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Tem certeza que deseja apagar a requisição {{ requisicao.codigo }}? Esta ação não pode ser desfeita.');"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <!-- Requisição de Stock -->
+                                        <a href="#"stock:requisicoes:detail' requisicao.id %}" 
+                                           class="btn-action btn-view btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if requisicao.status == 'RASCUNHO' %}
+                                            <a href="#"stock:requisicoes:detail' requisicao.id %}" 
+                                               class="btn-action btn-edit btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if requisicoes.has_other_pages %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if requisicoes.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ requisicoes.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    <span class="current">
+                        Página {{ requisicoes.number }} de {{ requisicoes.paginator.num_pages }}
+                    </span>
+
+                    {% if requisicoes.has_next %}
+                        <a href="?page={{ requisicoes.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ requisicoes.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Nenhuma requisição encontrada</h3>
+                <p>Não há requisições de stock que correspondam aos filtros aplicados.</p>
+                <a href="{% url "stock:requisicoes:create" %}">Criar nova requisição</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

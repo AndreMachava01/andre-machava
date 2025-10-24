@@ -1,0 +1,146 @@
+{% extends "base_list.html" %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Gestão de Benefícios" entity_name='default' %}
+{% load static %}
+
+{% block title %}Gestão de Benefícios{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="beneficios-container">
+    
+    </div>
+
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+        <a href="#"rh:beneficio_salarial_add' %}" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-plus"></i>
+            Adicionar Benefício
+        </a>
+        <a href="#"rh:salarios' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-money-bill-wave"></i>
+            Salários
+        </a>
+    </div>
+
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='default' %}
+
+    <div class="table-container">
+        {% if page_obj %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Tipo de Valor</th>
+                    <th>Valor</th>
+                    <th>Base de Cálculo</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for beneficio in page_obj %}
+                <tr>
+                    <td>
+                        <strong>{{ beneficio.nome }}</strong>
+                        {% if beneficio.is_nao_monetario and beneficio.fornecedor %}
+                        <br><small class="text-muted"><i class="fas fa-building"></i> {{ beneficio.fornecedor }}</small>
+                        {% endif %}
+                        {% if beneficio.observacoes %}
+                        <br><small class="text-muted">{{ beneficio.observacoes|truncatechars:50 }}</small>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ beneficio.codigo }}</code></td>
+                    <td>
+                        <span class="tipo-badge {% if beneficio.is_nao_monetario %}tipo-nao-monetario{% else %}tipo-monetario{% endif %}">
+                            {{ beneficio.get_tipo_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="tipo-badge {% if beneficio.is_nao_monetario %}tipo-nao-monetario{% else %}tipo-monetario{% endif %}">
+                            {{ beneficio.get_tipo_valor_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if beneficio.is_nao_monetario %}
+                            <span class="value-non-monetary"><i class="fas fa-gift"></i> Não Monetário</span>
+                        {% elif beneficio.tipo_valor == 'FIXO' %}
+                            <span class="value-currency">{{ beneficio.valor }} MT</span>
+                        {% else %}
+                            <span class="value-percent">{{ beneficio.valor }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if beneficio.base_calculo %}
+                            {{ beneficio.get_base_calculo_display }}
+                            {% if beneficio.base_calculo == 'OUTRO' and beneficio.base_calculo_personalizada %}
+                                <br><small class="text-muted">{{ beneficio.base_calculo_personalizada }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{% if beneficio.ativo %}ativo{% else %}inativo{% endif %}">
+                            {% if beneficio.ativo %}Ativo{% else %}Inativo{% endif %}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="#"rh:beneficio_salarial_edit' beneficio.id %}" class="action-btn edit-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar Benefício">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#"rh:beneficio_salarial_delete' beneficio.id %}" class="action-btn delete-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Excluir Benefício">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-gift"></i>
+            <h3>Nenhum benefício encontrado</h3>
+            <p>Não há benefícios cadastrados com os filtros aplicados.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

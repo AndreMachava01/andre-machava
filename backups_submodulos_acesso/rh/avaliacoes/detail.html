@@ -1,0 +1,585 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Detalhes da Avaliação - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Detalhes</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-star"></i>
+                    Detalhes da Avaliação de Desempenho
+                </h1>
+                <p class="page-subtitle">
+                    Avaliação de {{ avaliacao.funcionario.nome_completo }} - {{ avaliacao.get_tipo_display }}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:avaliacao_edit' avaliacao.id %}" class="btn -primary">
+                    <i class="fas fa-edit"></i>
+                    Editar Avaliação
+                </a>
+                
+                {% if avaliacao.status == 'EM_ANDAMENTO' and avaliacao.pode_ser_concluida %}
+                <a href="#"rh:avaliacao_concluir' avaliacao.id %}" class="btn -success" 
+                   onclick="event.preventDefault(); return "Tem certeza que deseja marcar esta avaliação como concluída?')">
+                    <i class="fas fa-check-circle"></i>
+                    Marcar como Concluída
+                </a>
+                {% endif %}
+                
+                {% if avaliacao.status == 'PLANEJADA' %}
+                <a href="#"rh:avaliacao_iniciar' avaliacao.id %}" class="btn -info" 
+                   onclick="event.preventDefault(); return "Tem certeza que deseja iniciar esta avaliação?')">
+                    <i class="fas fa-play-circle"></i>
+                    Iniciar Avaliação
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'rh:avaliacao_print' avaliacao.id %}" class="btn -secondary">
+                    <i class="fas fa-file-pdf"></i>
+                    Baixar PDF
+                </a>
+                
+                <a href="/rh/avaliacoes/" class="btn -secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Informações Principais -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-header">
+                <h3 class="info-title">
+                    <i class="fas fa-user"></i>
+                    Funcionário Avaliado
+                </h3>
+            </div>
+            <div class="info-content">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ avaliacao.funcionario.nome_completo|first|upper }}
+                    </div>
+                    <div class="user-details">
+                        <h4 class="user-name">{{ avaliacao.funcionario.nome_completo }}</h4>
+                        <p class="user-role">{{ avaliacao.funcionario.cargo.nome }}</p>
+                        <p class="user-dept">{{ avaliacao.funcionario.departamento.nome }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <h3 class="info-title">
+                    <i class="fas fa-user-tie"></i>
+                    Avaliador
+                </h3>
+            </div>
+            <div class="info-content">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ avaliacao.avaliador.nome_completo|first|upper }}
+                    </div>
+                    <div class="user-details">
+                        <h4 class="user-name">{{ avaliacao.avaliador.nome_completo }}</h4>
+                        <p class="user-role">{{ avaliacao.avaliador.cargo.nome }}</p>
+                        <p class="user-dept">{{ avaliacao.avaliador.departamento.nome }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <h3 class="info-title">
+                    <i class="fas fa-calendar"></i>
+                    Período
+                </h3>
+            </div>
+            <div class="info-content">
+                <div class="period-info">
+                    <div class="period-item">
+                        <span class="period-label">Início:</span>
+                        <span class="period-value">{{ avaliacao.data_inicio|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="period-item">
+                        <span class="period-label">Fim:</span>
+                        <span class="period-value">{{ avaliacao.data_fim|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="period-item">
+                        <span class="period-label">Tipo:</span>
+                        <span class="period-value">{{ avaliacao.get_tipo_display }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <h3 class="info-title">
+                    <i class="fas fa-chart-line"></i>
+                    Resultados
+                </h3>
+            </div>
+            <div class="info-content">
+                <div class="results-info">
+                    <div class="result-item">
+                        <span class="result-label">Status:</span>
+                        <span class="status-badge status-{{ avaliacao.status|lower }}">
+                            {{ avaliacao.get_status_display }}
+                        </span>
+                    </div>
+                    {% if avaliacao.nota_geral %}
+                    <div class="result-item">
+                        <span class="result-label">Nota Geral:</span>
+                        <span class="nota-display 
+                            {% if avaliacao.nota_geral >= 8 %}nota-excelente
+                            {% elif avaliacao.nota_geral >= 6 %}nota-bom
+                            {% elif avaliacao.nota_geral >= 4 %}nota-regular
+                            {% else %}nota-ruim{% endif %}">
+                            {{ avaliacao.nota_geral|floatformat:1 }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    {% if avaliacao.classificacao %}
+                    <div class="result-item">
+                        <span class="result-label">Classificação:</span>
+                        <span class="result-value">{{ avaliacao.get_classificacao_display }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Critérios de Avaliação -->
+    {% if criterios_avaliacao %}
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-list-check"></i>
+                Critérios de Avaliação
+            </h3>
+        </div>
+        <div class="section-content">
+            <div class="criterios-grid">
+                {% for criterio in criterios_avaliacao %}
+                <div class="criterio-card">
+                    <div class="criterio-header">
+                        <div class="criterio-name">{{ criterio.criterio.nome }}</div>
+                        <div class="criterio-peso">{{ criterio.criterio.peso }}%</div>
+                    </div>
+                    {% if criterio.criterio.descricao %}
+                    <div class="criterio-desc">{{ criterio.criterio.descricao }}</div>
+                    {% endif %}
+                    
+                    <div class="criterio-results">
+                        <div class="nota-result">
+                            <span class="nota-label">Nota:</span>
+                            <span class="nota-value">{{ criterio.nota|floatformat:1 }}</span>
+                        </div>
+                        {% if criterio.observacoes %}
+                        <div class="observacoes">
+                            <span class="obs-label">Observações:</span>
+                            <p class="obs-text">{{ criterio.observacoes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Metas e Objetivos -->
+    {% if avaliacao.metas_estabelecidas or avaliacao.metas_alcancadas %}
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-target"></i>
+                Metas e Objetivos
+            </h3>
+        </div>
+        <div class="section-content">
+            <div class="metas-grid">
+                {% if avaliacao.metas_estabelecidas %}
+                <div class="meta-section">
+                    <h4 class="meta-title">Metas Estabelecidas</h4>
+                    <div class="meta-content">{{ avaliacao.metas_estabelecidas|linebreaks }}</div>
+                </div>
+                {% endif %}
+                
+                {% if avaliacao.metas_alcancadas %}
+                <div class="meta-section">
+                    <h4 class="meta-title">Metas Alcançadas</h4>
+                    <div class="meta-content">{{ avaliacao.metas_alcancadas|linebreaks }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Análise de Desempenho -->
+    {% if avaliacao.pontos_fortes or avaliacao.pontos_melhoria %}
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                Análise de Desempenho
+            </h3>
+        </div>
+        <div class="section-content">
+            <div class="analise-grid">
+                {% if avaliacao.pontos_fortes %}
+                <div class="analise-section">
+                    <h4 class="analise-title">
+                        <i class="fas fa-thumbs-up"></i>
+                        Pontos Fortes
+                    </h4>
+                    <div class="analise-content">{{ avaliacao.pontos_fortes|linebreaks }}</div>
+                </div>
+                {% endif %}
+                
+                {% if avaliacao.pontos_melhoria %}
+                <div class="analise-section">
+                    <h4 class="analise-title">
+                        <i class="fas fa-chart-line"></i>
+                        Pontos de Melhoria
+                    </h4>
+                    <div class="analise-content">{{ avaliacao.pontos_melhoria|linebreaks }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Observações -->
+    {% if avaliacao.observacoes_avaliador or avaliacao.observacoes_funcionario %}
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-comments"></i>
+                Observações
+            </h3>
+        </div>
+        <div class="section-content">
+            <div class="observacoes-grid">
+                {% if avaliacao.observacoes_avaliador %}
+                <div class="obs-section">
+                    <h4 class="obs-title">
+                        <i class="fas fa-user-tie"></i>
+                        Observações do Avaliador
+                    </h4>
+                    <div class="obs-content">{{ avaliacao.observacoes_avaliador|linebreaks }}</div>
+                </div>
+                {% endif %}
+                
+                {% if avaliacao.observacoes_funcionario %}
+                <div class="obs-section">
+                    <h4 class="obs-title">
+                        <i class="fas fa-user"></i>
+                        Observações do Funcionário
+                    </h4>
+                    <div class="obs-content">{{ avaliacao.observacoes_funcionario|linebreaks }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Plano de Desenvolvimento -->
+    {% if avaliacao.plano_desenvolvimento %}
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-graduation-cap"></i>
+                Plano de Desenvolvimento
+            </h3>
+        </div>
+        <div class="section-content">
+            <div class="plano-content">{{ avaliacao.plano_desenvolvimento|linebreaks }}</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Estilos específicos para detalhes de avaliação */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.info-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+}
+
+.info-header {
+    background: var(--surface-medium);
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.info-content {
+    padding: var(--space-6);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: var(--text-lg);
+    flex-shrink: 0;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.user-role {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.user-dept {
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+    margin: 0;
+}
+
+.period-info, .results-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.period-item, .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.period-label, .result-label {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.period-value, .result-value {
+    color: var(--text-primary);
+    font-weight: var(--font-medium);
+}
+
+.section-card {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-6);
+    overflow: hidden;
+}
+
+.section-header {
+    background: var(--surface-medium);
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.section-content {
+    padding: var(--space-6);
+}
+
+.criterios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-5);
+}
+
+.criterio-card {
+    background: var(--surface-medium);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+}
+
+.criterio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.criterio-name {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+}
+
+.criterio-peso {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.criterio-desc {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+    line-height: 1.5;
+}
+
+.criterio-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.nota-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nota-label {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.nota-value {
+    font-weight: var(--font-bold);
+    font-size: var(--text-lg);
+    color: var(--accent-primary);
+}
+
+.observacoes {
+    margin-top: var(--space-3);
+}
+
+.obs-label {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.obs-text {
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.metas-grid, .analise-grid, .observacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+}
+
+.meta-section, .analise-section, .obs-section {
+    background: var(--surface-medium);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+}
+
+.meta-title, .analise-title, .obs-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-4) 0;
+}
+
+.meta-content, .analise-content, .obs-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.plano-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: var(--text-base);
+}
+
+@media (max-width: 768px) {
+    
+    
+    
+    
+    .metas-grid, .analise-grid, 
+}
+</style>
+{% endblock %}

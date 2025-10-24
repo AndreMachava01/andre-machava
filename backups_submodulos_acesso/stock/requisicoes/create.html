@@ -1,0 +1,327 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Nova Requisição de Stock{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-plus me-2"></i>Nova Requisição de Stock
+            </h1>
+            <div class="hero-actions">
+                <a href="#" class="btn-modern btn btn-secondary-modern btn-responsive -responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar às Requisições
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <div class="form-container">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' or message.tags == 'success' %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form method="post"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="tipo_requisicao">
+                        <i class="fas fa-list"></i> Tipo de Requisição
+                    </label>
+                    <select name="tipo_requisicao" id="tipo_requisicao" class="form-control-modern" required>
+                        <option value="interna">Requisição Interna</option>
+                        <option value="externa" selected>Compra Externa</option>
+                    </select>
+                    <div class="form-help">Escolha entre requisição interna (entre sucursais) ou compra externa (de fornecedores). Para requisições internas, você definirá quem fornece cada|default:0 items ao adicionar os itens.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="sucursal_solicitante">
+                        <i class="fas fa-hand-paper"></i> Sucursal Solicitante
+                    </label>
+                    <select name="sucursal_solicitante" id="sucursal_solicitante" class="form-control-modern" required>
+                        <option value="">Selecione quem está solicitando</option>
+                        {% for sucursal in sucursais %}
+                            <option value="{{ sucursal.id }}" {% if sucursal_solicitante_pre_selecionada and sucursal.id == sucursal_solicitante_pre_selecionada.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">
+                        {% if sucursal_solicitante_pre_selecionada %}
+                            <i class="fas fa-info-circle text-info"></i> Sucursal pré-selecionada automaticamente baseada no stock baixo
+                        {% else %}
+                            Sucursal que precisa dos itens
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Prioridade -->
+                <div class="form-group">
+                    <label class="form-label" for="prioridade">
+                        <i class="fas fa-exclamation-triangle"></i> Prioridade
+                    </label>
+                    <select name="prioridade" id="prioridade" class="form-control-modern">
+                        <option value="">Prioridade Automática (baseada no valor)</option>
+                        <option value="BAIXA">Baixa</option>
+                        <option value="NORMAL">Normal</option>
+                        <option value="ALTA">Alta</option>
+                        <option value="URGENTE">Urgente</option>
+                    </select>
+                    <div class="form-help">
+                        <i class="fas fa-info-circle text-info"></i> 
+                        Deixe vazio para prioridade automática baseada no valor|default:0 total, ou selecione uma prioridade específica
+                    </div>
+                </div>
+
+                <!-- Informações de Stock -->
+                <div id="stock-info-section" class="form-group" style="display: none;">
+                    <label class="form-label" id="stock-info-label">
+                        <i class="fas fa-boxes"></i> Stock Disponível
+                    </label>
+                    <div id="stock-info-content" class="stock-info-card">
+                        <!-- Conteúdo será preenchido via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Sugestão de|default:0 items -->
+                {% if items_pre_selecionado  %}
+                <div class="form-group">
+                    <div class="alert alert-info">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ item_pre_selecionado.nome }}</strong> foi identificado como tendo stock baixo.
+                        <br><small>{{ item_pre_selecionado.codigo }} • {{ item_pre_selecionado.tipo }} • {{ item_pre_selecionado.unidade_medida }}</small>
+                        <br><small><i class="fas fa-lightbulb"></i> Após criar a requisição, você poderá adicionar este|default:0 items com a quantidade desejada.</small>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="observacoes">
+                        <i class="fas fa-comment"></i> Observações
+                    </label>
+                    <textarea name="observacoes" id="observacoes" class="form-control-modern form-textarea" 
+                              placeholder="Observações sobre a requisição (opcional)"></textarea>
+                    <div class="form-help">Informações adicionais sobre esta requisição</div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="#"stock:requisicoes:list' %}" class="btn-form btn-cancel btn-responsive -responsive">
+                        <i class="fas fa-times"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn-form btn-submit" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-save"></i>Criar Requisição
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sucursalSolicitante = document.getElementById('sucursal_solicitante');
+    const sucursalFornecedora = document.getElementById('sucursal_fornecedora');
+    
+    // Validar que as sucursais sejam diferentes
+    function validateSucursals() {
+        if (sucursalSolicitante.value && sucursalFornecedora.value && sucursalSolicitante.value === sucursalFornecedora.value) {
+            alert('A sucursal solicitante não pode ser a mesma da fornecedora!');
+            sucursalFornecedora.focus();
+            return false;
+        }
+        return true;
+    }
+    
+    sucursalSolicitante.addEventListener('change', validateSucursals);
+    sucursalFornecedora.addEventListener('change', function() {
+        validateSucursals();
+        loadStockInfo();
+    });
+    
+    // Função para carregar informações de stock
+    function loadStockInfo() {
+        const sucursalFornecedoraId = sucursalFornecedora.value;
+        const stockInfoSection = document.getElementById('stock-info-section');
+        const stockInfoContent = document.getElementById('stock-info-content');
+        
+        if (!sucursalFornecedoraId) {
+            stockInfoSection.style.display = 'none';
+            return;
+        }
+        
+        // Mostrar loading
+        stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-spinner fa-spin"></i> Carregando informações de stock...</div>';
+        stockInfoSection.style.display = 'block';
+        
+        // Verificar se há um|default:0 items pré-selecionado
+        const itemsPreSelecionado = {{ item_pre_selecionado.id }};
+        const stockInfoLabel = document.getElementById('stock-info-label');
+        
+        if (itemPreSelecionado) {
+            // Se há|default:0 items pré-selecionado, mostrar stock desse|default:0 items em todas as sucursais
+            stockInfoLabel.innerHTML = '<i class="fas fa-search"></i> Stock do|default:0 items em Todas as Sucursais';
+            loadSpecificItemStock(itemPreSelecionado);
+        } else {
+            // Se não há|default:0 items específico, mostrar todos os itens da sucursal fornecedora
+            stockInfoLabel.innerHTML = '<i class="fas fa-boxes"></i> Stock Disponível';
+            loadAllItemsStock(sucursalFornecedoraId);
+        }
+    }
+    
+    // Função para carregar stock de um|default:0 items específico em todas as sucursais
+    function loadSpecificItemStock(itemId) {
+        const stockInfoContent = document.getElementById('stock-info-content');
+        
+        fetch(`/stock/requisicoes/api/stock-por-sucursal/?item_id=${itemId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    stockInfoContent.innerHTML = `<div class="no-stock-message"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.stocks.length === 0) {
+                    stockInfoContent.innerHTML = `<div class="no-stock-message"><i class="fas fa-box-open"></i> ${data.item.nome} não está disponível em nenhuma sucursal</div>`;
+                    return;
+                }
+                
+                // Exibir stock do|default:0 items específico em todas as sucursais
+                let html = `
+                    <div class="stock-item-header">
+                        <div class="stock-item-info">
+                            <div class="stock-item-name">${data.item.nome}</div>
+                            <div class="stock-item-details">
+                                ${data.item.codigo} • ${data.item.tipo} • ${data.item.unidade_medida}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                data.stocks.forEach(stock => {
+                    const statusClass = getStockStatusClass(stock.quantidade_disponivel, stock.estoque_minimo);
+                    const statusText = getStockStatusText(stock.quantidade_disponivel, stock.estoque_minimo);
+                    const isSelectedSucursal = stock.sucursal_id == sucursalFornecedora.value;
+                    
+                    html += `
+                        <div class="stock-item ${isSelectedSucursal ? 'selected-sucursal' : ''}">
+                            <div class="stock-item-info">
+                                <div class="stock-item-name">${stock.sucursal_nome}</div>
+                                <div class="stock-item-details">
+                                    ${stock.quantidade_disponivel} ${data.item.unidade_medida} disponíveis
+                                </div>
+                            </div>
+                            <div class="stock-quantity">
+                                <div class="stock-available">${stock.quantidade_disponivel}</div>
+                                <div class="stock-status ${statusClass}">${statusText}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                stockInfoContent.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar stock específico:', error);
+                stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar informações de stock</div>';
+            });
+    }
+    
+    // Função para carregar todos os itens de uma sucursal (fallback)
+    function loadAllItemsStock(sucursalId) {
+        const stockInfoContent = document.getElementById('stock-info-content');
+        
+        fetch(`/stock/requisicoes/api/itens-disponiveis/?sucursal_id=${sucursalId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    stockInfoContent.innerHTML = `<div class="no-stock-message"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.itens.length === 0) {
+                    stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-box-open"></i> Nenhum|default:0 items disponível nesta sucursal</div>';
+                    return;
+                }
+                
+                // Exibir itens disponíveis
+                let html = '';
+                data.itens.forEach(item => {
+                    const statusClass = getStockStatusClass(item.quantidade_disponivel, item.estoque_minimo || 0);
+                    const statusText = getStockStatusText(item.quantidade_disponivel, item.estoque_minimo || 0);
+                    
+                    html += `
+                        <div class="stock-item">
+                            <div class="stock-item-info">
+                                <div class="stock-item-name">${item.nome}</div>
+                                <div class="stock-item-details">
+                                    ${item.codigo} • ${item.tipo} • ${item.unidade_medida}
+                                </div>
+                            </div>
+                            <div class="stock-quantity">
+                                <div class="stock-available">${item.quantidade_disponivel}</div>
+                                <div class="stock-status ${statusClass}">${statusText}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                stockInfoContent.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar stock:', error);
+                stockInfoContent.innerHTML = '<div class="no-stock-message"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar informações de stock</div>';
+            });
+    }
+    
+    // Função para determinar classe de status do stock
+    function getStockStatusClass(quantidade, estoqueMinimo) {
+        if (quantidade <= estoqueMinimo) return 'critical';
+        if (quantidade <= estoqueMinimo * 1.5) return 'low';
+        return 'good';
+    }
+    
+    // Função para determinar texto de status do stock
+    function getStockStatusText(quantidade, estoqueMinimo) {
+        if (quantidade <= estoqueMinimo) return 'Crítico';
+        if (quantidade <= estoqueMinimo * 1.5) return 'Baixo';
+        return 'Bom';
+    }
+    
+    
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const tipoRequisicao = document.getElementById('tipo_requisicao').value;
+        
+        // Validar sucursal solicitante (obrigatória para ambos os tipos)
+        if (!sucursalSolicitante.value) {
+            alert('Por favor, selecione a sucursal solicitante!');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

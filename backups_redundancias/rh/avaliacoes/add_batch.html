@@ -1,0 +1,231 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Avaliações em Lote{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Avaliações em Lote</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Avaliações em Lote"
+    subtitle="Criar avaliações de desempenho para múltiplos funcionários"
+    icon="fas fa-users"
+%}    </div>
+
+    <!-- Aviso -->
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Atenção:</strong> Esta funcionalidade criará avaliações para todos os funcionários que correspondam aos critérios selecionados. 
+        Verifique se já existem avaliações para o período antes de continuar.
+    </div>
+
+    <!-- Formulário -->
+    <div class="form-container">
+        <form method="post" id="batchForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="departamento" class="form-label">Departamento</label>
+                    <select name="departamento" id="departamento" class="form-select">
+                        <option value="">Todos os departamentos</option>
+                        {% for dept in departamentos %}
+                        <option value="{{ dept.id }}">{{ dept.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Selecione um departamento específico ou deixe em branco para todos</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo" class="form-label">Cargo</label>
+                    <select name="cargo" id="cargo" class="form-select">
+                        <option value="">Todos os cargos</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}">{{ cargo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Selecione um cargo específico ou deixe em branco para todos</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="avaliador" class="form-label">
+                        Avaliador <span class="required">*</span>
+                    </label>
+                    <select name="avaliador" id="avaliador" class="form-select" required>
+                        <option value="">Selecione um avaliador</option>
+                        {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}">{{ funcionario.nome_completo }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Funcionário responsável pelas avaliações</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo" class="form-label">
+                        Tipo de Avaliação <span class="required">*</span>
+                    </label>
+                    <select name="tipo" id="tipo" class="form-select" required>
+                        <option value="">Selecione o tipo</option>
+                        {% for codigo, nome in TIPO_CHOICES %}
+                        <option value="{{ codigo }}">{{ nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_inicio" class="form-label">
+                        Data de Início <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_inicio" id="data_inicio" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_fim" class="form-label">
+                        Data de Fim <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_fim" id="data_fim" class="form-control" required>
+                </div>
+            </div>
+
+            <!-- Pré-visualização -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-title">
+                    <i class="fas fa-eye"></i>
+                    Funcionários que serão avaliados
+                </div>
+                <div class="preview-list" id="previewList">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="#"rh:avaliacoes' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-users"></i>
+                    Criar Avaliações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const departamentoSelect = document.getElementById('departamento');
+    const cargoSelect = document.getElementById('cargo');
+    const avaliadorSelect = document.getElementById('avaliador');
+    const tipoSelect = document.getElementById('tipo');
+    const dataInicioInput = document.getElementById('data_inicio');
+    const dataFimInput = document.getElementById('data_fim');
+    const previewSection = document.getElementById('previewSection');
+    const previewList = document.getElementById('previewList');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Função para atualizar pré-visualização
+    function updatePreview() {
+        const departamento = departamentoSelect.value;
+        const cargo = cargoSelect.value;
+        
+        if (!departamento && !cargo) {
+            previewSection.style.display = 'none';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // Simular busca de funcionários (em produção, seria uma chamada AJAX)
+        const funcionarios = [
+            { nome: 'João Silva', departamento: 'TI', cargo: 'Desenvolvedor' },
+            { nome: 'Maria Santos', departamento: 'TI', cargo: 'Analista' },
+            { nome: 'Pedro Costa', departamento: 'RH', cargo: 'Assistente' },
+            { nome: 'Ana Oliveira', departamento: 'RH', cargo: 'Coordenadora' }
+        ];
+
+        let funcionariosFiltrados = funcionarios;
+
+        if (departamento) {
+            funcionariosFiltrados = funcionariosFiltrados.filter(f => f.departamento === 'TI');
+        }
+
+        if (cargo) {
+            funcionariosFiltrados = funcionariosFiltrados.filter(f => f.cargo === 'Desenvolvedor');
+        }
+
+        // Atualizar lista de pré-visualização
+        previewList.innerHTML = '';
+        funcionariosFiltrados.forEach(funcionario => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.innerHTML = `
+                <div class="preview-item-info">
+                    <div class="preview-item-name">${funcionario.nome}</div>
+                    <div class="preview-item-details">${funcionario.departamento} • ${funcionario.cargo}</div>
+                </div>
+                <div class="preview-count">1 avaliação</div>
+            `;
+            previewList.appendChild(item);
+        });
+
+        previewSection.style.display = 'block';
+        submitBtn.disabled = funcionariosFiltrados.length === 0;
+    }
+
+    // Event listeners
+    departamentoSelect.addEventListener('change', updatePreview);
+    cargoSelect.addEventListener('change', updatePreview);
+
+    // Validação do formulário
+    const form = document.getElementById('batchForm');
+    form.addEventListener('submit', function(e) {
+        const avaliador = avaliadorSelect.value;
+        const tipo = tipoSelect.value;
+        const dataInicio = dataInicioInput.value;
+        const dataFim = dataFimInput.value;
+
+        if (!avaliador || !tipo || !dataInicio || !dataFim) {
+            e.preventDefault();
+            alert('Todos os campos obrigatórios devem ser preenchidos.');
+            return;
+        }
+
+        if (new Date(dataInicio) >= new Date(dataFim)) {
+            e.preventDefault();
+            alert('A data de início deve ser anterior à data de fim.');
+            return;
+        }
+
+        if (!confirm('Tem certeza que deseja criar as avaliações em lote?')) {
+            e.preventDefault();
+        }
+    });
+
+    // Definir data padrão (próximo mês)
+    const hoje = new Date();
+    const proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
+    
+    dataInicioInput.value = proximoMes.toISOString().split('T')[0];
+    dataFimInput.value = fimMes.toISOString().split('T')[0];
+});
+</script>
+
+
+
+{% endblock %}

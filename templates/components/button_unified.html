@@ -1,0 +1,41 @@
+{% comment %}
+SISTEMA UNIFICADO DE BOTÕES
+Template para renderizar botões padronizados no sistema
+
+Parâmetros:
+- type: tipo do botão (module, submodule, navigation, action, confirmation)
+- action: ação específica (view, edit, delete, save, cancel, etc.)
+- size: tamanho (xs, sm, md, lg, xl)
+- text: texto do botão
+- icon: ícone (opcional)
+- url: URL de destino (opcional)
+- onclick: função JavaScript (opcional)
+- disabled: botão desabilitado (opcional)
+- loading: estado de carregamento (opcional)
+- class: classes CSS adicionais (opcional)
+- id: ID único (opcional)
+- data: atributos data (opcional)
+{% endcomment %}
+
+{% load static %}
+
+{% if url %}
+    <a href="#" 
+       class="btn btn-{{ type }}{% if action %} btn-{{ action }}{% endif %}{% if size %} btn-{{ size }}{% endif %}{% if icon %} -icon{% endif %}{% if disabled %} disabled{% endif %}{% if loading %} loading{% endif %}{% if class %} {{ class }}{% endif %}"
+       {% if id %}id="{{ id }}"{% endif %}
+       {% if onclick %}href="#" onclick="event.preventDefault(); {{ onclick }}"{% endif %}
+       {% if disabled %}aria-disabled="true"{% endif %}
+       {% if not disabled %}aria-label="{{ text|default:'Botão de ação' }}"{% endif %}
+       title="{{ text|default:'Clique para executar ação' }}"
+       {% for key, value in data.items %}data-{{ key }}="{{ value }}"{% endfor %}>button type="{% if type == 'confirmation' and action == 'save' %}submit{% elif type == 'confirmation' and action == 'cancel' %}button{% else %}button{% endif %}"
+            class="btn btn-{{ type }}{% if action %} btn-{{ action }}{% endif %}{% if size %} btn-{{ size }}{% endif %}{% if icon %} btn-icon{% endif %}{% if disabled %} disabled{% endif %}{% if loading %} loading{% endif %}{% if class %} {{ class }}{% endif %}"
+            {% if id %}id="{{ id }}-2"{% endif %}
+            {% if onclick %}onclick="{{ onclick }}"{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if not disabled %}aria-label="{{ text|default:'Botão de ação' }}"{% endif %}
+            title="{{ text|default:'Clique para executar ação' }}"
+            {% for key, value in data.items %}data-{{ key }}="{{ value }}"{% endfor %}>
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ text|default:"Botão" }}
+    </button>
+{% endif %}

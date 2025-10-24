@@ -1,0 +1,288 @@
+/* =============================================================================
+   PAGE HEADER PADRÃO - ESTILO DOURADO E TRANSPARENTE
+   Header com tom dourado e transparência elegante
+   ÚNICO ARQUIVO PARA GERIR TODOS OS HEADERS DO SISTEMA
+   ============================================================================= */
+
+.page-header {
+  background: var(--gradient-gold-base) !important;
+  color: #2c3e50 !important;
+  padding: var(--space-8) !important;
+  border-radius: var(--radius-2xl) !important;
+  margin-bottom: var(--space-8) !important;
+  box-shadow: var(--shadow-glow-gold-medium) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  backdrop-filter: var(--blur-medium) !important;
+  border: var(--border-gold-light) !important;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: var(--gradient-gold-overlay) !important;
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+.page-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 2;
+}
+
+/* Container do título com botão de voltar */
+.header-title-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  position: relative;
+}
+
+/* Estilo do botão de voltar */
+.back-button {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #2c3e50 !important;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-button i {
+  font-size: 14px;
+}
+
+.back-button:hover {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+  transform: translateX(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  color: #1a365d !important;
+}
+
+/* Ajuste para mobile */
+@media (max-width: 768px) {
+  .back-button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+.page-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.page-subtitle {
+  font-size: var(--text-lg);
+  opacity: 0.9;
+  margin: var(--space-2) 0 0 0;
+  font-weight: var(--font-normal);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.header-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-white-transparent-medium) !important;
+  border: var(--border-gold-medium) !important;
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  color: #2c3e50;
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--blur-medium) !important;
+  font-weight: var(--font-medium);
+  min-height: auto;
+}
+
+.header-actions .btn:hover {
+  background: var(--bg-white-transparent-heavy) !important;
+  border: var(--border-gold-heavy) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-gold-light) !important;
+}
+
+.header-actions .btn.primary {
+  background: var(--bg-white-transparent-medium);
+  border-color: var(--border-gold-medium);
+}
+
+.header-actions .btn.primary:hover {
+  background: var(--bg-white-transparent-heavy);
+  border-color: var(--border-gold-heavy);
+}
+
+.header-actions .btn.secondary {
+  background: var(--bg-white-transparent-light);
+  border-color: var(--border-gold-light);
+}
+
+.header-actions .btn.secondary:hover {
+  background: var(--bg-white-transparent-medium);
+  border-color: var(--border-gold-medium);
+}
+
+/* Responsividade do Page Header */
+@media (max-width: 768px) {
+  .page-header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+  
+  .page-title {
+    font-size: var(--text-xl);
+  }
+  
+  .page-subtitle {
+    font-size: var(--text-base);
+  }
+  
+  .header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .header-actions .btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: var(--space-4);
+  }
+  
+  .page-title {
+    font-size: var(--text-lg);
+  }
+  
+  .page-subtitle {
+    font-size: var(--text-sm);
+  }
+  
+  .header-actions .btn {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+  }
+}
+
+/* =============================================================================
+   COMPATIBILIDADE COM MÓDULO RH
+   Converter .nav-top para usar .page-header
+   ============================================================================= */
+
+/* Manter compatibilidade temporária com .nav-top */
+.nav-top {
+  background: linear-gradient(135deg, var(--gradient-gold-base) 50%, rgba(255, 152, 0, 0.65) 100%) !important;
+  color: #2c3e50 !important;
+  padding: var(--space-8) !important;
+  border-radius: var(--radius-2xl) !important;
+  margin-bottom: var(--space-8) !important;
+  box-shadow: var(--shadow-glow-gold-medium) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  backdrop-filter: var(--blur-medium) !important;
+  border: 1px solid rgba(255, 215, 0, 0.15) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+}
+
+.nav-top .page-title {
+  color: #2c3e50;
+  margin: 0;
+  padding: 0 60px;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  text-align: center;
+  flex-grow: 1;
+}
+
+.nav-top .back-button {
+  background: rgba(255, 255, 255, 0.25);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  color: #2c3e50;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border: 1px solid var(--bg-white-transparent-heavy);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: absolute;
+  left: var(--space-5);
+  top: var(--space-4);
+  backdrop-filter: var(--blur-medium);
+}
+
+.nav-top .back-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: var(--border-gold-heavy);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--bg-white-transparent-medium);
+}
+
+/* Responsividade para .nav-top */
+@media (max-width: 768px) {
+  .nav-top {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  
+  .nav-top .page-title {
+    padding: 0;
+    font-size: var(--text-lg);
+  }
+  
+  .nav-top .back-button {
+    position: static;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-top {
+    padding: var(--space-3);
+  }
+  
+  .nav-top .page-title {
+    font-size: var(--text-base);
+  }
+}

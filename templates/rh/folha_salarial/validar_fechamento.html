@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Validar Fechamento - {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -28,19 +20,19 @@
         <div class="summary-grid">
             <div class="summary-item">
                 <h4>Total de Funcionários</h4>
-                <div class="value">{{ resumo.total_funcionarios }}</div>
+                <div class="value">{{ resumo.total|default:0_funcionarios }}</div>
             </div>
             <div class="summary-item">
                 <h4>Total Bruto</h4>
-                <div class="value">{{ resumo.total_bruto|floatformat:2 }} MT</div>
+                <div class="value">{{ resumo.total|default:0_bruto|floatformat:2 }} MT</div>
             </div>
             <div class="summary-item">
                 <h4>Total Descontos</h4>
-                <div class="value">{{ resumo.total_descontos|floatformat:2 }} MT</div>
+                <div class="value">{{ resumo.total|default:0_descontos|floatformat:2 }} MT</div>
             </div>
             <div class="summary-item">
                 <h4>Total Líquido</h4>
-                <div class="value">{{ resumo.total_liquido|floatformat:2 }} MT</div>
+                <div class="value">{{ resumo.total|default:0_liquido|floatformat:2 }} MT</div>
             </div>
         </div>
     </div>
@@ -125,20 +117,20 @@
     {% endif %}
     
     <!-- Botões de Ação -->
-    <div class="action-buttons">
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
         {% if validacao.valido %}
-            <a href="{% url 'rh:folha_fechar' folha.id %}" class="btn-fechar">
+            <a href="#"rh:folha_fechar' folha.id %}" class="btn-fechar btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-lock"></i>
                 Fechar Folha
             </a>
         {% else %}
-            <a href="{% url 'rh:folha_calcular' folha.id %}" class="btn-recalcular">
+            <a href="#"rh:folha_calcular' folha.id %}" class="btn-recalcular btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-calculator"></i>
                 Recalcular Folha
             </a>
         {% endif %}
         
-        <a href="{% url 'rh:folha_detail' folha.id %}" class="btn-cancelar">
+        <a href="#"rh:folha_detail' folha.id %}" class="btn-cancelar btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-arrow-left"></i>
             Voltar aos Detalhes
         </a>

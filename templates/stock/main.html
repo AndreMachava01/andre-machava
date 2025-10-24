@@ -1,4 +1,6 @@
-{% extends 'base_admin.html' %}
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
 
 {% block title %}Gestão de Stock e Logística - Sistema de Gestão{% endblock %}
 
@@ -14,134 +16,200 @@
         <span>Gestão de Stock e Logística</span>
     </nav>
     
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-warehouse"></i>
-                    Gestão de Stock e Logística
-                </h1>
-                <p class="page-subtitle">
-                    Sistema integrado de gestão de inventário, transporte e distribuição
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="/stock/dashboard_executivo/" class="btn btn-primary">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard Executivo
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- Page Header Padrão - Estilo Bonito -->
+    {% load static %}
+{% include "includes/header.html" with
+    title="Gestão de Stock e Logística"
+    subtitle="Sistema integrado de gestão de inventário, transporte e distribuição"
+    icon="fas fa-warehouse"
+%}    </div>
     
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-box"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_produtos|default:"0" }}</h3>
-                <p class="stat-label">Produtos Ativos</p>
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_produtos|default:"0" }}</h3>
+                    <p class="stat-label">Produtos Ativos</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-cogs"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_materiais|default:"0" }}</h3>
-                <p class="stat-label">Materiais Ativos</p>
+                <div class="stat-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_materiais|default:"0" }}</h3>
+                    <p class="stat-label">Materiais Ativos</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-truck"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_fornecedores|default:"0" }}</h3>
-                <p class="stat-label">Fornecedores</p>
+                <div class="stat-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_fornecedores|default:"0" }}</h3>
+                    <p class="stat-label">Fornecedores</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-exchange-alt"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_movimentos|default:"0" }}</h3>
-                <p class="stat-label">Movimentações</p>
+                <div class="stat-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_movimentos|default:"0" }}</h3>
+                    <p class="stat-label">Movimentações</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-bell"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_notificacoes|default:"0" }}</h3>
-                <p class="stat-label">Notificações</p>
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_notificacoes|default:"0" }}</h3>
+                    <p class="stat-label">Notificações</p>
+                </div>
             </div>
         </div>
     </div>
     
     <!-- Action Buttons -->
-    <div class="action-buttons">
-        <a href="/stock/produtos/" class="btn btn-primary">
-            <i class="fas fa-box"></i>
-            Produtos
-        </a>
-        <a href="/stock/materiais/" class="btn btn-secondary">
-            <i class="fas fa-cogs"></i>
-            Materiais
-        </a>
-        <a href="/stock/fornecedores/" class="btn btn-secondary">
-            <i class="fas fa-truck"></i>
-            Fornecedores
-        </a>
-        <a href="/stock/categorias/" class="btn btn-secondary">
-            <i class="fas fa-tags"></i>
-            Categorias
-        </a>
-        <a href="/stock/movimentos/" class="btn btn-secondary">
-            <i class="fas fa-exchange-alt"></i>
-            Movimentações
-        </a>
-        <a href="/stock/requisicoes/" class="btn btn-secondary">
-            <i class="fas fa-clipboard-check"></i>
-            Requisições
-        </a>
-        <a href="/stock/requisicoes/ordens-compra/" class="btn btn-secondary">
-            <i class="fas fa-file-invoice"></i>
-            Ordens de Compra
-        </a>
-        <a href="/stock/inventario/" class="btn btn-secondary">
-            <i class="fas fa-clipboard-list"></i>
-            Inventário
-        </a>
-        <a href="/stock/transferencias/" class="btn btn-secondary">
-            <i class="fas fa-exchange-alt"></i>
-            Transferências
-        </a>
-        <a href="/stock/notificacoes/" class="btn btn-secondary">
-            <i class="fas fa-bell"></i>
-            Notificações
-        </a>
-        <a href="/stock/alertas/" class="btn btn-secondary">
-            <i class="fas fa-exclamation-triangle"></i>
-            Alertas
-        </a>
-        <a href="/stock/relatorios/" class="btn btn-secondary">
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+        <h3 class="section-title">
+            <i class="fas fa-warehouse"></i>
+            Gestão de Stock
+        </h3>
+        <div class="btn-group -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+            <a href="#"stock:produtos' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-box"></i>
+                Produtos
+            </a>
+            <a href="#"stock:materiais' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-cogs"></i>
+                Materiais
+            </a>
+            <a href="#"stock:fornecedores' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-truck"></i>
+                Fornecedores
+            </a>
+            <a href="#"stock:categorias' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-tags"></i>
+                Categorias
+            </a>
+            <a href="#"stock:movimentos' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-exchange-alt"></i>
+                Movimentações
+            </a>
+            <a href="#"stock:requisicoes:list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-clipboard-check"></i>
+                Requisições
+            </a>
+            <a href="#"stock:requisicoes:ordens_compra_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-invoice"></i>
+                Ordens de Compra
+            </a>
+            <a href="#"stock:inventario:list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-clipboard-list"></i>
+                Inventário
+            </a>
+            <a href="#"stock:transferencias:list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-exchange-alt"></i>
+                Transferências
+            </a>
+        </div>
+
+        <div class="section-separator">
+            <div class="separator-line"></div>
+            <div class="separator-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="separator-line"></div>
+        </div>
+        
+        <h3 class="section-title">
+            <i class="fas fa-shipping-fast"></i>
+            Logística e Transporte
+        </h3>
+        <div class="btn-group -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+            <a href="#"stock:logistica:operacoes_list' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-truck"></i>
+                Operações Logísticas
+            </a>
+            <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-map-marked-alt"></i>
+                Rastreamento
+            </a>
+            <a href="#"stock:logistica:viaturas_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-car"></i>
+                Viaturas
+            </a>
+            <a href="#"stock:logistica:veiculos_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-truck"></i>
+                Veículos
+            </a>
+            <a href="#"stock:logistica:transportadoras_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-shipping-fast"></i>
+                Transportadoras
+            </a>
+            <a href="#"stock:logistica:checklist_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-clipboard-check"></i>
+                Checklists
+            </a>
+            <a href="#"stock:logistica:cotacao_form' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-calculator"></i>
+                Cotação de Frete
+            </a>
+            <a href="#"stock:pod:dashboard' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-signature"></i>
+                POD & Etiquetas
+            </a>
+        </div>
+        
+        <!-- Separador Visual -->
+        <div class="section-separator">
+            <div class="separator-line"></div>
+            <div class="separator-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="separator-line"></div>
+        </div>
+        
+        <h3 class="section-title">
             <i class="fas fa-chart-bar"></i>
-            Relatórios
-        </a>
-        <a href="/stock/logistica/" class="btn btn-primary">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
+            Relatórios e Monitoramento
+        </h3>
+        <div class="btn-group -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+            <a href="#"stock:dashboard_executivo' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-chart-line"></i>
+                Dashboard Executivo
+            </a>
+            <a href="#"stock:notificacoes_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-bell"></i>
+                Notificações
+            </a>
+            <a href="#"stock:alertas_gerenciar' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-exclamation-triangle"></i>
+                Alertas
+            </a>
+            <a href="#"stock:relatorios' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-chart-bar"></i>
+                Relatórios
+            </a>
+        </div>
     </div>
     
     <!-- Stock Status -->
@@ -212,6 +280,18 @@ document.addEventListener('DOMContentLoaded', function() {
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         }, index * 100);
+    });
+    
+    // Animate section titles
+    const sectionTitles = document.querySelectorAll('.section-title');
+    sectionTitles.forEach((title, index) => {
+        title.style.opacity = '0';
+        title.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            title.style.transition = 'all 0.5s ease';
+            title.style.opacity = '1';
+            title.style.transform = 'translateX(0)';
+        }, (index + 1) * 200);
     });
 });
 </script>

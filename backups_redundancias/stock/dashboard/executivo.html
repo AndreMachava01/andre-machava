@@ -1,0 +1,260 @@
+<script>
+
+
+let charts = {};
+
+// Configuração padrão do Chart.js
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#6b7280';
+
+// Inicializar gráficos
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
+
+function initializeCharts() {
+    // Gráfico de Movimentações
+    const movimentacoesCtx = document.getElementById('movimentacoesChart').getContext('2d');
+    charts.movimentacoes = new Chart(movimentacoesCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de Estoque por Sucursal
+    const estoqueSucursalCtx = document.getElementById('estoqueSucursalChart').getContext('2d');
+    charts.estoqueSucursal = new Chart(estoqueSucursalCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // Gráfico de Categorias
+    const categoriasCtx = document.getElementById('categoriasChart').getContext('2d');
+    charts.categorias = new Chart(categoriasCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de Tendências
+    const tendenciasCtx = document.getElementById('tendenciasChart').getContext('2d');
+    charts.tendencias = new Chart(tendenciasCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Carregar dados iniciais
+    updateCharts();
+}
+
+function updateCharts() {
+    const periodo = document.getElementById('periodoSelect').value;
+    const tipoItem = document.getElementById('tipoItemSelect').value;
+    
+    // Atualizar gráfico de movimentações
+    fetch(`/stock/dashboard/chart-movimentacoes/?dias=${periodo}&tipo_item=${tipoItem}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Erro ao carregar movimentações:', data.error);
+                return;
+            }
+            charts.movimentacoes.data.labels = data.labels;
+            charts.movimentacoes.data.datasets = data.datasets;
+            charts.movimentacoes.update();
+        })
+        .catch(error => console.error('Erro:', error));
+
+    // Atualizar gráfico de estoque por sucursal
+    fetch('/stock/dashboard/chart-estoque-sucursal/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Erro ao carregar estoque sucursal:', data.error);
+                return;
+            }
+            charts.estoqueSucursal.data.labels = data.labels;
+            charts.estoqueSucursal.data.datasets = data.datasets;
+            charts.estoqueSucursal.update();
+        })
+        .catch(error => console.error('Erro:', error));
+
+    // Atualizar gráfico de categorias
+    fetch('/stock/dashboard/chart-categorias/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Erro ao carregar categorias:', data.error);
+                return;
+            }
+            charts.categorias.data.labels = data.labels;
+            charts.categorias.data.datasets = data.datasets;
+            charts.categorias.update();
+        })
+        .catch(error => console.error('Erro:', error));
+
+    // Atualizar gráfico de tendências
+    fetch(`/stock/dashboard/chart-tendencias/?dias=${periodo}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Erro ao carregar tendências:', data.error);
+                return;
+            }
+            charts.tendencias.data.labels = data.labels;
+            charts.tendencias.data.datasets = data.datasets;
+            charts.tendencias.update();
+        })
+        .catch(error => console.error('Erro:', error));
+}
+
+function refreshDashboard() {
+    // Recarregar a página para atualizar estatísticas
+    location.reload();
+}
+
+// Atualizar gráficos a cada 5 minutos
+setInterval(updateCharts, 300000);
+
+</script>
+
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Dashboard Executivo - Sistema de Gestão{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-chart-line text-primary"></i>
+                Dashboard Executivo
+            </h1>
+            <p class="text-muted mb-0">Visão geral do sistema de gestão de stock</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="refresh-btn" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-sync-alt"></i> Atualizar Gráficos
+            </button>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts-grid">
+        <!-- Gráfico de Movimentações -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-bar"></i>
+                Movimentações por Dia
+            </div>
+            <canvas id="movimentacoesChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Gráfico de Estoque por Sucursal -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                Estoque por Sucursal
+            </div>
+            <canvas id="estoqueSucursalChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Gráfico de Categorias -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-area"></i>
+                Top 10 Categorias
+            </div>
+            <canvas id="categoriasChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Gráfico de Tendências -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                Tendências de Valor
+            </div>
+            <canvas id="tendenciasChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+
+{% endblock %}

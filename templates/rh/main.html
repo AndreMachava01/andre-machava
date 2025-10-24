@@ -1,12 +1,22 @@
-{% extends 'base_admin.html' %}
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+{% comment %}
+TELA PRINCIPAL DO RH - ESTILO ESPECÍFICO E ORGANIZADO
+Este template tem um design específico para o módulo de RH
+{% endcomment %}
 
 {% block title %}Gestão de RH - Sistema de Gestão{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Breadcrumb -->
     <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
+        <a href="{% url 'dashboard' %}">
             <i class="fas fa-home"></i>
             Dashboard
         </a>
@@ -14,175 +24,143 @@
         <span>Gestão de RH</span>
     </nav>
     
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-users-cog"></i>
-                    Gestão de Recursos Humanos
-                </h1>
-                <p class="page-subtitle">
-                    Gerencie funcionários, departamentos, presenças e todos os aspectos de RH
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="/dashboard/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar ao Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- Page Header Padrão - Estilo Bonito -->
     
-    <!-- Statistics Cards -->
+{% include "includes/header.html" with
+    title="Gestão de Recursos Humanos"
+    subtitle="Gerencie funcionários, departamentos, presenças e todos os aspectos de RH"
+    icon="fas fa-users-cog"
+%}    </div>
+    
+    <!-- Statistics Cards Específicas do RH -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_funcionarios|default:"0" }}</h3>
-                <p class="stat-label">Total de Funcionários</p>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_funcionarios|default:"0" }}</h3>
+                    <p class="stat-label">Total de Funcionários</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-building"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_departamentos|default:"0" }}</h3>
-                <p class="stat-label">Departamentos</p>
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_departamentos|default:"0" }}</h3>
+                    <p class="stat-label">Departamentos</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-briefcase"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ total_cargos|default:"0" }}</h3>
-                <p class="stat-label">Cargos</p>
+                <div class="stat-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_cargos|default:"0" }}</h3>
+                    <p class="stat-label">Cargos</p>
+                </div>
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ presencas_hoje|default:"0" }}</h3>
-                <p class="stat-label">Presentes Hoje</p>
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ presencas_hoje|default:"0" }}</h3>
+                    <p class="stat-label">Presentes Hoje</p>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <a href="{% url 'rh:funcionarios' %}" class="btn btn-primary btn-xl">
+    <!-- Action Buttons Unificadas -->
+    <div class="action-grid">
+        <a href="#"rh:funcionarios' %}" class="btn primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-users"></i>
-            <div class="btn-content">
-                <span class="btn-title">Funcionários</span>
-                <span class="btn-description">Gerir funcionários e dados pessoais</span>
-            </div>
+            <span>Funcionários</span>
         </a>
-        <a href="{% url 'rh:cargos' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:cargos' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-briefcase"></i>
-            <div class="btn-content">
-                <span class="btn-title">Cargos</span>
-                <span class="btn-description">Definir cargos e responsabilidades</span>
-            </div>
+            <span>Cargos</span>
         </a>
-        <a href="{% url 'rh:departamentos' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:departamentos' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-building"></i>
-            <div class="btn-content">
-                <span class="btn-title">Departamentos</span>
-                <span class="btn-description">Organizar estrutura organizacional</span>
-            </div>
+            <span>Departamentos</span>
         </a>
-        <a href="{% url 'rh:presencas' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:presencas' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-calendar-check"></i>
-            <div class="btn-content">
-                <span class="btn-title">Presenças</span>
-                <span class="btn-description">Controlar assiduidade e horários</span>
-            </div>
+            <span>Presenças</span>
         </a>
-        <a href="{% url 'rh:salarios' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:salarios' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-money-bill-wave"></i>
-            <div class="btn-content">
-                <span class="btn-title">Salários</span>
-                <span class="btn-description">Gerir remunerações e benefícios</span>
-            </div>
+            <span>Salários</span>
         </a>
-        <a href="{% url 'rh:folha_salarial' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:folha_salarial' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-file-invoice"></i>
-            <div class="btn-content">
-                <span class="btn-title">Folha Salarial</span>
-                <span class="btn-description">Processar pagamentos mensais</span>
-            </div>
+            <span>Folha Salarial</span>
         </a>
-        <a href="{% url 'rh:feriados' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:feriados' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-calendar-times"></i>
-            <div class="btn-content">
-                <span class="btn-title">Feriados</span>
-                <span class="btn-description">Configurar dias não úteis</span>
-            </div>
+            <span>Feriados</span>
         </a>
-        <a href="{% url 'rh:horarios_expediente' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:horarios_expediente' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-clock"></i>
-            <div class="btn-content">
-                <span class="btn-title">Horários</span>
-                <span class="btn-description">Definir jornadas de trabalho</span>
-            </div>
+            <span>Horários</span>
         </a>
-        <a href="{% url 'rh:transferencias' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:transferencias' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-exchange-alt"></i>
-            <div class="btn-content">
-                <span class="btn-title">Transferências</span>
-                <span class="btn-description">Mudanças de departamento</span>
-            </div>
+            <span>Transferências</span>
         </a>
-        <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:promocoes' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-arrow-up"></i>
-            <div class="btn-content">
-                <span class="btn-title">Promoções</span>
-                <span class="btn-description">Progressões de carreira</span>
-            </div>
+            <span>Promoções</span>
         </a>
-        <a href="{% url 'rh:treinamentos' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:treinamentos' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-graduation-cap"></i>
-            <div class="btn-content">
-                <span class="btn-title">Treinamentos</span>
-                <span class="btn-description">Desenvolvimento profissional</span>
-            </div>
+            <span>Treinamentos</span>
         </a>
-        <a href="{% url 'rh:avaliacoes' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:avaliacoes' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-star"></i>
-            <div class="btn-content">
-                <span class="btn-title">Avaliações</span>
-                <span class="btn-description">Avaliação de desempenho</span>
-            </div>
+            <span>Avaliações</span>
         </a>
-        <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary btn-xl">
+        
+        <a href="#"rh:relatorios' %}" class="btn secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-chart-bar"></i>
-            <div class="btn-content">
-                <span class="btn-title">Relatórios</span>
-                <span class="btn-description">Análises e estatísticas</span>
-            </div>
+            <span>Relatórios</span>
         </a>
     </div>
     
-    <!-- Recent Activity -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
+    <!-- Recent Activity Específica do RH -->
+    <div class="rh-activity-card rh-animate">
+        <div class="rh-activity-header">
+            <h3 class="rh-activity-title">
                 <i class="fas fa-history"></i>
                 Atividade Recente
             </h3>
         </div>
-        <div class="card-body">
-            <div class="empty-state">
+        <div class="rh-activity-body">
+            <div class="rh-empty-state">
                 <i class="fas fa-clock"></i>
                 <h4>Nenhuma atividade recente</h4>
                 <p>As atividades dos funcionários aparecerão aqui conforme forem registadas.</p>
@@ -190,19 +168,46 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// Animate cards on load
+// Animações específicas do RH
 document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.stat-card, .card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
+    // Animar elementos com delay
+    const animatedElements = document.querySelectorAll('.rh-animate');
+    animatedElements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(30px)';
         setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
+            element.style.transition = 'all 0.6s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
         }, index * 100);
+    });
+    
+    // Efeito hover nos cards de estatísticas
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Efeito hover nos botões de ação
+    const actionBtns = document.querySelectorAll('.action-grid .btn');
+    actionBtns.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.01)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
     });
 });
 </script>

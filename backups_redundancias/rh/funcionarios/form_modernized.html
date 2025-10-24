@@ -1,0 +1,689 @@
+{% extends "base_list.html" %}
+
+
+{% block title %}{{ funcionario.nome_completo|default:"Novo Funcionário" }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "rh:main" %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="{% url "rh:funcionarios" %}">Funcionários</a></li>
+            <li class="breadcrumb-item active">{{ funcionario.nome_completo|default:"Novo Funcionário" }}</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{{ funcionario.nome_completo|default:"Novo Funcionário" }}"
+    subtitle="Formulário de cadastro e edição de funcionário"
+    icon="fas fa-user"
+%}    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+
+    <form method="post" action="."action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        {% csrf_token %}
+
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-user"></i>
+                Informações Básicas
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome_completo">Nome Completo<span class="required">*</span></label>
+                    <input type="text" id="nome_completo" name="nome_completo" value="{{ funcionario.nome_completo|default:'' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_nascimento">Data de Nascimento</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento" value="{% if funcionario.data_nascimento %}{{ funcionario.data_nascimento|date:'Y-m-d' }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="genero">Gênero</label>
+                    <select id="genero" name="genero">
+                        <option value="">Selecione...</option>
+                        <option value="M" {% if funcionario.genero == 'M' %}selected{% endif %}>Masculino</option>
+                        <option value="F" {% if funcionario.genero == 'F' %}selected{% endif %}>Feminino</option>
+                        <option value="O" {% if funcionario.genero == 'O' %}selected{% endif %}>Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado_civil">Estado Civil</label>
+                    <select id="estado_civil" name="estado_civil">
+                        <option value="">Selecione...</option>
+                        <option value="S" {% if funcionario.estado_civil == 'S' %}selected{% endif %}>Solteiro(a)</option>
+                        <option value="C" {% if funcionario.estado_civil == 'C' %}selected{% endif %}>Casado(a)</option>
+                        <option value="D" {% if funcionario.estado_civil == 'D' %}selected{% endif %}>Divorciado(a)</option>
+                        <option value="V" {% if funcionario.estado_civil == 'V' %}selected{% endif %}>Viúvo(a)</option>
+                        <option value="U" {% if funcionario.estado_civil == 'U' %}selected{% endif %}>União Estável</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nacionalidade">Nacionalidade</label>
+                    <input type="text" id="nacionalidade" name="nacionalidade" value="{{ funcionario.nacionalidade|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="naturalidade">Naturalidade</label>
+                    <input type="text" id="naturalidade" name="naturalidade" value="{{ funcionario.naturalidade|default:'' }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentos -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-id-card"></i>
+                Documentos
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nuit">NUIT<span class="required">*</span></label>
+                    <input type="text" id="nuit" name="nuit" value="{{ funcionario.nuit|default:'' }}" maxlength="9">
+                    <span class="help-text">Número de NUIT (9 dígitos)</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="bi">BI</label>
+                    <input type="text" id="bi" name="bi" value="{{ funcionario.bi|default:'' }}" maxlength="13">
+                    <span class="help-text">Número do BI (13 caracteres)</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_emissao_bi">Data de Emissão do BI</label>
+                    <input type="date" id="data_emissao_bi" name="data_emissao_bi" value="{% if funcionario.data_emissao_bi %}{{ funcionario.data_emissao_bi|date:'Y-m-d' }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="data_validade_bi">Data de Validade do BI</label>
+                    <input type="date" id="data_validade_bi" name="data_validade_bi" value="{% if funcionario.data_validade_bi %}{{ funcionario.data_validade_bi|date:'Y-m-d' }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="local_emissao_bi">Local de Emissão do BI</label>
+                    <input type="text" id="local_emissao_bi" name="local_emissao_bi" value="{{ funcionario.local_emissao_bi|default:'' }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-phone"></i>
+                Contato
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ funcionario.email|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" name="telefone" value="{{ funcionario.telefone|default:'' }}" placeholder="+258XXXXXXXXX">
+                    <span class="help-text">Formato: +258XXXXXXXXX</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone_alternativo">Telefone Alternativo</label>
+                    <input type="text" id="telefone_alternativo" name="telefone_alternativo" value="{{ funcionario.telefone_alternativo|default:'' }}" placeholder="+258XXXXXXXXX">
+                    <span class="help-text">Formato: +258XXXXXXXXX</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="endereco">Endereço</label>
+                    <input type="text" id="endereco" name="endereco" value="{{ funcionario.endereco|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="provincia">Província</label>
+                    <input type="text" id="provincia" name="provincia" value="{{ funcionario.provincia|default:'' }}" list="provincias-list">
+                    <datalist id="provincias-list">
+                        <option value="Maputo">
+                        <option value="Gaza">
+                        <option value="Inhambane">
+                        <option value="Sofala">
+                        <option value="Manica">
+                        <option value="Tete">
+                        <option value="Zambézia">
+                        <option value="Nampula">
+                        <option value="Cabo Delgado">
+                        <option value="Niassa">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" name="cidade" value="{{ funcionario.cidade|default:'' }}" list="cidades-list">
+                    <datalist id="cidades-list">
+                        <option value="Maputo">
+                        <option value="Matola">
+                        <option value="Marracuene">
+                        <option value="Xai-Xai">
+                        <option value="Chokwe">
+                        <option value="Inhambane">
+                        <option value="Maxixe">
+                        <option value="Beira">
+                        <option value="Dondo">
+                        <option value="Chimoio">
+                        <option value="Manica">
+                        <option value="Tete">
+                        <option value="Moatize">
+                        <option value="Quelimane">
+                        <option value="Mocuba">
+                        <option value="Nampula">
+                        <option value="Nacala">
+                        <option value="Pemba">
+                        <option value="Mocímboa da Praia">
+                        <option value="Lichinga">
+                        <option value="Cuamba">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="bairro">Bairro</label>
+                    <input type="text" id="bairro" name="bairro" value="{{ funcionario.bairro|default:'' }}" list="bairros-list">
+                    <datalist id="bairros-list">
+                        <option value="Polana Caniço">
+                        <option value="Sommerschield">
+                        <option value="Costa do Sol">
+                        <option value="Mavalane">
+                        <option value="Malhangalene">
+                        <option value="Alto Maé">
+                        <option value="Central">
+                        <option value="Mafalala">
+                        <option value="Matola Centro">
+                        <option value="Machava">
+                        <option value="Liberdade">
+                        <option value="Munhava">
+                        <option value="Manga">
+                        <option value="Macurungo">
+                        <option value="Muatala">
+                        <option value="Namutequeliua">
+                    </datalist>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados Profissionais -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-briefcase"></i>
+                Dados Profissionais
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sucursal">Sucursal<span class="required">*</span></label>
+                    <select id="sucursal" name="sucursal" required>
+                        <option value="">Selecione...</option>
+                        {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if funcionario.sucursal_id == sucursal.id %}selected{% endif %}>
+                            {{ sucursal.nome }}
+                        </option>
+                        {% empty %}
+                        <option value="">Nenhuma sucursal encontrada</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="departamento">Departamento<span class="required">*</span></label>
+                    <select id="departamento" name="departamento" required>
+                        <option value="">Selecione...</option>
+                        {% for departamento in departamentos %}
+                        <option value="{{ departamento.id }}" {% if funcionario.departamento_id == departamento.id %}selected{% endif %}>
+                            {{ departamento.nome }} ({{ departamento.sucursal.nome }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo">Cargo<span class="required">*</span></label>
+                    <select id="cargo" name="cargo" required>
+                        <option value="">Selecione...</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" {% if funcionario.cargo_id == cargo.id %}selected{% endif %}>
+                            {{ cargo.nome }} ({{ cargo.departamento.nome }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo_contrato">Tipo de Contrato</label>
+                    <select id="tipo_contrato" name="tipo_contrato">
+                        <option value="">Selecione...</option>
+                        <option value="EFT" {% if funcionario.tipo_contrato == 'EFT' %}selected{% endif %}>Efectivo</option>
+                        <option value="TMP" {% if funcionario.tipo_contrato == 'TMP' %}selected{% endif %}>Temporário</option>
+                        <option value="EST" {% if funcionario.tipo_contrato == 'EST' %}selected{% endif %}>Estágio</option>
+                        <option value="APR" {% if funcionario.tipo_contrato == 'APR' %}selected{% endif %}>Aprendiz</option>
+                        <option value="TER" {% if funcionario.tipo_contrato == 'TER' %}selected{% endif %}>Terceirizado</option>
+                        <option value="PRS" {% if funcionario.tipo_contrato == 'PRS' %}selected{% endif %}>Prestador de Serviços</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_admissao">Data de Admissão<span class="required">*</span></label>
+                    <input type="date" id="data_admissao" name="data_admissao" value="{% if funcionario.data_admissao %}{{ funcionario.data_admissao|date:'Y-m-d' }}{% endif %}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="AT" {% if funcionario.status == 'AT' %}selected{% elif not funcionario %}selected{% endif %}>Ativo</option>
+                        <option value="AF" {% if funcionario.status == 'AF' %}selected{% endif %}>Afastado</option>
+                        <option value="FE" {% if funcionario.status == 'FE' %}selected{% endif %}>Férias</option>
+                        <option value="IN" {% if funcionario.status == 'IN' %}selected{% endif %}>Inativo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados Bancários -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-university"></i>
+                Dados Bancários
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="banco">Banco</label>
+                    <select id="banco" name="banco" onchange="toggleOutroBanco()">
+                        <option value="">Selecione...</option>
+                        <option value="BIM" {% if funcionario.banco == 'BIM' %}selected{% endif %}>Banco Internacional de Moçambique (BIM)</option>
+                        <option value="BCI" {% if funcionario.banco == 'BCI' %}selected{% endif %}>Banco Comercial e de Investimentos (BCI)</option>
+                        <option value="Millennium BIM" {% if funcionario.banco == 'Millennium BIM' %}selected{% endif %}>Millennium BIM</option>
+                        <option value="Standard Bank" {% if funcionario.banco == 'Standard Bank' %}selected{% endif %}>Standard Bank</option>
+                        <option value="Absa Bank" {% if funcionario.banco == 'Absa Bank' %}selected{% endif %}>Absa Bank</option>
+                        <option value="Ecobank" {% if funcionario.banco == 'Ecobank' %}selected{% endif %}>Ecobank</option>
+                        <option value="First National Bank" {% if funcionario.banco == 'First National Bank' %}selected{% endif %}>First National Bank (FNB)</option>
+                        <option value="Mercantile Bank" {% if funcionario.banco == 'Mercantile Bank' %}selected{% endif %}>Mercantile Bank</option>
+                        <option value="Banco Único" {% if funcionario.banco == 'Banco Único' %}selected{% endif %}>Banco Único</option>
+                        <option value="Banco de Moçambique" {% if funcionario.banco == 'Banco de Moçambique' %}selected{% endif %}>Banco de Moçambique</option>
+                        <option value="Outro" {% if funcionario.banco == 'Outro' %}selected{% endif %}>Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="outro-banco-group" style="display: none;">
+                    <label for="outro_banco">Especificar Outro Banco</label>
+                    <input type="text" id="outro_banco" name="outro_banco" value="{% if funcionario.banco and funcionario.banco not in 'BIM,BCI,Millennium BIM,Standard Bank,Absa Bank,Ecobank,First National Bank,Mercantile Bank,Banco Único,Banco de Moçambique' %}{{ funcionario.banco }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="agencia">Agência</label>
+                    <input type="text" id="agencia" name="agencia" value="{{ funcionario.agencia|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="conta">Conta</label>
+                    <input type="text" id="conta" name="conta" value="{{ funcionario.conta|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="nib">NIB</label>
+                    <input type="text" id="nib" name="nib" value="{{ funcionario.nib|default:'' }}" maxlength="21">
+                    <span class="help-text">Número de NIB (21 dígitos)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remuneração -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-money-bill-wave"></i>
+                Remuneração
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="salario_atual">Salário Atual</label>
+                    <input type="number" id="salario_atual" name="salario_atual" value="{{ funcionario.salario_atual|default:0 }}" step="0.01" min="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefícios e Descontos -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-gift"></i>
+                Benefícios e Descontos
+            </h2>
+            
+            <!-- Benefícios -->
+            <div class="beneficios-descontos-container">
+                <div class="section-header">
+                    <h3 class="subsection-title">
+                        <i class="fas fa-gift"></i>
+                        Benefícios aos quais o funcionário está sujeito
+                    </h3>
+                    <div class="section-controls">
+                        <div class="search-box">
+                            <input type="text" id="beneficio-search" placeholder="Pesquisar benefícios..." class="search-input">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="filter-btns btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                            <button type="button" class="filter-btn active" data-filter="all" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação">Todos</button>
+                            <button type="button" class="filter-btn" data-filter="monetario" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação">Monetários</button>
+                            <button type="button" class="filter-btn" data-filter="nao-monetario" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação">Não Monetários</button>
+                        </div>
+                        <div class="selection-controls">
+                            <button type="button" class="select-all-btn" data-target="descontos" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação">Selecionar Todos</button>
+                            <button type="button" class="deselect-all-btn" data-target="descontos" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação">Desmarcar Todos</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="categorias-container" id="descontos-grid">
+                    <!-- Descontos Monetários -->
+                    <div class="categoria-section">
+                        <h4 class="categoria-title">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Descontos Monetários
+                        </h4>
+                        <div class="checkbox-grid">
+                            {% for desconto in descontos_disponiveis %}
+                                {% if desconto.tipo in 'AD,AT,FA,EM,IR,IN,OU' %}
+                                <div class="checkbox-item" data-tipo="monetario" data-nome="{{ desconto.nome|lower }}">
+                                    <input type="checkbox" 
+                                           id="desconto_{{ desconto.id }}" 
+                                           name="descontos" 
+                                           value="{{ desconto.id }}"
+                                           {% if desconto in funcionario.descontos.all %}checked{% endif %}>
+                                    <label for="desconto_{{ desconto.id }}" class="checkbox-label">
+                                        <div class="item-header">
+                                            <span class="item-nome">{{ desconto.nome }}</span>
+                                            <span class="item-codigo">{{ desconto.codigo }}</span>
+                                        </div>
+                                        <div class="item-details">
+                                            <span class="item-tipo">{{ desconto.get_tipo_display }}</span>
+                                            <span class="item-valor">Não Monetário</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educação -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-graduation-cap"></i>
+                Educação
+            </h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="escolaridade">Nível de Escolaridade</label>
+                    <select id="escolaridade" name="escolaridade">
+                        <option value="">Selecione...</option>
+                        <option value="EPI" {% if funcionario.escolaridade == 'EPI' %}selected{% endif %}>Ensino Primário Incompleto</option>
+                        <option value="EPC" {% if funcionario.escolaridade == 'EPC' %}selected{% endif %}>Ensino Primário Completo</option>
+                        <option value="ESI" {% if funcionario.escolaridade == 'ESI' %}selected{% endif %}>Ensino Secundário Incompleto</option>
+                        <option value="ESC" {% if funcionario.escolaridade == 'ESC' %}selected{% endif %}>Ensino Secundário Completo</option>
+                        <option value="ETI" {% if funcionario.escolaridade == 'ETI' %}selected{% endif %}>Ensino Técnico Incompleto</option>
+                        <option value="ETC" {% if funcionario.escolaridade == 'ETC' %}selected{% endif %}>Ensino Técnico Completo</option>
+                        <option value="EUI" {% if funcionario.escolaridade == 'EUI' %}selected{% endif %}>Ensino Universitário Incompleto</option>
+                        <option value="EUC" {% if funcionario.escolaridade == 'EUC' %}selected{% endif %}>Ensino Universitário Completo</option>
+                        <option value="PGI" {% if funcionario.escolaridade == 'PGI' %}selected{% endif %}>Pós-Graduação Incompleta</option>
+                        <option value="PGC" {% if funcionario.escolaridade == 'PGC' %}selected{% endif %}>Pós-Graduação Completa</option>
+                        <option value="MES" {% if funcionario.escolaridade == 'MES' %}selected{% endif %}>Mestrado</option>
+                        <option value="DOU" {% if funcionario.escolaridade == 'DOU' %}selected{% endif %}>Doutoramento</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="curso">Curso</label>
+                    <input type="text" id="curso" name="curso" value="{{ funcionario.curso|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="instituicao_ensino">Instituição de Ensino</label>
+                    <input type="text" id="instituicao_ensino" name="instituicao_ensino" value="{{ funcionario.instituicao_ensino|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="ano_conclusao">Ano de Conclusão</label>
+                    <input type="number" id="ano_conclusao" name="ano_conclusao" value="{{ funcionario.ano_conclusao|default:'' }}" min="1950" max="2100">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-save"></i>Salvar
+            </button>
+            <a href="#"rh:funcionarios' %}" class="btn btn-outline btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-times"></i>Cancelar
+            </a>
+        </div>
+    </form>
+    </div>
+</div>
+
+<script>
+function toggleOutroBanco() {
+    const bancoSelect = document.getElementById('banco');
+    const outroBancoGroup = document.getElementById('outro-banco-group');
+    const outroBancoInput = document.getElementById('outro_banco');
+    
+    if (bancoSelect.value === 'Outro') {
+        outroBancoGroup.style.display = 'block';
+        outroBancoInput.required = true;
+    } else {
+        outroBancoGroup.style.display = 'none';
+        outroBancoInput.required = false;
+        outroBancoInput.value = '';
+    }
+}
+
+// Executar na carga da página para verificar se "Outro" já está selecionado
+document.addEventListener('DOMContentLoaded', function() {
+    toggleOutroBanco();
+    initializeBeneficiosDescontos();
+    
+    // Inicializar inputs de localização
+    initializeLocationInputs();
+});
+
+function initializeBeneficiosDescontos() {
+    // Verificar se já foi inicializado para evitar duplicações
+    if (window.beneficiosDescontosInitialized) {
+        return;
+    }
+    
+    // Inicializar funcionalidades para benefícios
+    initializeSection('beneficio', 'beneficios');
+    
+    // Inicializar funcionalidades para descontos
+    initializeSection('desconto', 'descontos');
+    
+    // Marcar como inicializado
+    window.beneficiosDescontosInitialized = true;
+}
+
+// Função para melhorar experiência de localização
+function initializeLocationInputs() {
+    const provinciaInput = document.getElementById('provincia');
+    const cidadeInput = document.getElementById('cidade');
+    const bairroInput = document.getElementById('bairro');
+    
+    if (!provinciaInput || !cidadeInput || !bairroInput) {
+        console.warn('Elementos de localização não encontrados');
+        return;
+    }
+    
+    // Adicionar validação em tempo real
+    function validateLocationInput(input, fieldName) {
+        input.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (value && !this.validity.valid) {
+                this.setCustomValidity(`Por favor, selecione uma ${fieldName} válida da lista.`);
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+    
+    validateLocationInput(provinciaInput, 'província');
+    validateLocationInput(cidadeInput, 'cidade');
+    validateLocationInput(bairroInput, 'bairro');
+}
+
+function initializeSection(prefix, target) {
+    const searchInput = document.getElementById(`${prefix}-search`);
+    const grid = document.getElementById(`${prefix}s-grid`);
+    
+    // Debug: verificar se os elementos existem
+    if (!grid) {
+        console.warn(`Grid não encontrado: ${prefix}s-grid`);
+        return;
+    }
+    
+    const filterButtons = document.querySelectorAll(`[data-target="${target}"]`).length > 0 ? 
+        document.querySelectorAll(`[data-target="${target}"]`)[0].closest('.section-controls').querySelectorAll('.filter-btn') : [];
+    const selectAllBtn = document.querySelector(`[data-target="${target}"].select-all-btn`);
+    const deselectAllBtn = document.querySelector(`[data-target="${target}"].deselect-all-btn`);
+    
+    // Debug: verificar quantos itens existem
+    const items = grid.querySelectorAll('.checkbox-item');
+    console.log(`${prefix}: ${items.length} itens encontrados`);
+    
+    // Funcionalidade de busca
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = grid.querySelectorAll('.checkbox-item');
+            const categorias = grid.querySelectorAll('.categoria-section');
+            
+            items.forEach(item => {
+                const nome = item.getAttribute('data-nome') || '';
+                const codigo = item.querySelector('.item-codigo')?.textContent.toLowerCase() || '';
+                
+                if (nome.includes(searchTerm) || codigo.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Mostrar/ocultar categorias baseado nos itens visíveis
+            categorias.forEach(categoria => {
+                const itemsVisiveis = categoria.querySelectorAll('.checkbox-item[style*="flex"], .checkbox-item:not([style])');
+                if (itemsVisiveis.length > 0) {
+                    categoria.style.display = 'block';
+                } else {
+                    categoria.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Funcionalidade de filtros
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remover classe active de todos os botões
+            filterButtons.forEach(b => b.classList.remove('active'));
+            // Adicionar classe active ao botão clicado
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            const items = grid.querySelectorAll('.checkbox-item');
+            const categorias = grid.querySelectorAll('.categoria-section');
+            
+            items.forEach(item => {
+                const tipo = item.getAttribute('data-tipo') || '';
+                let show = false;
+                
+                switch(filter) {
+                    case 'all':
+                        show = true;
+                        break;
+                    case 'monetario':
+                        show = tipo.includes('monetario') || tipo.includes('fixo') || tipo.includes('percentual');
+                        break;
+                    case 'nao-monetario':
+                        show = tipo.includes('nao') || tipo.includes('não');
+                        break;
+                }
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+            
+            // Mostrar/ocultar categorias baseado nos itens visíveis
+            categorias.forEach(categoria => {
+                const itemsVisiveis = categoria.querySelectorAll('.checkbox-item[style*="flex"], .checkbox-item:not([style])');
+                if (itemsVisiveis.length > 0) {
+                    categoria.style.display = 'block';
+                } else {
+                    categoria.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Funcionalidade de selecionar todos
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const visibleItems = grid.querySelectorAll('.checkbox-item[style*="flex"], .checkbox-item:not([style])');
+            visibleItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox && !checkbox.disabled) {
+                    checkbox.checked = true;
+                }
+            });
+        });
+    }
+    
+    // Funcionalidade de desmarcar todos
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            const visibleItems = grid.querySelectorAll('.checkbox-item[style*="flex"], .checkbox-item:not([style])');
+            visibleItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox && !checkbox.disabled) {
+                    checkbox.checked = false;
+                }
+            });
+        });
+    }
+    
+    // Adicionar efeitos visuais aos checkboxes
+    const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const item = this.closest('.checkbox-item');
+            if (this.checked) {
+                item.style.borderColor = '#417690';
+                item.style.background = '#f0f9ff';
+            } else {
+                item.style.borderColor = '#e2e8f0';
+                item.style.background = 'white';
+            }
+        });
+        
+        // Aplicar estilo inicial baseado no estado
+        if (checkbox.checked) {
+            const item = checkbox.closest('.checkbox-item');
+            item.style.borderColor = '#417690';
+            item.style.background = '#f0f9ff';
+        }
+    });
+}
+</script>
+{% endblock %}

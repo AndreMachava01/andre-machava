@@ -1,5 +1,4 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_list.html" %}
 
 {% block title %}Coletas Logísticas{% endblock %}
 
@@ -26,81 +25,73 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-shopping-cart"></i>
-                    Coletas Logísticas
-                </h1>
-                <p class="page-subtitle">
-                    Gerenciamento de coleta de ordens de compra externas
-                </p>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Coletas Logísticas"
+    subtitle="Gerenciamento de coleta de ordens de compra externas"
+    icon="fas fa-shopping-cart"
+%}    </div>
 
     <!-- Estatísticas -->
-    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
-            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ stats.total }}</div>
-            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Total</div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.total }}</h3>
+                    <p class="stat-label">Total</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
-            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ stats.pendentes }}</div>
-            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Pendentes</div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.pendentes }}</h3>
+                    <p class="stat-label">Pendentes</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
-            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ stats.em_andamento }}</div>
-            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Em Andamento</div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.em_andamento }}</h3>
+                    <p class="stat-label">Em Andamento</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
-            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ stats.coletadas }}</div>
-            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Coletadas</div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.coletadas }}</h3>
+                    <p class="stat-label">Coletadas</p>
+                </div>
+            </div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 15px; text-align: center;">
-            <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ stats.urgentes }}</div>
-            <div class="stat-label" style="font-size: 0.9rem; opacity: 0.9;">Urgentes</div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.urgentes }}</h3>
+                    <p class="stat-label">Urgentes</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="filters-card" style="background: #374151; border-radius: 15px; padding: 20px; margin-bottom: 30px;">
-        <form method="get" class="filters-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
-            <div class="form-group">
-                <label for="search" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Buscar</label>
-                <input type="text" id="search" name="search" value="{{ search }}" 
-                       placeholder="Código, fornecedor..." 
-                       style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
-            </div>
-            
-            <div class="form-group">
-                <label for="status" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Status</label>
-                <select id="status" name="status" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
-                    <option value="">Todos</option>
-                    {% for value, label in status_choices %}
-                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="prioridade" style="color: #d1d5db; font-weight: 600; margin-bottom: 5px;">Prioridade</label>
-                <select id="prioridade" name="prioridade" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #1f2937; color: white;">
-                    <option value="">Todas</option>
-                    {% for value, label in prioridade_choices %}
-                        <option value="{{ value }}" {% if prioridade == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                    <i class="fas fa-search"></i> Filtrar
-                </button>
-            </div>
-        </form>
-    </div>
+{% include 'includes/filters_unified.html' with entity_name='default' %}
 
     <!-- Lista de Coletas -->
     <div class="coletas-list" style="background: #374151; border-radius: 15px; overflow: hidden;">
@@ -164,23 +155,23 @@
                                 {% endif %}
                             </td>
                             <td style="padding: 15px; text-align: center;">
-                                <div class="action-buttons" style="display: flex; gap: 8px; justify-content: center;">
-                                    <a href="{% url 'stock:logistica:coleta_detail' notificacao.id %}" 
-                                       class="btn btn-info btn-sm" 
+                                <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="display: flex; gap: 8px; justify-content: center;" role="button" role="button" role="button" role="button" role="button" role="button">
+                                    <a href="#"stock:logistica:coleta_detail' notificacao.id %}" 
+                                       class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
                                        style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
                                        title="Ver Detalhes">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     {% if notificacao.status == 'PENDENTE' %}
-                                        <a href="{% url 'stock:logistica:coleta_atribuir' notificacao.id %}" 
-                                           class="btn btn-warning btn-sm" 
+                                        <a href="#"stock:logistica:coleta_atribuir' notificacao.id %}" 
+                                           class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
                                            style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
                                            title="Atribuir Transporte">
                                             <i class="fas fa-truck"></i>
                                         </a>
                                     {% elif notificacao.status == 'EM_ANDAMENTO' %}
-                                        <a href="{% url 'stock:logistica:coleta_concluir' notificacao.id %}" 
-                                           class="btn btn-success btn-sm" 
+                                        <a href="#"stock:logistica:coleta_concluir' notificacao.id %}" 
+                                           class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
                                            style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
                                            title="Concluir Coleta">
                                             <i class="fas fa-check"></i>
@@ -228,12 +219,5 @@
     </div>
 </div>
 
-<style>
-.badge-success { background: #10b981; color: white; }
-.badge-warning { background: #f59e0b; color: white; }
-.badge-info { background: #3b82f6; color: white; }
-.badge-danger { background: #ef4444; color: white; }
-</style>
 {% endblock %}
-
 

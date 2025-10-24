@@ -1,0 +1,255 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% comment %}
+SISTEMA UNIFICADO DE LISTAS - TEMPLATE BASE
+Este template serve como base para todas as listas do sistema
+Uso: {% extends 'base_list.html' %}
+{% endcomment %}
+
+{% block title %}{{ page_title|default:"Lista" }} - {{ module_name|default:"Sistema" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        {% for breadcrumb in breadcrumbs %}
+            <i class="fas fa-chevron-right"></i>
+            {% if breadcrumb.url %}
+                <a href="{{ breadcrumb.url }}">
+                    {% if breadcrumb.icon %}<i class="fas fa-{{ breadcrumb.icon }}"></i>{% endif %}
+                    {{ breadcrumb.name }}
+                </a>
+            {% else %}
+                <span>{{ breadcrumb.name }}</span>
+            {% endif %}
+        {% endfor %}
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    {% if page_icon %}<i class="fas fa-{{ page_icon }}"></i>{% endif %}
+                    {{ page_title|default:"Lista" }}
+                </h1>
+                <p class="page-subtitle">
+                    {{ page_subtitle|default:"Gerencie os itens desta lista" }}
+                </p>
+            </div>
+            <div class="header-actions">
+                {% for action in header_actions %}
+                    <a href="{{ action.url }}" class="btn {{ action.class }}">
+                        {% if action.icon %}<i class="fas fa-{{ action.icon }}"></i>{% endif %}
+                        {{ action.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    {% if stats_cards %}
+    <div class="stats-grid">
+        {% for stat in stats_cards %}
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ stat.value }}</div>
+                <div class="stats-label">{{ stat.label }}</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-{{ stat.icon }}"></i>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Filters Section -->
+    {% if filters %}
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter"></i>
+            Filtros de Busca
+        </h3>
+        <form method="get" class="filters-row">
+            {% for filter in filters %}
+            <div class="filter-group">
+                <label class="filter-label">{{ filter.label }}</label>
+                {% if filter.type == 'text' %}
+                    <div class="table-search">
+                        <i class="fas fa-search table-search-icon"></i>
+                        <input type="text" name="{{ filter.name }}" value="{{ filter.value|default:'' }}" 
+                               class="form-control" placeholder="{{ filter.placeholder }}">
+                    </div>
+                {% elif filter.type == 'select' %}
+                    <select name="{{ filter.name }}" class="form-select">
+                        {% for option in filter.options %}
+                            <option value="{{ option.value }}" {% if filter.value == option.value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Filtrar
+                </button>
+                <a href="{{ request.path }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                {{ table_title|default:"Lista de Itens" }}
+            </h3>
+            <div class="table-actions">
+                {% for action in table_actions %}
+                    <a href="{{ action.url }}" class="btn btn-sm {{ action.class }}">
+                        {% if action.icon %}<i class="fas fa-{{ action.icon }}"></i>{% endif %}
+                        {{ action.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% for column in table_columns %}
+                        <th>{{ column.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        {% for column in table_columns %}
+                        <td>
+                            {% if column.type == 'code' %}
+                                <div class="cell-code">{{ item.nome|default:item.codigo|default:"N/A" }}</div>
+                                {% if column.subfield %}
+                                    <div class="cell-tertiary">{{ item.descricao|default:"-" }}</div>
+                                {% endif %}
+                            {% elif column.type == 'name' %}
+                                <div class="cell-primary">{{ item.nome|default:item.nome_completo|default:"N/A" }}</div>
+                                {% if column.subfield %}
+                                    <div class="cell-tertiary" title="{{ item.descricao|default:item.email|default:'' }}">
+                                        {{ item.descricao|default:item.email|default:''|truncatechars:50 }}
+                                    </div>
+                                {% endif %}
+                            {% elif column.type == 'badge' %}
+                                <span class="badge badge-{{ column.badge_class|default:'secondary' }}">
+                                    {{ item.status|default:item.tipo|default:"N/A" }}
+                                </span>
+                            {% elif column.type == 'status' %}
+                                <span class="status-badge status-{{ item.status|default:'unknown'|lower }}">
+                                    {{ item.status|default:"N/A" }}
+                                </span>
+                            {% elif column.type == 'actions' %}
+                                <div class="cell-actions">
+                                    {% for action in column.actions %}
+                                        <a href="{% url action.url_name item.id %}" class="btn-action-sm {{ action.class }}" title="{{ action.title }}">
+                                            <i class="fas fa-{{ action.icon }}"></i>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="cell-primary">{{ item.nome|default:item.codigo|default:"N/A" }}</div>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ table_columns|length }}" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i>
+                            Nenhum item encontrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} itens
+            </div>
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="page-btn">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-btn active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-btn">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Scripts unificados para listas
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit filters on change
+    const filterSelects = document.querySelectorAll('.filters-section select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Confirm delete actions
+    const deleteButtons = document.querySelectorAll('a[href*="delete"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('Tem certeza que deseja excluir este item?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,4 +1,9 @@
 /* =============================================================================
+   FILTROS - REMOVIDO (USAR SISTEMA UNIFICADO)
+   Estilos movidos para templates/includes/filters_unified.html
+   ============================================================================= */
+
+/* =============================================================================
    TABLES - TABELAS RESPONSIVAS E MODERNAS
    Sistema de tabelas baseado no design system
    ============================================================================= */
@@ -14,6 +19,7 @@
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   margin-bottom: var(--space-6);
+  width: 100%; /* Garantir uso de toda a largura */
 }
 
 .table-wrapper {
@@ -30,6 +36,25 @@
   border-collapse: separate;
   border-spacing: 0;
   background: transparent;
+  min-width: 800px; /* Garantir largura mínima para aproveitar espaço horizontal */
+}
+
+/* Otimização para telas grandes - aproveitar melhor o espaço horizontal */
+@media (min-width: 1200px) {
+  .table {
+    min-width: 100%;
+  }
+  
+  .table th,
+  .table td {
+    padding: var(--space-4) var(--space-6); /* Mais padding em telas grandes */
+  }
+  
+  /* Colunas com larguras específicas para melhor distribuição */
+  .table th[style*="width"],
+  .table td[style*="width"] {
+    padding: var(--space-4) var(--space-5);
+  }
 }
 
 .table th,
@@ -193,9 +218,9 @@
 }
 
 .status-active {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--bg-white-transparent-light);
   color: var(--accent-success);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid var(--border-green-light);
 }
 
 .status-inactive {
@@ -281,10 +306,6 @@
   margin: 0 var(--space-4);
 }
 
-/* =============================================================================
-   FILTROS DE TABELA
-   ============================================================================= */
-
 .table-filters {
   background: var(--surface-medium);
   padding: var(--space-4) var(--space-6);
@@ -293,13 +314,6 @@
   gap: var(--space-4);
   align-items: center;
   flex-wrap: wrap;
-}
-
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 200px;
 }
 
 .filter-item label {
@@ -314,13 +328,6 @@
 .filter-item .form-select {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
-}
-
-.filter-actions {
-  display: flex;
-  gap: var(--space-2);
-  align-items: end;
-  margin-left: auto;
 }
 
 /* =============================================================================
@@ -516,16 +523,6 @@
     align-items: stretch;
   }
   
-  .filter-item {
-    min-width: auto;
-  }
-  
-  .filter-actions {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-  }
-  
   .table-search {
     min-width: auto;
     width: 100%;
@@ -636,4 +633,111 @@
 .bulk-actions .btn {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
+}
+
+/* =============================================================================
+   OTIMIZAÇÃO HORIZONTAL PARA TELAS GRANDES
+   ============================================================================= */
+
+/* Otimização específica para tabelas de cargos e outras listagens */
+@media (min-width: 1200px) {
+  .table-container {
+    margin: 0;
+    max-width: none; /* Remover limitação de largura */
+  }
+  
+  .table-wrapper {
+    overflow-x: visible; /* Remover scroll horizontal em telas grandes */
+  }
+  
+  .table {
+    min-width: 100%;
+    width: 100%; /* Forçar uso de toda a largura disponível */
+  }
+  
+  .table th,
+  .table td {
+    padding: var(--space-4) var(--space-6);
+  }
+  
+  /* Larguras otimizadas para tabela de produtos */
+  .table th:nth-child(1),
+  .table td:nth-child(1) {
+    width: 12%; /* Código - menos espaço */
+    min-width: 100px;
+    max-width: 120px;
+  }
+  
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
+    width: 35%; /* Nome - mais espaço */
+    min-width: 300px;
+  }
+  
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    width: 15%; /* Categoria */
+    min-width: 150px;
+  }
+  
+  .table th:nth-child(4),
+  .table td:nth-child(4) {
+    width: 12%; /* Preço */
+    min-width: 100px;
+  }
+  
+  .table th:nth-child(5),
+  .table td:nth-child(5) {
+    width: 15%; /* Estoque */
+    min-width: 150px;
+  }
+  
+  .table th:nth-child(6),
+  .table td:nth-child(6) {
+    width: 8%; /* Status */
+    min-width: 100px;
+  }
+  
+  .table th:nth-child(7),
+  .table td:nth-child(7) {
+    width: 8%; /* Ações */
+    min-width: 120px;
+  }
+  
+  /* Melhorar células de descrição para usar todo o espaço */
+  .cell-tertiary {
+    max-width: none;
+    white-space: normal;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  
+  /* Expandir células de nome também */
+  .cell-primary {
+    max-width: none;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  
+  /* Otimização específica para células de código */
+  .cell-code {
+    font-family: 'Courier New', monospace;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--accent-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  
+  /* Garantir que códigos de barras não ocupem muito espaço */
+  .cell-tertiary {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
 }

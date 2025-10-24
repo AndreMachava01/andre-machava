@@ -4,21 +4,13 @@
 {% block title %}Editar Horas Extras{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="header-section">
-        <a href="{% url 'rh:horas_extras' %}" class="back-button">
+        <a href="#" class="back-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-arrow-left"></i>
             Voltar
         </a>
@@ -34,7 +26,7 @@
             Editar Horas Extras - {{ horas_extras.funcionario.nome_completo }}
         </h2>
 
-        <form method="post" id="horasExtrasForm">
+        <form method="post" id="horasExtrasForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
             {% csrf_token %}
             
             <div class="form-grid">
@@ -94,84 +86,7 @@
                     <label for="auto_detect" style="margin: 0; font-weight: normal; color: #666;">
                         <i class="fas fa-magic"></i> Detectar automaticamente baseado no horário
                     </label>
-                    <button type="button" id="btn_detectar" class="btn btn-sm" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 12px;">
-                        <i class="fas fa-sync-alt"></i> Detectar
-                    </button>
-                </div>
-                <div id="tipo_help" class="help-text">O sistema detectará automaticamente as horas por período baseado no horário de início e fim</div>
-                <div id="tipo_justificativa" style="margin-top: 5px; padding: 8px; background: #e8f5e8; border-radius: 4px; font-size: 12px; color: #2d5a2d; display: none;">
-                    <i class="fas fa-info-circle"></i> <span id="justificativa_text"></span>
-                </div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="hora_inicio">
-                        Hora de Início <span class="required">*</span>
-                    </label>
-                    <input type="time" name="hora_inicio" id="hora_inicio" required value="{{ horas_extras.hora_inicio|time:'H:i' }}">
-                    <div class="help-text">Hora de início das horas extras</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="hora_fim">
-                        Hora de Fim <span class="required">*</span>
-                    </label>
-                    <input type="time" name="hora_fim" id="hora_fim" required value="{{ horas_extras.hora_fim|time:'H:i' }}">
-                    <div class="help-text">Hora de fim das horas extras</div>
-                </div>
-            </div>
-
-            <!-- Resumo de cálculo automático -->
-            <div class="form-group">
-                <label>
-                    <i class="fas fa-calculator"></i> Resumo do Cálculo
-                </label>
-                <div id="resumo_calculo" class="resumo-calculo">
-                    <div class="row">
-                        <div class="col">
-                            <div class="icon" style="color: #ffc107;"><i class="fas fa-sun"></i></div>
-                            <div class="tipo" style="color: #856404;">Diurnas</div>
-                            <div class="horas" id="total_diurnas" style="color: #856404;">0.0h</div>
-                            <div class="valor" id="valor_diurnas">0 MT</div>
-                        </div>
-                        <div class="col">
-                            <div class="icon" style="color: #6f42c1;"><i class="fas fa-moon"></i></div>
-                            <div class="tipo" style="color: #6f42c1;">Noturnas</div>
-                            <div class="horas" id="total_noturnas" style="color: #6f42c1;">0.0h</div>
-                            <div class="valor" id="valor_noturnas">0 MT</div>
-                        </div>
-                        <div class="col">
-                            <div class="icon" style="color: #dc3545;"><i class="fas fa-star"></i></div>
-                            <div class="tipo" style="color: #dc3545;">Extraordinárias</div>
-                            <div class="horas" id="total_extraordinarias" style="color: #dc3545;">0.0h</div>
-                            <div class="valor" id="valor_extraordinarias">0 MT</div>
-                        </div>
-                    </div>
-                    <div class="total">
-                        <div class="valor-total">
-                            <i class="fas fa-coins"></i> Total: <span id="valor_total_geral">0 MT</span>
-                        </div>
-                        <div class="horas-total">
-                            <span id="total_horas_geral">0.0h</span> de horas extras
-                        </div>
-                    </div>
-                </div>
-                <div class="help-text">O cálculo é feito automaticamente baseado no vencimento do funcionário</div>
-            </div>
-
-            <div class="form-group">
-                <label for="observacoes">Observações</label>
-                <textarea name="observacoes" id="observacoes" placeholder="Descreva o motivo das horas extras ou atividades realizadas...">{{ horas_extras.observacoes }}</textarea>
-                <div class="help-text">Informações adicionais sobre as horas extras (opcional)</div>
-            </div>
-
-            <div class="form-actions">
-                <a href="{% url 'rh:horas_extras' %}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i>
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary">
+                    <button type="button" id="btn_detectar" class="btn btn-sm"  class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
                     Atualizar Horas Extras
                 </button>
@@ -248,8 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const horasNoturnas = parseFloat(horasNoturnasInput.value) || 0;
         const horasExtraordinarias = parseFloat(horasExtraordinariasInput.value) || 0;
         
-        // Atualizar totais de horas
-        totalDiurnas.textContent = horasDiurnas.toFixed(1) + 'h';
+        // Atualizar totais de horas|default:0 totalDiurnas.textContent = horasDiurnas.toFixed(1) + 'h';
         totalNoturnas.textContent = horasNoturnas.toFixed(1) + 'h';
         totalExtraordinarias.textContent = horasExtraordinarias.toFixed(1) + 'h';
         
@@ -479,11 +393,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Validação de total de horas não pode exceder 24 horas
+        // Validação de|default:0 total de horas não pode exceder 24 horas
         const totalHoras = horasDiurnas + horasNoturnas + horasExtraordinarias;
         if (totalHoras > 24) {
             e.preventDefault();
-            alert('O total de horas extras não pode exceder 24 horas por dia.');
+            alert('O|default:0 total de horas extras não pode exceder 24 horas por dia.');
             return false;
         }
     });

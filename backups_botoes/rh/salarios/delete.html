@@ -1,0 +1,119 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Excluir Salário{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url "rh:main" %}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="">Salários</a>
+        <span class="separator">›</span>
+        <span class="current">Excluir</span>
+    </nav>
+
+    
+{% include "includes/header.html" with
+    title="Excluir Salário"
+    icon="fas fa-exclamation-triangle"
+%}
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmar Exclusão
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Tem certeza que deseja excluir este salário? Esta ação não pode ser desfeita.
+            </div>
+            
+            <div class="data-grid">
+                <div class="data-label">Funcionário:</div>
+                <div class="data-value"><strong>{{ salario.funcionario.nome_completo }}</strong></div>
+                
+                <div class="data-label">Código:</div>
+                <div class="data-value">{{ salario.funcionario.codigo_funcionario }}</div>
+                
+                <div class="data-label">Departamento:</div>
+                <div class="data-value">{{ salario.funcionario.departamento.nome }}</div>
+                
+                <div class="data-label">Valor Base:</div>
+                <div class="data-value">{{ salario.valor_base }}</div>
+                
+                <div class="data-label">Salário Líquido:</div>
+                <div class="data-value">{{ salario.salario_liquido }}</div>
+                
+                <div class="data-label">Data de Início:</div>
+                <div class="data-value">{{ salario.data_inicio|date:"d/m/Y" }}</div>
+                
+                <div class="data-label">Data de Fim:</div>
+                <div class="data-value">
+                    {% if salario.data_fim %}
+                        {{ salario.data_fim|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+                
+                <div class="data-label">Status:</div>
+                <div class="data-value">
+                    <span class="badge bg-success">{{ salario.get_status_display }}</span>
+                </div>
+                
+                {% if salario.observacoes %}
+                <div class="data-label">Observações:</div>
+                <div class="data-value">{{ salario.observacoes }}</div>
+                {% endif %}
+                
+                <div class="data-label">Criado em:</div>
+                <div class="data-value">{{ salario.data_criacao|date:"d/m/Y H:i" }}</div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Este salário será removido permanentemente. Todos os benefícios e descontos associados também serão excluídos. Esta ação pode afetar relatórios e cálculos de folha de pagamento.
+            </div>
+        </div>
+        <div class="card-footer">
+            <form method="post" class="form-actions"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <a href="#"rh:salarios' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                
+                <button type="button" class="btn btn btn btn btn btn btn btn-danger" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-trash"></i>
+                    Excluir Salário
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação adicional ao clicar no botão de exclusão
+    const deleteButton = document.querySelector('.btn-danger');
+    
+    deleteButton.addEventListener('click', function(e) {
+        const funcionarioNome = '{{ salario.funcionario.nome_completo }}';
+        const valorSalario = '{{ salario.valor_base }}';
+        const confirmMessage = `ATENÇÃO: Você está prestes a excluir permanentemente o salário de ${funcionarioNome} (MT ${valorSalario}).\n\nEsta ação NÃO PODE ser desfeita.\n\nTem certeza absoluta?`;
+        
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

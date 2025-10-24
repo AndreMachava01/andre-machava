@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}
@@ -10,324 +10,7 @@
 {% endblock %}
 
 {% block extra_style %}
-<style>
-    :root {
-        /* Cores funcionais para botões */
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-        --primary-color: #8b5cf6;
-        --secondary-color: #6b7280;
-        
-        /* Cores vibrantes */
-        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
-        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
-        
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
 
-    body {
-        background: #1f2937;
-        color: white;
-    }
-
-    .breadcrumb {
-        background: #374151;
-        padding: 15px 20px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-        box-shadow: var(--shadow-light);
-        border: 1px solid #4b5563;
-    }
-
-    .breadcrumb-item a {
-        color: #d1d5db;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .breadcrumb-item a:hover {
-        color: white;
-    }
-
-    .breadcrumb-item.active {
-        color: #9ca3af;
-    }
-
-    .page-header {
-        background: var(--purple-gradient);
-        color: white;
-        padding: 30px;
-        border-radius: 20px;
-        margin-bottom: 30px;
-        box-shadow: var(--shadow-medium);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .page-header h2 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 800;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .page-header p {
-        margin: 10px 0 0 0;
-        opacity: 0.9;
-        font-size: 1.1rem;
-    }
-
-    .btn-outline-secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 10px 20px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-outline-secondary:hover {
-        background: rgba(255, 255, 255, 0.3);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .form-container {
-        background: #4b5563;
-        border: 1px solid #6b7280;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: var(--shadow-medium);
-        margin-bottom: 25px;
-    }
-
-    .form-section {
-        background: #374151;
-        border: 1px solid #6b7280;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-
-    .form-section h5 {
-        color: white;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #6b7280;
-        padding-bottom: 15px;
-        font-weight: 700;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .form-section h5 i {
-        color: #8b5cf6;
-        font-size: 1.3rem;
-    }
-
-    .form-label {
-        color: #d1d5db;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 0.95rem;
-    }
-
-    .required-field::after {
-        content: " *";
-        color: #ef4444;
-        font-weight: 700;
-    }
-
-    .form-control, .form-select {
-        background: #374151;
-        border: 2px solid #6b7280;
-        color: white;
-        border-radius: 10px;
-        padding: 12px 15px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        background: #374151;
-        border-color: #8b5cf6;
-        color: white;
-        box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
-    }
-
-    .form-control::placeholder {
-        color: #9ca3af;
-    }
-
-    .form-text {
-        font-size: 0.85rem;
-        color: #9ca3af;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .form-text i {
-        color: #8b5cf6;
-    }
-
-    .input-group-text {
-        background: #6b7280;
-        border: 2px solid #6b7280;
-        color: white;
-        font-weight: 600;
-    }
-
-    .btn-primary {
-        background: var(--green-gradient);
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-        color: white;
-    }
-
-    .btn-outline-secondary {
-        background: var(--secondary-color);
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        text-decoration: none;
-    }
-
-    .btn-outline-secondary:hover {
-        background: #4b5563;
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .card {
-        background: #4b5563;
-        border: 1px solid #6b7280;
-        border-radius: 20px;
-        box-shadow: var(--shadow-light);
-        overflow: hidden;
-    }
-
-    .card-header {
-        background: #374151;
-        border-bottom: 1px solid #6b7280;
-        padding: 20px 25px;
-    }
-
-    .card-header h5 {
-        color: white;
-        font-weight: 700;
-        font-size: 1.2rem;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .card-header h5 i {
-        color: #8b5cf6;
-        font-size: 1.3rem;
-    }
-
-    .card-body {
-        padding: 25px;
-        color: white;
-    }
-
-    .type-badge {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-        margin-right: 10px;
-        margin-bottom: 8px;
-        box-shadow: var(--shadow-light);
-    }
-
-    .card-body small {
-        color: #d1d5db;
-        font-size: 0.9rem;
-    }
-
-    .card-body hr {
-        border-color: #6b7280;
-        margin: 20px 0;
-    }
-
-    .card-body h6 {
-        color: white;
-        font-weight: 700;
-        margin-bottom: 15px;
-    }
-
-    .card-body ul {
-        color: #d1d5db;
-        padding-left: 20px;
-    }
-
-    .card-body li {
-        margin-bottom: 5px;
-        font-size: 0.9rem;
-    }
-
-    .d-flex.justify-content-between {
-        gap: 15px;
-        margin-top: 30px;
-    }
-
-    @media (max-width: 768px) {
-        .page-header h2 {
-            font-size: 1.5rem;
-        }
-        
-        .form-container {
-            padding: 20px;
-        }
-        
-        .form-section {
-            padding: 20px;
-        }
-        
-        .d-flex.justify-content-between {
-            flex-direction: column;
-        }
-        
-        .btn-primary, .btn-outline-secondary {
-            width: 100%;
-            text-align: center;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -335,8 +18,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:materiais' %}">Materiais</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:main" %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Materiais</a></li>
             <li class="breadcrumb-item active">
                 {% if material %}Editar{% else %}Novo{% endif %}
             </li>
@@ -364,7 +47,7 @@
                 </p>
             </div>
             <div>
-                <a href="{% url 'stock:materiais' %}" class="btn-outline-secondary">
+                <a href="#" class="btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i> Voltar à Lista
                 </a>
             </div>
@@ -374,7 +57,7 @@
     <div class="row">
         <div class="col-lg-8">
             <div class="form-container">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     
                     <!-- Informações Básicas -->
@@ -556,10 +239,10 @@
 
                     <!-- Botões -->
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'stock:materiais' %}" class="btn-outline-secondary">
+                        <a href="#"stock:materiais' %}" class="btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-times"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                             <i class="fas fa-save"></i>
                             {% if material %}Atualizar Material{% else %}Criar Material{% endif %}
                         </button>

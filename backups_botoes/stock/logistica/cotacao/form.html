@@ -1,0 +1,131 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Cotação Interna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Cotação Interna</span>
+    </nav>
+    
+    <!-- Page Header -->
+    {% load static %}
+{% include "includes/header.html" with
+    title="Cotação Interna"
+    subtitle="Calcular custos de transporte e logística"
+    icon="fas fa-calculator"
+%}    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Transportadora</label>
+                <select id="transportadora" class="form-control">
+                    {% for t in transportadoras %}
+                        <option value="{{ t.id }}">{{ t.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">Origem (Província)</label>
+                    <input id="origem" class="form-control" placeholder="Maputo" />
+                </div>
+                <div class="col">
+                    <label class="form-label">Destino (Província)</label>
+                    <input id="destino" class="form-control" placeholder="Maputo" />
+                </div>
+            </div>
+
+            <hr />
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">Peso (kg)</label>
+                    <input id="peso" class="form-control" type="number" step="0.001" value="1" />
+                </div>
+                <div class="col">
+                    <label class="form-label">Dimensões (cm) C x L x A</label>
+                    <div class="d-flex gap-2">
+                        <input id="comp" class="form-control" type="number" step="0.1" placeholder="30" />
+                        <input id="larg" class="form-control" type="number" step="0.1" placeholder="20" />
+                        <input id="alt" class="form-control" type="number" step="0.1" placeholder="10" />
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">Valor Declarado (MZN)</label>
+                    <input id="valor_decl" class="form-control" type="number" step="0.01" value="0" />
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col">
+                    <label class="form-label">Combustível (%)</label>
+                    <input id="fuel" class="form-control" type="number" step="0.01" value="0.12" />
+                </div>
+                <div class="col">
+                    <label class="form-label">Pedágios (MZN)</label>
+                    <input id="tolls" class="form-control" type="number" step="0.01" value="0" />
+                </div>
+                <div class="col">
+                    <label class="form-label">Seguro (%)</label>
+                    <input id="insurance" class="form-control" type="number" step="0.01" value="0.01" />
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button id="btnCotacao" class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação"onclick=" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Calcular Cotação</button>
+            </div>
+
+            <pre id="resultado" class="mt-4"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('btnCotacao').addEventListener('click', async () => {
+    const payload = {
+        transportadora_id: parseInt(document.getElementById('transportadora').value, 10),
+        origem_provincia: document.getElementById('origem').value || null,
+        destino_provincia: document.getElementById('destino').value || null,
+        fuel_surcharge_pct: parseFloat(document.getElementById('fuel').value || '0'),
+        tolls_flat: parseFloat(document.getElementById('tolls').value || '0'),
+        insurance_pct: parseFloat(document.getElementById('insurance').value || '0'),
+        items: [
+            {
+                weight_kg: parseFloat(document.getElementById('peso').value || '0'),
+                length_cm: parseFloat(document.getElementById('comp').value || '0'),
+                width_cm: parseFloat(document.getElementById('larg').value || '0'),
+                height_cm: parseFloat(document.getElementById('alt').value || '0'),
+                declared_value: parseFloat(document.getElementById('valor_decl').value || '0')
+            }
+        ]
+    };
+    const resp = await fetch('/stock/logistica/cotacao-interna/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    const json = await resp.json();
+    document.getElementById("resultado").textContent = JSON || 0.stringify(json, null, 2);
+});
+</script>
+{% endblock %}
+
+

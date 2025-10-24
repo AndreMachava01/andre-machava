@@ -1,0 +1,191 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Editar Quantidade Atendida{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:requisicoes:list' %}">Requisições</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:requisicoes:detail' requisicao.id %}">{{ requisicao.codigo }}</a></li>
+            <li class="breadcrumb-item active">Editar Quantidade Atendida</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-edit"></i>
+                Editar Quantidade Atendida
+            </h2>
+            <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="confirmation-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-hashtag"></i>
+                        Editar Quantidade Atendida
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Informação:</strong> Defina a quantidade efetivamente atendida para este|default:0 items da requisição.
+                    </div>
+
+                    <!-- Item Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Informações do|default:0 items:</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Código:</strong></td>
+                                    <td>
+                                        <code>
+                                            {% if|default:0 items_requisicao.item %}
+                                                {{ item_requisicao.item.codigo }}
+                                            {% else %}
+                                                {{ item_requisicao.produto.codigo }}
+                                            {% endif %}
+                                        </code>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td>
+                                        {% if|default:0 items_requisicao.item %}
+                                            {{ item_requisicao.item.nome }}
+                                        {% else %}
+                                            {{ item_requisicao.produto.nome }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        {% if|default:0 items_requisicao.item %}
+                                            <span class="badge bg-info">{{ item_requisicao.item.get_tipo_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Produto</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidade:</strong></td>
+                                    <td>
+                                        {% if|default:0 items_requisicao.item %}
+                                            {{ item_requisicao.item.get_unidade_medida_display }}
+                                        {% else %}
+                                            {{ item_requisicao.produto.get_unidade_medida_display }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Quantidades:</h6>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="post" class="mt-4" id="edit-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="quantidade_atendida">
+                                <i class="fas fa-hashtag"></i> Nova Quantidade Atendida
+                            </label>
+                            <input type="number" 
+                                   name="quantidade_atendida" 
+                                   id="quantidade_atendida" 
+                                   class="form-control quantity-input" 
+                                   min="0" 
+                                   max="{{ item_requisicao.quantidade_solicitada }}" 
+                                   value="{{ item_requisicao.quantidade_atendida }}"
+                                   required>
+                            <div class="form-text">
+                                Digite a quantidade efetivamente atendida (máximo: {{ item_requisicao.quantidade_solicitada }} unidades)
+                            </div>
+                        </div>
+
+                        <!-- Warning about changes -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Atenção!</strong> Esta alteração afetará o status da requisição e poderá gerar notificações para o setor de logística.
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" form="edit-form" class="btn-primary" onclick="return confirmEdit()">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    function confirmEdit() {
+        const quantidadeAtual = {{ item_requisicao.quantidade_atendida }};
+        const novaQuantidade = parseInt(document.getElementById('quantidade_atendida').value);
+        
+        if (novaQuantidade !== quantidadeAtual) {
+            const confirmMessage = `Deseja alterar a quantidade atendida de ${quantidadeAtual} para ${novaQuantidade} unidades?`;
+            return confirm(confirmMessage);
+        }
+        return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantidadeInput = document.getElementById('quantidade_atendida');
+        const maxQuantidade = {{ item_requisicao.quantidade_solicitada }};
+        
+        // Validação em tempo real
+        quantidadeInput.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            
+            if (value > maxQuantidade) {
+                this.value = maxQuantidade;
+                alert(`A quantidade não pode ser maior que ${maxQuantidade} unidades.`);
+            }
+            
+            if (value < 0) {
+                this.value = 0;
+                alert('A quantidade não pode ser negativa.');
+            }
+        });
+    });
+</script>
+{% endblock %}

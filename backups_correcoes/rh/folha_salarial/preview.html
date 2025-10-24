@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pré-visualização - Folha Salarial {{ folha.mes_referencia|date:"F Y" }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1f2937;
+            color: white;
+            min-height: 100vh;
+            overflow-x: auto !important;
+            overflow-y: auto;
+        }
+        
+        /* Botões de Ação Padronizados */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px;
+            padding: 10px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .btn-outline:hover {
+            background: #10b981;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        @media print {
+            .action-buttons {
+                display: none !important;
+            }
+        }
+        
+        /* FORÇAR LAYOUT HORIZONTAL - CSS CRÍTICO */
+        * {
+            box-sizing: border-box !important;
+        }
+        
+        .modern-container {
+            background: var(--bg-card);
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            margin: 20px;
+            padding: 0;
+            overflow: hidden;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        .content-section {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+            overflow-x: visible !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* Garantir que a tabela não quebre */
+        .itens-section {
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        .itens-table {
+            display: table !important;
+            table-layout: fixed !important;
+        }
+        
+        /* Forçar quebra de linha apenas quando necessário */
+        .itens-table td:nth-child(1) {
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
+        
+        /* Garantir que outras colunas não quebrem */
+        .itens-table td:not(:nth-child(1)) {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .info-card h3 {
+            color: #374151;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+        
+        .info-value {
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .resumo-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .resumo-title {
+            color: #374151;
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .resumo-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .resumo-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .resumo-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .itens-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .itens-title {
+            color: #374151;
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .itens-table {
+            width: 100% !important;
+            min-width: 100% !important;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            table-layout: fixed !important;
+            display: table !important;
+        }
+        
+        .itens-table th {
+            background: #374151;
+            color: white;
+            padding: 12px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap !important;
+            width: auto !important;
+        }
+        
+        .itens-table td {
+            padding: 10px 8px;
+            font-size: 0.75rem;
+            color: #374151;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap !important;
+            width: auto !important;
+        }
+        
+        /* Larguras específicas das colunas - OTIMIZADO PARA PAISAGEM */
+        .itens-table th:nth-child(1), .itens-table td:nth-child(1) {
+            width: 200px !important;
+            min-width: 200px !important;
+            max-width: 200px !important;
+            text-align: left !important;
+        }
+        
+        .itens-table th:nth-child(2), .itens-table td:nth-child(2) {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+        }
+        
+        .itens-table th:nth-child(3), .itens-table td:nth-child(3),
+        .itens-table th:nth-child(4), .itens-table td:nth-child(4),
+        .itens-table th:nth-child(5), .itens-table td:nth-child(5),
+        .itens-table th:nth-child(6), .itens-table td:nth-child(6) {
+            width: 100px !important;
+            min-width: 100px !important;
+            max-width: 100px !important;
+        }
+        
+        .itens-table th:nth-child(7), .itens-table td:nth-child(7),
+        .itens-table th:nth-child(8), .itens-table td:nth-child(8) {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+        }
+        
+        .itens-table th:nth-child(9), .itens-table td:nth-child(9),
+        .itens-table th:nth-child(10), .itens-table td:nth-child(10) {
+            width: 100px !important;
+            min-width: 100px !important;
+            max-width: 100px !important;
+        }
+        
+        /* Container da tabela - PAISAGEM */
+        .itens-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* Scrollbar personalizada */
+        .itens-section::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .itens-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .itens-section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .itens-section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .itens-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .itens-table tbody tr:hover {
+            background: #e2e8f0;
+        }
+        
+        .footer-section {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        
+        /* Botões de ação */
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .action-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .action-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .action-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .action-btn.success {
+            background: #10b981;
+        }
+        
+        .action-btn.success:hover {
+            background: #059669;
+        }
+        
+        /* Estilos para impressão - PAISAGEM */
+        @media print {
+            body {
+                background: var(--bg-card) !important;
+                color: black !important;
+                overflow-x: visible !important;
+            }
+            
+            .modern-container {
+                border: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                min-height: auto !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            .action-buttons {
+                display: none !important;
+            }
+            
+            .hero-section {
+                background: var(--bg-card) !important;
+                color: black !important;
+            }
+            
+            .content-section {
+                background: var(--bg-card) !important;
+                color: black !important;
+                overflow-x: visible !important;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .info-row {
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 10px !important;
+            }
+            
+            .info-card {
+                background: var(--bg-card) !important;
+                border: 1px solid #ccc !important;
+            }
+            
+            .resumo-section {
+                background: var(--bg-card) !important;
+                border: 1px solid #ccc !important;
+            }
+            
+            .itens-section {
+                background: var(--bg-card) !important;
+                border: 1px solid #ccc !important;
+                overflow-x: visible !important;
+            }
+            
+            .itens-table {
+                min-width: 100% !important;
+                width: 100% !important;
+            }
+            
+            .itens-table th {
+                background: #f0f0f0 !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .itens-table td {
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .footer-section {
+                background: var(--bg-card) !important;
+                color: black !important;
+            }
+        }
+        
+        /* Media queries para dispositivos móveis */
+        @media (max-width: 768px) {
+            .modern-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .hero-section {
+                padding: 15px 20px;
+            }
+            
+            .content-section {
+                padding: 15px 20px;
+            }
+            
+            .itens-table {
+                min-width: 1400px;
+                font-size: 0.7rem;
+            }
+            
+            .itens-table th,
+            .itens-table td {
+                padding: 8px 6px;
+            }
+            
+            .itens-section {
+                overflow-x: scroll;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modern-container {
+                margin: 5px;
+                border-radius: 10px;
+            }
+            
+            .hero-section {
+                padding: 10px 15px;
+            }
+            
+            .content-section {
+                padding: 10px 15px;
+            }
+            
+            .itens-table {
+                min-width: 1200px;
+                font-size: 0.65rem;
+            }
+            
+            .itens-table th,
+            .itens-table td {
+                padding: 6px 4px;
+            }
+            
+            .itens-section {
+                overflow-x: scroll;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botões de Ação Padronizados -->
+    <div class="action-buttons">
+        <a href="{% url 'rh:folha_detail' folha.id %}" class="document-btn document-btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar à Folha
+        </a>
+        <button onclick="window.print()" class="document-btn document-btn-primary">
+            <i class="fas fa-print"></i> Imprimir Folha
+        </button>
+        <a href="{% url 'rh:main' %}" class="document-btn document-btn-outline">
+            <i class="fas fa-home"></i> Dashboard RH
+        </a>
+    </div>
+
+    <div class="modern-container">
+        <!-- Header -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                <i class="fas fa-file-invoice-dollar"></i>
+                FOLHA SALARIAL - {{ folha.mes_referencia|date:"F Y" }}
+            </h1>
+        </div>
+        
+        <!-- Content -->
+        <div class="content-section">
+            <!-- Informações da Folha -->
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-card">
+                        <h3>Informações da Folha</h3>
+                        <div class="info-item">
+                            <span class="info-label">Mês de Referência:</span>
+                            <span class="info-value">{{ folha.mes_referencia|date:"F Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">{{ folha.get_status_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Data de Criação:</span>
+                            <span class="info-value">{{ folha.data_criacao|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if folha.data_fechamento %}
+                        <div class="info-item">
+                            <span class="info-label">Data de Fechamento:</span>
+                            <span class="info-value">{{ folha.data_fechamento|date:"d/m/Y" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>Empresa</h3>
+                        <div class="info-item">
+                            <span class="info-label">Nome:</span>
+                            <span class="info-value">CONCEPTION</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Atividade:</span>
+                            <span class="info-value">Construção e Serviços</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Período:</span>
+                            <span class="info-value">{{ folha.mes_referencia|date:"F Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>Resumo</h3>
+                        <div class="info-item">
+                            <span class="info-label">Total Funcionários:</span>
+                            <span class="info-value">{{ total_funcionarios }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Bruto:</span>
+                            <span class="info-value">{{ total_bruto|floatformat:2 }} MT</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Líquido:</span>
+                            <span class="info-value">{{ total_liquido|floatformat:2 }} MT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumo Financeiro -->
+            <div class="resumo-section">
+                <h3 class="resumo-title">Resumo Financeiro</h3>
+                <div class="resumo-grid">
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_funcionarios }}</div>
+                        <div class="resumo-label">Funcionários</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_bruto|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Bruto</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_descontos|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Descontos</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_liquido|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Líquido</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalhamento por Funcionário -->
+            {% if funcionarios %}
+            <div class="itens-section">
+                <h3 class="itens-title">Detalhamento por Funcionário</h3>
+                <table class="itens-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Depto</th>
+                            <th>Salário Base</th>
+                            <th>Benefícios</th>
+                            <th>Descontos</th>
+                            <th>Faltas</th>
+                            <th>Bruto</th>
+                            <th>Líquido</th>
+                            <th>Dias</th>
+                            <th>Horas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for func_folha in funcionarios %}
+                        <tr>
+                            <td>
+                                <strong style="font-size: 0.7rem;">{{ func_folha.funcionario.nome_completo }}</strong>
+                                <br>
+                                <small style="font-size: 0.65rem;">{{ func_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
+                            </td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.funcionario.departamento.nome|default:"N/A" }}</td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.salario_base|floatformat:2 }}</td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.total_beneficios|floatformat:2 }}</td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.total_descontos|floatformat:2 }}</td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.desconto_faltas|floatformat:2 }}</td>
+                            <td style="font-size: 0.7rem;"><strong>{{ func_folha.salario_bruto|floatformat:2 }}</strong></td>
+                            <td style="font-size: 0.7rem;"><strong>{{ func_folha.salario_liquido|floatformat:2 }}</strong></td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.dias_trabalhados }}</td>
+                            <td style="font-size: 0.7rem;">{{ func_folha.horas_trabalhadas|floatformat:1 }}h</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer-section">
+            <p>Relatório gerado em: {{ "now"|date:"d/m/Y às H:i" }}</p>
+            <p>CONCEPTION - Empresa de Construção e Serviços</p>
+        </div>
+    </div>
+    
+    <script>
+        // FORÇAR LAYOUT HORIZONTAL
+        document.addEventListener('DOMContentLoaded', function() {
+            // Garantir que o scroll horizontal está ativo
+            document.body.style.overflowX = 'auto';
+            document.documentElement.style.overflowX = 'auto';
+            
+            // Configurar tabela para paisagem
+            const table = document.querySelector('.itens-table');
+            if (table) {
+                table.style.minWidth = '100%';
+                table.style.width = '100%';
+                table.style.tableLayout = 'fixed';
+                table.style.display = 'table';
+            }
+            
+            // Configurar container da tabela para paisagem
+            const itensSection = document.querySelector('.itens-section');
+            if (itensSection) {
+                itensSection.style.overflowX = 'visible';
+                itensSection.style.overflowY = 'visible';
+                itensSection.style.width = '100%';
+                itensSection.style.maxWidth = 'none';
+            }
+            
+            // Forçar larguras das colunas
+            const ths = document.querySelectorAll('.itens-table th');
+            const tds = document.querySelectorAll('.itens-table td');
+            
+            // Coluna 1 (Funcionário)
+            ths[0].style.width = '250px';
+            ths[0].style.minWidth = '250px';
+            ths[0].style.maxWidth = '250px';
+            tds.forEach((td, index) => {
+                if (index % 10 === 0) { // Primeira coluna de cada linha
+                    td.style.width = '250px';
+                    td.style.minWidth = '250px';
+                    td.style.maxWidth = '250px';
+                    td.style.textAlign = 'left';
+                }
+            });
+            
+            // Coluna 2 (Depto)
+            ths[1].style.width = '150px';
+            ths[1].style.minWidth = '150px';
+            ths[1].style.maxWidth = '150px';
+            tds.forEach((td, index) => {
+                if (index % 10 === 1) { // Segunda coluna de cada linha
+                    td.style.width = '150px';
+                    td.style.minWidth = '150px';
+                    td.style.maxWidth = '150px';
+                }
+            });
+            
+            // Colunas 3-6 (Salário Base, Benefícios, Descontos, Faltas)
+            for (let i = 2; i <= 5; i++) {
+                ths[i].style.width = '120px';
+                ths[i].style.minWidth = '120px';
+                ths[i].style.maxWidth = '120px';
+                tds.forEach((td, index) => {
+                    if (index % 10 === i) {
+                        td.style.width = '120px';
+                        td.style.minWidth = '120px';
+                        td.style.maxWidth = '120px';
+                    }
+                });
+            }
+            
+            // Colunas 7-8 (Bruto, Líquido)
+            for (let i = 6; i <= 7; i++) {
+                ths[i].style.width = '140px';
+                ths[i].style.minWidth = '140px';
+                ths[i].style.maxWidth = '140px';
+                tds.forEach((td, index) => {
+                    if (index % 10 === i) {
+                        td.style.width = '140px';
+                        td.style.minWidth = '140px';
+                        td.style.maxWidth = '140px';
+                    }
+                });
+            }
+            
+            // Colunas 9-10 (Dias, Horas)
+            for (let i = 8; i <= 9; i++) {
+                ths[i].style.width = '120px';
+                ths[i].style.minWidth = '120px';
+                ths[i].style.maxWidth = '120px';
+                tds.forEach((td, index) => {
+                    if (index % 10 === i) {
+                        td.style.width = '120px';
+                        td.style.minWidth = '120px';
+                        td.style.maxWidth = '120px';
+                    }
+                });
+            }
+            
+            // Garantir que todas as células tenham white-space: nowrap
+            tds.forEach(td => {
+                td.style.whiteSpace = 'nowrap';
+            });
+            
+            // Adicionar indicador visual de scroll
+            const scrollIndicator = document.createElement('div');
+            scrollIndicator.innerHTML = '← Deslize horizontalmente para ver todas as colunas →';
+            scrollIndicator.style.cssText = `
+                text-align: center;
+                padding: 8px;
+                background: #e9ecef;
+                color: #6c757d;
+                font-size: 11px;
+                border-top: 1px solid #dee2e6;
+                margin-top: 10px;
+            `;
+            
+            // Adicionar o indicador após a seção da tabela
+            if (itensSection) {
+                itensSection.parentNode.appendChild(scrollIndicator);
+            }
+        });
+    </script>
+</body>
+</html>

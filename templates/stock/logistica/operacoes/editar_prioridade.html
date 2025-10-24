@@ -1,125 +1,82 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Editar Prioridade - Operação {{ notificacao.id }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
-    .priority-info {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .priority-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        border-left: 4px solid transparent;
-    }
-    
-    .priority-item:nth-child(1) {
-        border-left-color: #17a2b8;
-    }
-    
-    .priority-item:nth-child(2) {
-        border-left-color: #28a745;
-    }
-    
-    .priority-item:nth-child(3) {
-        border-left-color: #ffc107;
-    }
-    
-    .priority-item:nth-child(4) {
-        border-left-color: #dc3545;
-    }
-    
-    .priority-desc {
-        color: #d1d5db;
-        font-size: 0.9rem;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .page-subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1rem;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="breadcrumb-modern">
-            <a href="{% url 'stock:logistica:operacoes_list' %}">Operações Logísticas</a>
-            <span class="separator">›</span>
-            <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}">Operação #{{ notificacao.id }}</a>
-            <span class="separator">›</span>
-            <span class="current">Editar Prioridade</span>
-        </div>
-        <div class="page-title">
-            <h1>
-                <i class="fas fa-exclamation-triangle"></i>
-                Editar Prioridade da Operação
-            </h1>
-            <p class="page-subtitle">Altere a prioridade desta operação logística</p>
-        </div>
-    </div>
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:operacoes_list" %}">Operações</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}">Operação #{{ notificacao.id }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Editar Prioridade</span>
+    </nav>
 
-            <!-- Content -->
-            <div class="page-content">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Editar Prioridade da Operação"
+    subtitle="Altere a prioridade desta operação logística"
+    icon="fas fa-exclamation-triangle"
+%}    </div>
 
-                <!-- Aviso sobre edição de prioridade -->
-                {% if notificacao.status not in 'PENDENTE,ATRIBUIDA' %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Atenção:</strong> Esta operação já foi coletada (Status: {{ notificacao.get_status_display }}). 
-                        A prioridade não pode mais ser alterada pois o processo logístico já foi iniciado.
-                    </div>
-                {% endif %}
-
-        <!-- Informações da Operação -->
-        <div class="info-card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-info-circle"></i>
-                    Informações da Operação
-                </h3>
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
             </div>
-            <div class="card-content">
-                <div class="info-grid">
+        {% endfor %}
+    {% endif %}
+
+    <!-- Aviso sobre edição de prioridade -->
+    {% if notificacao.status not in 'PENDENTE,ATRIBUIDA' %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção:</strong> Esta operação já foi coletada (Status: {{ notificacao.get_status_display }}). 
+            A prioridade não pode mais ser alterada pois o processo logístico já foi iniciado.
+        </div>
+    {% endif %}
+
+    <!-- Informações da Operação -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-info-circle"></i>
+                Informações da Operação
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">ID da Operação</div>
                         <div class="info-value">#{{ notificacao.id }}</div>
                     </div>
+                </div>
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Tipo de Operação</div>
                         <div class="info-value">
@@ -129,6 +86,8 @@
                             </span>
                         </div>
                     </div>
+                </div>
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Status Atual</div>
                         <div class="info-value">
@@ -137,6 +96,8 @@
                             </span>
                         </div>
                     </div>
+                </div>
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Prioridade Atual</div>
                         <div class="info-value">
@@ -145,115 +106,123 @@
                             </span>
                         </div>
                     </div>
-                    {% if notificacao.data_criacao %}
+                </div>
+                {% if notificacao.data_criacao %}
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Data de Criação</div>
                         <div class="info-value">{{ notificacao.data_criacao|date:"d/m/Y H:i" }}</div>
                     </div>
-                    {% endif %}
-                    {% if notificacao.usuario_notificacao %}
+                </div>
+                {% endif %}
+                {% if notificacao.usuario_notificacao %}
+                <div class="col-md-6">
                     <div class="info-item">
                         <div class="info-label">Criado por</div>
                         <div class="info-value">{{ notificacao.usuario_notificacao.get_full_name|default:notificacao.usuario_notificacao.username }}</div>
                     </div>
-                    {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
+    </div>
 
-                <!-- Formulário de Edição -->
-                <div class="info-card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-edit"></i>
-                            Alterar Prioridade
-                        </h3>
+    <!-- Formulário de Edição -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-edit"></i>
+                Alterar Prioridade
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if notificacao.status in 'PENDENTE,ATRIBUIDA' %}
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="prioridade" class="form-label">
+                            <i class="fas fa-exclamation-triangle"></i> Nova Prioridade
+                        </label>
+                        <select name="prioridade" id="prioridade" class="form-control" required>
+                            <option value="">Selecione uma prioridade</option>
+                            {% for value, label in prioridade_choices %}
+                                <option value="{{ value }}" {% if notificacao.prioridade == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Selecione a nova prioridade para esta operação
+                        </small>
                     </div>
-                    <div class="card-content">
-                        {% if notificacao.status in 'PENDENTE,ATRIBUIDA' %}
-                            <form method="post" class="modern-form">
-                                {% csrf_token %}
-                                
-                                <div class="form-group">
-                                    <label class="form-label" for="prioridade">
-                                        <i class="fas fa-exclamation-triangle"></i> Nova Prioridade
-                                    </label>
-                                    <select name="prioridade" id="prioridade" class="form-control-modern" required>
-                                        <option value="">Selecione uma prioridade</option>
-                                        {% for value, label in prioridade_choices %}
-                                            <option value="{{ value }}" {% if notificacao.prioridade == value %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                    <div class="form-help">
-                                        <i class="fas fa-info-circle text-info"></i> 
-                                        Selecione a nova prioridade para esta operação
-                                    </div>
-                                </div>
 
-                                <div class="form-group">
-                                    <label class="form-label" for="observacoes">
-                                        <i class="fas fa-comment-alt"></i> Observações (Opcional)
-                                    </label>
-                                    <textarea name="observacoes" id="observacoes" class="form-control-modern" rows="3" 
-                                              placeholder="Motivo da alteração de prioridade..."></textarea>
-                                    <div class="form-help">
-                                        <i class="fas fa-info-circle text-info"></i> 
-                                        Explique o motivo da alteração de prioridade
-                                    </div>
-                                </div>
+                    <div class="form-group">
+                        <label for="observacoes" class="form-label">
+                            <i class="fas fa-comment-alt"></i> Observações (Opcional)
+                        </label>
+                        <textarea name="observacoes" id="observacoes" class="form-control" rows="3" 
+                                  placeholder="Motivo da alteração de prioridade..."></textarea>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Explique o motivo da alteração de prioridade
+                        </small>
+                    </div>
 
-                                <div class="form-actions">
-                                    <button type="submit" class="btn-modern btn-primary-modern">
-                                        <i class="fas fa-save"></i>Salvar Prioridade
-                                    </button>
-                                    <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn-modern btn-secondary-modern">
-                                        <i class="fas fa-times"></i>Cancelar
-                                    </a>
-                                </div>
-                            </form>
-                        {% else %}
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                <strong>Prioridade Atual:</strong> {{ notificacao.get_prioridade_display }}
-                                <br>
-                                <small>Esta operação já foi coletada e a prioridade não pode mais ser alterada.</small>
-                            </div>
-                            <div class="form-actions">
-                                <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn-modern btn-secondary-modern">
-                                    <i class="fas fa-arrow-left"></i>Voltar à Operação
-                                </a>
-                            </div>
-                        {% endif %}
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-save"></i> Salvar Prioridade
+                        </button>
+                        <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Prioridade Atual:</strong> {{ notificacao.get_prioridade_display }}
+                    <br>
+                    <small>Esta operação já foi coletada e a prioridade não pode mais ser alterada.</small>
+                </div>
+                <div class="form-actions">
+                    <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-arrow-left"></i> Voltar à Operação
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Informações Adicionais -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-info-circle"></i>
+                Sobre as Prioridades
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-info me-3">BAIXA</span>
+                        <span class="text-muted">Operações de rotina, sem urgência</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-success me-3">NORMAL</span>
+                        <span class="text-muted">Operações padrão, prazo normal</span>
                     </div>
                 </div>
-
-        <!-- Informações Adicionais -->
-        <div class="info-card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-info-circle"></i>
-                    Sobre as Prioridades
-                </h3>
-            </div>
-            <div class="card-content">
-                <div class="priority-info">
-                    <div class="priority-item">
-                        <span class="badge badge-info">BAIXA</span>
-                        <span class="priority-desc">Operações de rotina, sem urgência</span>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-warning me-3">ALTA</span>
+                        <span class="text-muted">Operações importantes, requer atenção</span>
                     </div>
-                    <div class="priority-item">
-                        <span class="badge badge-success">NORMAL</span>
-                        <span class="priority-desc">Operações padrão, prazo normal</span>
-                    </div>
-                    <div class="priority-item">
-                        <span class="badge badge-warning">ALTA</span>
-                        <span class="priority-desc">Operações importantes, requer atenção</span>
-                    </div>
-                    <div class="priority-item">
-                        <span class="badge badge-danger">URGENTE</span>
-                        <span class="priority-desc">Operações críticas, máxima prioridade</span>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-danger me-3">URGENTE</span>
+                        <span class="text-muted">Operações críticas, máxima prioridade</span>
                     </div>
                 </div>
             </div>

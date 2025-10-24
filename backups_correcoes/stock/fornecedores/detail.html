@@ -1,0 +1,208 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Fornecedor{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedores' %}">Fornecedores</a></li>
+            <li class="breadcrumb-item active">{{ fornecedor.nome }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-truck"></i> Detalhes do Fornecedor</h2>
+            <div class="btn-group">
+                <a href="{% url 'stock:fornecedores' %}" class="btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <a href="{% url 'stock:fornecedor_edit' fornecedor.id %}" class="btn-primary">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informações Gerais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td>{{ fornecedor.nome }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ fornecedor.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NUIT:</strong></td>
+                                    <td>{{ fornecedor.nuit|default:"Não informado" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>
+                                        {% if fornecedor.email %}
+                                            <a href="mailto:{{ fornecedor.email }}">{{ fornecedor.email }}</a>
+                                        {% else %}
+                                            <span class="text-muted">Não informado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Telefone:</strong></td>
+                                    <td>
+                                        {% if fornecedor.telefone %}
+                                            <a href="tel:{{ fornecedor.telefone }}">{{ fornecedor.telefone }}</a>
+                                        {% else %}
+                                            <span class="text-muted">Não informado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            {% if fornecedor.endereco or fornecedor.cidade or fornecedor.provincia %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-map-marker-alt"></i> Endereço</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notes -->
+            {% if fornecedor.observacoes %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ fornecedor.observacoes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Financial Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-money-bill-wave"></i> Informações Financeiras</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h3 class="text-success">{{ fornecedor.limite_credito|floatformat:2 }}</h3>
+                        <p class="text-muted">MT (Limite de Crédito)</p>
+                    </div>
+                    
+                    
+
+                    {% if fornecedor.limite_credito > 0 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Este fornecedor possui limite de crédito disponível.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'stock:fornecedor_edit' fornecedor.id %}" class="btn-warning">
+                            <i class="fas fa-edit"></i> Editar Fornecedor
+                        </a>
+                        <a href="{% url 'stock:fornecedor_produtos' fornecedor.id %}" class="btn-info">
+                            <i class="fas fa-box"></i> Ver Produtos
+                        </a>
+                        <a href="{% url 'stock:fornecedor_delete' fornecedor.id %}" class="btn-danger">
+                            <i class="fas fa-trash"></i> Excluir Fornecedor
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-address-book"></i> Contato</h5>
+                </div>
+                <div class="card-body">
+                    {% if fornecedor.email %}
+                        <p class="mb-2">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:{{ fornecedor.email }}">{{ fornecedor.email }}</a>
+                        </p>
+                    {% endif %}
+                    {% if fornecedor.telefone %}
+                        <p class="mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:{{ fornecedor.telefone }}">{{ fornecedor.telefone }}</a>
+                        </p>
+                    {% endif %}
+                    {% if fornecedor.website %}
+                        <p class="mb-0">
+                            <i class="fas fa-globe me-2"></i>
+                            <a href="{{ fornecedor.website }}" target="_blank">Website</a>
+                        </p>
+                    {% endif %}
+                    
+                    {% if not fornecedor.email and not fornecedor.telefone and not fornecedor.website %}
+                        <p class="text-muted">Nenhuma informação de contato disponível.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1476 @@
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters('{{ entity_name }}');
+});
+
+function initializeFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Configurar layout das colunas baseado no número de filtros
+    const filterGroups = form.querySelectorAll('.filter-group');
+    const filterCount = filterGroups.length;
+    
+    console.log('Filtros encontrados:', filterCount); // Debug
+    
+    // Remover classes existentes
+    form.classList.remove('filters-1-col', 'filters-2-col', 'filters-3-col', 'filters-4-col', 'filters-5-col', 'filters-6-col');
+    
+    // Aplicar classe baseada no número de filtros
+    if (filterCount === 1) {
+        form.classList.add('filters-1-col');
+    } else if (filterCount === 2) {
+        form.classList.add('filters-2-col');
+    } else if (filterCount === 3) {
+        form.classList.add('filters-3-col');
+    } else if (filterCount === 4) {
+        form.classList.add('filters-4-col');
+    } else if (filterCount === 5) {
+        form.classList.add('filters-5-col');
+    } else if (filterCount >= 6) {
+        form.classList.add('filters-6-col');
+    }
+    
+    console.log('Classes aplicadas:', form.className); // Debug
+    
+    // Auto-submit em mudanças de select (exceto pesquisa)
+    const selects = form.querySelectorAll('select[data-filter-field]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Resetar página para 1 ao filtrar
+            const pageInput = document.getElementById('page-input-' + entityName);
+            if (pageInput) pageInput.value = '1';
+            form.submit();
+        });
+    });
+    
+    // Debounce para campo de pesquisa
+    const searchInput = form.querySelector('input[type="text"][data-filter-field]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const pageInput = document.getElementById('page-input-' + entityName);
+                if (pageInput) pageInput.value = '1';
+                form.submit();
+            }, 500); // 500ms de delay
+        });
+    }
+}
+
+function clearFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Limpar todos os campos
+    form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+    form.querySelectorAll('select').forEach(select => {
+        if (select.multiple) {
+            Array.from(select.options).forEach(option => option.selected = false);
+        } else {
+            select.selectedIndex = 0;
+        }
+    });
+    form.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+    
+    // Resetar página
+    document.getElementById('page-input-' + entityName).value = '1';
+    
+    // Submeter formulário
+    form.submit();
+}
+
+function toggleFilters(entityName) {
+    const filtersSection = document.querySelector('#filters-form-' + entityName).closest('.filters-section');
+    const toggleBtn = filtersSection.querySelector('.btn-toggle-filters');
+    const icon = toggleBtn.querySelector('i');
+    
+    if (filtersSection.classList.contains('filters-collapsed')) {
+        filtersSection.classList.remove('filters-collapsed');
+        icon.className = 'fas fa-chevron-up';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar Filtros';
+    } else {
+        filtersSection.classList.add('filters-collapsed');
+        icon.className = 'fas fa-chevron-down';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Mostrar Filtros';
+    }
+}
+
+}');
+    const button = document.querySelector('.btn-toggle-filters');
+    const icon = button.querySelector('i');
+    const text = button.querySelector('span');
+    
+    if (container.classList.contains('collapsed')) {
+        container.classList.remove('collapsed');
+        button.classList.remove('collapsed');
+        icon.style.transform = 'rotate(0deg)';
+        text.textContent = 'Ocultar';
+    } else {
+        container.classList.add('collapsed');
+        button.classList.add('collapsed');
+        icon.style.transform = 'rotate(180deg)';
+        text.textContent = 'Mostrar';
+    }
+}
+
+}');
+    const inputs = form.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        if (input.type === 'text' || input.type === 'search') {
+            input.value = '';
+        } else if (input.type === 'date') {
+            input.value = '';
+        } else if (input.tagName === 'SELECT') {
+            input.selectedIndex = 0;
+        }
+    });
+    
+    // Submeter o formulário após limpar
+    form.submit();
+}
+
+// Auto-submit em mudanças de select
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filters-form-{{ entity_name }}');
+    if (form) {
+        const selects = form.querySelectorAll('select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                form.submit();
+            });
+        });
+        
+        // Debounce para input de pesquisa
+        const searchInput = form.querySelector('input[type="text"], input[type="search"]');
+        if (searchInput) {
+            let timeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    form.submit();
+                }, 500);
+            });
+        }
+    }
+});
+
+</script>
+
+<style>
+
+.filters-section {
+    background: var(--surface-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--border-color);
+}
+
+.filters-compact {
+    padding: var(--space-4);
+}
+
+.filters-collapsed .filters-row {
+    display: none;
+}
+
+.filters-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Layout específico para diferentes números de filtros */
+.filters-row.filters-1-col {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+}
+
+.filters-row.filters-2-col {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.filters-row.filters-3-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filters-row.filters-4-col {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.filters-row.filters-5-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filters-row.filters-6-col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filter-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+
+.table-search {
+    position: relative;
+}
+
+.table-search-icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    z-index: 2;
+}
+
+.table-search input {
+    padding-left: calc(var(--space-3) + 1.5rem);
+}
+
+.date-range-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.date-separator {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Linha de botões de ação */
+.filter-actions-row {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+}
+
+.filter-actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn-filter {
+    min-width: 120px;
+}
+
+.filter-help-text {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    margin-top: var(--space-1);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+
+    .filters-row.filters-3-col,
+    .filters-row.filters-5-col,
+    .filters-row
+}
+
+@media (max-width: 768px) {
+
+    .filter-actions .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+}
+
+/* Layout Horizontal Profissional */
+.filters-section-professional {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.filters-section-professional:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filters-title i {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.btn-toggle-filters {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-toggle-filters:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.filters-container-professional {
+    padding: 1.5rem;
+    background: white;
+}
+
+.filters-form-horizontal {
+    width: 100%;
+}
+
+.filters-row-professional {
+    display: flex;
+    align-items: end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-field-search {
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+    z-index: 2;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+.filters-group-horizontal {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: end;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.65rem 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+    min-width: 140px;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-select {
+    cursor: pointer;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-left: auto;
+}
+
+.btn-search {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-clear {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+
+}
+
+@media (max-width: 768px) {
+
+}
+
+@media (max-width: 480px) {
+
+    .btn-search,
+    
+}
+
+/* Animação de toggle */
+.filters-container-professional.collapsed {
+    display: none;
+}
+
+.btn-toggle-filters i {
+    transition: transform 0.3s ease;
+}
+
+.btn-toggle-filters.collapsed i {
+    transform: rotate(180deg);
+}
+
+</style>
+
+{% comment %}
+SISTEMA UNIFICADO DE FILTROS DE BUSCA - LAYOUT HORIZONTAL PROFISSIONAL
+Template centralizado para todas as seções de filtros do sistema
+
+Uso:
+    {% include 'includes/filters_unified.html' with entity_name='produtos' %}
+
+Parâmetros:
+    - entity_name: Nome da entidade (obrigatório)
+    - filter_config: Configuração de filtros (opcional, será obtida automaticamente)
+    - custom_filters: Filtros customizados adicionais (opcional)
+    - show_title: Mostrar título da seção (padrão: true)
+    - compact_mode: Modo compacto (padrão: false)
+{% endcomment %}
+
+{% load static %}
+
+<div class="filters-section-professional {% if compact_mode %}filters-compact{% endif %}">
+    {% if show_title|default:true %}
+        <div class="filters-header">
+            <h3 class="filters-title">
+                <i class="fas fa-search"></i>
+                Filtros de Busca
+            </h3>
+            <button type="button" class="btn-toggle-filters" onclick=" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-chevron-down"></i>
+                <span>Ocultar</span>
+            </button>
+        </div>
+    {% endif %}
+    
+    <div class="filters-container-professional" id="filters-container-{{ entity_name }}">
+        <form method="get" class="filters-form-horizontal" id="filters-form-{{ entity_name }}"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="filters-row-professional">
+                <!-- Campo de Pesquisa Principal -->
+                <div class="filter-field-search">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" 
+                               name="{% if entity_name == 'funcionarios' or entity_name == 'salarios' or entity_name == 'cargos' or entity_name == 'departamentos' or entity_name == 'treinamentos' or entity_name == 'avaliacoes' or entity_name == 'feriados' or entity_name == 'transferencias' %}q{% elif entity_name == 'folha_salarial' %}search{% elif entity_name == 'promocoes' %}funcionario{% elif entity_name == 'presencas' %}funcionario{% elif entity_name == 'produtos' or entity_name == 'materiais' or entity_name == 'fornecedores' or entity_name == 'categorias' or entity_name == 'inventario' %}q{% elif entity_name == 'inscricoes_treinamento' %}search{% elif entity_name == 'descontos_salario' or entity_name == 'beneficios_salario' %}search{% elif entity_name == 'viaturas' or entity_name == 'transportadoras' or entity_name == 'stock_baixo' %}q{% elif entity_name == 'calendario_presencas' %}search{% elif entity_name == 'transferencias_relatorio' %}q{% elif entity_name == 'treinamentos_inscrever' %}search{% elif entity_name == 'stock_sucursal_detail' %}search{% elif entity_name == 'etiquetas_pod' %}search{% else %}search{% endif %}" 
+                               value="{% if entity_name == 'funcionarios' %}{{ search_query|default:'' }}{% elif entity_name == 'salarios' %}{{ search_query|default:'' }}{% elif entity_name == 'cargos' %}{{ search_query|default:'' }}{% elif entity_name == 'departamentos' %}{{ search_query|default:'' }}{% elif entity_name == 'treinamentos' %}{{ search_query|default:'' }}{% elif entity_name == 'avaliacoes' %}{{ search_query|default:'' }}{% elif entity_name == 'feriados' %}{{ search_query|default:'' }}{% elif entity_name == 'transferencias' %}{{ search_query|default:'' }}{% elif entity_name == 'folha_salarial' %}{{ filtros.search|default:'' }}{% elif entity_name == 'promocoes' %}{{ funcionario_filter|default:'' }}{% elif entity_name == 'presencas' %}{{ funcionario_filter|default:'' }}{% elif entity_name == 'produtos' %}{{ search_query|default:'' }}{% elif entity_name == 'materiais' %}{{ search_query|default:'' }}{% elif entity_name == 'fornecedores' %}{{ search_query|default:'' }}{% elif entity_name == 'categorias' %}{{ search_query|default:'' }}{% elif entity_name == 'inventario' %}{{ search_query|default:'' }}{% elif entity_name == 'inscricoes_treinamento' %}{{ search_query|default:'' }}{% elif entity_name == 'descontos_salario' %}{{ search|default:'' }}{% elif entity_name == 'beneficios_salario' %}{{ search|default:'' }}{% elif entity_name == 'viaturas' %}{{ search_query|default:'' }}{% elif entity_name == 'transportadoras' %}{{ search_query|default:'' }}{% elif entity_name == 'stock_baixo' %}{{ search_query|default:'' }}{% elif entity_name == 'calendario_presencas' %}{{ search|default:'' }}{% elif entity_name == 'transferencias_relatorio' %}{{ search_query|default:'' }}{% elif entity_name == 'treinamentos_inscrever' %}{{ search_query|default:'' }}{% elif entity_name == 'stock_sucursal_detail' %}{{ search|default:'' }}{% elif entity_name == 'etiquetas_pod' %}{{ request.GET.search|default:'' }}{% else %}{{ search|default:'' }}{% endif %}" 
+                               class="search-input" 
+                               placeholder="{% if entity_name == 'funcionarios' %}Nome, código ou email...{% elif entity_name == 'salarios' %}Nome do funcionário...{% elif entity_name == 'cargos' %}Nome ou código do cargo...{% elif entity_name == 'departamentos' %}Nome ou código do departamento...{% elif entity_name == 'treinamentos' %}Nome do treinamento...{% elif entity_name == 'avaliacoes' %}Nome do funcionário...{% elif entity_name == 'feriados' %}Nome do feriado...{% elif entity_name == 'transferencias' %}Nome do funcionário...{% elif entity_name == 'folha_salarial' %}Pesquisar por mês ou observações...{% elif entity_name == 'promocoes' %}Nome do funcionário...{% elif entity_name == 'presencas' %}Nome do funcionário...{% elif entity_name == 'produtos' %}Nome ou código do produto...{% elif entity_name == 'materiais' %}Nome ou código do material...{% elif entity_name == 'fornecedores' %}Nome ou código do fornecedor...{% elif entity_name == 'categorias' %}Nome da categoria...{% elif entity_name == 'inventario' %}Nome do produto...{% elif entity_name == 'inscricoes_treinamento' %}Nome do funcionário...{% elif entity_name == 'descontos_salario' %}Nome do desconto...{% elif entity_name == 'beneficios_salario' %}Nome do benefício...{% elif entity_name == 'viaturas' %}Placa ou modelo da viatura...{% elif entity_name == 'transportadoras' %}Nome da transportadora...{% elif entity_name == 'stock_baixo' %}Nome do produto...{% elif entity_name == 'calendario_presencas' %}Pesquisar funcionário...{% elif entity_name == 'transferencias_relatorio' %}Nome do funcionário...{% elif entity_name == 'treinamentos_inscrever' %}Nome ou cargo...{% elif entity_name == 'stock_sucursal_detail' %}Nome ou código do produto...{% elif entity_name == 'etiquetas_pod' %}Código, Rastreamento...{% else %}Digite para pesquisar...{% endif %}"
+                               autocomplete="off"
+                               data-filter-field="search">
+                    </div>
+                </div>
+                
+                <!-- Filtros Dinâmicos -->
+                <div class="filters-group-horizontal">
+        {% if entity_name == 'operacoes_logisticas' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Tipo</label>
+                <select name="tipo_operacao" class="form-select" data-filter-field="tipo_operacao">
+                    <option value="">Todos os tipos</option>
+                    {% for value, label in tipo_operacao_choices %}
+                        <option value="{{ value }}" {% if tipo_operacao == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Prioridade</label>
+                <select name="prioridade" class="form-select" data-filter-field="prioridade">
+                    <option value="">Todas as prioridades</option>
+                    {% for value, label in prioridade_choices %}
+                        <option value="{{ value }}" {% if prioridade == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'transferencias_logisticas' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Prioridade</label>
+                <select name="prioridade" class="form-select" data-filter-field="prioridade">
+                    <option value="">Todas as prioridades</option>
+                    {% for value, label in prioridade_choices %}
+                        <option value="{{ value }}" {% if prioridade == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'ajustes_inventario' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Tipo</label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if tipo == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">Data Início</label>
+                <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}" data-filter-field="data_inicio">
+            </div>
+            
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">Data Fim</label>
+                <input type="date" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}" data-filter-field="data_fim">
+            </div>
+            
+        {% elif entity_name == 'requisicoes' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Sucursal</label>
+                <select name="sucursal" class="form-select" data-filter-field="sucursal">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'checklists' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Veículo</label>
+                <select name="veiculo" class="form-select" data-filter-field="veiculo">
+                    <option value="">Todos os veículos</option>
+                    {% for veiculo in veiculos %}
+                        <option value="{{ veiculo.id }}" {% if filtros.veiculo_id == veiculo.id|stringformat:"s" %}selected{% endif %}>{{ veiculo.nome }} ({{ veiculo.placa }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Tipo</label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for tipo_value, tipo_label in tipos %}
+                        <option value="{{ tipo_value }}" {% if filtros.tipo == tipo_value %}selected{% endif %}>{{ tipo_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">Status</label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for status_value, status_label in status_choices %}
+                        <option value="{{ status_value }}" {% if filtros.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">Data Início</label>
+                <input type="date" name="data_inicio" class="form-control" value="{{ filtros.data_inicio|default:'' }}" data-filter-field="data_inicio">
+            </div>
+            
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">Data Fim</label>
+                <input type="date" name="data_fim" class="form-control" value="{{ filtros.data_fim|default:'' }}" data-filter-field="data_fim">
+            </div>
+            
+        {% elif entity_name == 'funcionarios' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Departamento
+                </label>
+                <select name="departamento" class="form-select" data-filter-field="departamento">
+                    <option value="">Todos os departamentos</option>
+                    {% for dept in departamentos %}
+                        <option value="{{ dept.id }}" {% if departamento_id == dept.id %}selected{% endif %}>{{ dept.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-briefcase"></i>
+                    Cargo
+                </label>
+                <select name="cargo" class="form-select" data-filter-field="cargo">
+                    <option value="">Todos os cargos</option>
+                    {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" {% if cargo_id == cargo.id %}selected{% endif %}>{{ cargo.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'salarios' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Departamento
+                </label>
+                <select name="departamento" class="form-select" data-filter-field="departamento">
+                    <option value="">Todos os departamentos</option>
+                    {% for dept in departamentos %}
+                        <option value="{{ dept.id }}" {% if departamento_id == dept.id %}selected{% endif %}>{{ dept.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'cargos' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Departamento
+                </label>
+                <select name="departamento" class="form-select" data-filter-field="departamento">
+                    <option value="">Todos os departamentos</option>
+                    {% for dept in departamentos %}
+                        <option value="{{ dept.id }}" {% if departamento_id == dept.id %}selected{% endif %}>{{ dept.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'promocoes' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os Tipos</option>
+                    {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if tipo_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'departamentos' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'presencas' %}
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">
+                    <i class="fas fa-calendar-alt"></i>
+                    Data Início
+                </label>
+                <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}" data-filter-field="data_inicio">
+            </div>
+            
+            <div class="filter-group" data-filter-type="date_range">
+                <label class="filter-label">
+                    <i class="fas fa-calendar-alt"></i>
+                    Data Fim
+                </label>
+                <input type="date" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}" data-filter-field="data_fim">
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-clock"></i>
+                    Tipo de Presença
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    <option value="ENTRADA" {% if tipo == 'ENTRADA' %}selected{% endif %}>Entrada</option>
+                    <option value="SAIDA" {% if tipo == 'SAIDA' %}selected{% endif %}>Saída</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'treinamentos' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                    <option value="CONCLUIDO" {% if status == 'CONCLUIDO' %}selected{% endif %}>Concluído</option>
+                    <option value="CANCELADO" {% if status == 'CANCELADO' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    <option value="OBRIGATORIO" {% if tipo == 'OBRIGATORIO' %}selected{% endif %}>Obrigatório</option>
+                    <option value="OPCIONAL" {% if tipo == 'OPCIONAL' %}selected{% endif %}>Opcional</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Prioridade
+                </label>
+                <select name="prioridade" class="form-select" data-filter-field="prioridade">
+                    <option value="">Todas as prioridades</option>
+                    <option value="ALTA" {% if prioridade == 'ALTA' %}selected{% endif %}>Alta</option>
+                    <option value="MEDIA" {% if prioridade == 'MEDIA' %}selected{% endif %}>Média</option>
+                    <option value="BAIXA" {% if prioridade == 'BAIXA' %}selected{% endif %}>Baixa</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'avaliacoes' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                    <option value="CONCLUIDO" {% if status == 'CONCLUIDO' %}selected{% endif %}>Concluído</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    <option value="PERFORMANCE" {% if tipo == 'PERFORMANCE' %}selected{% endif %}>Performance</option>
+                    <option value="COMPORTAMENTAL" {% if tipo == 'COMPORTAMENTAL' %}selected{% endif %}>Comportamental</option>
+                    <option value="TECNICA" {% if tipo == 'TECNICA' %}selected{% endif %}>Técnica</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Ano
+                </label>
+                <select name="ano" class="form-select" data-filter-field="ano">
+                    <option value="">Todos os anos</option>
+                    {% for ano in anos_disponiveis %}
+                        <option value="{{ ano }}" {% if ano_selecionado == ano %}selected{% endif %}>{{ ano }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Departamento
+                </label>
+                <select name="departamento" class="form-select" data-filter-field="departamento">
+                    <option value="">Todos os departamentos</option>
+                    {% for dept in departamentos %}
+                        <option value="{{ dept.id }}" {% if departamento_id == dept.id %}selected{% endif %}>{{ dept.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-briefcase"></i>
+                    Cargo
+                </label>
+                <select name="cargo" class="form-select" data-filter-field="cargo">
+                    <option value="">Todos os cargos</option>
+                    {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" {% if cargo_id == cargo.id %}selected{% endif %}>{{ cargo.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'feriados' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for codigo, nome in tipos_choices %}
+                        <option value="{{ codigo }}" {% if tipo_filter == codigo %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Ano
+                </label>
+                <select name="ano" class="form-select" data-filter-field="ano">
+                    <option value="">Todos os anos</option>
+                    {% for ano in anos_choices %}
+                        <option value="{{ ano }}" {% if ano_filter == ano %}selected{% endif %}>{{ ano }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'transferencias' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-user"></i>
+                    Funcionário
+                </label>
+                <select name="funcionario" class="form-select" data-filter-field="funcionario">
+                    <option value="">Todos os funcionários</option>
+                    {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}" {% if funcionario_id == funcionario.id|stringformat:"s" %}selected{% endif %}>{{ funcionario.nome_completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Sucursal
+                </label>
+                <select name="sucursal" class="form-select" data-filter-field="sucursal">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'transferencias_relatorio' %}
+            <div class="filter-group" data-filter-type="date">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Data Início
+                </label>
+                <input type="date" name="data_inicio" class="form-control" 
+                       value="{{ data_inicio|default:'' }}" data-filter-field="data_inicio">
+            </div>
+            
+            <div class="filter-group" data-filter-type="date">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Data Fim
+                </label>
+                <input type="date" name="data_fim" class="form-control" 
+                       value="{{ data_fim|default:'' }}" data-filter-field="data_fim">
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'treinamentos_inscrever' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Departamento
+                </label>
+                <select name="departamento" class="form-select" data-filter-field="departamento">
+                    <option value="">Todos os departamentos</option>
+                    {% for departamento in departamentos %}
+                        <option value="{{ departamento.id }}" {% if departamento_filter == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'stock_sucursal_detail' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-boxes"></i>
+                    Status do Estoque
+                </label>
+                <select name="status_estoque" class="form-select" data-filter-field="status_estoque">
+                    <option value="">Todos</option>
+                    <option value="BAIXO" {% if status_estoque == 'BAIXO' %}selected{% endif %}>Baixo</option>
+                    <option value="NORMAL" {% if status_estoque == 'NORMAL' %}selected{% endif %}>Normal</option>
+                    <option value="ALTO" {% if status_estoque == 'ALTO' %}selected{% endif %}>Alto</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'etiquetas_pod' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Tipo de Etiqueta
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="date">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Data Criação (Min)
+                </label>
+                <input type="date" name="data_criacao_min" class="form-control" 
+                       value="{{ request.GET.data_criacao_min|default:'' }}" data-filter-field="data_criacao_min">
+            </div>
+            
+            <div class="filter-group" data-filter-type="date">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Data Criação (Max)
+                </label>
+                <input type="date" name="data_criacao_max" class="form-control" 
+                       value="{{ request.GET.data_criacao_max|default:'' }}" data-filter-field="data_criacao_max">
+            </div>
+            
+        {% elif entity_name == 'produtos' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Categoria
+                </label>
+                <select name="categoria" class="form-select" data-filter-field="categoria">
+                    <option value="">Todas as categorias</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'materiais' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Categoria
+                </label>
+                <select name="categoria" class="form-select" data-filter-field="categoria">
+                    <option value="">Todas as categorias</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'fornecedores' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'categorias' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'inventario' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Categoria
+                </label>
+                <select name="categoria" class="form-select" data-filter-field="categoria">
+                    <option value="">Todas as categorias</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Status do Estoque
+                </label>
+                <select name="status_estoque" class="form-select" data-filter-field="status_estoque">
+                    <option value="">Todos os status</option>
+                    <option value="normal" {% if status_estoque == 'normal' %}selected{% endif %}>Normal</option>
+                    <option value="baixo" {% if status_estoque == 'baixo' %}selected{% endif %}>Estoque Baixo</option>
+                    <option value="zerado" {% if status_estoque == 'zerado' %}selected{% endif %}>Estoque Zerado</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'inscricoes_treinamento' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    {% for codigo, nome in status_choices %}
+                        <option value="{{ codigo }}" {% if status_filter == codigo %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'descontos_salario' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for codigo, nome in tipo_choices %}
+                        <option value="{{ codigo }}" {% if tipo == codigo %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="ativo" class="form-select" data-filter-field="ativo">
+                    <option value="">Todos os status</option>
+                    <option value="1" {% if ativo == "1" %}selected{% endif %}>Ativo</option>
+                    <option value="0" {% if ativo == "0" %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'beneficios_salario' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Tipo
+                </label>
+                <select name="tipo" class="form-select" data-filter-field="tipo">
+                    <option value="">Todos os tipos</option>
+                    {% for codigo, nome in tipo_choices %}
+                        <option value="{{ codigo }}" {% if tipo == codigo %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="ativo" class="form-select" data-filter-field="ativo">
+                    <option value="">Todos os status</option>
+                    <option value="1" {% if ativo == "1" %}selected{% endif %}>Ativo</option>
+                    <option value="0" {% if ativo == "0" %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'viaturas' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVA" {% if status == 'ATIVA' %}selected{% endif %}>Ativa</option>
+                    <option value="INATIVA" {% if status == 'INATIVA' %}selected{% endif %}>Inativa</option>
+                    <option value="MANUTENCAO" {% if status == 'MANUTENCAO' %}selected{% endif %}>Manutenção</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    Sucursal
+                </label>
+                <select name="sucursal" class="form-select" data-filter-field="sucursal">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+        {% elif entity_name == 'transportadoras' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-toggle-on"></i>
+                    Status
+                </label>
+                <select name="status" class="form-select" data-filter-field="status">
+                    <option value="">Todos os status</option>
+                    <option value="ATIVA" {% if status == 'ATIVA' %}selected{% endif %}>Ativa</option>
+                    <option value="INATIVA" {% if status == 'INATIVA' %}selected{% endif %}>Inativa</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'stock_baixo' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Categoria
+                </label>
+                <select name="categoria" class="form-select" data-filter-field="categoria">
+                    <option value="">Todas as categorias</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Nível de Alerta
+                </label>
+                <select name="nivel_alerta" class="form-select" data-filter-field="nivel_alerta">
+                    <option value="">Todos os níveis</option>
+                    <option value="baixo" {% if nivel_alerta == 'baixo' %}selected{% endif %}>Estoque Baixo</option>
+                    <option value="critico" {% if nivel_alerta == 'critico' %}selected{% endif %}>Estoque Crítico</option>
+                    <option value="zerado" {% if nivel_alerta == 'zerado' %}selected{% endif %}>Estoque Zerado</option>
+                </select>
+            </div>
+            
+        {% elif entity_name == 'calendario_presencas' %}
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-user"></i>
+                    Funcionário
+                </label>
+                <select name="funcionario" class="form-select" data-filter-field="funcionario">
+                    <option value="">Todos os Funcionários</option>
+                    {% for func in funcionarios %}
+                        <option value="{{ func.id }}" {% if func.id == funcionario_id|add:0 %}selected{% endif %}>{{ func.nome_completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group" data-filter-type="select">
+                <label class="filter-label">
+                    <i class="fas fa-calendar"></i>
+                    Mês
+                </label>
+                <select name="mes" class="form-select" data-filter-field="mes">
+                    {% for m in meses %}
+                        <option value="{{ forloop.count|default:0er }}" {% if forloop.count|default:0er == mes|add:0 %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+        <!-- Filtros Customizados Adicionais -->
+        {% if custom_filters %}
+            {% for custom_filter in custom_filters %}
+                <div class="filter-group filter-custom">
+                    <label class="filter-label">{{ custom_filter.label }}</label>
+                    {{ custom_filter.widget }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+    </form>
+    
+    <!-- Botões de Ação - Linha separada -->
+    <div class="filter-actions-row">
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-primary btn-filter" form="filters-form-{{ entity_name }}" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-search"></i>
+                Buscar
+            </button>
+            
+            <button type="button" class="btn btn btn-secondary btn-clear-filters" 
+                    onclick="{{ entity_name }}')" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-times"></i>
+                Limpar
+            </button>
+            
+            {% if not compact_mode %}
+                <button type="button" class="btn btn-outline-secondary btn-toggle-filters" 
+                        onclick="{{ entity_name }}')" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-chevron-up"></i>
+                    Ocultar Filtros
+                </button>
+            {% endif %}
+        </div>
+    </div>
+        
+        <!-- Campos ocultos para manter paginação -->
+        <input type="hidden" name="page" value="1" id="page-input-{{ entity_name }}">
+    </form>
+</div>
+
+<!-- Scripts para funcionalidade dos filtros -->
+
+<!-- Estilos específicos para filtros -->
+
+<!-- CSS para Layout Horizontal Profissional -->
+
+<!-- JavaScript para Layout Horizontal Profissional -->
+
+{% endif %}

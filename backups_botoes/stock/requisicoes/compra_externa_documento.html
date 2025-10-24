@@ -1,0 +1,149 @@
+
+
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Requisição de Compra Externa - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
+    </a>
+    <a href="#"stock:requisicoes:list' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-list"></i>Lista de Requisições
+    </a>
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>Requisição de Compra Externa</h1>
+            <h2>{{ requisicao.codigo }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ requisicao.data_criacao|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Código da Requisição:</strong> {{ requisicao.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Data de Criação:</strong> {{ requisicao.data_criacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Criado por:</strong> {{ requisicao.criado_por.get_full_name|default:requisicao.criado_por.username }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> {{ requisicao.get_status_display }}
+            </div>
+            {% if requisicao.data_aprovacao %}
+            <div class="info-item">
+                <strong>Data de Aprovação:</strong> {{ requisicao.data_aprovacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Aprovado por:</strong> {{ requisicao.aprovado_por.get_full_name|default:requisicao.aprovado_por.username }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Informações da Requisição -->
+    <div class="section">
+        <h3>Informações da Requisição</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Empresa Solicitante:</strong> Conception
+            </div>
+            <div class="info-item">
+                <strong>Sucursal:</strong> {{ requisicao.sucursal_solicitante.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Endereço:</strong> {{ requisicao.sucursal_solicitante.endereco|default:"Não informado" }}
+            </div>
+            <div class="info-item">
+                <strong>Total de Itens:</strong> {{ requisicao.itens.count }}
+            </div>
+            {% if requisicao.fornecedor %}
+            <div class="info-item">
+                <strong>Fornecedor:</strong> {{ requisicao.fornecedor.nome }}
+            </div>
+            <div class="info-item">
+                <strong>NUIT:</strong> {{ requisicao.fornecedor.nuit }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Itens Solicitados -->
+    <div class="section">
+        <h3>Itens Solicitados</h3>
+        {% if requisicao.itens.exists %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for items in requisicao.itens.all  %}
+                <tr>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: bold; font-size: 8px;">{{ item.item.nome }}</span>
+                            <span style="font-size: 7px; color: #666;">{{ item.item.codigo }} - {{ item.item.get_tipo_display }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center; font-size: 8px;">{{ item.item.descricao|default:"-" }}</td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 8px;">{{ item.quantidade_solicitada }} {{ item.item.unidade_medida }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 20px; font-size: 8px;">
+            <strong>Nenhum|default:0 items adicionado</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-name">Responsável pela Requisição</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-name">Autorização</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Documento gerado automaticamente em {{ requisicao.data_criacao|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% endblock %}

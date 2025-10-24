@@ -1,0 +1,305 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Nova Movimentação de Stock{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-exchange-alt"></i>
+                Nova Movimentação de Stock (Unificada)
+            </h2>
+            <a href="#" class="btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <!-- Informações Básicas -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                        
+                        <div class="row">
+                            <!-- Coluna Esquerda -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="item_search" class="form-label required-field">Item (Produto/Material)</label>
+                                    <div class="search-container">
+                                        <input type="text" class="form-control" id="item_search" 
+                                               placeholder="Digite o nome ou código do|default:0 items..." autocomplete="off">
+                                        <input type="hidden" id="item_id" name="item_id">
+                                        <div class="search-results" id="item_results"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Coluna Direita -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sucursal" class="form-label required-field">Sucursal</label>
+                                    <select class="form-select" id="sucursal" name="sucursal" required>
+                                        <option value="">Selecione uma sucursal</option>
+                                        {% for sucursal in sucursais %}
+                                            <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="tipo_movimento" class="form-label required-field">Tipo de Movimento</label>
+                                    <select class="form-select" id="tipo_movimento" name="tipo_movimento" required>
+                                        <option value="">Selecione o tipo de movimento</option>
+                                        {% for tipo in tipos_movimento %}
+                                            <option value="{{ tipo.id }}" data-aumenta="{{ tipo.aumenta_estoque|yesno:'true,false' }}">
+                                                {{ tipo.nome }} - {% if tipo.aumenta_estoque %}Entrada{% else %}Saída{% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="quantidade" class="form-label required-field">Quantidade</label>
+                                    <input type="number" class="form-control" id="quantidade" name="quantidade" 
+                                           min="1" required placeholder="Digite a quantidade">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Financeiras -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-money-bill-wave"></i> Informações Financeiras</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="preco_unitario" class="form-label required-field">Preço Unitário</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">MZN</span>
+                                        <input type="number" class="form-control" id="preco_unitario" name="preco_unitario" 
+                                               step="0.01" min="0.01" required placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="referencia" class="form-label">Referência</label>
+                                    <input type="text" class="form-control" id="referencia" name="referencia" 
+                                           placeholder="Ex: Nº da nota fiscal, ordem de compra, etc.">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
+                                      placeholder="Observações adicionais sobre a movimentação"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex justify-content-between">
+                        <a href="#"stock:movimentos' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-save"></i>
+                            Registrar Movimentação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Informações</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Tipos de Movimentação:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Entrada:</strong> Adição de produtos/materiais ao estoque</li>
+                        <li><strong>Saída:</strong> Remoção de produtos/materiais do estoque</li>
+                        <li><strong>Ajuste:</strong> Correção de inventário</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6>Importante:</h6>
+                    <ul class="list-unstyled">
+                        <li>• Sistema unificado para produtos e materiais</li>
+                        <li>• Todas as movimentações são registradas permanentemente</li>
+                        <li>• Afetam o estoque atual da sucursal</li>
+                        <li>• Verifique a quantidade disponível antes de saídas</li>
+                        <li>• Use referências para rastreabilidade</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Validação do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const requiredFields = form.querySelectorAll('[required]');
+    const tipoMovimentoSelect = document.getElementById('tipo_movimento');
+    const quantidadeInput = document.getElementById('quantidade');
+    const precoUnitarioInput = document.getElementById('preco_unitario');
+    const itemsearch = document.getElementById('item_search');
+    const itemsHidden = document.getElementById('item_id');
+    
+    // Dados dos itens (passados do Django)
+    const itens = [
+        {% for items in itens  %}
+        {id: {{ item.id }}, nome: "{{ item.nome }}", codigo: "{{ item.codigo }}", tipo: "{{ item.get_tipo_display }}"},
+        {% endfor %}
+    ];
+    
+    // Função de busca
+    function searchItems(query, items, resultsContainer) {
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+        
+        const filtered = items.filter(item => 
+            item.nome.toLowerCase().includes(query.toLowerCase()) ||
+            item.codigo.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        if (filtered.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results">Nenhum|default:0 items encontrado</div>';
+        } else {
+            resultsContainer.innerHTML = filtered.map(item => `
+                <div class="search-item" data-id="${item.id}" data-name="${item.nome}" data-code="${item.codigo}" data-tipo="${item.tipo}">
+                    <div class="search-item-name">${item.nome}</div>
+                    <div class="search-item-code">${item.codigo}</div>
+                    <div class="search-item-type">${item.tipo}</div>
+                </div>
+            `).join('');
+        }
+        
+        resultsContainer.style.display = 'block';
+    }
+    
+    // Event listeners para busca de itens
+    if (itemSearch) {
+        itemSearch.addEventListener('input', function() {
+            const resultsContainer = document.getElementById('item_results');
+            searchItems(this.value, itens, resultsContainer);
+        });
+        
+        // Event listener para seleção
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#item_results .search-item')) {
+                const items = e.target.closest('.search-item');
+                itemSearch.value = item.dataset.name;
+                itemHidden.value = item.dataset.id;
+                document.getElementById('item_results').style.display = 'none';
+            }
+        });
+    }
+    
+    // Fechar|default:0 resultsados ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            document.querySelectorAll('.search-results').forEach(result => {
+                result.style.display = 'none';
+            });
+        }
+    });
+    
+    // Calcular valor|default:0 total automaticamente
+    function calcularValorTotal() {
+        const quantidade = parseFloat(quantidadeInput.value) || 0;
+        const precoUnitario = parseFloat(precoUnitarioInput.value) || 0;
+        const valorTotal = quantidade * precoUnitario;
+        
+        // Atualizar placeholder ou mostrar valor|default:0 total
+        if (valorTotal > 0) {
+            precoUnitarioInput.setAttribute('data-valor-total', valorTotal.toFixed(2));
+        }
+    }
+    
+    quantidadeInput.addEventListener('input', calcularValorTotal);
+    precoUnitarioInput.addEventListener('input', calcularValorTotal);
+    
+    // Validação de tipo de movimento
+    tipoMovimentoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const aumenta = selectedOption.getAttribute('data-aumenta');
+        
+        if (aumenta === 'false') {
+            quantidadeInput.setAttribute('data-tipo', 'saida');
+            quantidadeInput.setAttribute('title', 'Para saídas, verifique se há estoque suficiente');
+        } else {
+            quantidadeInput.removeAttribute('data-tipo');
+            quantidadeInput.removeAttribute('title');
+        }
+    });
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        const quantidade = parseFloat(quantidadeInput.value);
+        const precoUnitario = parseFloat(precoUnitarioInput.value);
+        
+        if (quantidade <= 0) {
+            quantidadeInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (precoUnitario <= 0) {
+            precoUnitarioInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+        }
+    });
+    
+    // Remover classe de erro quando o usuário começar a digitar
+    requiredFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+
+
+

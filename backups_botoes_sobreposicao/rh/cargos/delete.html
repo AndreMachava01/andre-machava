@@ -1,0 +1,156 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Excluir Cargo{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Cargos</a></li>
+            <li class="breadcrumb-item active">Excluir Cargo</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1>
+                    <i class="fas fa-exclamation-triangle me-2"></i>Excluir Cargo
+                </h1>
+                <p>Confirmar exclusão do cargo</p>
+            </div>
+            <div class="action-btns btn-responsive">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Tem certeza que deseja excluir este cargo?
+            </div>
+
+            <div class="data-grid">
+                <div class="data-label">Nome:</div>
+                <div class="data-value">{{ cargo.nome }}</div>
+                
+                <div class="data-label">Código:</div>
+                <div class="data-value">{{ cargo.codigo_cargo|default:"-" }}</div>
+                
+                <div class="data-label">Departamento:</div>
+                <div class="data-value">{{ cargo.departamento.nome|default:"-" }}</div>
+                
+                <div class="data-label">Status:</div>
+                <div class="data-value">
+                    {% if cargo.ativo %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                </div>
+                
+                {% if cargo.descricao %}
+                <div class="data-label">Descrição:</div>
+                <div class="data-value">{{ cargo.descricao }}</div>
+                {% endif %}
+            </div>
+
+            {% if funcionarios_vinculados %}
+            <div class="alert alert-info mt-3">
+                <h6><i class="fas fa-exchange-alt me-2"></i>Funcionários Vinculados Encontrados</h6>
+                <p>Este cargo possui funcionários vinculados que serão migrados automaticamente:</p>
+                
+                <div class="migration-section">
+                    <h6><i class="fas fa-users me-2"></i>Funcionários ({{ funcionarios_vinculados.count }})</h6>
+                    <ul class="migration-list">
+                        {% for funcionario in funcionarios_vinculados %}
+                        <li><i class="fas fa-user me-1"></i>{{ funcionario.nome_completo }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="migration-form mt-3">
+                    <h6><i class="fas fa-arrow-right me-2"></i>Selecionar Cargo de Destino</h6>
+                    <p>Escolha para qual cargo os funcionários serão migrados (mesmo departamento):</p>
+                    <div class="form-group">
+                        <label for="cargo_destino">Cargo de Destino *</label>
+                        <select id="cargo_destino" name="cargo_destino" required class="form-control">
+                            <option value="">Selecione um cargo...</option>
+                            {% for cargo_dest in cargos_disponiveis %}
+                                <option value="{{ cargo_dest.id }}">
+                                    {{ cargo_dest.nome }} ({{ cargo_dest.codigo_cargo }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer">
+            {% if funcionarios_vinculados %}
+            <form method="post" style="display: inline;" id="migration-form"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                <input type="hidden" id="cargo_destino_hidden" name="cargo_destino" value="">
+                <button type="submit" class="btn btn btn-warning" onclick=" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-exchange-alt me-1"></i>Excluir e Migrar Funcionários
+                </button>
+            </form>
+            {% else %}
+            
+            {% endif %}
+            <a href="#"rh:cargos' %}" class="btn btn-outline btn-responsive btn-responsive">
+                <i class="fas fa-times me-1"></i>Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if funcionarios_vinculados %}
+<script>
+function validateCargoMigration() {
+    const select = document.getElementById('cargo_destino');
+    const hiddenInput = document.getElementById('cargo_destino_hidden');
+    
+    if (!select.value) {
+        alert('Por favor, selecione um cargo de destino para migrar os funcionários.');
+        select.focus();
+        return false;
+    }
+    
+    // Copiar o valor do select para o campo hidden
+    hiddenInput.value = select.value;
+    
+    const confirmMsg = `Tem certeza que deseja excluir este cargo e migrar todos os funcionários vinculados para "${select.options[select.selectedIndex].text}"?`;
+    return confirm(confirmMsg);
+}
+</script>
+{% endif %}
+{% endblock %}

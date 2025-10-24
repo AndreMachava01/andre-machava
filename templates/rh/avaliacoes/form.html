@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 
 {% block title %}{% if avaliacao %}Editar{% else %}Adicionar{% endif %} Avaliação de Desempenho - RH{% endblock %}
 
@@ -19,39 +19,14 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-star"></i>
-                    {% if avaliacao %}Editar{% else %}Adicionar{% endif %} Avaliação de Desempenho
-                </h1>
-                {% if avaliacao %}
-                <p class="page-subtitle">
-                    Avaliação de {{ avaliacao.funcionario.nome_completo }} - {{ avaliacao.get_tipo_display }}
-                </p>
-                {% else %}
-                <p class="page-subtitle">
-                    Criar nova avaliação de desempenho para funcionário
-                </p>
-                {% endif %}
-            </div>
-            <div class="header-actions">
-                {% if avaliacao %}
-                <a href="{% url 'rh:avaliacao_detail' avaliacao.id %}" class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                    Ver Detalhes
-                </a>
-                {% endif %}
-                <a href="{% url 'rh:avaliacoes' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar
-                </a>
-            </div>
-        </div>
-    </div>
+    {% load static %}
+{% include "includes/header.html" with
+    title="{% if avaliacao %}Editar{% else %}Adicionar{% endif %} Avaliação de Desempenho"
+    subtitle="Avaliação de {{ avaliacao.funcionario.nome_completo }} - {{ avaliacao.get_tipo_display }}"
+    icon="fas fa-star"
+%}    </div>
     
-    <form method="post" id="avaliacaoForm" class="form-modern">
+    <form method="post" id="avaliacaoForm" class="form-modern"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
         {% csrf_token %}
         
         <!-- Informações Básicas -->
@@ -327,11 +302,11 @@
 
         <!-- Botões de Ação -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                 <i class="fas fa-save"></i>
                 {% if avaliacao %}Atualizar{% else %}Criar{% endif %} Avaliação
             </button>
-            <a href="/rh/avaliacoes/" class="btn btn-secondary">
+            <a href="#" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-times"></i>
                 Cancelar
             </a>
@@ -339,151 +314,7 @@
     </form>
 </div>
 
-<style>
-/* Estilos específicos para formulário de avaliação */
-.form-modern {
-    max-width: 1200px;
-    margin: 0 auto;
-}
 
-.form-section {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-2xl);
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
-}
-
-.form-section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    font-size: var(--text-lg);
-    font-weight: var(--font-semibold);
-    color: var(--text-primary);
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-5);
-}
-
-.criterios-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--space-5);
-}
-
-.criterio-card {
-    background: var(--surface-medium);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-xl);
-    padding: var(--space-5);
-}
-
-.criterio-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-3);
-}
-
-.criterio-name {
-    font-weight: var(--font-semibold);
-    color: var(--text-primary);
-    font-size: var(--text-base);
-}
-
-.criterio-peso {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
-}
-
-.criterio-desc {
-    color: var(--text-secondary);
-    font-size: var(--text-sm);
-    margin-bottom: var(--space-4);
-    line-height: 1.5;
-}
-
-.nota-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.nota-input {
-    width: 100px;
-}
-
-.nota-range {
-    width: 100%;
-    height: 6px;
-    background: var(--surface-light);
-    border-radius: var(--radius-full);
-    outline: none;
-    -webkit-appearance: none;
-}
-
-.nota-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    background: var(--gradient-primary);
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.nota-range::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: var(--gradient-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-}
-
-.nota-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: var(--text-xs);
-    color: var(--text-tertiary);
-    margin-top: var(--space-1);
-}
-
-.form-actions {
-    display: flex;
-    gap: var(--space-4);
-    justify-content: center;
-    padding: var(--space-6);
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-2xl);
-    margin-top: var(--space-6);
-}
-
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .criterios-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-}
-</style>
 
 <script>
 // Sincronizar input numérico com slider
@@ -526,8 +357,8 @@ document.getElementById('avaliacaoForm').addEventListener('submit', function(e) 
 // Auto-calcular nota geral baseada nos critérios
 function calculateOverallScore() {
     const criterios = document.querySelectorAll('input[name^="nota_"]');
-    let totalWeightedScore = 0;
-    let totalWeight = 0;
+    let|default:0 totalWeightedScore = 0;
+    let|default:0 totalWeight = 0;
     
     criterios.forEach(input => {
         const nota = parseFloat(input.value) || 0;

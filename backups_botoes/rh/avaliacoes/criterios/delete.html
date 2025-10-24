@@ -1,0 +1,100 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Deletar Critério{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <!-- Cabeçalho -->
+    <div class="header-section">
+        <a href="#" class="btn back-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+        <h1 class="header-title">
+            <i class="fas fa-trash"></i>
+            Deletar Critério
+        </h1>
+    </div>
+
+    <!-- Confirmação -->
+    <div class="confirmation-section">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2 class="confirmation-title">Confirmar Exclusão</h2>
+        
+        <p class="confirmation-message">
+            Tem certeza que deseja deletar este critério de avaliação?<br>
+            Esta ação não pode ser desfeita.
+        </p>
+
+        <!-- Detalhes do Critério -->
+        <div class="criterio-details">
+            <h4>Detalhes do Critério</h4>
+            
+            <div class="detail-row">
+                <span class="detail-label">Nome:</span>
+                <span class="detail-value">{{ criterio.nome }}</span>
+            </div>
+            
+            {% if criterio.descricao %}
+            <div class="detail-row">
+                <span class="detail-label">Descrição:</span>
+                <span class="detail-value">{{ criterio.descricao }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="detail-row">
+                <span class="detail-label">Peso:</span>
+                <span class="detail-value">{{ criterio.peso }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="status-badge {% if criterio.ativo %}status-active{% else %}status-inactive{% endif %}">
+                    {% if criterio.ativo %}Ativo{% else %}Inativo{% endif %}
+                </span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Data de Criação:</span>
+                <span class="detail-value">{{ criterio.data_criacao|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="#"rh:criterios' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação adicional
+    const deleteButton = document.querySelector('.btn-danger');
+    deleteButton.addEventListener('click', function(e) {
+        if (!confirm('Tem certeza absoluta que deseja deletar este critério?\n\nEsta ação não pode ser desfeita.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+{% endblock %}

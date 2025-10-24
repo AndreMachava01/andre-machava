@@ -1,0 +1,105 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Adicionar|default:0 items - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-plus"></i>
+                Adicionar|default:0 items à Requisição
+            </h1>
+            <div class="hero-actions">
+                <a href="#"stock:requisicoes:compra_externa_detail' id=requisicao.id %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-section">
+        <!-- Informações da Requisição -->
+        <div class="requisicao-info">
+            <h4><i class="fas fa-info-circle"></i> Requisição: {{ requisicao.codigo }}</h4>
+            <p><strong>Sucursal Solicitante:</strong> {{ requisicao.sucursal_solicitante.nome }}</p>
+            <p><strong>Status:</strong> {{ requisicao.get_status_display }}</p>
+            <p><strong>Itens Atuais:</strong> {{ requisicao.itens.count }}</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="form-container">
+            <h3 class="form-title">
+                <i class="fas fa-box"></i>
+                Novo|default:0 items
+            </h3>
+
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="item_id" class="form-label">Item *</label>
+                    <select name="item_id" id="item_id" class="form-control" required>
+                        <option value="">Selecione um|default:0 items...</option>
+                        {% for items in itens  %}
+                        <option value="{{ item.id }}">
+                            {{ item.codigo }} - {{ item.nome }} ({{ item.get_tipo_display }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantidade" class="form-label">Quantidade *</label>
+                    <input type="number" 
+                           name="quantidade" 
+                           id="quantidade" 
+                           class="form-control" 
+                           min="1" 
+                           required
+                           placeholder="Digite a quantidade desejada">
+                </div>
+
+                <div class="form-group">
+                    <label for="preco_unitario_estimado" class="form-label">Preço Unitário Estimado (MT)</label>
+                    <input type="number" 
+                           name="preco_unitario_estimado" 
+                           id="preco_unitario_estimado" 
+                           class="form-control" 
+                           min="0" 
+                           step="0.01"
+                           placeholder="Digite o preço estimado por unidade (opcional)">
+                    <small style="color: #9ca3af; font-size: 0.8rem;">
+                        Este preço será usado para calcular o valor|default:0 total da requisição. Pode ser definido posteriormente.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea name="observacoes" 
+                              id="observacoes" 
+                              class="form-control" 
+                              rows="3"
+                              placeholder="Observações sobre este|default:0 items (opcional)"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a href="#"stock:requisicoes:compra_externa_detail' id=requisicao.id %}" class="btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-plus"></i>Adicionar|default:0 items
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

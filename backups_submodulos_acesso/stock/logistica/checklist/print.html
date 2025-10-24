@@ -1,0 +1,685 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Impressão do Checklist - {{ checklist.codigo }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    body {
+        background: white;
+        color: #1f2937;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .no-print { display: flex; gap: 8px; justify-content: space-between; align-items: center; margin: 10px auto 14px; max-width: 800px; }
+    .btn-top { padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid var(--border-color, #e5e7eb); background: #fff; color: #111; display: inline-flex; gap: 8px; align-items: center; }
+    .btn-top.primary { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
+
+    .print-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .print-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .print-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+    }
+
+    .print-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 15px;
+    }
+
+    .status-aprovado {
+        background: rgba(16, 185, 129, 0.2);
+        color: #059669;
+        border: 1px solid #10b981;
+    }
+
+    .status-reprovado {
+        background: rgba(239, 68, 68, 0.2);
+        color: #dc2626;
+        border: 1px solid #ef4444;
+    }
+
+    .status-condicional {
+        background: rgba(245, 158, 11, 0.2);
+        color: #d97706;
+        border: 1px solid #f59e0b;
+    }
+
+    .print-content {
+        padding: 30px;
+    }
+
+    .pontuacao-section {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .pontuacao-valor {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .pontuacao-label {
+        font-size: 1.25rem;
+        opacity: 0.9;
+    }
+
+    .info-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-weight: 500;
+        font-size: 1rem;
+    }
+
+    .checklist-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .category-section {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        border-left: 4px solid #8b5cf6;
+    }
+
+    .category-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .checklist-item.ok {
+        border-left: 4px solid #10b981;
+    }
+
+    .checklist-item.error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .status-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .status-ok {
+        background: #10b981;
+        color: white;
+    }
+
+    .status-error {
+        background: #ef4444;
+        color: white;
+    }
+
+    .item-label {
+        flex: 1;
+        font-weight: 500;
+        color: #1f2937;
+        font-size: 0.875rem;
+    }
+
+    .observacoes-section {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .observacao-item {
+        margin-bottom: 20px;
+    }
+
+    .observacao-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .observacao-label {
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+        font-size: 0.875rem;
+    }
+
+    .observacao-value {
+        color: #1f2937;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .print-footer {
+        background: #f9fafb;
+        padding: 20px 30px;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .signature-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .signature-item {
+        text-align: center;
+    }
+
+    .signature-line {
+        border-bottom: 1px solid #6b7280;
+        height: 40px;
+        margin-bottom: 10px;
+    }
+
+    .signature-label {
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    @media print {
+        body {
+            background: white;
+            padding: 0;
+        }
+        
+
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        .checklist-item
+        
+        .checklist-item
+        
+        
+        
+        
+
+        /* Forçar duas colunas na impressão */
+        
+
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="print-container">
+    <!-- Header -->
+    <div class="print-header">
+        <h1>
+            <i class="fas fa-clipboard-check"></i>
+            Checklist de Viatura
+        </h1>
+        <p>{{ checklist.codigo }} - {{ checklist.veiculo.nome }}</p>
+        <span class="status-badge status-{{ checklist.status_final|lower }}">
+            {{ checklist.get_status_final_display }}
+        </span>
+    </div>
+
+    <!-- Content -->
+    <div class="print-content">
+        <!-- Pontuação -->
+        <div class="pontuacao-section">
+            <div class="pontuacao-valor">{{ checklist.get_pontuacao_total }}%</div>
+            <div class="pontuacao-label">Pontuação|default:0 total</div>
+        </div>
+
+        <!-- Informações Básicas -->
+        <div class="info-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Informações Básicas
+            </h2>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Veículo</div>
+                    <div class="info-value">{{ checklist.veiculo.nome }} ({{ checklist.veiculo.placa }})</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Tipo de Checklist</div>
+                    <div class="info-value">{{ checklist.get_tipo_display }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Inspetor</div>
+                    <div class="info-value">{{ checklist.inspetor.get_full_name|default:checklist.inspetor.username }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Motorista</div>
+                    <div class="info-value">{{ checklist.motorista }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Data da Inspeção</div>
+                    <div class="info-value">{{ checklist.data_inspecao|date:"d/m/Y H:i" }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Local da Inspeção</div>
+                    <div class="info-value">{{ checklist.local_inspecao }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Quilometragem</div>
+                    <div class="info-value">{{ checklist.quilometragem|floatformat:0 }} km</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Status Final</div>
+                    <div class="info-value">{{ checklist.get_status_final_display }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itens do Checklist -->
+        <div class="info-section">
+            <h2 class="section-title">
+                <i class="fas fa-list-check"></i>
+                Itens de Verificação
+            </h2>
+            
+            <div class="checklist-items">
+                <!-- Sistema de Freios -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-stop-circle"></i>
+                        Sistema de Freios
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.freios_funcionando %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.freios_funcionando %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.freios_funcionando %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Freios funcionando corretamente</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.fluido_freio_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.fluido_freio_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.fluido_freio_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Fluido de freio em nível adequado</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.pastilhas_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.pastilhas_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.pastilhas_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Pastilhas de freio em bom estado</div>
+                    </div>
+                </div>
+
+                <!-- Sistema de Direção -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-steering-wheel"></i>
+                        Sistema de Direção
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.direcao_funcionando %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.direcao_funcionando %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.direcao_funcionando %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Direção funcionando corretamente</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.fluido_direcao_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.fluido_direcao_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.fluido_direcao_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Fluido de direção em nível adequado</div>
+                    </div>
+                </div>
+
+                <!-- Sistema Elétrico -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-bolt"></i>
+                        Sistema Elétrico
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.bateria_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.bateria_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.bateria_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Bateria em bom estado</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.alternador_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.alternador_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.alternador_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Alternador funcionando</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.farois_funcionando %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.farois_funcionando %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.farois_funcionando %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Faróis funcionando</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.luzes_sinalizacao %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.luzes_sinalizacao %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.luzes_sinalizacao %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Luzes de sinalização funcionando</div>
+                    </div>
+                </div>
+
+                <!-- Pneus e Rodas -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-circle"></i>
+                        Pneus e Rodas
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.pneus_pressao_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.pneus_pressao_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.pneus_pressao_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Pressão dos pneus adequada</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.pneus_desgaste_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.pneus_desgaste_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.pneus_desgaste_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Desgaste dos pneus dentro do limite</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.rodas_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.rodas_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.rodas_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Rodas em bom estado</div>
+                    </div>
+                </div>
+
+                <!-- Motor e Fluidos -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-cog"></i>
+                        Motor e Fluidos
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.motor_funcionando %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.motor_funcionando %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.motor_funcionando %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Motor funcionando corretamente</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.oleo_motor_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.oleo_motor_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.oleo_motor_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Óleo do motor em nível adequado</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.agua_radiador_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.agua_radiador_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.agua_radiador_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Água do radiador em nível adequado</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.combustivel_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.combustivel_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.combustivel_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Combustível suficiente</div>
+                    </div>
+                </div>
+
+                <!-- Documentação -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-file-alt"></i>
+                        Documentação
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.documentos_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.documentos_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.documentos_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Documentação do veículo em dia</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.seguro_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.seguro_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.seguro_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Seguro do veículo em dia</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.licenciamento_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.licenciamento_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.licenciamento_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Licenciamento em dia</div>
+                    </div>
+                </div>
+
+                <!-- Limpeza e Aparência -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-broom"></i>
+                        Limpeza e Aparência
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.limpeza_interior %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.limpeza_interior %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.limpeza_interior %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Interior limpo e organizado</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.limpeza_exterior %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.limpeza_exterior %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.limpeza_exterior %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Exterior limpo</div>
+                    </div>
+                </div>
+
+                <!-- Equipamentos de Segurança -->
+                <div class="category-section">
+                    <div class="category-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Equipamentos de Segurança
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.extintor_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.extintor_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.extintor_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Extintor presente e em dia</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.triangulo_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.triangulo_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.triangulo_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Triângulo de sinalização presente</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.macaco_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.macaco_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.macaco_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Macaco presente e funcionando</div>
+                    </div>
+                    
+                    <div class="checklist-item {% if checklist.chave_roda_ok %}ok{% else %}error{% endif %}">
+                        <div class="status-indicator {% if checklist.chave_roda_ok %}status-ok{% else %}status-error{% endif %}">
+                            {% if checklist.chave_roda_ok %}✓{% else %}✗{% endif %}
+                        </div>
+                        <div class="item-label">Chave de roda presente</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        {% if checklist.observacoes or checklist.recomendacoes %}
+        <div class="observacoes-section">
+            <h2 class="section-title">
+                <i class="fas fa-comment-alt"></i>
+                Observações e Recomendações
+            </h2>
+            
+            {% if checklist.observacoes %}
+            <div class="observacao-item">
+                <div class="observacao-label">Observações</div>
+                <div class="observacao-value">{{ checklist.observacoes }}</div>
+            </div>
+            {% endif %}
+            
+            {% if checklist.recomendacoes %}
+            <div class="observacao-item">
+                <div class="observacao-label">Recomendações</div>
+                <div class="observacao-value">{{ checklist.recomendacoes }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Assinaturas -->
+        <div class="signature-section">
+            <div class="signature-item">
+                <div class="signature-line"></div>
+                <div class="signature-label">Inspetor</div>
+            </div>
+            <div class="signature-item">
+                <div class="signature-line"></div>
+                <div class="signature-label">Motorista</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="print-footer">
+        <p>Checklist gerado em {{ checklist.data_criacao|date:"d/m/Y H:i" }} | Sistema de Gestão Empresarial</p>
+    </div>
+</div>
+
+<script>
+// Auto print when page loads
+window.onload = function() {
+    setTimeout(function() {
+        window.print();
+    }, 1000);
+};
+</script>
+{% endblock %}

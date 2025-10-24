@@ -18,11 +18,15 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+import logging
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import tempfile
 import os
 from .models_rh import Funcionario, Departamento, Cargo, Presenca, TipoPresenca, Feriado, HorasExtras, Salario, BeneficioSalarial, DescontoSalarial, Treinamento, AvaliacaoDesempenho, CriterioAvaliacao, CriterioAvaliado, FolhaSalarial, FuncionarioFolha, Promocao, DepartamentoSucursal, TransferenciaFuncionario, InscricaoTreinamento
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 from .models_base import Sucursal
 
 # =============================================================================
@@ -362,52 +366,69 @@ def rh_main(request):
 @login_required
 def rh_funcionarios(request):
     """Lista de funcionários com filtros e paginação"""
-    # Parâmetros de busca e filtro
-    search_query = request.GET.get('q', '')
-    departamento_id = request.GET.get('departamento')
-    cargo_id = request.GET.get('cargo')
-    status = request.GET.get('status')
+    try:
+        # Parâmetros de busca e filtro
+        search_query = request.GET.get('q', '').strip()
+        departamento_id = request.GET.get('departamento')
+        cargo_id = request.GET.get('cargo')
+        status = request.GET.get('status')
 
-    # Query base
-    funcionarios = Funcionario.objects.all()
+        # Query base com otimizações
+        funcionarios = Funcionario.objects.select_related('departamento', 'cargo', 'sucursal')
 
-    # Aplicar filtros
-    if search_query:
-        funcionarios = funcionarios.filter(
-            Q(nome_completo__icontains=search_query) |
-            Q(codigo_funcionario__icontains=search_query) |
-            Q(nuit__icontains=search_query)
-        )
+        # Aplicar filtros
+        if search_query:
+            funcionarios = funcionarios.filter(
+                Q(nome_completo__icontains=search_query) |
+                Q(codigo_funcionario__icontains=search_query) |
+                Q(nuit__icontains=search_query) |
+                Q(email__icontains=search_query)
+            )
 
-    if departamento_id:
-        funcionarios = funcionarios.filter(departamento_id=departamento_id)
+        if departamento_id:
+            funcionarios = funcionarios.filter(departamento_id=departamento_id)
 
-    if cargo_id:
-        funcionarios = funcionarios.filter(cargo_id=cargo_id)
+        if cargo_id:
+            funcionarios = funcionarios.filter(cargo_id=cargo_id)
 
-    if status:
-        funcionarios = funcionarios.filter(status=status)
+        if status:
+            funcionarios = funcionarios.filter(status=status)
 
-    # Ordenação
-    funcionarios = funcionarios.order_by('nome_completo')
+        # Ordenação
+        funcionarios = funcionarios.order_by('nome_completo')
 
-    # Paginação
-    paginator = Paginator(funcionarios, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        # Paginação
+        paginator = Paginator(funcionarios, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-    context = {
-        'funcionarios': page_obj,
-        'departamentos': Departamento.objects.all(),
-        'cargos': Cargo.objects.all(),
-        'search_query': search_query,
-        'departamento_id': departamento_id,
-        'cargo_id': cargo_id,
-        'status': status,
-        'page_obj': page_obj,
-    }
+        # Calcular estatísticas
+        total_funcionarios = Funcionario.objects.count()
+        funcionarios_ativos = Funcionario.objects.filter(status='AT').count()
+        total_departamentos = Departamento.objects.count()
+        total_cargos = Cargo.objects.count()
 
-    return render(request, 'rh/funcionarios/main.html', context)
+        context = {
+            'page_obj': page_obj,
+            'search_query': search_query,
+            'departamento_id': departamento_id,
+            'cargo_id': cargo_id,
+            'status': status,
+            'departamentos': Departamento.objects.filter(ativo=True),
+            'cargos': Cargo.objects.filter(ativo=True),
+            'status_choices': Funcionario.STATUS_CHOICES,
+            # Estatísticas para os cards
+            'total_funcionarios': total_funcionarios,
+            'funcionarios_ativos': funcionarios_ativos,
+            'total_departamentos': total_departamentos,
+            'total_cargos': total_cargos,
+        }
+
+        return render(request, 'rh/funcionarios/main.html', context)
+    except Exception as e:
+        logger.error(f"Erro ao listar funcionários: {e}")
+        messages.error(request, 'Erro ao carregar lista de funcionários.')
+        return render(request, 'rh/funcionarios/main.html', {'page_obj': None})
 
 @login_required
 def rh_funcionario_detail(request, id):
@@ -1358,8 +1379,18 @@ def rh_departamentos(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Estatísticas para os cards
+    total_departamentos = Departamento.objects.count()
+    departamentos_ativos = Departamento.objects.filter(ativo=True).count()
+    departamentos_inativos = Departamento.objects.filter(ativo=False).count()
+    total_funcionarios = Funcionario.objects.count()
+    
     context = {
         'departamentos': page_obj,
+        'total_departamentos': total_departamentos,
+        'departamentos_ativos': departamentos_ativos,
+        'departamentos_inativos': departamentos_inativos,
+        'total_funcionarios': total_funcionarios,
     }
     
     return render(request, 'rh/departamentos/main.html', context)
@@ -1504,16 +1535,100 @@ def rh_departamento_delete(request, id):
 
 @login_required
 def rh_cargos(request):
-    """Lista de cargos"""
-    cargos = Cargo.objects.filter(ativo=True).order_by('nome')
+    """Lista de cargos com sistema unificado de filtros"""
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+    
+    # Parâmetros de filtro
+    search_query = request.GET.get('q', '').strip()
+    departamento_id = request.GET.get('departamento')
+    ativo_param = request.GET.get('ativo')
+    nivel_param = request.GET.get('nivel')
+    categoria_param = request.GET.get('categoria')
+    
+    # Query base
+    cargos = Cargo.objects.select_related('departamento')
+    
+    # Aplicar filtros
+    if search_query:
+        cargos = cargos.filter(
+            Q(nome__icontains=search_query) |
+            Q(codigo_cargo__icontains=search_query) |
+            Q(descricao__icontains=search_query)
+        )
+    
+    if departamento_id:
+        cargos = cargos.filter(departamento_id=departamento_id)
+    
+    if ativo_param == 'true':
+        cargos = cargos.filter(ativo=True)
+    elif ativo_param == 'false':
+        cargos = cargos.filter(ativo=False)
+    
+    if nivel_param:
+        cargos = cargos.filter(nivel=nivel_param)
+    
+    if categoria_param:
+        cargos = cargos.filter(categoria=categoria_param)
+    
+    # Ordenação
+    cargos = cargos.order_by('nome')
     
     # Paginação
     paginator = Paginator(cargos, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Estatísticas
+    total_cargos = Cargo.objects.count()
+    cargos_ativos = Cargo.objects.filter(ativo=True).count()
+    cargos_inativos = Cargo.objects.filter(ativo=False).count()
+    funcionarios_com_cargo = Funcionario.objects.filter(cargo__isnull=False).count()
+    
+    # Choices para filtros
+    departamentos = Departamento.objects.filter(ativo=True).order_by('nome')
+    status_choices = [
+        ('true', 'Ativo'),
+        ('false', 'Inativo'),
+    ]
+    nivel_choices = Cargo.NIVEL_CHOICES if hasattr(Cargo, 'NIVEL_CHOICES') else []
+    categoria_choices = Cargo.CATEGORIA_CHOICES if hasattr(Cargo, 'CATEGORIA_CHOICES') else []
+    
+    # Configurar ações dos botões (será processado no template)
+    actions_config = [
+        {
+            'action': 'edit',
+            'text': 'Editar',
+            'icon': 'edit',
+            'url_name': 'rh:cargo_edit',
+            'class': 'secondary'
+        },
+        {
+            'action': 'delete',
+            'text': 'Eliminar',
+            'icon': 'trash',
+            'url_name': 'rh:cargo_delete',
+            'class': 'danger',
+            'onclick': 'return confirm("Tem certeza que deseja eliminar este cargo?")'
+        }
+    ]
+    
     context = {
-        'cargos': page_obj,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'departamento_id': departamento_id,
+        'ativo': ativo_param,
+        'nivel': nivel_param,
+        'categoria': categoria_param,
+        'total_cargos': total_cargos,
+        'cargos_ativos': cargos_ativos,
+        'cargos_inativos': cargos_inativos,
+        'funcionarios_com_cargo': funcionarios_com_cargo,
+        'departamentos': departamentos,
+        'status_choices': status_choices,
+        'nivel_choices': nivel_choices,
+        'categoria_choices': categoria_choices,
+        'actions_config': actions_config,
     }
     
     return render(request, 'rh/cargos/main.html', context)

@@ -1,0 +1,147 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Enviar Ordem de Compra por Email{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-item">
+            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+        </div>
+        <div class="breadcrumb-item">
+            <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">Compra Externa</a>
+        </div>
+        <div class="breadcrumb-item">
+            <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">Ordem {{ ordem_compra.codigo }}</a>
+        </div>
+        <div class="breadcrumb-item active">Enviar Email</div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-envelope"></i>
+            Enviar Ordem de Compra por Email
+        </h1>
+        <p class="hero-subtitle">
+            Envie a ordem de compra {{ ordem_compra.codigo }} para o fornecedor {{ ordem_compra.fornecedor.nome }}
+        </p>
+    </div>
+
+    <div class="content-section">
+        <!-- Formulário de Envio -->
+        <div class="form-container">
+            <h3 style="color: #fbbf24; margin-bottom: 25px;">
+                <i class="fas fa-paper-plane"></i>
+                Configurações do Email
+            </h3>
+            
+            <form method="post"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email_destinatario" class="form-label">
+                        <i class="fas fa-at"></i>
+                        Email do Destinatário *
+                    </label>
+                    <input type="email" 
+                           name="email_destinatario" 
+                           id="email_destinatario" 
+                           class="form-control" 
+                           value="{{ email_padrao }}"
+                           placeholder="exemplo@fornecedor.com"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="assunto" class="form-label">
+                        <i class="fas fa-tag"></i>
+                        Assunto do Email
+                    </label>
+                    <input type="text" 
+                           name="assunto" 
+                           id="assunto" 
+                           class="form-control" 
+                           value="{{ assunto_padrao }}"
+                           placeholder="Assunto do email">
+                </div>
+
+                <div class="form-group">
+                    <label for="mensagem_personalizada" class="form-label">
+                        <i class="fas fa-comment"></i>
+                        Mensagem Personalizada
+                    </label>
+                    <textarea name="mensagem_personalizada" 
+                              id="mensagem_personalizada" 
+                              class="form-control" 
+                              placeholder="Digite uma mensagem personalizada para o fornecedor..."></textarea>
+                </div>
+
+                <div class="actions-btns btn-responsive">
+                    <button type="submit" class="btn-send" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar Email
+                    </button>
+                    <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-back btn-responsive btn-responsive">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Histórico de Envios -->
+        {% if historico_envios %}
+        <div class="historico-section">
+            <h3 class="historico-title">
+                <i class="fas fa-history"></i>
+                Histórico de Envios
+            </h3>
+            
+            {% for envio in historico_envios %}
+            <div class="historico-item {% if envio.status == 'ENVIADO' %}success{% elif envio.status == 'FALHOU' %}error{% else %}pending{% endif %}">
+                <div class="historico-meta">
+                    <span class="historico-email">{{ envio.email_destinatario }}</span>
+                    <span class="historico-data">{{ envio.data_envio|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Assunto:</strong> {{ envio.assunto }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>Enviado por:</strong> {{ envio.enviado_por.get_full_name|default:envio.enviado_por.username }}</span>
+                    <span class="historico-status status-{{ envio.status|lower }}">{{ envio.get_status_display }}</span>
+                </div>
+                {% if envio.mensagem_erro %}
+                <div style="margin-top: 8px; color: #fca5a5; font-size: 0.9rem;">
+                    <strong>Erro:</strong> {{ envio.mensagem_erro }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="#"stock:requisicoes:ordem_compra_historico_envios' ordem_compra.id %}" 
+                   class="btn-back btn-responsive btn-responsive" style="margin-right: 0;">
+                    <i class="fas fa-list"></i>
+                    Ver Histórico Completo
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

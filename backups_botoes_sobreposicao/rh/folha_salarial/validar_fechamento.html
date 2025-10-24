@@ -1,0 +1,147 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Validar Fechamento - {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="validation-container">
+    <div class="validation-header">
+        <h1><i class="fas fa-clipboard-check"></i> Validar Fechamento da Folha</h1>
+        <p>Folha de {{ folha.mes_referencia|date:"F Y" }} - Status: <span class="status-badge status-{{ folha.status|lower }}">{{ folha.get_status_display }}</span></p>
+    </div>
+    
+    <!-- Resumo da Folha -->
+    <div class="summary-card">
+        <h3><i class="fas fa-chart-bar"></i> Resumo da Folha</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <h4>Total de Funcionários</h4>
+                <div class="value">{{ resumo.total|default:0_funcionarios }}</div>
+            </div>
+            <div class="summary-item">
+                <h4>Total Bruto</h4>
+                <div class="value">{{ resumo.total|default:0_bruto|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-item">
+                <h4>Total Descontos</h4>
+                <div class="value">{{ resumo.total|default:0_descontos|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-item">
+                <h4>Total Líquido</h4>
+                <div class="value">{{ resumo.total|default:0_liquido|floatformat:2 }} MT</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Validações -->
+    <div class="validation-content">
+        <!-- Erros -->
+        <div class="validation-card {% if validacao.valido %}success{% else %}error{% endif %}">
+            <h3>
+                <i class="fas fa-{% if validacao.valido %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+                Validações
+            </h3>
+            
+            {% if validacao.valido %}
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; color: #27ae60; margin-bottom: 15px;"></i>
+                    <p style="font-size: 1.2rem; color: #27ae60; margin: 0;">Todas as validações passaram!</p>
+                    <p style="color: #6c757d; margin: 10px 0 0 0;">A folha está pronta para ser fechada.</p>
+                </div>
+            {% else %}
+                <ul class="error-list">
+                    {% for erro in validacao.erros %}
+                        <li>
+                            <i class="fas fa-times-circle"></i>
+                            {{ erro }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <!-- Avisos -->
+        <div class="validation-card warning">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Avisos
+            </h3>
+            
+            {% if validacao.avisos %}
+                <ul class="warning-list">
+                    {% for aviso in validacao.avisos %}
+                        <li>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ aviso }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: #27ae60; margin-bottom: 10px;"></i>
+                    <p style="color: #6c757d; margin: 0;">Nenhum aviso encontrado.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Estatísticas Adicionais -->
+    {% if validacao.funcionarios_sem_salario > 0 or validacao.funcionarios_sem_presenca > 0 or validacao.funcionarios_salario_negativo > 0 %}
+    <div class="summary-card">
+        <h3><i class="fas fa-info-circle"></i> Estatísticas de Validação</h3>
+        <div class="summary-grid">
+            {% if validacao.funcionarios_sem_salario > 0 %}
+            <div class="summary-item" style="background: #fee;">
+                <h4>Sem Salário</h4>
+                <div class="value" style="color: #c0392b;">{{ validacao.funcionarios_sem_salario }}</div>
+            </div>
+            {% endif %}
+            {% if validacao.funcionarios_sem_presenca > 0 %}
+            <div class="summary-item" style="background: #fef9e7;">
+                <h4>Sem Presença</h4>
+                <div class="value" style="color: #b7950b;">{{ validacao.funcionarios_sem_presenca }}</div>
+            </div>
+            {% endif %}
+            {% if validacao.funcionarios_salario_negativo > 0 %}
+            <div class="summary-item" style="background: #fef9e7;">
+                <h4>Salário Negativo</h4>
+                <div class="value" style="color: #b7950b;">{{ validacao.funcionarios_salario_negativo }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Botões de Ação -->
+    <div class="action-btns btn-responsive">
+        {% if validacao.valido %}
+            <a href="#"rh:folha_fechar' folha.id %}" class="btn-fechar btn-responsive btn-responsive">
+                <i class="fas fa-lock"></i>
+                Fechar Folha
+            </a>
+        {% else %}
+            <a href="#"rh:folha_calcular' folha.id %}" class="btn-recalcular btn-responsive btn-responsive">
+                <i class="fas fa-calculator"></i>
+                Recalcular Folha
+            </a>
+        {% endif %}
+        
+        <a href="#"rh:folha_detail' folha.id %}" class="btn-cancelar btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar aos Detalhes
+        </a>
+    </div>
+</div>
+{% endblock %}

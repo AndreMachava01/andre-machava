@@ -1,0 +1,196 @@
+{% extends 'base_list.html' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Transferências de Stock" entity_name='default' %}
+{% load static %}
+
+{% block title %}Transferências de Stock{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb Navigation -->
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            
+            <div class="hero-actions">
+                <a href="#"stock:movimentos' %}" class="btn-modern btn btn-secondary-modern btn-responsive -responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar às Movimentações
+                </a>
+                <a href="#"stock:transferencias:verificar_stock' %}" class="btn-modern btn btn-primary-modern btn-responsive -responsive">
+                    <i class="fas fa-warehouse"></i>Verificar Stock
+                </a>
+                <a href="#" class="btn-modern btn btn-primary-modern btn-responsive -responsive">
+                    <i class="fas fa-plus"></i>Nova Transferência
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="summary-card">
+            <div class="summary-value">{{ total_transferencias }}</div>
+            <div class="summary-card h3">Total</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_concluidas }}</div>
+            <div class="summary-card h3">Concluídas</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_pendentes }}</div>
+            <div class="summary-card h3">Pendentes</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ transferencias_em_transito }}</div>
+            <div class="summary-card h3">Em Trânsito</div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+    <!-- Transferências List -->
+    <div class="movements-section">
+        
+        </div>
+
+        {% if page_obj %}
+            <!-- Results|default:0 counter -->
+            {% if request.GET.search or request.GET.status or request.GET.sucursal %}
+            <div class="results-counter" style="margin-bottom: 20px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; color: #60a5fa;">
+                <i class="fas fa-info-circle"></i>
+                {% if page_obj.paginator.count == 1 %}
+                    1 transferência encontrada
+                {% else %}
+                    {{ page_obj.paginator.count }} transferências encontradas
+                {% endif %}
+                {% if request.GET.search %}
+                    para "<strong>{{ request.GET.search }}</strong>"
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <div class="movements-table-container">
+                <table class="movements-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Origem</th>
+                            <th>Destino</th>
+                            <th>Status</th>
+                            <th>Itens</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transferencia in page_obj %}
+                        <tr>
+                            <td class="date-cell">
+                                <span class="transfer-code">{{ transferencia.codigo }}</span>
+                            </td>
+                            <td class="product-cell">
+                                <div class="sucursal-info">
+                                    <i class="fas fa-building text-primary"></i>
+                                    <span class="sucursal-name">{{ transferencia.sucursal_origem.nome }}</span>
+                                </div>
+                            </td>
+                            <td class="product-cell">
+                                <div class="sucursal-info">
+                                    <i class="fas fa-building text-success"></i>
+                                    <span class="sucursal-name">{{ transferencia.sucursal_destino.nome }}</span>
+                                </div>
+                            </td>
+                            <td class="type-cell">
+                                {% if transferencia.status == 'PENDENTE' %}
+                                    <span class="status-badge status-pendente">Pendente</span>
+                                {% elif transferencia.status == 'ENVIADA' %}
+                                    <span class="status-badge status-enviada">Enviada</span>
+                                {% elif transferencia.status == 'RECEBIDA' %}
+                                    <span class="status-badge status-recebida">Recebida</span>
+                                {% elif transferencia.status == 'CANCELADA' %}
+                                    <span class="status-badge status-cancelada">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td class="quantity-cell">
+                                <span class="items-count">{{ transferencia.itens.count }} itens</span>
+                            </td>
+                            <td class="date-cell">
+                                <div class="date-info">
+                                    <span class="date">{{ transferencia.data_criacao|date:"d/m/Y" }}</span>
+                                    <span class="time">{{ transferencia.data_criacao|time:"H:i" }}</span>
+                                </div>
+                            </td>
+                            <td class="actions-cell">
+                                <div class="action-btns -responsive">
+                                    <a href="#"stock:transferencias:detail' transferencia.id %}" class="btn-action btn-view btn-responsive -responsive" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    <span class="current">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sucursal %}&sucursal={{ request.GET.sucursal }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-exchange-alt"></i>
+                <h4>Nenhuma transferência encontrada</h4>
+                <p>
+                    {% if request.GET.search %}
+                        Nenhuma transferência encontrada para "<strong>{{ request.GET.search }}</strong>".
+                        <br>
+                    {% endif %}
+                    {% if request.GET.status or request.GET.sucursal or request.GET.search %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    <a href="{% url 'stock:transferencias:create' %}">crie a primeira transferência</a>.
+                </p>
+                {% if request.GET.search or request.GET.status or request.GET.sucursal %}
+                    <a href="#"stock:transferencias:list' %}" class="btn-modern btn btn-primary-modern btn-responsive -responsive">
+                        <i class="fas fa-times"></i>Limpar Filtros
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

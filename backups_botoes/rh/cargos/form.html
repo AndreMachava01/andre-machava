@@ -1,0 +1,139 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}{% if cargo %}Editar{% else %}Adicionar{% endif %} Cargo{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Cargos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if cargo %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{% if cargo %}Editar{% else %}Adicionar{% endif %} Cargo"
+    subtitle="{% if cargo %}Editar informações do cargo{% else %}Adicionar novo cargo{% endif %}"
+    icon="fas fa-briefcase"
+%}    </div>
+    
+    <!-- Form Container -->
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome do Cargo <span class="required">*</span></label>
+                    <input type="text" id="nome" name="nome" value="{{ cargo.nome|default:'' }}" required>
+                    <div class="help-text">Nome completo do cargo na empresa</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Código do Cargo</label>
+                    <div class="info-text">
+                        <i class="fas fa-tag"></i> {{ cargo.codigo_cargo|default:"Será gerado automaticamente" }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nivel">Nível Hierárquico <span class="required">*</span></label>
+                    <select id="nivel" name="nivel" required>
+                        <option value="">Selecione o nível</option>
+                        <option value="EST" {% if cargo.nivel == 'EST' %}selected{% endif %}>Estagiário</option>
+                        <option value="APR" {% if cargo.nivel == 'APR' %}selected{% endif %}>Aprendiz</option>
+                        <option value="AUX" {% if cargo.nivel == 'AUX' %}selected{% endif %}>Auxiliar</option>
+                        <option value="ASS" {% if cargo.nivel == 'ASS' %}selected{% endif %}>Assistente</option>
+                        <option value="ANA" {% if cargo.nivel == 'ANA' %}selected{% endif %}>Analista</option>
+                        <option value="TCN" {% if cargo.nivel == 'TCN' %}selected{% endif %}>Técnico</option>
+                        <option value="ESP" {% if cargo.nivel == 'ESP' %}selected{% endif %}>Especialista</option>
+                        <option value="SUP" {% if cargo.nivel == 'SUP' %}selected{% endif %}>Supervisor</option>
+                        <option value="CRD" {% if cargo.nivel == 'CRD' %}selected{% endif %}>Coordenador</option>
+                        <option value="GER" {% if cargo.nivel == 'GER' %}selected{% endif %}>Gestor</option>
+                        <option value="DIR" {% if cargo.nivel == 'DIR' %}selected{% endif %}>Director</option>
+                    </select>
+                    <div class="help-text">Nível hierárquico do cargo na organização</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoria Funcional <span class="required">*</span></label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Selecione a categoria</option>
+                        <option value="OP" {% if cargo.categoria == 'OP' %}selected{% endif %}>Operacional</option>
+                        <option value="ADM" {% if cargo.categoria == 'ADM' %}selected{% endif %}>Administrativo</option>
+                        <option value="TEC" {% if cargo.categoria == 'TEC' %}selected{% endif %}>Técnico</option>
+                        <option value="GES" {% if cargo.categoria == 'GES' %}selected{% endif %}>Gestão</option>
+                        <option value="EXE" {% if cargo.categoria == 'EXE' %}selected{% endif %}>Executivo</option>
+                    </select>
+                    <div class="help-text">Categoria funcional do cargo</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="departamento">Departamento <span class="required">*</span></label>
+                    <select id="departamento" name="departamento" required>
+                        <option value="">Selecione um departamento</option>
+                        {% for departamento in departamentos %}
+                            <option value="{{ departamento.id }}" {% if cargo.departamento.id == departamento.id %}selected{% endif %}>
+                                {{ departamento.nome }} 
+                                {% if departamento.sucursal.id == sucursal_atual.id %}
+                                    (Local)
+                                {% else %}
+                                    ({{ departamento.sucursal.nome }})
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Departamento ao qual o cargo pertence</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" placeholder="Descreva as responsabilidades do cargo...">{{ cargo.descricao|default:'' }}</textarea>
+                    <div class="help-text">Descrição detalhada das responsabilidades e atribuições do cargo</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" id="ativo" name="ativo" {% if not cargo or cargo.ativo %}checked{% endif %}>
+                    <label for="ativo">Cargo Ativo</label>
+                </div>
+                <div class="help-text">Marque se o cargo está ativo e pode ser atribuído a funcionários</div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    {% if cargo %}Atualizar{% else %}Adicionar{% endif %}
+                </button>
+                <a href="#"rh:cargos' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

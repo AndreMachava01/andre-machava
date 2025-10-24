@@ -1,0 +1,335 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Excluir Funcionário{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header {
+        background: var(--blue-gradient);
+    }
+    
+    /* Card de confirmação compacto */
+    .confirmation-card {
+        background: var(--dark-bg-secondary);
+        border-radius: 8px;
+        border: 1px solid var(--dark-border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        margin-top: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background: var(--dark-bg-tertiary);
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--dark-border);
+    }
+    
+    .card-title {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .card-footer {
+        background: var(--dark-bg-tertiary);
+        padding: 15px 20px;
+        border-top: 1px solid var(--dark-border);
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+    
+    /* Alertas compactos */
+    .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 18px;
+        border: 1px solid;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+    }
+    
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.4);
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+    
+    .alert h6 {
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .alert p {
+        margin: 0;
+        font-size: 13px;
+    }
+    
+    .alert ul {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 13px;
+    }
+    
+    .alert li {
+        margin-bottom: 4px;
+    }
+    
+    .alert i {
+        font-size: 16px;
+        margin-top: 2px;
+    }
+    
+    /* Seção de dados */
+    .data-section {
+        margin-bottom: 20px;
+    }
+    
+    .data-section h6 {
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+    
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .data-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .data-label {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+    
+    .data-value {
+        font-size: 14px;
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    .contact-info {
+        background: var(--dark-bg-tertiary);
+        border: 1px solid var(--dark-border);
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-top: 8px;
+    }
+    
+    .contact-info p {
+        margin: 0;
+        font-size: 13px;
+        color: #d1d5db;
+    }
+    
+    /* Botões compactos */
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-secondary {
+        background: #374151;
+        color: #ffffff;
+        border: 1px solid #4b5563;
+    }
+    
+    .btn-secondary:hover {
+        background: #4b5563;
+        border-color: #6b7280;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:funcionarios' %}">Funcionários</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:funcionario_detail' funcionario.id %}">{{ funcionario.nome_completo }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Excluir</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-trash"></i>
+                    Excluir Funcionário
+                </h1>
+                <p class="page-subtitle">
+                    Confirme a exclusão permanente deste funcionário do sistema
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#"rh:funcionario_detail' funcionario.id %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Detalhes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmação de Exclusão
+            </h5>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <i class="fas fa-warning"></i>
+                <div>
+                    <h6>Atenção!</h6>
+                    <p>Esta ação não pode ser desfeita. Todos os dados relacionados a este funcionário serão permanentemente removidos do sistema.</p>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <h6>Dados que serão excluídos:</h6>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <span class="data-label">Código</span>
+                        <span class="data-value">{{ funcionario.codigo_funcionario }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Nome</span>
+                        <span class="data-value">{{ funcionario.nome_completo }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Sucursal</span>
+                        <span class="data-value">{{ funcionario.sucursal.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Departamento</span>
+                        <span class="data-value">{{ funcionario.departamento.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Cargo</span>
+                        <span class="data-value">{{ funcionario.cargo.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Status</span>
+                        <span class="data-value">{{ funcionario.get_status_display }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Data de Admissão</span>
+                        <span class="data-value">{{ funcionario.data_admissao|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Tipo de Contrato</span>
+                        <span class="data-value">{{ funcionario.get_tipo_contrato_display|default:"Não informado" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if funcionario.email or funcionario.telefone %}
+            <div class="data-section">
+                <h6>Contato:</h6>
+                <div class="contact-info">
+                    <p>
+                        {% if funcionario.email %}Email: {{ funcionario.email }}{% endif %}
+                        {% if funcionario.telefone %}<br>Telefone: {{ funcionario.telefone }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <h6>Impacto da Exclusão:</h6>
+                    <ul>
+                        <li>Histórico de presenças será mantido para fins de auditoria</li>
+                        <li>Registros de horas extras serão preservados</li>
+                        <li>Dados de folha salarial anteriores não serão afetados</li>
+                        <li>Relatórios e análises anteriores permanecerão intactos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <form method="post" style="display: contents;"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                <a href="#"rh:funcionario_detail' funcionario.id %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn btn-danger" 
+                        onclick="Tem certeza que deseja excluir este funcionário? Esta ação não pode ser desfeita.')" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-trash"></i>
+                    Confirmar Exclusão
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

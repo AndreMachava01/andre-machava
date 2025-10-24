@@ -1,0 +1,214 @@
+{% extends 'base_list.html' %}
+
+{% block title %}Gestão de Funcionários - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Funcionários</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-info">
+                <h1 class="page-title">
+                    <i class="fas fa-users"></i>
+                    Gestão de Funcionários
+                </h1>
+                <p class="page-description">
+                    Gerencie funcionários, departamentos e cargos da empresa
+                </p>
+            </div>
+            <div class="page-header-actions">
+                <a href="" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Funcionário
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ total_funcionarios }}</div>
+                <div class="stat-label">Total de Funcionários</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ funcionarios_ativos }}</div>
+                <div class="stat-label">Funcionários Ativos</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ total_departamentos }}</div>
+                <div class="stat-label">Departamentos</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-building"></i>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ total_cargos }}</div>
+                <div class="stat-label">Cargos</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='funcionarios' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if funcionarios %}
+            <div class="table-header">
+                <div class="table-title">
+                    <h3>Lista de Funcionários</h3>
+                    <span class="table-count">{{ funcionarios|length }} funcionário{{ funcionarios|length|pluralize }}</span>
+                </div>
+                <div class="table-actions">
+                    <a href="" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i>
+                        Adicionar
+                    </a>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Departamento</th>
+                            <th>Cargo</th>
+                            <th>Status</th>
+                            <th>Data Admissão</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for funcionario in funcionarios %}
+                        <tr>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar">
+                                        {% if funcionario.foto %}
+                                            <img src="{{ funcionario.foto.url }}" alt="{{ funcionario.nome }}">
+                                        {% else %}
+                                            <i class="fas fa-user"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-details">
+                                        <div class="user-name">{{ funcionario.nome }}</div>
+                                        <div class="user-code">{{ funcionario.codigo }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ funcionario.email }}</td>
+                            <td>
+                                <span class="badge badge-secondary">
+                                    {{ funcionario.departamento.nome|default:"N/A" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-info">
+                                    {{ funcionario.cargo.nome|default:"N/A" }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if funcionario.status == 'ATIVO' %}
+                                    <span class="badge badge-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ funcionario.data_admissao|date:"d/m/Y" }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'rh:funcionario_detail' funcionario.id %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Visualizar">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'rh:funcionario_edit' funcionario.id %}" 
+                                       class="btn btn-sm btn-outline-secondary" 
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'rh:funcionario_delete' funcionario.id %}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       title="Excluir"
+                                       onclick="return confirm('Tem certeza que deseja excluir este funcionário?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} funcionários
+                    </div>
+                    <nav class="pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1" class="page-link">Primeira</a>
+                            <a href="?page={{ page_obj.previous_page_number }}" class="page-link">Anterior</a>
+                        {% endif %}
+                        
+                        <span class="page-current">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="page-link">Próxima</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Última</a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-users"></i>
+                <h4>Nenhum funcionário encontrado</h4>
+                <p>Tente ajustar os filtros de busca ou adicione um novo funcionário.</p>
+                <a href="{% url 'rh:funcionario_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Funcionário
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

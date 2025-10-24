@@ -1,0 +1,27 @@
+{% comment %}
+PAGE HEADER UNIFICADO - TEMPLATE BASE
+Este template define a estrutura padrão para o cabeçalho de todas as páginas do sistema
+{% endcomment %}
+
+<!-- Page Header Unificado -->
+<div class="page-header">
+    <div class="page-header-content">
+        <div>
+            <h1 class="page-title">
+                <i class="{{ icon|default:'fas fa-cog' }}"></i>
+                {{ title|default:'Título da Página' }}
+            </h1>
+            <p class="page-subtitle">
+                {{ subtitle|default:'Descrição da página' }}
+            </p>
+        </div>
+        <div class="header-actions">
+            {% for action in actions %}
+                <a href="#" class="btn btn-responsive btn-responsive">
+                    <i class="{{ action.icon|default:'fas fa-link' }}"></i>
+                    {{ action.text }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>

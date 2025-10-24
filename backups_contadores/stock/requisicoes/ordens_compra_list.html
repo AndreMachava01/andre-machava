@@ -1,0 +1,237 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pendente { background: #fbbf24; color: #92400e; }
+.status-guardada { background: #6b7280; color: white; }
+.status-enviada { background: #3b82f6; color: white; }
+.status-recebida { background: #10b981; color: white; }
+.status-cancelada { background: #ef4444; color: white; }
+.status-rascunho { background: #9ca3af; color: white; }
+
+</style>
+
+{% extends 'base_list.html' %}
+
+{% load static %}
+
+{% block title %}Ordens de Compra{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/requisicoes/">
+            <i class="fas fa-clipboard-list"></i>
+            Requisições
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Ordens de Compra</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Ordens de Compra
+                </h1>
+                <p class="page-subtitle">
+                    Gerenciamento de todas as ordens de compra
+                </p>
+            </div>
+            <div class="page-actions">
+                <a href="{% url 'stock:requisicoes:compra_externa_create' %}" class="btn-action primary">
+                    <i class="fas fa-plus"></i> Nova Ordem
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_ordens }}</h3>
+                    <p class="stat-label">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ ordens_pendentes }}</h3>
+                    <p class="stat-label">Pendentes</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-save"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ ordens_guardadas }}</h3>
+                    <p class="stat-label">Guardadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ ordens_enviadas }}</h3>
+                    <p class="stat-label">Enviadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ ordens_recebidas }}</h3>
+                    <p class="stat-label">Recebidas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% include 'includes/filters_unified.html' with entity_name='ordens_compra' %}
+
+    <!-- Lista de Ordens -->
+    <div class="modern-container" style="background: #374151; border-radius: 20px; border: 1px solid #4b5563; box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); margin-bottom: 20px; padding: 0; overflow: hidden;">
+        <div class="hero-section" style="background: var(--purple-gradient); padding: 15px 30px; color: white; position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;">
+            <div class="hero-content" style="position: relative; z-index: 2; display: flex; align-items: center; gap: 20px;">
+                <h2 class="hero-title" style="font-size: 1.8rem; font-weight: 800; margin: 0; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                    <i class="fas fa-file-invoice"></i>
+                    Ordens de Compra
+                </h2>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            {% if ordens %}
+                <div class="modern-table-container" style="overflow-x: auto;">
+                    <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 12px; overflow: hidden;">
+                        <thead>
+                            <tr style="background: #374151;">
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Código</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Fornecedor</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Sucursal</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Itens</th>
+                                <th style="padding: 15px; text-align: right; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Valor</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Status</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Data</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #d1d5db; border-bottom: 1px solid #4b5563;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ordem in ordens %}
+                            <tr style="border-bottom: 1px solid #374151; transition: background-color 0.2s;">
+                                <td style="padding: 15px; color: #f8fafc; font-weight: 600;">{{ ordem.codigo }}</td>
+                                <td style="padding: 15px; color: #d1d5db;">{{ ordem.fornecedor.nome }}</td>
+                                <td style="padding: 15px; color: #d1d5db;">{{ ordem.sucursal_destino.nome }}</td>
+                                <td style="padding: 15px; text-align: center; color: #d1d5db;">{{ ordem.itens.count }}</td>
+                                <td style="padding: 15px; text-align: right; color: #10b981; font-weight: 600;">{{ ordem.valor_total|floatformat:2 }} MT</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <span class="status-badge status-{{ ordem.status|lower }}" style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        {{ ordem.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px; text-align: center; color: #9ca3af; font-size: 0.9rem;">{{ ordem.data_criacao|date:"d/m/Y" }}</td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <div style="display: flex; gap: 5px; justify-content: center;">
+                                        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem.id %}" 
+                                           style="background: #3b82f6; color: white; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'stock:requisicoes:ordem_compra_print' ordem.id %}" 
+                                           style="background: #10b981; color: white; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_fornecedor %}&fornecedor={{ current_fornecedor }}{% endif %}" 
+                           style="background: #4b5563; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    {% endif %}
+                    
+                    <span style="color: #d1d5db; font-weight: 600;">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_fornecedor %}&fornecedor={{ current_fornecedor }}{% endif %}" 
+                           style="background: #4b5563; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            Próxima <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                    <i class="fas fa-file-invoice" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3 style="margin-bottom: 10px;">Nenhuma ordem de compra encontrada</h3>
+                    <p>Não há ordens de compra que correspondam aos filtros aplicados.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

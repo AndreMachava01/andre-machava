@@ -1,0 +1,409 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Novo Checklist de Viatura{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-clipboard-check"></i>
+                Novo Checklist de Viatura
+            </h1>
+            <p>Avaliação completa do estado da viatura</p>
+        </div>
+        <div class="header-actions">
+            <a href="#"stock:logistica:checklist_print_blank' %}" target="_blank" class="btn-modern btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-alt"></i>Imprimir em Branco
+            </a>
+            <a href="#" class="btn-modern btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-section">
+        <form method="POST" class="checklist-form"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações Básicas
+                </h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="veiculo" class="form-label">Veículo <span class="required-field">*</span></label>
+                        <select name="veiculo" id="veiculo" class="form-control" required>
+                            <option value="">Selecione um veículo</option>
+                            {% for veiculo in veiculos %}
+                            <option value="{{ veiculo.id }}">{{ veiculo.nome }} ({{ veiculo.placa }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo" class="form-label">Tipo de Checklist <span class="required-field">*</span></label>
+                        <select name="tipo" id="tipo" class="form-control" required>
+                            <option value="">Selecione o tipo</option>
+                            {% for tipo_value, tipo_label in tipos %}
+                            <option value="{{ tipo_value }}">{{ tipo_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="motorista" class="form-label">Motorista <span class="required-field">*</span></label>
+                        <input type="text" name="motorista" id="motorista" class="form-control" required placeholder="Nome do motorista presente">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="local_inspecao" class="form-label">Local da Inspeção <span class="required-field">*</span></label>
+                        <input type="text" name="local_inspecao" id="local_inspecao" class="form-control" required placeholder="Local onde foi realizada a inspeção">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quilometragem" class="form-label">Quilometragem <span class="required-field">*</span></label>
+                        <input type="number" name="quilometragem" id="quilometragem" class="form-control" required placeholder="Quilometragem atual">
+                        <div class="help-text">Quilometragem no momento da inspeção</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview de Estatísticas -->
+            <div class="preview-section" id="preview-section" style="display: none;">
+                <div class="preview-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Estatísticas do Checklist
+                </div>
+                <div class="preview-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-itens">0</div>
+                        <div class="stat-label">Total de Itens</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="itens-ok">0</div>
+                        <div class="stat-label">Itens OK</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="itens-erro">0</div>
+                        <div class="stat-label">Itens com Problema</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="pontuacao">0%</div>
+                        <div class="stat-label">Pontuação</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens do Checklist -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-list-check"></i>
+                    Itens de Verificação
+                </h2>
+                
+                <div class="checklist-items">
+                    <!-- Sistema de Freios -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-stop-circle"></i>
+                            Sistema de Freios
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="freios_funcionando" id="freios_funcionando" checked>
+                            <label for="freios_funcionando">Freios funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="fluido_freio_ok" id="fluido_freio_ok" checked>
+                            <label for="fluido_freio_ok">Fluido de freio em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pastilhas_ok" id="pastilhas_ok" checked>
+                            <label for="pastilhas_ok">Pastilhas de freio em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Sistema de Direção -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-steering-wheel"></i>
+                            Sistema de Direção
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="direcao_funcionando" id="direcao_funcionando" checked>
+                            <label for="direcao_funcionando">Direção funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="fluido_direcao_ok" id="fluido_direcao_ok" checked>
+                            <label for="fluido_direcao_ok">Fluido de direção em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Sistema Elétrico -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-bolt"></i>
+                            Sistema Elétrico
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="bateria_ok" id="bateria_ok" checked>
+                            <label for="bateria_ok">Bateria em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="alternador_ok" id="alternador_ok" checked>
+                            <label for="alternador_ok">Alternador funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="farois_funcionando" id="farois_funcionando" checked>
+                            <label for="farois_funcionando">Faróis funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="luzes_sinalizacao" id="luzes_sinalizacao" checked>
+                            <label for="luzes_sinalizacao">Luzes de sinalização funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Pneus e Rodas -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-circle"></i>
+                            Pneus e Rodas
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pneus_pressao_ok" id="pneus_pressao_ok" checked>
+                            <label for="pneus_pressao_ok">Pressão dos pneus adequada</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pneus_desgaste_ok" id="pneus_desgaste_ok" checked>
+                            <label for="pneus_desgaste_ok">Desgaste dos pneus dentro do limite</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="rodas_ok" id="rodas_ok" checked>
+                            <label for="rodas_ok">Rodas em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Motor e Fluidos -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-cog"></i>
+                            Motor e Fluidos
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="motor_funcionando" id="motor_funcionando" checked>
+                            <label for="motor_funcionando">Motor funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="oleo_motor_ok" id="oleo_motor_ok" checked>
+                            <label for="oleo_motor_ok">Óleo do motor em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="agua_radiador_ok" id="agua_radiador_ok" checked>
+                            <label for="agua_radiador_ok">Água do radiador em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="combustivel_ok" id="combustivel_ok" checked>
+                            <label for="combustivel_ok">Combustível suficiente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Documentação -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-file-alt"></i>
+                            Documentação
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="documentos_ok" id="documentos_ok" checked>
+                            <label for="documentos_ok">Documentação do veículo em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="seguro_ok" id="seguro_ok" checked>
+                            <label for="seguro_ok">Seguro do veículo em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="licenciamento_ok" id="licenciamento_ok" checked>
+                            <label for="licenciamento_ok">Licenciamento em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Limpeza e Aparência -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-broom"></i>
+                            Limpeza e Aparência
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="limpeza_interior" id="limpeza_interior" checked>
+                            <label for="limpeza_interior">Interior limpo e organizado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="limpeza_exterior" id="limpeza_exterior" checked>
+                            <label for="limpeza_exterior">Exterior limpo</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Equipamentos de Segurança -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Equipamentos de Segurança
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="extintor_ok" id="extintor_ok" checked>
+                            <label for="extintor_ok">Extintor presente e em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="triangulo_ok" id="triangulo_ok" checked>
+                            <label for="triangulo_ok">Triângulo de sinalização presente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="macaco_ok" id="macaco_ok" checked>
+                            <label for="macaco_ok">Macaco presente e funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="chave_roda_ok" id="chave_roda_ok" checked>
+                            <label for="chave_roda_ok">Chave de roda presente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-comment-alt"></i>
+                    Observações e Recomendações
+                </h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea name="observacoes" id="observacoes" rows="4" class="form-control" placeholder="Observações sobre a inspeção..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recomendacoes" class="form-label">Recomendações</label>
+                        <textarea name="recomendacoes" id="recomendacoes" rows="4" class="form-control" placeholder="Recomendações para manutenção..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions">
+                <a href="#"stock:logistica:checklist_list' %}" class="btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>Salvar Checklist
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const previewSection = document.getElementById('preview-section');
+    
+    function updatePreview() {
+        const totalItens = checkboxes.length;
+        const itensOk = Array.from(checkboxes).filter(cb => cb.checked).length;
+        const itensErro = totalItens - itensOk;
+        const pontuacao = Math.round((itensOk / totalItens) * 100);
+        
+        document.getElementById('total-itens').textContent = totalItens;
+        document.getElementById('itens-ok').textContent = itensOk;
+        document.getElementById('itens-erro').textContent = itensErro;
+        document.getElementById("pontuacao").textContent = pontuacao || 0 + '%';
+        
+        // Mostrar preview se houver pelo menos um|default:0 items marcado
+        if (totalItens > 0) {
+            previewSection.style.display = 'block';
+        }
+        
+        // Atualizar indicadores visuais
+        checkboxes.forEach(checkbox => {
+            const indicator = checkbox.parentElement.querySelector('.status-indicator');
+            if (checkbox.checked) {
+                indicator.className = 'status-indicator status-ok';
+                indicator.textContent = '✓';
+            } else {
+                indicator.className = 'status-indicator status-error';
+                indicator.textContent = '✗';
+            }
+        });
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePreview);
+    });
+    
+    // Atualizar preview inicial
+    updatePreview();
+});
+</script>
+{% endblock %}

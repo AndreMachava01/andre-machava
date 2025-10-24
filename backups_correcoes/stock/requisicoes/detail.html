@@ -1,0 +1,758 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Requisição {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .page-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+    }
+
+    .page-header {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .page-header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title i {
+        font-size: 1.8rem;
+        opacity: 0.9;
+    }
+
+    .page-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-top: 8px;
+        font-weight: 400;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .btn-action {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-action:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-action.primary {
+        background: rgba(255, 255, 255, 0.9);
+        color: #8b5cf6;
+        font-weight: 600;
+    }
+
+    .btn-action.primary:hover {
+        background: white;
+        color: #7c3aed;
+    }
+
+    .page-content {
+        padding: 30px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .info-card {
+        background: #4b5563;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+    }
+
+    .info-card h3 {
+        color: #f9fafb;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-card h3 i {
+        color: #8b5cf6;
+        font-size: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #9ca3af;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: #f9fafb;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-rascunho {
+        background: #6b7280;
+        color: white;
+    }
+
+    .status-pendente {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .status-aprovada {
+        background: #10b981;
+        color: white;
+    }
+
+    .status-rejeitada {
+        background: #ef4444;
+        color: white;
+    }
+
+    .status-atendida {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .items-section {
+        background: #4b5563;
+        border-radius: 12px;
+        border: 1px solid #6b7280;
+        overflow: hidden;
+    }
+
+    .items-header {
+        background: #374151;
+        padding: 20px;
+        border-bottom: 1px solid #6b7280;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .items-title {
+        color: #f9fafb;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .items-title i {
+        color: #8b5cf6;
+    }
+
+    .btn-add-item {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-add-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+        background: transparent;
+    }
+
+    .table-modern thead th {
+        background: #374151;
+        color: #f9fafb;
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-bottom: 2px solid #6b7280;
+    }
+
+    .table-modern tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #6b7280;
+        color: #f9fafb;
+        font-size: 0.9rem;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #374151;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .bg-info {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .cell-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-action-small {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action-small:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-action-small.danger {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+    }
+
+    .btn-action-small.danger:hover {
+        background: rgba(239, 68, 68, 0.3);
+        color: #f87171;
+    }
+
+    .no-items {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+    }
+
+    .no-items i {
+        font-size: 3rem;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .no-items h3 {
+        color: #f9fafb;
+        margin-bottom: 8px;
+    }
+
+    .no-items p {
+        margin-bottom: 20px;
+    }
+
+    .actions-section {
+        background: #4b5563;
+        border-radius: 12px;
+        border: 1px solid #6b7280;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .actions-title {
+        color: #f9fafb;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .actions-title i {
+        color: #8b5cf6;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .btn-action-large {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-action-large:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-action-large.success {
+        background: var(--success-gradient);
+    }
+
+    .btn-action-large.warning {
+        background: var(--warning-gradient);
+    }
+
+    .btn-action-large.danger {
+        background: var(--danger-gradient);
+    }
+
+    @media (max-width: 768px) {
+        .page-container {
+            margin: 5px;
+            min-height: calc(100vh - 10px);
+        }
+
+        .page-header {
+            padding: 15px 20px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .page-content {
+            padding: 20px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .items-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: stretch;
+        }
+
+        .table-modern {
+            font-size: 0.8rem;
+        }
+
+        .table-modern thead th,
+        .table-modern tbody td {
+            padding: 12px 8px;
+        }
+
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-shopping-cart"></i>
+                    Requisição {{ requisicao.codigo }}
+                </h1>
+                <p class="page-subtitle">Detalhes da requisição de materiais</p>
+            </div>
+            <div class="page-actions">
+                <a href="{% url 'stock:requisicoes:list' %}" class="btn-action">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                {% if requisicao.status == 'RASCUNHO' %}
+                    <a href="{% url 'stock:requisicoes:add_item_form' requisicao.id %}" class="btn-action primary">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Item
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        <!-- Information Cards -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Informações Gerais</h3>
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ requisicao.codigo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-{{ requisicao.status|lower }}">
+                        {{ requisicao.get_status_display }}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data de Criação:</span>
+                    <span class="info-value">{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Criado por:</span>
+                    <span class="info-value">{{ requisicao.criado_por.username|default:"-" }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-exchange-alt"></i> Sucursais</h3>
+                <div class="info-item">
+                    <span class="info-label">Solicitante:</span>
+                    <span class="info-value">{{ requisicao.sucursal_origem.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fornecedora:</span>
+                    <span class="info-value">
+                        {% if requisicao.sucursal_destino %}
+                            {{ requisicao.sucursal_destino.nome }}
+                        {% elif transferencia_associada %}
+                            {{ transferencia_associada.sucursal_origem.nome }}
+                        {% else %}
+                            <span class="text-muted">A determinar</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if requisicao.data_aprovacao %}
+                <div class="info-item">
+                    <span class="info-label">Data de Aprovação:</span>
+                    <span class="info-value">{{ requisicao.data_aprovacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Aprovado por:</span>
+                    <span class="info-value">{{ requisicao.aprovado_por.username|default:"-" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-calculator"></i> Resumo Financeiro</h3>
+                <div class="info-item">
+                    <span class="info-label">Total de Itens:</span>
+                    <span class="info-value">{{ requisicao.itens.count }} item(s)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor Total:</span>
+                    <span class="info-value">{{ requisicao.valor_total|floatformat:2 }} MT</span>
+                </div>
+                {% if requisicao.valor_atendido > 0 %}
+                <div class="info-item">
+                    <span class="info-label">Valor Atendido:</span>
+                    <span class="info-value">{{ requisicao.valor_atendido|floatformat:2 }} MT</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Items Section -->
+        <div class="items-section">
+            <div class="items-header">
+                <h3 class="items-title">
+                    <i class="fas fa-list"></i> Itens da Requisição
+                </h3>
+                {% if requisicao.status == 'RASCUNHO' %}
+                    <a href="{% url 'stock:requisicoes:add_item_form' requisicao.id %}" class="btn-add-item">
+                        <i class="fas fa-plus"></i>Adicionar Item
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if requisicao.itens.exists %}
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Quantidade Solicitada</th>
+                            <th>Quantidade Atendida</th>
+                            <th>Valor Unitário</th>
+                            <th>Valor Total</th>
+                            {% if requisicao.status == 'RASCUNHO' %}
+                                <th>Ações</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in requisicao.itens.all %}
+                        <tr>
+                            <td>
+                                <strong>{% if item.item %}{{ item.item.nome }}{% else %}{{ item.produto.nome }}{% endif %}</strong>
+                            </td>
+                            <td>{% if item.item %}{{ item.item.codigo }}{% else %}{{ item.produto.codigo }}{% endif %}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {% if item.item %}{{ item.item.get_tipo_display }}{% else %}Produto{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ item.quantidade_solicitada }}</td>
+                            <td>
+                                {% if item.quantidade_atendida > 0 %}
+                                    <span class="badge bg-success">{{ item.quantidade_atendida }}</span>
+                                    {% if transferencia_associada and transferencia_associada.status == 'RECEBIDA' %}
+                                        <span class="badge bg-secondary" style="margin-left: 3px; font-size: 9px;" title="Transferência recebida - quantidade bloqueada">🔒</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-warning">0</span>
+                                {% endif %}
+                                {% if requisicao.status == 'APROVADA' or requisicao.status == 'ATENDIDA' %}
+                                    {% if not transferencia_associada or transferencia_associada.status != 'RECEBIDA' %}
+                                        <br>
+                                        <a href="{% url 'stock:requisicoes:edit_quantidade_atendida' requisicao.id item.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Editar quantidade atendida"
+                                           style="margin-top: 5px; padding: 2px 6px; font-size: 10px;">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{% if item.item %}{{ item.item.preco_custo|floatformat:2 }}{% else %}{{ item.produto.preco_custo|floatformat:2 }}{% endif %} MT</td>
+                            <td>{{ item.valor_total|floatformat:2 }} MT</td>
+                            {% if requisicao.status == 'RASCUNHO' %}
+                                <td>
+                                    <form method="post" action="{% url 'stock:requisicoes:remove_item' requisicao.id item.id %}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Tem certeza que deseja remover este item?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-action btn-remove" title="Remover item">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-items">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h4>Nenhum item adicionado</h4>
+                    <p>Esta requisição ainda não possui itens.</p>
+                    {% if requisicao.status == 'RASCUNHO' %}
+                        <a href="{% url 'stock:requisicoes:add_item_form' requisicao.id %}" class="btn-add-item">
+                            <i class="fas fa-plus"></i>Adicionar Primeiro Item
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions Section -->
+        {% if requisicao.status == 'RASCUNHO' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                {% if requisicao.itens.exists %}
+                
+                {% endif %}
+                
+            </div>
+        </div>
+        {% elif requisicao.status == 'PENDENTE' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                
+                
+                
+            </div>
+        </div>
+        {% elif requisicao.status == 'APROVADA' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                <a href="{% url 'stock:requisicoes:transfer_preview' requisicao.id %}" class="btn-action-large btn-transfer">
+                    <i class="fas fa-exchange-alt"></i>Transferir Stock Interno
+                </a>
+                
+            </div>
+        </div>
+        {% elif requisicao.status == 'ATENDIDA' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                <a href="{% url 'stock:requisicoes:guia_transferencia_preview' requisicao.id %}" class="btn-action-large info">
+                    <i class="fas fa-file-export"></i><strong>GUIA DE TRANSFERÊNCIA</strong>
+                </a>
+                <a href="{% url 'stock:requisicoes:guia_recebimento_preview' requisicao.id %}" class="btn-action-large info">
+                    <i class="fas fa-file-import"></i><strong>GUIA DE RECEBIMENTO</strong>
+                </a>
+                {% if transferencia_associada and transferencia_associada.status == 'ENVIADA' %}
+                <a href="{% url 'stock:transferencias:receber' transferencia_associada.id %}" class="btn-action-large success">
+                    <i class="fas fa-check-circle"></i><strong>CONFIRMAR RECEBIMENTO</strong>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% elif requisicao.status == 'PENDENTE' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                
+            </div>
+        </div>
+        {% elif requisicao.status == 'REJEITADA' %}
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i> Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Observações -->
+        {% if requisicao.observacoes %}
+        <div class="info-card">
+            <h3><i class="fas fa-comment"></i> Observações</h3>
+            <p style="color: #e5e7eb; line-height: 1.6;">{{ requisicao.observacoes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

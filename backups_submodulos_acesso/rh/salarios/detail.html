@@ -1,0 +1,99 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ title|default:"Detalhes" }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'rh:main' %}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="">Salários</a>
+        <span class="separator">›</span>
+        <span class="current">Detalhes</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>
+                <i class="fas fa-eye"></i>
+                Detalhes do Salário
+            </h1>
+        </div>
+        <div class="action-btns -responsive">
+            <a href="#"rh:salarios' %}" class="btn btn-outline btn-responsive -responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+            <a href="#" class="btn btn btn-primary btn-responsive -responsive">
+                <i class="fas fa-edit"></i>
+                Editar
+            </a>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="card">
+            <div class="card-header">
+                <h3>Informações do Salário</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Funcionário:</span>
+                    <span class="info-value">{{ salario.funcionario.nome_completo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ salario.funcionario.codigo_funcionario }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Valor Base:</span>
+                    <span class="info-value">{{ salario.valor_base }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Salário Líquido:</span>
+                    <span class="info-value">{{ salario.salario_liquido }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="badge bg-success">{{ salario.get_status_display }}</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data de Início:</span>
+                    <span class="info-value">{{ salario.data_inicio|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data de Fim:</span>
+                    <span class="info-value">
+                        {% if salario.data_fim %}
+                            {{ salario.data_fim|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if salario.observacoes %}
+                <div class="info-row">
+                    <span class="info-label">Observações:</span>
+                    <span class="info-value">{{ salario.observacoes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

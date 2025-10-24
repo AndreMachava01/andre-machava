@@ -1,0 +1,180 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Confirmar Ordem de Compra{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/requisicoes/">
+            <i class="fas fa-clipboard-list"></i>
+            Requisições
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">
+            {{ ordem_compra.codigo }}
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Confirmar Ordem</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Confirmar Ordem de Compra"
+    subtitle="{{ ordem_compra.codigo }} - {{ ordem_compra.fornecedor.nome }}"
+    icon="fas fa-check-circle"
+%}    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Informações da Ordem -->
+        <div class="info-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Informações da Ordem
+            </h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Código da Ordem</div>
+                    <div class="info-value">{{ ordem_compra.codigo }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Fornecedor</div>
+                    <div class="info-value">{{ ordem_compra.fornecedor.nome }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Valor|default:0 total</div>
+                    <div class="info-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total de Itens</div>
+                    <div class="info-value">{{ ordem_compra.itens.count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seleção do Tipo de Recebimento -->
+        <div class="info-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-shipping-fast"></i>
+                Escolha o Tipo de Recebimento
+            </h3>
+            <p class="info-card-subtitle">
+                Defina como a ordem de compra será recebida:
+            </p>
+            
+            <form method="post" class="tipo-recebimento-form"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="tipo-options">
+                    <!-- Opção COLETAR -->
+                    <div class="tipo-option" onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                        <i class="fas fa-truck tipo-icon" style="color: #10b981;"></i>
+                        <h4 class="tipo-title">COLETAR</h4>
+                        <p class="tipo-description">
+                            A empresa irá buscar os produtos no fornecedor.<br>
+                            Será criada uma notificação para a logística.
+                        </p>
+                        <div class="tipo-radio">
+                            <input type="radio" name="tipo_recebimento" value="COLETAR" id="coletar">
+                            <label for="coletar">Selecionar Coleta</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Opção FORNECIMENTO -->
+                    <div class="tipo-option" onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                        <i class="fas fa-box tipo-icon" style="color: #3b82f6;"></i>
+                        <h4 class="tipo-title">FORNECIMENTO</h4>
+                        <p class="tipo-description">
+                            O fornecedor entregará os produtos na empresa.<br>
+                            Aguardar entrega para receber o stock.
+                        </p>
+                        <div class="tipo-radio">
+                            <input type="radio" name="tipo_recebimento" value="FORNECIMENTO" id="fornecimento">
+                            <label for="fornecimento">Selecionar Fornecimento</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informação adicional -->
+                <div class="info-adicional">
+                    <div class="info-adicional-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Importante</span>
+                    </div>
+                    <p class="info-adicional-text">
+                        Após confirmar o tipo de recebimento, a ordem será aprovada e você poderá receber o stock quando os produtos chegarem.
+                    </p>
+                </div>
+                
+                <!-- Botões de ação -->
+                <div class="form-actions">
+                    <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-check"></i> Confirmar Ordem
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectTipo(tipo) {
+    // Remover seleção anterior
+    document.querySelectorAll('.tipo-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Selecionar nova opção
+    const selectedOption = event.currentTarget;
+    selectedOption.classList.add('selected');
+    
+    // Marcar radio button
+    document.querySelector(`input[value="${tipo}"]`).checked = true;
+}
+
+// Validação do formulário
+document.querySelector('.tipo-recebimento-form').addEventListener('submit', function(e) {
+    const tipoSelecionado = document.querySelector('input[name="tipo_recebimento"]:checked');
+    
+    if (!tipoSelecionado) {
+        e.preventDefault();
+        alert('Por favor, selecione um tipo de recebimento!');
+        return false;
+    }
+    
+    const confirmacao = confirm(`Confirmar ordem para ${tipoSelecionado.value}?`);
+    if (!confirmacao) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Auto-selecionar primeira opção ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    const primeiraOpcao = document.querySelector('.tipo-option');
+    if (primeiraOpcao) {
+        primeiraOpcao.click();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,178 @@
+
+
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Guia de Recebimento - {{ transferencia.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
+    </a>
+    <a href="#"stock:requisicoes:list' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-list"></i>Lista de Requisições
+    </a>
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>GUIA DE RECEBIMENTO</h1>
+            <h2>{{ transferencia.codigo }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ transferencia.data_criacao|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Requisição Origem:</strong> {{ requisicao.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Transferência:</strong> {{ transferencia.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Data da Requisição:</strong> {{ requisicao.data_criacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Data da Transferência:</strong> {{ transferencia.data_criacao|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Data de Recebimento:</strong> {{ transferencia.data_recebimento|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> {{ transferencia.get_status_display }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações da Transferência -->
+    <div class="section">
+        <h3>Informações da Transferência</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Sucursal Origem:</strong> {{ transferencia.sucursal_origem.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Sucursal Destino:</strong> {{ transferencia.sucursal_destino.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Total de Itens:</strong> {{ itens_transferencia.count }}
+            </div>
+            <div class="info-item">
+                <strong>Valor|default:0 total:</strong> {{ valor_total|floatformat:2 }} MT
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens Recebidos -->
+    <div class="section">
+        <h3>Itens Recebidos</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Código</th>
+                    <th>Quantidade Solicitada</th>
+                    <th>Quantidade Recebida</th>
+                    <th>Preço Unitário</th>
+                    <th>Valor|default:0 total</th>
+                    <th>Recebido</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for items in itens_transferencia  %}
+                <tr>
+                    <td>{{ item.item.nome }}</td>
+                    <td>{{ item.item.codigo }}</td>
+                    <td class="text-center">{{ item.quantidade_solicitada }}</td>
+                    <td class="text-center">{{ item.quantidade_recebida|default:item.quantidade_solicitada }}</td>
+                    <td class="text-right">{{ item.item.preco_custo|floatformat:2 }} MT</td>
+                    <td class="text-right">{{ item.valor_item|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        <input type="checkbox" class="recebido-checkbox" 
+                               {% if items.quantidade_recebida  %}checked{% endif %}>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <th colspan="6" class="text-right">Total Geral:</th>
+                    <th class="text-right">{{ valor_total|floatformat:2 }} MT</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Resumo do Recebimento -->
+    <div class="section">
+        <h3>Resumo do Recebimento</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Status:</strong> {{ transferencia.status }}
+            </div>
+            <div class="summary-item">
+                <strong>Data de Recebimento:</strong> {{ transferencia.data_recebimento|date:"d/m/Y H:i" }}
+            </div>
+            <div class="summary-item">
+                <strong>Total de Itens:</strong> {{ itens_transferencia.count }}
+            </div>
+            <div class="summary-item">
+                <strong>Valor|default:0 total:</strong> {{ valor_total|floatformat:2 }} MT
+            </div>
+        </div>
+    </div>
+
+    <!-- Observações -->
+    {% if transferencia.observacoes %}
+    <div class="section">
+        <h3>Observações</h3>
+        <p class="observacoes-text">{{ transferencia.observacoes }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Assinaturas -->
+    <div class="signatures">
+        <div class="signature-box">
+            <p>Responsável pelo Envio</p>
+            <div class="signature-line"></div>
+            <p class="signature-name">{{ transferencia.sucursal_origem.nome }}</p>
+        </div>
+        <div class="signature-box">
+            <p>Responsável pelo Recebimento</p>
+            <div class="signature-line"></div>
+            <p class="signature-name">{{ transferencia.sucursal_destino.nome }}</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="document-footer">
+        <p>Documento gerado automaticamente em {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-print quando a página carrega
+    window.print();
+});
+</script>
+{% endblock %}

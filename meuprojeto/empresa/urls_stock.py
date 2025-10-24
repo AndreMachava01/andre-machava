@@ -114,4 +114,43 @@ urlpatterns = [
     
     # Logística (integrada ao módulo de stock)
     path('logistica/', include('meuprojeto.empresa.urls_logistica', namespace='logistica')),
+    
+    # Roteirização e Planejamento
+    path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
+    
+    # Exceções Logísticas
+    path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
+    
+    # POD (Prova de Entrega)
+    path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
+    
+    # Alocação Automática
+    path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
+    
+    # Custos e Faturamento
+    path('cost-billing/', include('meuprojeto.empresa.urls_cost_billing', namespace='cost_billing')),
+    
+    # Dados Mestres (Masterdata)
+    path('masterdata/', include('meuprojeto.empresa.urls_masterdata', namespace='masterdata')),
+    
+    # Observabilidade
+    path('observability/', include('meuprojeto.empresa.urls_observability', namespace='observability')),
+    
+    # Escalabilidade
+    path('scalability/', include('meuprojeto.empresa.urls_scalability', namespace='scalability')),
+    
+    # Geolocalização
+    path('geolocation/', include('meuprojeto.empresa.urls_geolocation', namespace='geolocation')),
+    
+    # UX Mobile
+    path('mobile/', include('meuprojeto.empresa.urls_mobile', namespace='mobile')),
+    
+    # Relatórios Logísticos
+    path('reports/', include('meuprojeto.empresa.urls_reports', namespace='reports')),
+    
+    # Notificações Push
+    # path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
+    
+    # Integrações com Transportadoras
+    # path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
 ]

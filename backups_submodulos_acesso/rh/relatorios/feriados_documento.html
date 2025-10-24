@@ -1,0 +1,424 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Relatório de Feriados{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Estilos para filtros */
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.875rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-start;
+    }
+
+    @media print {
+        .action-buttons,
+        
+    }
+
+    /* Estilos para o documento */
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-card);
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background: var(--bg-card);
+        }
+
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        
+        .items-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .document-footer p {
+            margin: 2px 0;
+        }
+    }
+    
+    @media screen {
+
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        
+        .items-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .status-badge {
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .document-footer {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            margin-top: 10px;
+            color: #6c757d;
+            font-size: 7px;
+        }
+        
+        .document-footer p {
+            margin: 2px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-btns -responsive">
+    <a href="#"rh:relatorios' %}" class="btn btn btn-secondary btn-responsive -responsive">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="#"rh:main' %}" class="btn btn-outline btn-responsive -responsive">
+        <i class="fas fa-users"></i>RH
+    </a>
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick=" class="btn btn-primary" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<!-- Filtros -->
+{% include 'includes/filters_unified.html' with entity_name='feriados_relatorio' %}
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE FERIADOS</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Calendário de Feriados
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_relatorio|date:"Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Feriados:</strong> {{ total_feriados }}
+            </div>
+            <div class="summary-item">
+                <strong>Feriados Ativos:</strong> {{ feriados_ativos }}
+            </div>
+            <div class="summary-item">
+                <strong>Feriados Inativos:</strong> {{ feriados_inativos }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Feriados Próximos -->
+    {% if feriados_proximos %}
+    <div class="section">
+        <h3>📅 Próximos Feriados (30 dias)</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feriado in feriados_proximos %}
+                <tr>
+                    <td class="text-center">{{ feriado.data|date:"d/m/Y" }}</td>
+                    <td>{{ feriado.nome }}</td>
+                    <td>{{ feriado.get_tipo_display }}</td>
+                    <td class="text-center">
+                        <span class="status-badge status-active">Ativo</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas por Tipo -->
+    {% if feriados_por_tipo %}
+    <div class="section">
+        <h3>📊 Feriados por Tipo</h3>
+        
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas por Ano -->
+    {% if feriados_por_ano %}
+    <div class="section">
+        <h3>📈 Feriados por Ano</h3>
+        
+    </div>
+    {% endif %}
+
+    <!-- Lista Completa de Feriados -->
+    <div class="section">
+        <h3>📋 Lista Completa de Feriados</h3>
+        
+    </div>
+
+    <!-- Document Footer -->
+    <div class="document-footer">
+        <p>Relatório gerado automaticamente pelo Sistema de Gestão Empresarial</p>
+        <p>Data: {{ data_relatorio|date:"d/m/Y H:i" }} | Usuário: {{ request.user.get_full_name|default:request.user.username }}</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,465 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        
+    }
+
+    @media print {
+        .navigation-buttons {
+            display: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 5px;
+            background: white;
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+            margin-bottom: 3px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: #333;
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 12px;
+            font-weight: normal;
+            margin: 2px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 3px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #333;
+            border-bottom: 1px solid #10b981;
+            padding-bottom: 2px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #dee2e6;
+            border-radius: 1px;
+            font-size: 7px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2px;
+            border: 1px solid #333;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            padding: 2px;
+            text-align: left;
+            font-size: 7px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+        
+        .items-table td {
+            padding: 2px;
+            border: 1px solid #333;
+            font-size: 7px;
+            vertical-align: top;
+        }
+        
+        .document-footer {
+            margin-top: 3px;
+            padding-top: 2px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            color: #999;
+            font-size: 6px;
+        }
+    }
+
+    @media screen {
+        body {
+            background: #1f2937;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-nav:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-nav i {
+            font-size: 16px;
+        }
+
+        .company-info h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        .section h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+
+        .items-table th {
+            background: #d4edda;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
+        
+        .items-table td {
+            padding: 8px;
+            border: 1px solid #333;
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+    }
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block extra_style %}
+
+{% block title %}Relatório do Inventário - {{ inventario.codigo }}{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Ver Detalhes
+    </a>
+    <a href="{% url 'stock:inventario:list' %}" class="btn btn-outline">
+        <i class="fas fa-list"></i>Lista de Inventários
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>Relatório de Inventário Físico</h1>
+            <h2>{{ inventario.codigo }} - {{ inventario.nome }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ inventario.data_criacao|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Informações Essenciais -->
+    <div class="section">
+        <h3>📋 Informações do Inventário</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Código:</strong> {{ inventario.codigo }}
+            </div>
+            <div class="info-item">
+                <strong>Nome:</strong> {{ inventario.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Sucursal:</strong> {{ inventario.sucursal.nome }}
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong> {{ inventario.get_status_display }}
+            </div>
+            <div class="info-item">
+                <strong>Data Início:</strong> {{ inventario.data_inicio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Data Fim:</strong> 
+                {% if inventario.data_fim %}
+                    {{ inventario.data_fim|date:"d/m/Y H:i" }}
+                {% else %}
+                    Em andamento
+                {% endif %}
+            </div>
+            <div class="info-item">
+                <strong>Responsável:</strong> 
+                {% if inventario.usuario_responsavel %}
+                    {{ inventario.usuario_responsavel.get_full_name|default:inventario.usuario_responsavel.username }}
+                {% else %}
+                    Não informado
+                {% endif %}
+            </div>
+            <div class="info-item">
+                <strong>Criado por:</strong> 
+                {% if inventario.usuario_criador %}
+                    {{ inventario.usuario_criador.get_full_name|default:inventario.usuario_criador.username }}
+                {% else %}
+                    Não informado
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="section">
+        <h3>📊 Resumo Estatístico</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Total de Itens:</strong> {{ inventario.total_itens }}
+            </div>
+            <div class="info-item">
+                <strong>Itens Contados:</strong> {{ inventario.itens_contados }}
+            </div>
+            <div class="info-item">
+                <strong>Progresso:</strong> {{ inventario.progresso_percentual }}%
+            </div>
+            <div class="info-item">
+                <strong>Itens com Diferenças:</strong> {{ contagem_stats.itens_com_diferenca }}
+            </div>
+            <div class="info-item">
+                <strong>Itens Conformes:</strong> {{ contagem_stats.itens_conformes }}
+            </div>
+            <div class="info-item">
+                <strong>Fase Atual:</strong> {{ contagem_stats.fase_atual }}ª
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens do Inventário -->
+    <div class="section">
+        <h3>📦 Itens do Inventário</h3>
+        {% if inventario.itens_inventario.exists %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Código</th>
+                    <th style="width: 25%;">Item</th>
+                    <th style="width: 15%;">Sistema</th>
+                    <th style="width: 15%;">Contado</th>
+                    <th style="width: 10%;">Diferença</th>
+                    <th style="width: 10%;">Contagens</th>
+                    <th style="width: 15%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventario.itens_inventario.all %}
+                <tr>
+                    <td style="text-align: center; font-size: 7px; font-weight: bold;">{{ item.item.codigo }}</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: bold; font-size: 7px;">{{ item.item.nome }}</span>
+                            <span style="font-size: 6px; color: #666;">{{ item.item.get_tipo_display|default:"Item" }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 7px;">{{ item.quantidade_sistema }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 7px;">
+                            {% if item.quantidade_contada %}
+                                {{ item.quantidade_contada }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 7px; color: {% if item.diferenca > 0 %}#10b981{% elif item.diferenca < 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                            {% if item.quantidade_contada %}
+                                {% if item.diferenca > 0 %}+{% endif %}{{ item.diferenca }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold; font-size: 7px;">{{ item.numero_contagem }}/3</span>
+                    </td>
+                    <td style="text-align: center;">
+                        {% if item.contagem_finalizada %}
+                            <span style="font-size: 6px; color: #10b981; font-weight: bold;">Finalizado</span>
+                        {% elif item.precisa_recontagem %}
+                            <span style="font-size: 6px; color: #f59e0b; font-weight: bold;">Recontagem</span>
+                        {% elif item.quantidade_contada %}
+                            <span style="font-size: 6px; color: #3b82f6; font-weight: bold;">Contado</span>
+                        {% else %}
+                            <span style="font-size: 6px; color: #6b7280; font-weight: bold;">Pendente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 20px; font-size: 8px;">
+            <strong>Nenhum item encontrado</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Histórico de Contagens -->
+    {% if historico_contagens %}
+    <div class="section">
+        <h3>📝 Histórico de Contagens</h3>
+        
+    </div>
+    {% endif %}
+
+    <!-- Observações -->
+    {% if inventario.observacoes %}
+    <div class="section">
+        <h3>📝 Observações</h3>
+        <div style="font-size: 8px; line-height: 1.4; padding: 10px; background: #d4edda; border-radius: 4px;">
+            {{ inventario.observacoes }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Sistema CONCEPTION - Relatório gerado em {{ inventario.data_criacao|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% endblock %}

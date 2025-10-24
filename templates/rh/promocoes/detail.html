@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Detalhes da Promoção{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -20,8 +12,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="breadcrumb-nav">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'rh:promocoes' %}">Promoções</a></li>
+            <li class="breadcrumb-item"><a href="{% url "rh:main" %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Promoções</a></li>
             <li class="breadcrumb-item active">{{ promocao.funcionario.nome_completo }}</li>
         </ol>
     </nav>
@@ -37,7 +29,7 @@
                     {{ promocao.funcionario.nome_completo }} - {{ promocao.get_tipo_display }}
                 </p>
             </div>
-            <a href="{% url 'rh:promocoes' %}" class="btn btn-outline-secondary">
+            <a href="#" class="btn btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>
@@ -239,22 +231,22 @@
                     <div class="card-body">
                         <div class="actions">
                             {% if promocao.status == 'PENDENTE' %}
-                                <a href="{% url 'rh:promocao_edit' promocao.id %}" class="btn btn-warning">
+                                <a href="#"rh:promocao_edit' promocao.id %}" class="btn btn btn btn btn btn btn btn btn-warning btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-edit me-2"></i>Editar
                                 </a>
-                                <a href="{% url 'rh:promocao_aprovar' promocao.id %}" class="btn btn-success">
+                                <a href="#"rh:promocao_aprovar' promocao.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-check me-2"></i>Aprovar
                                 </a>
-                                <a href="{% url 'rh:promocao_rejeitar' promocao.id %}" class="btn btn-danger">
+                                <a href="#"rh:promocao_rejeitar' promocao.id %}" class="btn btn btn btn btn btn btn btn btn-danger btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-times me-2"></i>Rejeitar
                                 </a>
                             {% elif promocao.status == 'APROVADO' %}
-                                <a href="{% url 'rh:promocao_implementar' promocao.id %}" class="btn btn-primary">
+                                <a href="#"rh:promocao_implementar' promocao.id %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-play me-2"></i>Implementar
                                 </a>
                             {% endif %}
                             
-                            <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary">
+                            <a href="#"rh:promocoes' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-list me-2"></i>Lista de Promoções
                             </a>
                         </div>

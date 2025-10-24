@@ -1,0 +1,723 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Gestão de Horas Extras{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="horas-extras-container">
+    <div class="header-section">
+        <h1 class="header-title">
+            <i class="fas fa-clock"></i>
+            Gestão de Horas Extras
+        </h1>
+        <p>Registre ou edite horas extras dos funcionários</p>
+        
+        <div style="margin-top: 15px;">
+            <a href="{% url 'rh:horas_extras' %}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h4>
+            <i class="fas fa-info-circle"></i>
+            Informações Importantes
+        </h4>
+        <p>
+            <strong>Horas Extras:</strong> Registre apenas as horas trabalhadas além do horário normal de trabalho.<br>
+            <strong>Formato:</strong> Use números decimais (ex: 2.5 para 2 horas e 30 minutos).<br>
+            <strong>Observações:</strong> Descreva o motivo das horas extras ou atividades realizadas.
+        </p>
+    </div>
+
+    <div class="form-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">
+                <i class="fas fa-plus-circle"></i>
+                Registrar Horas Extras
+            </h3>
+            <a href="{% url 'rh:horas_extras' %}" class="add-button" style="background: #6b7280;">
+                <i class="fas fa-list"></i>
+                Ver Lista
+            </a>
+        </div>
+        
+        <form method="post" id="horasExtrasForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="funcionario">
+                    Funcionário <span class="required">*</span>
+                </label>
+                <select name="funcionario" id="funcionario" required>
+                    <option value="">Selecione um funcionário</option>
+                    {% for funcionario in funcionarios %}
+                    <option value="{{ funcionario.id }}">{{ funcionario.nome_completo }} - {{ funcionario.codigo_funcionario }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Selecione o funcionário que trabalhou horas extras</div>
+            </div>
+
+            <div class="form-group">
+                <label for="data">
+                    Data <span class="required">*</span>
+                </label>
+                <input type="date" name="data" id="data" required value="{% now 'Y-m-d' %}">
+                <div class="help-text">Data em que as horas extras foram trabalhadas</div>
+            </div>
+
+            <!-- Campos separados para cada tipo de horas extras -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-sun"></i> Horas Extras Diurnas (50%)
+                </label>
+                <input type="number" name="horas_diurnas" id="horas_diurnas" step="0.5" min="0" max="24" placeholder="Ex: 2.0" value="0">
+                <div class="help-text">Horas trabalhadas entre 8h00 e 20h00</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-moon"></i> Horas Extras Noturnas (100%)
+                </label>
+                <input type="number" name="horas_noturnas" id="horas_noturnas" step="0.5" min="0" max="24" placeholder="Ex: 3.0" value="0">
+                <div class="help-text">Horas trabalhadas entre 20h00 e 8h00</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-star"></i> Horas Extras Extraordinárias (100%)
+                </label>
+                <input type="number" name="horas_extraordinarias" id="horas_extraordinarias" step="0.5" min="0" max="24" placeholder="Ex: 0.0" value="0">
+                <div class="help-text">Horas trabalhadas em feriados e fins de semana</div>
+            </div>
+
+            <!-- Botão para detectar automaticamente -->
+            <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <input type="checkbox" id="auto_detect" checked>
+                    <label for="auto_detect" style="margin: 0; font-weight: normal; color: #666;">
+                        <i class="fas fa-magic"></i> Detectar automaticamente baseado no horário
+                    </label>
+                    <button type="button" id="btn_detectar" class="btn btn-sm" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 12px;">
+                        <i class="fas fa-sync-alt"></i> Detectar
+                    </button>
+                </div>
+                <div id="tipo_help" class="help-text">O sistema detectará automaticamente as horas por período baseado no horário de início e fim</div>
+                <div id="tipo_justificativa" style="margin-top: 5px; padding: 8px; background: #e8f5e8; border-radius: 4px; font-size: 12px; color: #2d5a2d; display: none;">
+                    <i class="fas fa-info-circle"></i> <span id="justificativa_text"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="hora_inicio">
+                    Hora de Início <span class="required">*</span>
+                </label>
+                <input type="time" name="hora_inicio" id="hora_inicio" required>
+                <div class="help-text">Hora de início das horas extras</div>
+            </div>
+
+            <div class="form-group">
+                <label for="hora_fim">
+                    Hora de Fim <span class="required">*</span>
+                </label>
+                <input type="time" name="hora_fim" id="hora_fim" required>
+                <div class="help-text">Hora de fim das horas extras</div>
+            </div>
+
+            <!-- Resumo de cálculo automático -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-calculator"></i> Resumo do Cálculo
+                </label>
+                <div id="resumo_calculo" style="padding: 15px; background: var(--bg-card); border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div style="font-size: 24px; color: #ffc107;"><i class="fas fa-sun"></i></div>
+                                <div style="font-weight: bold; color: #856404;">Diurnas</div>
+                                <div id="total_diurnas" style="font-size: 18px; color: #856404;">0.0h</div>
+                                <div id="valor_diurnas" style="font-size: 14px; color: #6c757d;">0 MT</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div style="font-size: 24px; color: #6f42c1;"><i class="fas fa-moon"></i></div>
+                                <div style="font-weight: bold; color: #6f42c1;">Noturnas</div>
+                                <div id="total_noturnas" style="font-size: 18px; color: #6f42c1;">0.0h</div>
+                                <div id="valor_noturnas" style="font-size: 14px; color: #6c757d;">0 MT</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div style="font-size: 24px; color: #dc3545;"><i class="fas fa-star"></i></div>
+                                <div style="font-weight: bold; color: #dc3545;">Extraordinárias</div>
+                                <div id="total_extraordinarias" style="font-size: 18px; color: #dc3545;">0.0h</div>
+                                <div id="valor_extraordinarias" style="font-size: 14px; color: #6c757d;">0 MT</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr style="margin: 15px 0;">
+                    <div class="text-center">
+                        <div style="font-size: 20px; font-weight: bold; color: #28a745;">
+                            <i class="fas fa-coins"></i> Total: <span id="valor_total_geral">0 MT</span>
+                        </div>
+                        <div style="font-size: 14px; color: #6c757d;">
+                            <span id="total_horas_geral">0.0h</span> de horas extras
+                        </div>
+                    </div>
+                </div>
+                <div class="help-text">O cálculo é feito automaticamente baseado no vencimento do funcionário</div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" placeholder="Descreva o motivo das horas extras ou atividades realizadas..."></textarea>
+                <div class="help-text">Informações adicionais sobre as horas extras (opcional)</div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'rh:presencas' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Salvar Horas Extras
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Seção de Horas Extras Recentes -->
+    {% if horas_extras_recentes %}
+    <div class="recent-section">
+        <h3>
+            <i class="fas fa-history"></i>
+            Horas Extras Recentes
+        </h3>
+        
+        <div class="recent-list">
+            {% for horas_extras in horas_extras_recentes %}
+            <div class="recent-item">
+                <div class="recent-info">
+                    <div class="recent-funcionario">{{ horas_extras.funcionario.nome_completo }}</div>
+                    <div class="recent-details">
+                        <span class="recent-date">{{ horas_extras.data|date:"d/m/Y" }}</span>
+                        <span class="recent-type">{{ horas_extras.get_tipo_display }}</span>
+                        <span class="recent-hours">{{ horas_extras.quantidade_horas }}h</span>
+                        <span class="recent-value">{{ horas_extras.valor_total }} MT</span>
+                        {% if horas_extras.observacoes %}
+                        <span class="recent-obs">{{ horas_extras.observacoes|truncatechars:50 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="recent-actions">
+                    <span class="recent-status">
+                        {% if horas_extras.data_aprovacao %}
+                            <i class="fas fa-check-circle" style="color: #28a745;" title="Aprovado"></i>
+                        {% else %}
+                            <i class="fas fa-clock" style="color: #ffc107;" title="Pendente"></i>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focar no primeiro campo
+    document.getElementById('funcionario').focus();
+    
+    // Novos campos de horas por tipo
+    const horasDiurnasInput = document.getElementById('horas_diurnas');
+    const horasNoturnasInput = document.getElementById('horas_noturnas');
+    const horasExtraordinariasInput = document.getElementById('horas_extraordinarias');
+    const horaInicioInput = document.getElementById('hora_inicio');
+    const horaFimInput = document.getElementById('hora_fim');
+    
+    // Elementos do resumo de cálculo
+    const totalDiurnas = document.getElementById('total_diurnas');
+    const totalNoturnas = document.getElementById('total_noturnas');
+    const totalExtraordinarias = document.getElementById('total_extraordinarias');
+    const valorDiurnas = document.getElementById('valor_diurnas');
+    const valorNoturnas = document.getElementById('valor_noturnas');
+    const valorExtraordinarias = document.getElementById('valor_extraordinarias');
+    const valorTotalGeral = document.getElementById('valor_total_geral');
+    const totalHorasGeral = document.getElementById('total_horas_geral');
+    
+    // Funcionalidade de detecção automática
+    const autoDetectCheckbox = document.getElementById('auto_detect');
+    const btnDetectar = document.getElementById('btn_detectar');
+    const tipoJustificativa = document.getElementById('tipo_justificativa');
+    const justificativaText = document.getElementById('justificativa_text');
+    const tipoHelp = document.getElementById('tipo_help');
+    
+    // Elementos de input para detecção automática
+    const funcionarioSelect = document.getElementById('funcionario');
+    const dataInput = document.getElementById('data');
+    
+    // Verificar se todos os elementos existem
+    if (!funcionarioSelect || !dataInput || !horaInicioInput || !horaFimInput) {
+        console.error('Alguns elementos necessários não foram encontrados');
+        return;
+    }
+    
+    // Validação dos campos de horas
+    [horasDiurnasInput, horasNoturnasInput, horasExtraordinariasInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (value > 24) {
+                    this.setCustomValidity('As horas extras não podem exceder 24 horas por dia');
+                } else if (value < 0) {
+                    this.setCustomValidity('As horas extras não podem ser negativas');
+                } else {
+                    this.setCustomValidity('');
+                }
+                calcularResumo();
+            });
+            
+            // Formatação automática
+            input.addEventListener('blur', function() {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    const rounded = Math.round(value * 2) / 2;
+                    this.value = rounded;
+                    calcularResumo();
+                }
+            });
+        }
+    });
+    
+    // Função para calcular resumo automático
+    function calcularResumo() {
+        if (!funcionarioSelect.value) return;
+        
+        const horasDiurnas = parseFloat(horasDiurnasInput.value) || 0;
+        const horasNoturnas = parseFloat(horasNoturnasInput.value) || 0;
+        const horasExtraordinarias = parseFloat(horasExtraordinariasInput.value) || 0;
+        
+        // Atualizar totais de horas
+        totalDiurnas.textContent = horasDiurnas.toFixed(1) + 'h';
+        totalNoturnas.textContent = horasNoturnas.toFixed(1) + 'h';
+        totalExtraordinarias.textContent = horasExtraordinarias.toFixed(1) + 'h';
+        
+        const totalHoras = horasDiurnas + horasNoturnas + horasExtraordinarias;
+        totalHorasGeral.textContent = totalHoras.toFixed(1) + 'h';
+        
+        // Calcular valores (assumindo valor base de 726 MT para CONS001)
+        const valorBase = 726; // Este valor será obtido dinamicamente
+        const valorDiurno = horasDiurnas * valorBase * 0.5;
+        const valorNoturno = horasNoturnas * valorBase * 1.0;
+        const valorExtraordinario = horasExtraordinarias * valorBase * 1.0;
+        const valorTotal = valorDiurno + valorNoturno + valorExtraordinario;
+        
+        // Atualizar valores
+        valorDiurnas.textContent = valorDiurno.toFixed(2) + ' MT';
+        valorNoturnas.textContent = valorNoturno.toFixed(2) + ' MT';
+        valorExtraordinarias.textContent = valorExtraordinario.toFixed(2) + ' MT';
+        valorTotalGeral.textContent = valorTotal.toFixed(2) + ' MT';
+    }
+    
+    // Cálculo automático de horas baseado no horário
+    function calcularHoras() {
+        if (horaInicioInput.value && horaFimInput.value) {
+            const inicio = new Date('2000-01-01T' + horaInicioInput.value);
+            const fim = new Date('2000-01-01T' + horaFimInput.value);
+            
+            if (fim <= inicio) {
+                fim.setDate(fim.getDate() + 1);
+            }
+            
+            const diffMs = fim - inicio;
+            const diffHoras = diffMs / (1000 * 60 * 60);
+            
+            // Detectar automaticamente as horas por período
+            detectarHorasPorPeriodo(horaInicioInput.value, horaFimInput.value, diffHoras);
+        }
+    }
+    
+    // Função para detectar horas por período
+    function detectarHorasPorPeriodo(horaInicio, horaFim, totalHoras) {
+        const inicio = new Date('2000-01-01T' + horaInicio);
+        const fim = new Date('2000-01-01T' + horaFim);
+        
+        // Período diurno: 8h00 - 20h00
+        const diurnoInicio = new Date('2000-01-01T08:00');
+        const diurnoFim = new Date('2000-01-01T20:00');
+        
+        // Período noturno: 20h00 - 8h00
+        const noturnoInicio = new Date('2000-01-01T20:00');
+        const noturnoFim = new Date('2000-01-02T08:00');
+        
+        let horasDiurnas = 0;
+        let horasNoturnas = 0;
+        
+        // Calcular horas diurnas
+        if (inicio < diurnoFim && fim > diurnoInicio) {
+            const inicioDiurno = inicio > diurnoInicio ? inicio : diurnoInicio;
+            const fimDiurno = fim < diurnoFim ? fim : diurnoFim;
+            horasDiurnas = (fimDiurno - inicioDiurno) / (1000 * 60 * 60);
+        }
+        
+        // Calcular horas noturnas
+        if (inicio < noturnoFim && fim > noturnoInicio) {
+            const inicioNoturno = inicio > noturnoInicio ? inicio : noturnoInicio;
+            const fimNoturno = fim < noturnoFim ? fim : noturnoFim;
+            horasNoturnas = (fimNoturno - inicioNoturno) / (1000 * 60 * 60);
+        }
+        
+        // Arredondar para 0.5
+        horasDiurnas = Math.round(horasDiurnas * 2) / 2;
+        horasNoturnas = Math.round(horasNoturnas * 2) / 2;
+        
+        // Atualizar campos
+        horasDiurnasInput.value = horasDiurnas;
+        horasNoturnasInput.value = horasNoturnas;
+        horasExtraordinariasInput.value = 0; // Por padrão, não há horas extraordinárias
+        
+        // Calcular resumo
+        calcularResumo();
+    }
+    
+    if (horaInicioInput && horaFimInput) {
+        horaInicioInput.addEventListener('change', function() {
+            if (autoDetectCheckbox.checked) {
+                calcularHoras();
+            }
+        });
+        horaFimInput.addEventListener('change', function() {
+            if (autoDetectCheckbox.checked) {
+                calcularHoras();
+            }
+        });
+    }
+    
+    // Calcular resumo quando funcionário for selecionado
+    if (funcionarioSelect) {
+        funcionarioSelect.addEventListener('change', function() {
+            calcularResumo();
+        });
+    }
+    
+    // Inicializar cálculo do resumo
+    calcularResumo();
+    
+    // Função para detectar tipo automaticamente
+    function detectarTipoAutomatico() {
+        const funcionarioId = funcionarioSelect.value;
+        const data = dataInput.value;
+        const horaInicio = horaInicioInput.value;
+        const horaFim = horaFimInput.value;
+        
+        if (!funcionarioId || !data || !horaInicio || !horaFim) {
+            return;
+        }
+        
+        // Mostrar loading
+        btnDetectar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detectando...';
+        btnDetectar.disabled = true;
+        
+        // Fazer requisição AJAX
+        fetch('{% url "rh:detectar_tipo_horas_extras" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                funcionario_id: funcionarioId,
+                data: data,
+                hora_inicio: horaInicio,
+                hora_fim: horaFim
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Atualizar campos de horas baseado na detecção
+                if (data.sugestao_misto) {
+                    const detalhes = data.sugestao_misto;
+                    horasDiurnasInput.value = detalhes.diurno.horas;
+                    horasNoturnasInput.value = detalhes.noturno.horas;
+                    horasExtraordinariasInput.value = 0;
+                } else {
+                    // Detecção simples baseada no tipo
+                    if (data.tipo === 'DI') {
+                        horasDiurnasInput.value = parseFloat(quantidadeHorasInput.value) || 0;
+                        horasNoturnasInput.value = 0;
+                        horasExtraordinariasInput.value = 0;
+                    } else if (data.tipo === 'NO') {
+                        horasDiurnasInput.value = 0;
+                        horasNoturnasInput.value = parseFloat(quantidadeHorasInput.value) || 0;
+                        horasExtraordinariasInput.value = 0;
+                    } else if (data.tipo === 'EX') {
+                        horasDiurnasInput.value = 0;
+                        horasNoturnasInput.value = 0;
+                        horasExtraordinariasInput.value = parseFloat(quantidadeHorasInput.value) || 0;
+                    }
+                }
+                
+                // Mostrar justificativa
+                justificativaText.textContent = data.justificativa;
+                tipoJustificativa.style.display = 'block';
+                
+                // Calcular resumo
+                calcularResumo();
+                
+                // Atualizar texto de ajuda
+                tipoHelp.textContent = 'Tipo detectado automaticamente';
+                
+            } else {
+                alert('Erro ao detectar tipo: ' + (data.error || 'Erro desconhecido'));
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao detectar tipo automaticamente');
+        })
+        .finally(() => {
+            // Restaurar botão
+            btnDetectar.innerHTML = '<i class="fas fa-sync-alt"></i> Detectar';
+            btnDetectar.disabled = false;
+        });
+    }
+    
+    // Event listeners
+    btnDetectar.addEventListener('click', detectarTipoAutomatico);
+    
+    // Validar formulário antes do envio
+    document.getElementById('horasExtrasForm').addEventListener('submit', function(e) {
+        // Validação básica
+        if (!funcionarioSelect.value) {
+            e.preventDefault();
+            alert('Por favor, selecione um funcionário.');
+            funcionarioSelect.focus();
+            return false;
+        }
+        
+        if (!dataInput.value) {
+            e.preventDefault();
+            alert('Por favor, selecione a data.');
+            dataInput.focus();
+            return false;
+        }
+        
+        if (!horaInicioInput.value) {
+            e.preventDefault();
+            alert('Por favor, selecione a hora de início.');
+            horaInicioInput.focus();
+            return false;
+        }
+        
+        if (!horaFimInput.value) {
+            e.preventDefault();
+            alert('Por favor, selecione a hora de fim.');
+            horaFimInput.focus();
+            return false;
+        }
+        
+        // Verificar se pelo menos um tipo de horas foi preenchido
+        const horasDiurnas = parseFloat(horasDiurnasInput.value) || 0;
+        const horasNoturnas = parseFloat(horasNoturnasInput.value) || 0;
+        const horasExtraordinarias = parseFloat(horasExtraordinariasInput.value) || 0;
+        
+        if (horasDiurnas === 0 && horasNoturnas === 0 && horasExtraordinarias === 0) {
+            e.preventDefault();
+            alert('Por favor, preencha pelo menos um tipo de horas extras.');
+            return false;
+        }
+        
+        // Validação de total de horas não pode exceder 24 horas
+        const totalHoras = horasDiurnas + horasNoturnas + horasExtraordinarias;
+        if (totalHoras > 24) {
+            e.preventDefault();
+            alert('O total de horas extras não pode exceder 24 horas por dia.');
+            return false;
+        }
+    });
+    
+    // Aplicar sugestão misto
+    btnAplicarMisto.addEventListener('click', function() {
+        if (sugestaoMisto.style.display === 'block') {
+            // Obter dados do formulário
+            const funcionarioId = funcionarioSelect.value;
+            const data = dataInput.value;
+            const horaInicio = horaInicioInput.value;
+            const horaFim = horaFimInput.value;
+            const observacoes = observacoesInput.value;
+            
+            if (!funcionarioId || !data || !horaInicio || !horaFim) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            // Calcular horas extras mistas
+            fetch('{% url "rh:calcular_horas_extras_mistas" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    funcionario_id: funcionarioId,
+                    data: data,
+                    hora_inicio: horaInicio,
+                    hora_fim: horaFim
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const calculo = data.calculo_misto;
+                    
+                    // Mostrar detalhes do cálculo
+                    let detalhes = 'Cálculo das Horas Extras Mistas:\n\n';
+                    
+                    if (calculo.diurno) {
+                        detalhes += `PERÍODO DIURNO (50%):\n`;
+                        detalhes += `• Horas: ${calculo.diurno.horas}h\n`;
+                        detalhes += `• Valor/hora: ${calculo.diurno.valor_por_hora.toFixed(2)} MT\n`;
+                        detalhes += `• Valor total: ${calculo.diurno.valor_total.toFixed(2)} MT\n\n`;
+                    }
+                    
+                    if (calculo.noturno) {
+                        detalhes += `PERÍODO NOTURNO (100%):\n`;
+                        detalhes += `• Horas: ${calculo.noturno.horas}h\n`;
+                        detalhes += `• Valor/hora: ${calculo.noturno.valor_por_hora.toFixed(2)} MT\n`;
+                        detalhes += `• Valor total: ${calculo.noturno.valor_total.toFixed(2)} MT\n\n`;
+                    }
+                    
+                    detalhes += `TOTAL GERAL:\n`;
+                    detalhes += `• Horas totais: ${calculo.total.horas_totais}h\n`;
+                    detalhes += `• Valor total: ${calculo.total.valor_total.toFixed(2)} MT\n\n`;
+                    detalhes += `Deseja criar os registros separados?`;
+                    
+                    const confirmar = confirm(detalhes);
+                    
+                    if (confirmar) {
+                        // Criar registros duplos
+                        criarRegistrosMistos(funcionarioId, data, horaInicio, horaFim, observacoes);
+                    }
+                } else {
+                    alert('Erro ao calcular horas extras mistas: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao calcular horas extras mistas.');
+            });
+        }
+    });
+    
+    // Função para criar registros mistos
+    function criarRegistrosMistos(funcionarioId, data, horaInicio, horaFim, observacoes) {
+        fetch('{% url "rh:criar_horas_extras_mistas" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                funcionario_id: funcionarioId,
+                data: data,
+                hora_inicio: horaInicio,
+                hora_fim: horaFim,
+                observacoes: observacoes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let mensagem = 'Registros criados com sucesso!\n\n';
+                
+                data.registros_criados.forEach((registro, index) => {
+                    mensagem += `${index + 1}. ${registro.tipo === 'DI' ? 'Diurno' : 'Noturno'}: `;
+                    mensagem += `${registro.horas}h - ${registro.valor_total.toFixed(2)} MT\n`;
+                });
+                
+                mensagem += `\nTotal: ${data.total_horas}h - ${data.total_valor.toFixed(2)} MT`;
+                
+                alert(mensagem);
+                
+                // Redirecionar para a lista de horas extras
+                window.location.href = '{% url "rh:horas_extras" %}';
+            } else {
+                alert('Erro ao criar registros: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao criar registros mistos.');
+        });
+    }
+    
+    // Detectar automaticamente quando campos mudam (se auto-detect estiver ativo)
+    let detectTimeout;
+    [funcionarioSelect, dataInput, horaInicioInput, horaFimInput].forEach(input => {
+        if (input) {
+            input.addEventListener('change', function() {
+                if (autoDetectCheckbox.checked) {
+                    // Verificar se todos os campos necessários estão preenchidos
+                    const funcionarioId = funcionarioSelect.value;
+                    const data = dataInput.value;
+                    const horaInicio = horaInicioInput.value;
+                    const horaFim = horaFimInput.value;
+                    
+                    if (funcionarioId && data && horaInicio && horaFim) {
+                        // Debounce para evitar múltiplas execuções
+                        clearTimeout(detectTimeout);
+                        detectTimeout = setTimeout(() => {
+                            detectarTipoAutomatico();
+                        }, 500); // Aguardar 500ms após a última mudança
+                    }
+                }
+            });
+        }
+    });
+    
+    // Controlar estado do select baseado no checkbox
+    autoDetectCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            tipoSelect.disabled = false;
+            tipoHelp.textContent = 'Tipo será detectado automaticamente';
+            // Detectar imediatamente se todos os campos estão preenchidos
+            const funcionarioId = funcionarioSelect.value;
+            const data = dataInput.value;
+            const horaInicio = horaInicioInput.value;
+            const horaFim = horaFimInput.value;
+            
+            if (funcionarioId && data && horaInicio && horaFim) {
+                clearTimeout(detectTimeout);
+                detectTimeout = setTimeout(() => {
+                    detectarTipoAutomatico();
+                }, 100);
+            }
+        } else {
+            tipoSelect.disabled = false;
+            tipoHelp.textContent = 'Selecione o tipo de horas extras manualmente';
+            tipoJustificativa.style.display = 'none';
+            sugestaoMisto.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
