@@ -149,8 +149,8 @@ urlpatterns = [
     path('reports/', include('meuprojeto.empresa.urls_reports', namespace='reports')),
     
     # Notificações Push
-    path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
+    # path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
     
     # Integrações com Transportadoras
-    path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
+    # path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
 ]

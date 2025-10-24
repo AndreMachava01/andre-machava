@@ -1,0 +1,510 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Relatório de Treinamentos{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Estilos para filtros */
+    
+    
+    
+    
+    
+    
+    
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.875rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-start;
+    }
+
+    @media print {
+        .action-buttons,
+        
+        
+        .print-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 5px;
+            background: white;
+        }
+        
+        .document-header {
+            padding-bottom: 5px;
+            margin-bottom: 3px;
+        }
+        
+        .company-info h1 {
+            font-size: 12px;
+        }
+        
+        .company-info h2 {
+            font-size: 7px;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            margin: 5px 0 2px 0;
+            padding: 2px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-ativo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-concluido {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+    }
+    
+    @media screen {
+        .print-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: bold;
+        }
+        
+        .status-ativo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-concluido {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="{% url 'rh:main' %}" class="btn btn-outline">
+        <i class="fas fa-users"></i>RH
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<!-- Filtros -->
+{% include 'includes/filters_unified.html' with entity_name='treinamentos_relatorio' %}
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE TREINAMENTOS</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Treinamentos e Capacitações
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_relatorio|date:"Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Treinamentos:</strong> {{ total_treinamentos }}
+            </div>
+            <div class="summary-item">
+                <strong>Treinamentos Ativos:</strong> {{ treinamentos_ativos }}
+            </div>
+            <div class="summary-item">
+                <strong>Treinamentos Concluídos:</strong> {{ treinamentos_concluidos }}
+            </div>
+            <div class="summary-item">
+                <strong>Treinamentos Cancelados:</strong> {{ treinamentos_cancelados }}
+            </div>
+            <div class="summary-item">
+                <strong>Total de Inscrições:</strong> {{ total_inscricoes }}
+            </div>
+            <div class="summary-item">
+                <strong>Taxa de Conclusão Geral:</strong> {{ taxa_conclusao_geral|floatformat:1 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Treinamentos por Tipo -->
+    <div class="section">
+        <h3>Treinamentos por Tipo</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Total de Treinamentos</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in treinamentos_por_tipo %}
+                <tr>
+                    <td>{{ tipo.tipo }}</td>
+                    <td class="text-center">{{ tipo.total }}</td>
+                    <td class="text-center">{{ tipo.percentual|floatformat:1 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Inscrições por Treinamento -->
+    <div class="section">
+        <h3>Inscrições por Treinamento</h3>
+        
+    </div>
+
+    <!-- Funcionários Mais Treinados -->
+    <div class="section">
+        <h3>Funcionários Mais Treinados</h3>
+        
+    </div>
+
+    <!-- Footer -->
+    <div class="document-footer">
+        <p>Documento gerado automaticamente em {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<!-- Botão de Impressão -->
+<div class="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Relatório
+    </button>
+</div>
+{% endblock %}

@@ -1,0 +1,637 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}
+    {% if treinamento %}Editar Treinamento{% else %}Adicionar Treinamento{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Form Container */
+    .form-container {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--border-color);
+        margin-top: 20px;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: var(--text-color);
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 8px 12px;
+        height: 36px;
+        line-height: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--bg-input);
+        color: var(--text-color);
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-group textarea {
+        height: auto;
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .form-group select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 16px;
+        padding-right: 32px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(65, 118, 144, 0.15);
+    }
+
+    .help-text {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+        line-height: 1.3;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+        padding: 12px 16px;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .form-check:hover {
+        background: var(--bg-hover);
+        border-color: var(--primary-color);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-check input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: var(--bg-input);
+        border: 2px solid var(--border-color);
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .form-check input[type="checkbox"]:checked {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(65, 118, 144, 0.2);
+    }
+
+    .form-check input[type="checkbox"]:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .form-check label {
+        font-size: 13px;
+        color: var(--text-color);
+        cursor: pointer;
+        margin: 0;
+        font-weight: 600;
+        flex: 1;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 8px 16px;
+        height: 36px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-hover);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-color: #bee5eb;
+    }
+
+    /* Cost calculation */
+    .cost-calculation {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .cost-calculation h4 {
+        margin: 0 0 15px 0;
+        color: var(--text-color);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .cost-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 13px;
+    }
+
+    .cost-item:last-child {
+        border-bottom: none;
+    }
+
+    .cost-total {
+        font-weight: 600;
+        color: var(--primary-color);
+        background: var(--bg-hover);
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+
+    /* Dark mode adjustments */
+    @media (prefers-color-scheme: dark) {
+        
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background-color: var(--bg-input);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        
+        
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Treinamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if treinamento %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-graduation-cap"></i>
+                    {% if treinamento %}Editar Treinamento{% else %}Adicionar Treinamento{% endif %}
+                </h1>
+                <p class="page-subtitle">
+                    {% if treinamento %}Modifique as informações do treinamento{% else %}Crie um novo treinamento{% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Treinamentos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="form-container"action="."method="post">{% csrf_token %}
+        {% csrf_token %}
+        
+        <!-- Seção 1: Informações Básicas -->
+        <div class="form-group">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-info-circle"></i> Informações Básicas
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="nome">Nome do Treinamento</label>
+                <input type="text" id="nome" name="nome" value="{{ treinamento.nome|default:'' }}" required>
+                <div class="help-text">Nome descritivo do treinamento</div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao" placeholder="Descreva o objetivo e conteúdo do treinamento...">{{ treinamento.descricao|default:'' }}</textarea>
+                <div class="help-text">Descrição detalhada do treinamento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" required>
+                    {% for codigo, nome in tipo_choices %}
+                    <option value="{{ codigo }}" {% if treinamento.tipo == codigo %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Tipo de treinamento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    {% for codigo, nome in status_choices %}
+                    <option value="{{ codigo }}" {% if treinamento.status == codigo %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Status atual do treinamento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" name="prioridade" required>
+                    {% for codigo, nome in prioridade_choices %}
+                    <option value="{{ codigo }}" {% if treinamento.prioridade == codigo %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Nível de prioridade</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="carga_horaria">Carga Horária (horas)</label>
+                <input type="number" id="carga_horaria" name="carga_horaria" value="{{ treinamento.carga_horaria|default:0 }}" min="0">
+                <div class="help-text">Duração|default:0 total em horas</div>
+            </div>
+        </div>
+
+        <!-- Seção 2: Datas e Local -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-calendar-alt"></i> Datas e Local
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="data_inicio">Data de Início</label>
+                <input type="date" id="data_inicio" name="data_inicio" value="{{ treinamento.data_inicio|default:'' }}" required>
+                <div class="help-text">Data de início do treinamento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data_fim">Data de Fim</label>
+                <input type="date" id="data_fim" name="data_fim" value="{{ treinamento.data_fim|default:'' }}" required>
+                <div class="help-text">Data de fim do treinamento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data_limite_inscricao">Data Limite de Inscrição</label>
+                <input type="date" id="data_limite_inscricao" name="data_limite_inscricao" value="{{ treinamento.data_limite_inscricao|default:'' }}">
+                <div class="help-text">Opcional - última data para inscrições</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="local">Local</label>
+                <input type="text" id="local" name="local" value="{{ treinamento.local|default:'' }}" placeholder="Sala, auditório, online...">
+                <div class="help-text">Local onde será realizado o treinamento</div>
+            </div>
+        </div>
+
+        <!-- Seção 3: Instrutor e Instituição -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-chalkboard-teacher"></i> Instrutor e Instituição
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="instrutor">Instrutor/Facilitador</label>
+                <input type="text" id="instrutor" name="instrutor" value="{{ treinamento.instrutor|default:'' }}" placeholder="Nome do instrutor">
+                <div class="help-text">Nome do instrutor responsável</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="instituicao">Instituição/Fornecedor</label>
+                <input type="text" id="instituicao" name="instituicao" value="{{ treinamento.instituicao|default:'' }}" placeholder="Nome da instituição">
+                <div class="help-text">Instituição que oferece o treinamento</div>
+            </div>
+        </div>
+
+        <!-- Seção 4: Capacidade e Custos -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-users"></i> Capacidade e Custos
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="capacidade_maxima">Capacidade Máxima</label>
+                <input type="number" id="capacidade_maxima" name="capacidade_maxima" value="{{ treinamento.capacidade_maxima|default:20 }}" min="1">
+                <div class="help-text">Número máximo de participantes</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custo_por_participante">Custo por Participante (MT)</label>
+                <input type="number" id="custo_por_participante" name="custo_por_participante" value="{{ treinamento.custo_por_participante|default:0 }}" step="0.01" min="0">
+                <div class="help-text">Custo individual por participante</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custo_total">Custo|default:0 total (MT)</label>
+                <input type="number" id="custo_total" name="custo_total" value="{{ treinamento.custo_total|default:0 }}" step="0.01" min="0">
+                <div class="help-text">Custo|default:0 total do treinamento</div>
+            </div>
+        </div>
+        
+        <!-- Cálculo automático de custos -->
+        <div class="cost-calculation" id="cost-calculation" style="display: none;">
+            <h4>Cálculo de Custos</h4>
+            <div class="cost-item">
+                <span>Custo por participante:</span>
+                <span id="cost-per-participant">0,00 MT</span>
+            </div>
+            <div class="cost-item">
+                <span>Capacidade máxima:</span>
+                <span id="max-capacity">0</span>
+            </div>
+            <div class="cost-item cost-total">
+                <span>Custo|default:0 total estimado:</span>
+                <span id="estimated-total">0,00 MT</span>
+            </div>
+        </div>
+
+        <!-- Seção 5: Conteúdo e Requisitos -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-book"></i> Conteúdo e Requisitos
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="objetivos">Objetivos</label>
+                <textarea id="objetivos" name="objetivos" placeholder="Quais são os objetivos deste treinamento?">{{ treinamento.objetivos|default:'' }}</textarea>
+                <div class="help-text">Descreva os objetivos de aprendizagem</div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="requisitos">Requisitos</label>
+                <textarea id="requisitos" name="requisitos" placeholder="Quais são os pré-requisitos para participar?">{{ treinamento.requisitos|default:'' }}</textarea>
+                <div class="help-text">Pré-requisitos necessários para participar</div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="conteudo_programatico">Conteúdo Programático</label>
+                <textarea id="conteudo_programatico" name="conteudo_programatico" placeholder="Liste os tópicos que serão abordados...">{{ treinamento.conteudo_programatico|default:'' }}</textarea>
+                <div class="help-text">Estrutura detalhada do conteúdo</div>
+            </div>
+        </div>
+
+        <!-- Seção 6: Configurações -->
+        <div class="form-group" style="margin-top: 30px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-color); font-size: 16px; font-weight: 600;">
+                <i class="fas fa-cog"></i> Configurações
+            </h3>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <div class="form-check">
+                    <input type="checkbox" id="emite_certificado" name="emite_certificado" {% if treinamento.emite_certificado %}checked{% endif %}>
+                    <label for="emite_certificado">Emite certificado de participação</label>
+                </div>
+            </div>
+            
+            <div class="form-group full-width">
+                <div class="form-check">
+                    <input type="checkbox" id="ativo" name="ativo" {% if treinamento.ativo or not treinamento %}checked{% endif %}>
+                    <label for="ativo">Treinamento ativo</label>
+                </div>
+                <div class="help-text">Treinamentos inativos não aparecem nas listagens públicas</div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" placeholder="Observações adicionais...">{{ treinamento.observacoes|default:'' }}</textarea>
+                <div class="help-text">Observações adicionais sobre o treinamento</div>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="form-actions">
+            <a href="#"rh:treinamentos' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-save"></i>
+                {% if treinamento %}Atualizar Treinamento{% else %}Criar Treinamento{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Cálculo automático de custos
+function updateCostCalculation() {
+    const custoPorParticipante = parseFloat(document.getElementById('custo_por_participante').value) || 0;
+    const capacidadeMaxima = parseInt(document.getElementById('capacidade_maxima').value) || 0;
+    const custoTotal = custoPorParticipante * capacidadeMaxima;
+    
+    document.getElementById('cost-per-participant').textContent = custoPorParticipante.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + ' MT';
+    
+    document.getElementById('max-capacity').textContent = capacidadeMaxima;
+    
+    document.getElementById('estimated-total').textContent = custoTotal.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + ' MT';
+    
+    // Atualizar campo de custo|default:0 total
+    document.getElementById('custo_total').value = custoTotal;
+    
+    // Mostrar/ocultar cálculo
+    const costCalculation = document.getElementById('cost-calculation');
+    if (custoPorParticipante > 0 && capacidadeMaxima > 0) {
+        costCalculation.style.display = 'block';
+    } else {
+        costCalculation.style.display = 'none';
+    }
+}
+
+// Event listeners
+document.getElementById('custo_por_participante').addEventListener('input', updateCostCalculation);
+document.getElementById('capacidade_maxima').addEventListener('input', updateCostCalculation);
+
+// Validação de datas
+document.getElementById('data_inicio').addEventListener('change', function() {
+    const dataInicio = new Date(this.value);
+    const dataFim = document.getElementById('data_fim');
+    
+    if (dataFim.value) {
+        const dataFimValue = new Date(dataFim.value);
+        if (dataFimValue < dataInicio) {
+            dataFim.value = this.value;
+        }
+    }
+    
+    // Definir data mínima para data_fim
+    dataFim.min = this.value;
+});
+
+document.getElementById('data_fim').addEventListener('change', function() {
+    const dataFim = new Date(this.value);
+    const dataInicio = document.getElementById('data_inicio');
+    
+    if (dataInicio.value) {
+        const dataInicioValue = new Date(dataInicio.value);
+        if (dataFim < dataInicioValue) {
+            alert('A data de fim deve ser posterior à data de início');
+            this.value = dataInicio.value;
+        }
+    }
+});
+
+// Inicializar cálculo
+updateCostCalculation();
+</script>
+{% endblock %}

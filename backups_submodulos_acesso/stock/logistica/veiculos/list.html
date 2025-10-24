@@ -1,0 +1,141 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Veículos Internos - Logística{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Navegação -->
+<div class="navigation-btns -responsive" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="#" class="btn btn btn-secondary btn-responsive -responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+        <i class="fas fa-arrow-left"></i>
+        Voltar à Logística
+    </a>
+    <a href="#" class="btn btn-outline-secondary btn-responsive -responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-warehouse"></i>
+        Stock Principal
+    </a>
+    <a href="#" class="btn btn-outline-secondary btn-responsive -responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-home"></i>
+        Dashboard
+    </a>
+</div>
+
+<!-- Breadcrumb -->
+<div style="background: #374151; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+    <nav style="display: flex; align-items: center; gap: 8px;">
+        <a href="/dashboard/" style="color: #06b6d4; text-decoration: none;">Dashboard</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/" style="color: #06b6d4; text-decoration: none;">Stock</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/logistica/" style="color: #06b6d4; text-decoration: none;">Logística</a>
+        <span style="color: #6b7280;">›</span>
+        <span style="color: white; font-weight: 600;">Veículos Internos</span>
+    </nav>
+</div>
+<div class="container-fluid">
+    <!-- Cabeçalho da Página -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-truck me-3"></i>
+                    Veículos Internos
+                </h1>
+                <p class="mb-0 opacity-75">Gestão da frota própria da empresa</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="#" class="btn btn btn-primary btn-responsive -responsive">
+                    <i class="fas fa-plus me-2"></i>
+                    Novo Veículo
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+    <!-- Lista de Veículos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Veículos Internos ({{ veiculos.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if veiculos %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nome</th>
+                                <th>Placa</th>
+                                <th>Categoria</th>
+                                <th>Motorista</th>
+                                <th>Status</th>
+                                <th>Entregas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for veiculo in veiculos %}
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">{{ veiculo.codigo }}</strong>
+                                    </td>
+                                    <td>{{ veiculo.nome }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ veiculo.placa }}</span>
+                                    </td>
+                                    <td>{{ veiculo.get_categoria_display }}</td>
+                                    <td>{{ veiculo.motorista_responsavel }}</td>
+                                    <td>
+                                        {% if veiculo.status == 'ATIVO' %}
+                                            <span class="badge badge-success">{{ veiculo.get_status_display }}</span>
+                                        {% elif veiculo.status == 'MANUTENCAO' %}
+                                            <span class="badge badge-warning">{{ veiculo.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ veiculo.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ veiculo.entregas.count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-responsive -responsive" role="group" role="button">
+                                            <a href="#" 
+                                               class="btn btn-sm btn-outline-primary btn-responsive -responsive" title="Ver Detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#" 
+                                               class="btn btn-sm btn-outline-warning btn-responsive -responsive" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum veículo encontrado</h5>
+                    <p class="text-muted">Comece criando seu primeiro veículo interno.</p>
+                    <a href="#" class="btn btn btn-primary btn-responsive -responsive">
+                        <i class="fas fa-plus me-2"></i>
+                        Novo Veículo
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

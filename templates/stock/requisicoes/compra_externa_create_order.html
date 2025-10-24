@@ -1,321 +1,18 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Criar Ordem de Compra{% endblock %}
 
 {% block extra_style %}
-<style>
-    :root {
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-        --primary-color: #8b5cf6;
-        --secondary-color: #6b7280;
-        
-        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
 
-    body {
-        background: #1f2937;
-        color: white;
-    }
-
-    .breadcrumb {
-        background: #374151;
-        padding: 15px 20px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-        box-shadow: var(--shadow-light);
-        border: 1px solid #4b5563;
-    }
-
-    .breadcrumb-item a {
-        color: #d1d5db;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .breadcrumb-item.active {
-        color: #fbbf24;
-        font-weight: 700;
-    }
-
-    .modern-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 20px;
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .hero-section {
-        background: var(--green-gradient);
-        padding: 40px 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-title {
-        font-size: 2.5rem;
-        font-weight: 900;
-        margin-bottom: 15px;
-        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-
-    .hero-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 30px;
-        font-weight: 400;
-    }
-
-    .btn-modern {
-        padding: 12px 24px;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        font-size: 0.95rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-primary-modern {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-primary-modern:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .btn-secondary-modern {
-        background: rgba(0, 0, 0, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-secondary-modern:hover {
-        background: rgba(0, 0, 0, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .content-section {
-        padding: 30px;
-    }
-
-    .form-container {
-        background: #4b5563;
-        border-radius: 15px;
-        padding: 30px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-        margin-bottom: 30px;
-    }
-
-    .form-group {
-        margin-bottom: 25px;
-    }
-
-    .form-label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #fbbf24;
-        font-size: 1rem;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #6b7280;
-        border-radius: 10px;
-        background: #374151;
-        color: white;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    }
-
-    .form-control::placeholder {
-        color: #9ca3af;
-    }
-
-    .items-table {
-        background: #4b5563;
-        border-radius: 15px;
-        padding: 30px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    .table th,
-    .table td {
-        padding: 15px;
-        text-align: left;
-        border-bottom: 1px solid #6b7280;
-    }
-
-    .table th {
-        background: #374151;
-        color: #fbbf24;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .table td {
-        color: #d1d5db;
-        font-size: 0.95rem;
-    }
-
-    .table tbody tr:hover {
-        background: rgba(139, 92, 246, 0.1);
-    }
-
-    .checkbox-cell {
-        text-align: center;
-        width: 50px;
-    }
-
-    .checkbox {
-        width: 20px;
-        height: 20px;
-        accent-color: #8b5cf6;
-    }
-
-    .quantity-input,
-    .price-input {
-        width: 100px;
-        padding: 8px 12px;
-        border: 1px solid #6b7280;
-        border-radius: 8px;
-        background: #374151;
-        color: white;
-        font-size: 0.9rem;
-        text-align: center;
-    }
-
-    .quantity-input:focus,
-    .price-input:focus {
-        outline: none;
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
-    }
-
-    .btn-submit {
-        background: var(--green-gradient);
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-submit:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .item-info {
-        background: #374151;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 25px;
-        border: 1px solid #6b7280;
-    }
-
-    .item-name {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #fbbf24;
-        margin-bottom: 8px;
-    }
-
-    .item-details {
-        color: #d1d5db;
-        font-size: 0.95rem;
-    }
-
-    .item-details span {
-        color: #9ca3af;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #9ca3af;
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.5;
-    }
-
-    .empty-state h3 {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-        color: #d1d5db;
-    }
-
-    .empty-state p {
-        font-size: 1rem;
-        margin-bottom: 30px;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 <div class="breadcrumb">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:requisicoes:list' %}">Requisições</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:main" %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:requisicoes:list" %}">Requisições</a></li>
             <li class="breadcrumb-item"><a href="{% url 'stock:requisicoes:compra_externa_detail' requisicao.id %}">{{ requisicao.codigo }}</a></li>
             <li class="breadcrumb-item active">Criar Ordem de Compra</li>
         </ol>
@@ -332,8 +29,8 @@
             <p class="hero-subtitle">
                 Crie uma ordem de compra a partir da requisição {{ requisicao.codigo }}
             </p>
-            <div class="hero-buttons">
-                <a href="{% url 'stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn-primary-modern">
+            <div class="hero-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>
                     Voltar à Requisição
                 </a>
@@ -352,7 +49,7 @@
         </div>
 
         {% if itens_requisicao %}
-            <form method="post" id="orderForm">
+            <form method="post" id="orderForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 <input type="hidden" name="requisicao_id" value="{{ requisicao.id }}">
                 
@@ -395,167 +92,7 @@
                                     <option value="externo_temporario">🔗 Fornecedor Externo (Temporário)</option>
                                 </optgroup>
                             </select>
-                            <button type="button" class="btn-modern btn-secondary-modern" onclick="openSupplierModal()">
-                                <i class="fas fa-plus-circle"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Campos para novo fornecedor -->
-                    <div id="novo-fornecedor-section" style="display: none;">
-                        <h4 style="color: #fbbf24; margin-bottom: 15px;">
-                            <i class="fas fa-plus"></i>
-                            Novo Fornecedor
-                        </h4>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_nome" class="form-label">Nome do Fornecedor *</label>
-                            <input type="text" name="novo_fornecedor_nome" id="novo_fornecedor_nome" class="form-control" placeholder="Nome completo da empresa/fornecedor">
-                        </div>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_nuit" class="form-label">NUIT *</label>
-                            <input type="text" name="novo_fornecedor_nuit" id="novo_fornecedor_nuit" class="form-control" placeholder="Ex: 123456789" pattern="[0-9]{9}" title="NUIT deve ter 9 dígitos" maxlength="9">
-                            <small style="color: #9ca3af; margin-top: 5px; display: block;">
-                                <i class="fas fa-info-circle"></i> Número Único de Identificação Tributária (9 dígitos)
-                            </small>
-                        </div>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_contacto" class="form-label">Responsável/Contato</label>
-                            <input type="text" name="novo_fornecedor_contacto" id="novo_fornecedor_contacto" class="form-control" placeholder="Nome do responsável">
-                        </div>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_email" class="form-label">Email</label>
-                            <input type="email" name="novo_fornecedor_email" id="novo_fornecedor_email" class="form-control" placeholder="contato@fornecedor.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_telefone" class="form-label">Telefone</label>
-                            <input type="text" name="novo_fornecedor_telefone" id="novo_fornecedor_telefone" class="form-control" placeholder="+258 XX XXX XXXX">
-                        </div>
-                        <div class="form-group">
-                            <label for="novo_fornecedor_endereco" class="form-label">Endereço</label>
-                            <textarea name="novo_fornecedor_endereco" id="novo_fornecedor_endereco" class="form-control" rows="2" placeholder="Endereço completo do fornecedor..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Campos para fornecedor externo temporário -->
-                    <div id="externo-temporario-section" style="display: none;">
-                        <h4 style="color: #f59e0b; margin-bottom: 15px;">
-                            <i class="fas fa-external-link-alt"></i>
-                            Fornecedor Externo (Temporário)
-                        </h4>
-                        <div class="form-group">
-                            <label for="externo_nome" class="form-label">Nome da Empresa/Fornecedor *</label>
-                            <input type="text" name="externo_nome" id="externo_nome" class="form-control" placeholder="Nome da empresa externa">
-                        </div>
-                        <div class="form-group">
-                            <label for="externo_nuit" class="form-label">NUIT *</label>
-                            <input type="text" name="externo_nuit" id="externo_nuit" class="form-control" placeholder="Ex: 123456789" pattern="[0-9]{9}" title="NUIT deve ter 9 dígitos" maxlength="9">
-                            <small style="color: #9ca3af; margin-top: 5px; display: block;">
-                                <i class="fas fa-info-circle"></i> Número Único de Identificação Tributária (9 dígitos)
-                            </small>
-                        </div>
-                        <div class="form-group">
-                            <label for="externo_contacto" class="form-label">Responsável pelo Contato</label>
-                            <input type="text" name="externo_contacto" id="externo_contacto" class="form-control" placeholder="Nome do responsável">
-                        </div>
-                        <div class="form-group">
-                            <label for="externo_email" class="form-label">Email de Contato</label>
-                            <input type="email" name="externo_email" id="externo_email" class="form-control" placeholder="email@exemplo.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="externo_telefone" class="form-label">Telefone</label>
-                            <input type="text" name="externo_telefone" id="externo_telefone" class="form-control" placeholder="+258 XX XXX XXXX">
-                        </div>
-                        <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Nota:</strong> Este fornecedor será criado apenas temporariamente e não será salvo permanentemente no sistema. Para fornecedores regulares, recomenda-se registrar no sistema primeiro.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="observacoes" class="form-label">
-                            <i class="fas fa-comment"></i>
-                            Observações
-                        </label>
-                        <textarea name="observacoes" 
-                                  id="observacoes" 
-                                  class="form-control" 
-                                  rows="3"
-                                  placeholder="Observações adicionais sobre a ordem de compra..."></textarea>
-                    </div>
-                </div>
-
-                <div class="items-table">
-                    <h3 style="color: #fbbf24; margin-bottom: 20px;">
-                        <i class="fas fa-list"></i>
-                        Itens da Requisição
-                    </h3>
-                    <p style="color: #9ca3af; margin-bottom: 20px;">
-                        Selecione os itens que deseja incluir na ordem de compra e defina as quantidades e preços.
-                    </p>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="checkbox-cell">Selecionar</th>
-                                <th>Item</th>
-                                <th>Tipo</th>
-                                <th>Quantidade Disponível</th>
-                                <th>Quantidade na Ordem</th>
-                                <th>Preço Unitário (MT)</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in itens_requisicao %}
-                                <tr>
-                                    <td class="checkbox-cell">
-                                        <input type="checkbox" 
-                                               name="item_selecionado" 
-                                               value="{{ item.id }}" 
-                                               class="checkbox item-checkbox"
-                                               onchange="toggleItemRow(this)">
-                                    </td>
-                                    <td>
-                                        <strong>{{ item.item.nome }}</strong><br>
-                                        <small style="color: #9ca3af;">{{ item.item.codigo }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge" style="background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
-                                            {{ item.tipo_item }}
-                                        </span>
-                                    </td>
-                                    <td>{{ item.quantidade_solicitada }}</td>
-                                    <td>
-                                        <input type="number" 
-                                               name="quantidade" 
-                                               class="quantity-input" 
-                                               min="0" 
-                                               max="{{ item.quantidade_solicitada }}" 
-                                               step="0.01"
-                                               value="0"
-                                               disabled
-                                               onchange="calculateTotal(this)">
-                                    </td>
-                                    <td>
-                                        <input type="number" 
-                                               name="preco_unitario" 
-                                               class="price-input" 
-                                               min="0" 
-                                               step="0.01"
-                                               value="0"
-                                               disabled
-                                               onchange="calculateTotal(this)">
-                                    </td>
-                                    <td>
-                                        <span class="total-cell">0.00 MT</span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                            <button type="button" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
                     <i class="fas fa-shopping-cart"></i>
                     Criar Ordem de Compra
                 </button>
@@ -563,9 +100,9 @@
         {% else %}
             <div class="empty-state">
                 <i class="fas fa-box-open"></i>
-                <h3>Nenhum item disponível</h3>
+                <h3>Nenhum|default:0 items disponível</h3>
                 <p>Esta requisição não possui itens para criar uma ordem de compra.</p>
-                <a href="{% url 'stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn-primary-modern">
+                <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>
                     Voltar à Requisição
                 </a>
@@ -730,7 +267,7 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
     
     if (checkedBoxes.length === 0) {
         e.preventDefault();
-        alert('Selecione pelo menos um item para criar a ordem de compra.');
+        alert('Selecione pelo menos um|default:0 items para criar a ordem de compra.');
         return;
     }
     
@@ -773,7 +310,7 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
     
     if (!hasValidItems) {
         e.preventDefault();
-        alert('Defina quantidade e preço para pelo menos um item selecionado.');
+        alert('Defina quantidade e preço para pelo menos um|default:0 items selecionado.');
         return;
     }
     

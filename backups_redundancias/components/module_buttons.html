@@ -1,0 +1,43 @@
+{% comment %}
+BOTÕES DE MÓDULOS PRINCIPAIS
+Template específico para botões de acesso aos módulos principais (RH, Stock, Logística)
+
+Parâmetros:
+- modules: lista de módulos com suas configurações
+- layout: layout dos botões (grid, list, cards)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+<div class="modules-container{% if layout == 'grid' %} modules-grid{% elif layout == 'cards' %} modules-cards{% endif %}{% if class %} {{ class }}{% endif %}">
+    {% for module in modules %}
+        <div class="module-item">
+            {% include 'components/button_unified.html' with 
+                type='module' 
+                size='lg' 
+                text=module.name 
+                icon=module.icon 
+                url=module.url 
+                class='btn-module-main' 
+                id=module.id %}
+            
+            {% if module.description %}
+                <p class="module-description">{{ module.description }}</p>
+            {% endif %}
+            
+            {% if module.stats %}
+                <div class="module-stats">
+                    {% for stat in module.stats %}
+                        <span class="stat-item">
+                            <strong>{{ stat.value }}</strong>
+                            <small>{{ stat.label }}</small>
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+

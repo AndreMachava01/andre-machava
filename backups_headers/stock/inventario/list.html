@@ -1,0 +1,564 @@
+{% extends 'base_list.html' %}
+{% load static %}
+
+{% block title %}Controle de Inventário{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 2;
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .btn-modern {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-modern.btn-primary-modern {
+        background: var(--success-gradient);
+        border-color: transparent;
+    }
+
+    .btn-modern.btn-primary-modern:hover {
+        background: var(--success-gradient);
+        filter: brightness(1.1);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 30px;
+        background: #1f2937;
+        border-bottom: 1px solid #4b5563;
+    }
+
+    /* Usar o sistema unificado de contadores do components.css */
+
+    .stat-card:nth-child(1) { border-left: 4px solid #3b82f6; }
+    .stat-card:nth-child(2) { border-left: 4px solid #10b981; }
+    .stat-card:nth-child(3) { border-left: 4px solid #f59e0b; }
+    .stat-card:nth-child(4) { border-left: 4px solid #ef4444; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #f9fafb;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #d1d5db;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    }
+    
+    /* Content Area */
+    .content-area {
+        flex: 1;
+        overflow-y: auto;
+        background: #1f2937;
+        padding: 20px;
+    }
+
+    .table-container {
+        background: #374151;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #4b5563;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern th {
+        background: #4b5563;
+        color: #d1d5db;
+        font-weight: 600;
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #6b7280;
+    }
+
+    .table-modern td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #4b5563;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-planejado { background: #3b82f6; color: white; }
+    .status-em_andamento { background: #f59e0b; color: white; }
+    .status-concluido { background: #10b981; color: white; }
+    .status-cancelado { background: #ef4444; color: white; }
+
+    /* Progress Bar */
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #4b5563;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        transition: width 0.3s ease;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action.btn-view {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-action.btn-edit {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-action.btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #d1d5db;
+    }
+
+    .empty-state p {
+        margin-bottom: 20px;
+    }
+
+    .empty-state a {
+        color: #8b5cf6;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .modern-container {
+            margin: 5px;
+            min-height: calc(100vh - 10px);
+        }
+        
+        .hero-section {
+            padding: 15px 20px;
+        }
+        
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            padding: 15px;
+        }
+        
+        .table-container {
+            margin: 10px;
+        }
+        
+        .table-modern {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-clipboard-check"></i>
+            Controle de Inventário
+        </h1>
+        <p class="hero-subtitle">
+            Gestão completa de inventários físicos e ajustes de stock
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'stock:inventario:create' %}" class="btn-modern btn-primary-modern">
+                <i class="fas fa-plus"></i>
+                Novo Inventário
+            </a>
+            <a href="{% url 'stock:inventario:ajustes_list' %}" class="btn-modern">
+                <i class="fas fa-adjust"></i>
+                Ver Ajustes
+            </a>
+            <a href="{% url 'stock:dashboard' %}" class="btn-modern">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'stock:main' %}" class="btn-modern">
+                <i class="fas fa-boxes"></i>
+                Stock Principal
+            </a>
+            <a href="{% url 'stock:movimentos' %}" class="btn-modern">
+                <i class="fas fa-exchange-alt"></i>
+                Movimentos
+            </a>
+            <a href="{% url 'stock:requisicoes:list' %}" class="btn-modern">
+                <i class="fas fa-clipboard-list"></i>
+                Requisições
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_inventarios }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ inventarios_planejados }}</div>
+            <div class="stat-label">Planejados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ inventarios_andamento }}</div>
+            <div class="stat-label">Em Andamento</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ inventarios_concluidos }}</div>
+            <div class="stat-label">Concluídos</div>
+        </div>
+    </div>
+
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='inventario' %}
+
+    <!-- Table Section -->
+    <div class="content-area">
+        {% if inventarios %}
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Sucursal</th>
+                            <th>Status</th>
+                            <th>Progresso</th>
+                            <th>Responsável</th>
+                            <th>Data Início</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inventario in inventarios %}
+                        <tr>
+                            <td>
+                                <strong>{{ inventario.codigo }}</strong>
+                            </td>
+                            <td>{{ inventario.nome }}</td>
+                            <td>{{ inventario.sucursal.nome }}</td>
+                            <td>
+                                <span class="status-badge status-{{ inventario.status|lower }}">
+                                    {{ inventario.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="progress-bar" style="flex: 1;">
+                                        <div class="progress-fill" data-width="{{ inventario.progresso_percentual }}"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; color: #9ca3af;">
+                                        {{ inventario.progresso_percentual }}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if inventario.usuario_responsavel %}
+                                    {{ inventario.usuario_responsavel.get_full_name|default:inventario.usuario_responsavel.username }}
+                                {% else %}
+                                    Não informado
+                                {% endif %}
+                            </td>
+                            <td>{{ inventario.data_inicio|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn-action btn-view" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if inventario.status == 'EM_ANDAMENTO' %}
+                                    <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn-action btn-edit" title="Continuar contagem">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if inventario.status == 'CONCLUIDO' %}
+                                    <a href="{% url 'stock:inventario:relatorio' inventario.id %}" class="btn-action btn-view" title="Ver relatório">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if inventarios.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                <div style="display: inline-flex; gap: 10px; align-items: center;">
+                    {% if inventarios.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ inventarios.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span style="padding: 8px 12px; background: #374151; color: #d1d5db; border-radius: 6px;">
+                        Página {{ inventarios.number }} de {{ inventarios.paginator.num_pages }}
+                    </span>
+                    
+                    {% if inventarios.has_next %}
+                        <a href="?page={{ inventarios.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ inventarios.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check"></i>
+                <h3>Nenhum inventário encontrado</h3>
+                <p>Não há inventários físicos que correspondam aos filtros aplicados.</p>
+                <a href="{% url 'stock:inventario:create' %}">Criar novo inventário</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function limparFiltros() {
+    document.getElementById('filtersForm').reset();
+    window.location.href = window.location.pathname;
+}
+
+// Auto-submit quando mudar ordenação
+document.addEventListener('DOMContentLoaded', function() {
+    const ordenarSelect = document.querySelector('select[name="ordenar"]');
+    if (ordenarSelect) {
+        ordenarSelect.addEventListener('change', function() {
+            document.getElementById('filtersForm').submit();
+        });
+    }
+});
+
+// Salvar filtros no localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filtersForm');
+    const inputs = form.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        const savedValue = localStorage.getItem(`inventario_filter_${input.name}`);
+        if (savedValue && !input.value) {
+            input.value = savedValue;
+        }
+        
+        input.addEventListener('change', function() {
+            localStorage.setItem(`inventario_filter_${this.name}`, this.value);
+        });
+    });
+    
+    // Definir largura das barras de progresso
+    document.querySelectorAll('.progress-fill').forEach(function(element) {
+        const width = element.getAttribute('data-width');
+        element.style.width = width + '%';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}
+    {% if feriado %}Editar Feriado{% else %}Adicionar Feriado{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1 class="header-title">
+        <i class="fas fa-calendar-alt"></i>
+        {% if feriado %}Editar Feriado{% else %}Adicionar Feriado{% endif %}
+    </h1>
+    
+    <div style="margin-top: 15px;">
+        <a href="#" class="back-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar para Feriados
+        </a>
+    </div>
+</div>
+
+<div class="info-box">
+    <h4><i class="fas fa-info-circle"></i> Informação</h4>
+    <p>Os feriados são automaticamente considerados nos cálculos de dias úteis. Feriados inativos não afetam os cálculos de presença.</p>
+</div>
+
+<div class="form-container">
+    <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="nome">Nome do Feriado <span class="required">*</span></label>
+                <input type="text" id="nome" name="nome" value="{{ feriado.nome|default:'' }}" required>
+                <div class="help-text">Ex: Dia da Independência, Natal, etc.</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data">Data <span class="required">*</span></label>
+                <div class="date-wrapper">
+                    <input type="date" 
+                           id="data" 
+                           name="data" 
+                           value="{{ feriado.data|date:'Y-m-d'|default:'' }}" 
+                           required
+                           aria-required="true"
+                           min="2000-01-01"
+                           max="2100-12-31"
+                           aria-describedby="data-help">
+                    <button type="button" class="date-today" aria-label="Definir para hoje" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if feriado %}Atualizar Feriado{% else %}Adicionar Feriado{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do formulário
+    const form = document.querySelector('form');
+    const nomeInput = document.getElementById('nome');
+    const dataInput = document.getElementById('data');
+    const tipoSelect = document.getElementById('tipo');
+    const descricaoTextarea = document.getElementById('descricao');
+    const charCount = document.getElementById('char-count');
+    const tipoDescription = document.getElementById('tipo-description');
+    
+    // Função para mostrar mensagens de erro
+    function showError(input, message) {
+        // Remover erros anteriores
+        const existingError = input.parentNode.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Criar e estilizar a mensagem de erro
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '12px';
+        errorDiv.style.marginTop = '4px';
+        errorDiv.textContent = message;
+        
+        // Inserir após o input
+        input.parentNode.appendChild(errorDiv);
+        input.style.borderColor = '#dc3545';
+    }
+    
+    // Atualizar contador de caracteres
+    function updateCharCount() {
+        const currentLength = descricaoTextarea.value.length;
+        charCount.textContent = currentLength;
+        
+        // Mudar cor quando estiver próximo do limite
+        if (currentLength > 450) {
+            charCount.style.color = currentLength >= 500 ? '#e53e3e' : '#d69e2e';
+        } else {
+            charCount.style.color = '';
+        }
+    }
+    
+    // Inicializar contador de caracteres
+    if (descricaoTextarea) {
+        updateCharCount();
+        descricaoTextarea.addEventListener('input', updateCharCount);
+    }
+    
+    // Atualizar descrição do tipo de feriado
+    function updateTipoDescription() {
+        if (!tipoSelect) return;
+        
+        const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+        if (selectedOption && selectedOption.dataset.description) {
+            tipoDescription.textContent = selectedOption.dataset.description;
+            tipoDescription.style.display = 'block';
+        } else {
+            tipoDescription.style.display = 'none';
+        }
+    }
+    
+    // Inicializar descrição do tipo
+    if (tipoSelect) {
+        updateTipoDescription();
+        tipoSelect.addEventListener('change', updateTipoDescription);
+    }
+    
+    // Botão "Hoje" para data
+    const todayButton = document.querySelector('.date-today');
+    if (todayButton) {
+        todayButton.addEventListener('click', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            dataInput.value = formattedDate;
+            
+            // Disparar evento de mudança para validação
+            const event = new Event('change');
+            dataInput.dispatchEvent(event);
+        });
+    }
+    
+    // Validação do formulário
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Limpar mensagens de erro anteriores
+            document.querySelectorAll('.error-message').forEach(msg => msg.remove());
+            
+            // Validar nome
+            if (nomeInput && !nomeInput.value.trim()) {
+                showError(nomeInput, 'Nome do feriado é obrigatório');
+                isValid = false;
+            }
+            
+            // Validar data
+            if (dataInput && !dataInput.value) {
+                showError(dataInput, 'Data é obrigatória');
+                isValid = false;
+            } else if (dataInput) {
+                // Verificar se a data não é no passado (opcional)
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0); // Zerar horas para comparar apenas a data
+                const dataFeriado = new Date(dataInput.value);
+                
+                if (dataFeriado < hoje) {
+                    if (!confirm('A data do feriado é no passado. Deseja continuar?')) {
+                        isValid = false;
+                    }
+                }
+            }
+            
+            // Validar tipo
+            if (tipoSelect && !tipoSelect.value) {
+                showError(tipoSelect, 'Tipo é obrigatório');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Validação de data futura
+    if (dataInput) {
+        dataInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                // Data no passado - mostrar aviso mas permitir
+                const helpText = document.createElement('div');
+                helpText.className = 'help-text warning';
+                helpText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Você está adicionando um feriado em uma data passada.';
+                
+                // Remover aviso anterior se existir
+                const existingWarning = this.parentNode.querySelector('.help-text.warning');
+                if (existingWarning) {
+                    existingWarning.remove();
+                }
+                
+                this.parentNode.insertBefore(helpText, this.nextSibling);
+            } else {
+                // Remover aviso se existir
+                const existingWarning = this.parentNode.querySelector('.help-text.warning');
+                if (existingWarning) {
+                    existingWarning.remove();
+                }
+            }
+        });
+    }
+    
+    // Auto-focus no primeiro campo
+    if (nomeInput) nomeInput.focus();
+});
+</script>
+{% endblock %}

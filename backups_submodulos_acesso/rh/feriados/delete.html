@@ -1,0 +1,121 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Excluir Feriado{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h1 class="header-title">
+        <i class="fas fa-exclamation-triangle"></i>
+        Excluir Feriado
+    </h1>
+    
+    <div style="margin-top: 15px;">
+        <a href="#" class="back-btn -responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar para Feriados
+        </a>
+    </div>
+</div>
+
+<div class="confirmation-container">
+    <div class="warning-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    
+    <h2 class="confirmation-title">Confirmar Exclusão</h2>
+    
+    <p class="confirmation-message">
+        Tem certeza que deseja excluir este feriado? Esta ação não pode ser desfeita.
+    </p>
+    
+    <div class="feriado-info">
+        <div class="info-item">
+            <span class="info-label">Nome:</span>
+            <span class="info-value"><strong>{{ feriado.nome }}</strong></span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Data:</span>
+            <span class="info-value">{{ feriado.data|date:"d/m/Y" }}</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Tipo:</span>
+            <span class="info-value">
+                <span class="tipo-badge tipo-{{ feriado.tipo|lower }}">
+                    {{ feriado.get_tipo_display }}
+                </span>
+            </span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Status:</span>
+            <span class="info-value">
+                <span class="status-badge {% if feriado.ativo %}status-ativo{% else %}status-inativo{% endif %}">
+                    {% if feriado.ativo %}Ativo{% else %}Inativo{% endif %}
+                </span>
+            </span>
+        </div>
+        
+        {% if feriado.descricao %}
+        <div class="info-item">
+            <span class="info-label">Descrição:</span>
+            <span class="info-value">{{ feriado.descricao }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="info-item">
+            <span class="info-label">Criado em:</span>
+            <span class="info-value">{{ feriado.data_criacao|date:"d/m/Y H:i" }}</span>
+        </div>
+    </div>
+    
+    <div class="impact-warning">
+        <h4><i class="fas fa-info-circle"></i> Impacto da Exclusão</h4>
+        <p>Este feriado será removido permanentemente. Se estiver ativo, pode afetar os cálculos de dias úteis e marcações automáticas de presença.</p>
+    </div>
+    
+    <form method="post" class="form-actions"action="."method="post">{% csrf_token %}
+        {% csrf_token %}
+        
+        <a href="#"rh:feriados' %}" class="btn btn btn-secondary btn-responsive -responsive">
+            <i class="fas fa-times"></i>
+            Cancelar
+        </a>
+        
+        <button type="button" class="btn btn btn-danger" onclick="Tem certeza absoluta que deseja excluir este feriado?")" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+            <i class="fas fa-trash"></i>
+            Excluir Feriado
+        </button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação adicional ao clicar no botão de exclusão
+    const deleteButton = document.querySelector('.btn-danger');
+    
+    deleteButton.addEventListener('click', function(e) {
+        const feriadoNome = '{{ feriado.nome }}';
+        const confirmMessage = `ATENÇÃO: Você está prestes a excluir permanentemente o feriado "${feriadoNome}".\n\nEsta ação NÃO PODE ser desfeita.\n\nTem certeza absoluta?`;
+        
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

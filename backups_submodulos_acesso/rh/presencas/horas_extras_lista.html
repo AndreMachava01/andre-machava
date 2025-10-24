@@ -1,0 +1,452 @@
+{% extends "base_list.html" %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+{% load static %}
+
+{% block title %}Lista de Horas Extras{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+    
+    /* Estilos específicos para a lista de horas extras */
+    
+    .form-group {
+        margin-bottom: 0;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+    
+    .form-control-modern {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        background: var(--bg-input);
+        color: var(--text-color);
+        font-size: 13px;
+        height: 38px;
+        transition: all var(--transition-fast);
+    }
+    
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--purple-accent);
+        box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+    }
+    
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 10px center;
+        background-repeat: no-repeat;
+        background-size: 14px;
+        padding-right: 35px;
+    }
+    
+    .btn-search {
+        background: var(--purple-gradient);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 38px;
+    }
+    
+    .btn-search:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    
+    .btn-clear {
+        background: var(--surface-medium);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: var(--radius-lg);
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 38px;
+        text-decoration: none;
+    }
+    
+    .btn-clear:hover {
+        background: var(--surface-high);
+        color: var(--text-color);
+    }
+    
+    .table-container {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        margin: 20px 0;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    
+    .table-header {
+        background: var(--surface-medium);
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .table-title i {
+        color: var(--purple-accent);
+    }
+    
+    .table-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-action {
+        background: var(--purple-gradient);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+    
+    .btn-action:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    
+    .btn-action.secondary {
+        background: var(--surface-medium);
+        color: var(--text-color);
+    }
+    
+    .btn-action.secondary:hover {
+        background: var(--surface-high);
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1000px;
+    }
+    
+    .table th {
+        background: var(--surface-medium);
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 13px;
+        padding: 15px 12px;
+        text-align: left;
+        border-bottom: 2px solid var(--border-color);
+        white-space: nowrap;
+    }
+    
+    .table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 13px;
+        color: var(--text-color);
+    }
+    
+    .table tbody tr:hover {
+        background: var(--surface-medium);
+    }
+    
+    .cell-primary {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .cell-secondary {
+        color: var(--text-muted);
+    }
+    
+    .cell-tertiary {
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-badge.aprovado {
+        background: var(--bg-success);
+        color: var(--text-success);
+    }
+    
+    .status-badge.pendente {
+        background: var(--bg-warning);
+        color: var(--text-warning);
+    }
+    
+    .status-badge.rejeitado {
+        background: var(--bg-error);
+        color: var(--text-error);
+    }
+    
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 20px;
+        background: var(--surface-medium);
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .page-btn {
+        background: var(--surface-medium);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+    }
+    
+    .page-btn:hover {
+        background: var(--surface-high);
+        color: var(--text-color);
+    }
+    
+    .page-btn.active {
+        background: var(--purple-gradient);
+        color: white;
+        border-color: var(--purple-accent);
+    }
+    
+    .page-info {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    
+    .table-empty {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+    
+    .table-empty i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+    
+    .table-empty h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: var(--text-color);
+    }
+    
+    .table-empty p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'rh:main' %}">RH</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'rh:presencas' %}">Presenças</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Horas Extras</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>Lista de Horas Extras</h1>
+            <p>Visualize e gerencie todas as horas extras registradas</p>
+        </div>
+        <div class="header-actions">
+            <a href="" class="btn -outline">
+                <i class="fas fa-plus"></i>
+                Nova Horas Extras
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabela de Horas Extras -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-clock"></i>
+                Horas Extras Registradas
+            </h3>
+            <div class="table-actions">
+                <a href="" class="btn-action">
+                    <i class="fas fa-plus"></i>
+                    Nova
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            {% if horas_extras %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Horário</th>
+                            <th>Quantidade</th>
+                            <th>Valor/Hora</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hora_extra in horas_extras %}
+                            <tr>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.funcionario.nome_completo }}</div>
+                                    <div class="cell-tertiary">{{ hora_extra.funcionario.codigo_funcionario }}</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.data|date:"d/m/Y" }}</div>
+                                    <div class="cell-tertiary">{{ hora_extra.data|date:"l" }}</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if hora_extra.tipo == 'DI' %}aprovado{% elif hora_extra.tipo == 'NO' %}pendente{% else %}rejeitado{% endif %}">
+                                        {% if hora_extra.tipo == 'DI' %}Diurno{% elif hora_extra.tipo == 'NO' %}Noturno{% else %}Extraordinário{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.hora_inicio|time:"H:i" }} - {{ hora_extra.hora_fim|time:"H:i" }}</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.quantidade_horas }}h</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.valor_por_hora|floatformat:2 }} MT</div>
+                                </td>
+                                <td>
+                                    <div class="cell-primary">{{ hora_extra.valor_total|floatformat:2 }} MT</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if hora_extra.aprovado %}aprovado{% else %}pendente{% endif %}">
+                                        {% if hora_extra.aprovado %}Aprovado{% else %}Pendente{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <a href="{% url 'rh:horas_extras_editar' hora_extra.id %}" class="btn-action secondary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#"rh:horas_extras_excluir' hora_extra.id %}" class="btn-action secondary" title="Excluir" onclick="event.preventDefault(); return "Tem certeza que deseja excluir esta horas extras?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="table-empty">
+                    <i class="fas fa-clock"></i>
+                    <h3>Nenhuma horas extras encontrada</h3>
+                    <p>Não há horas extras registradas para os filtros selecionados.</p>
+                    <a href="{% url 'rh:horas_extras_nova' %}" class="btn-action">
+                        <i class="fas fa-plus"></i>
+                        Registrar Primeira Horas Extras
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if horas_extras.has_other_pages %}
+            <div class="pagination-modern">
+                {% if horas_extras.has_previous %}
+                    <a href="?page=1{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ horas_extras.previous_page_number }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                <span class="page-info">
+                    Página {{ horas_extras.number }} de {{ horas_extras.paginator.num_pages }}
+                </span>
+                
+                {% if horas_extras.has_next %}
+                    <a href="?page={{ horas_extras.next_page_number }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ horas_extras.paginator.num_pages }}{% if mes %}&mes={{ mes }}{% endif %}{% if ano %}&ano={{ ano }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

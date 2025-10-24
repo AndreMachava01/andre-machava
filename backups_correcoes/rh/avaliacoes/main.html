@@ -1,0 +1,329 @@
+{% extends 'base_list.html' %}
+
+{% block title %}Avaliações de Desempenho - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Avaliações</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-star"></i>
+                    Avaliações de Desempenho
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie avaliações de desempenho dos funcionários
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:avaliacao_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Avaliação
+                </a>
+                <a href="{% url 'rh:avaliacao_add_batch' %}" class="btn btn-secondary">
+                    <i class="fas fa-users"></i>
+                    Avaliações em Lote
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.total_avaliacoes|default:"0" }}</h3>
+                <p class="stat-label">Total de Avaliações</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.planejadas|default:"0" }}</h3>
+                <p class="stat-label">Planejadas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.em_andamento|default:"0" }}</h3>
+                <p class="stat-label">Em Andamento</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.concluidas|default:"0" }}</h3>
+                <p class="stat-label">Concluídas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.canceladas|default:"0" }}</h3>
+                <p class="stat-label">Canceladas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.nota_media|floatformat:1|default:"0.0" }}</h3>
+                <p class="stat-label">Nota Média</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='avaliacoes' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if avaliacoes %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Avaliações
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ avaliacoes|length }} avaliação(ões)
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper" style="overflow-x: auto; min-width: 1200px;">
+                <table class="table" style="min-width: 1200px;">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Cargo</th>
+                            <th>Avaliador</th>
+                            <th>Tipo</th>
+                            <th>Período</th>
+                            <th>Status</th>
+                            <th>Nota</th>
+                            <th>Classificação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for avaliacao in avaliacoes %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">
+                                    <div class="user-avatar">
+                                        {{ avaliacao.funcionario.nome_completo|first|upper }}
+                                    </div>
+                                    <div class="user-info">
+                                        <strong>{{ avaliacao.funcionario.nome_completo }}</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-secondary">{{ avaliacao.funcionario.departamento.nome|default:"-" }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-secondary">{{ avaliacao.funcionario.cargo.nome|default:"-" }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-primary">
+                                    <strong>{{ avaliacao.avaliador.nome_completo }}</strong>
+                                    <div class="cell-tertiary">{{ avaliacao.avaliador.cargo.nome }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary">{{ avaliacao.get_tipo_display }}</span>
+                            </td>
+                            <td>
+                                <div class="cell-primary">
+                                    <strong>{{ avaliacao.data_inicio|date:"d/m/Y" }}</strong>
+                                    <div class="cell-tertiary">até {{ avaliacao.data_fim|date:"d/m/Y" }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ avaliacao.status|lower }}">
+                                    {{ avaliacao.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if avaliacao.nota_geral %}
+                                    <span class="nota-display 
+                                        {% if avaliacao.nota_geral >= 8 %}nota-excelente
+                                        {% elif avaliacao.nota_geral >= 6 %}nota-bom
+                                        {% elif avaliacao.nota_geral >= 4 %}nota-regular
+                                        {% else %}nota-ruim{% endif %}">
+                                        {{ avaliacao.nota_geral|floatformat:1 }}
+                                    </span>
+                                {% else %}
+                                    <span class="cell-tertiary">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if avaliacao.classificacao %}
+                                    <span class="cell-primary">{{ avaliacao.get_classificacao_display }}</span>
+                                {% else %}
+                                    <span class="cell-tertiary">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'rh:avaliacao_detail' avaliacao_id=avaliacao.id %}" class="btn-action secondary" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'rh:avaliacao_edit' avaliacao_id=avaliacao.id %}" class="btn-action secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'rh:avaliacao_print' avaliacao_id=avaliacao.id %}" class="btn-action secondary" title="Baixar PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="{% url 'rh:avaliacao_delete' avaliacao_id=avaliacao.id %}" class="btn-action danger" title="Eliminar" 
+                                       onclick="return confirm('Tem certeza que deseja eliminar esta avaliação?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-star"></i>
+                <h4>Nenhuma avaliação encontrada</h4>
+                <p>
+                    {% if search_query or status_filter or tipo_filter or ano_filter or departamento_filter or cargo_filter %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    crie a primeira avaliação.
+                </p>
+                <a href="{% url 'rh:avaliacao_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Criar Primeira Avaliação
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Estilos específicos para avaliações */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: var(--text-sm);
+    margin-right: var(--space-3);
+    flex-shrink: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.cell-primary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.nota-display {
+    font-weight: var(--font-bold);
+    font-size: var(--text-lg);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+}
+
+.nota-excelente {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-success);
+}
+
+.nota-bom {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-info);
+}
+
+.nota-regular {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--accent-warning);
+}
+
+.nota-ruim {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-danger);
+}
+
+/* Larguras específicas das colunas para evitar conteúdo cortado */
+.table th:nth-child(1), .table td:nth-child(1) { width: 200px; min-width: 200px; } /* Funcionário */
+.table th:nth-child(2), .table td:nth-child(2) { width: 120px; min-width: 120px; } /* Departamento */
+.table th:nth-child(3), .table td:nth-child(3) { width: 120px; min-width: 120px; } /* Cargo */
+.table th:nth-child(4), .table td:nth-child(4) { width: 150px; min-width: 150px; } /* Avaliador */
+.table th:nth-child(5), .table td:nth-child(5) { width: 100px; min-width: 100px; } /* Tipo */
+.table th:nth-child(6), .table td:nth-child(6) { width: 120px; min-width: 120px; } /* Período */
+.table th:nth-child(7), .table td:nth-child(7) { width: 100px; min-width: 100px; } /* Status */
+.table th:nth-child(8), .table td:nth-child(8) { width: 80px; min-width: 80px; } /* Nota */
+.table th:nth-child(9), .table td:nth-child(9) { width: 120px; min-width: 120px; } /* Classificação */
+.table th:nth-child(10), .table td:nth-child(10) { width: 120px; min-width: 120px; } /* Ações */
+
+/* Garantir que o conteúdo não seja cortado */
+.table td {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: unset;
+}
+
+.table td .cell-primary {
+    white-space: normal;
+}
+
+.table td .cell-secondary {
+    white-space: normal;
+}
+
+.table td .cell-tertiary {
+    white-space: normal;
+}
+</style>
+
+{% endblock %}

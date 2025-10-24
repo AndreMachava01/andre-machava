@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Detalhes da Guia - {{ guia.codigo }}{% endblock %}
 
@@ -22,39 +22,20 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:guias_list' %}">Guias de Remessa</a>
+        <a href="">Guias de Remessa</a>
         <i class="fas fa-chevron-right"></i>
         <span>{{ guia.codigo }}</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-file-alt"></i>
-                    Detalhes da Guia - {{ guia.codigo }}
-                </h1>
-                <p class="page-subtitle">
-                    Informações completas da Guia de Remessa
-                </p>
-            </div>
-            <div class="header-actions">
-                {% if not guia.impressa %}
-                    <a href="{% url 'stock:pod:imprimir_guia' guia.id %}" class="btn btn-success">
-                        <i class="fas fa-print"></i>
-                        Imprimir Guia
-                    </a>
-                {% endif %}
-                <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar à Lista
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Detalhes da Guia - {{ guia.codigo }}"
+    subtitle="Informações completas da Guia de Remessa"
+    icon="fas fa-file-alt"
+%}    </div>
 
     <!-- Informações Principais -->
     <div class="row">
@@ -172,14 +153,14 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="action-buttons-vertical">
+                    <div class="action-btns-vertical -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
                         {% if not guia.impressa %}
-                            <a href="{% url 'stock:pod:imprimir_guia' guia.id %}" class="btn btn-success btn-block">
+                            <a href="#"stock:pod:imprimir_guia' guia.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-print"></i>
                                 Imprimir Guia
                             </a>
                         {% endif %}
-                        <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-secondary btn-block">
+                        <a href="#"stock:pod:guias_list' %}" class="btn btn btn btn btn btn btn btn btn-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-list"></i>
                             Ver Todas as Guias
                         </a>
@@ -190,32 +171,5 @@
     </div>
 </div>
 
-<style>
-.info-item {
-    margin-bottom: 1rem;
-}
 
-.info-label {
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-.info-value {
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.action-buttons-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.btn-block {
-    width: 100%;
-    justify-content: flex-start;
-}
-</style>
 {% endblock %}

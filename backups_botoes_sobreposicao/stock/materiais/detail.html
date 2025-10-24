@@ -1,0 +1,176 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Material{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Materiais</a></li>
+            <li class="breadcrumb-item active">{{ material.nome }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-cogs"></i> Detalhes do Material</h2>
+            <div class="btn-group btn-responsive btn-responsive" role="button">
+                <a href="#"stock:materiais' %}" class="btn-outline-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <a href="#"stock:material_edit' material.id %}" class="btn btn-primary btn-responsive btn-responsive">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Material Details -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i> Informações Gerais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Código:</strong></td>
+                                    <td><span class="material-code">{{ material.codigo }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nome:</strong></td>
+                                    <td><span class="material-name">{{ material.nome }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ material.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoria:</strong></td>
+                                    <td>{{ material.categoria.nome|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidade:</strong></td>
+                                    <td>{{ material.get_unidade_medida_display }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            {% if material.descricao %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-align-left"></i> Descrição
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="description-text">{{ material.descricao }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Stock Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-warehouse"></i> Estoque
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h3>{{ material.quantidade_atual|default:0 }}</h3>
+                        <p class="text-muted">{{ material.get_unidade_medida_display }}</p>
+                    </div>
+                    
+                    
+
+                    {% if material.quantidade_atual <= material.estoque_minimo %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Estoque baixo! Abaixo do mínimo.
+                        </div>
+                    {% elif material.quantidade_atual >= material.estoque_maximo %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Estoque no máximo.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Supplier Information -->
+            {% if material.fornecedor_principal %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-truck"></i> Fornecedor Principal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="supplier-name">{{ material.fornecedor_principal.nome }}</h6>
+                    <p class="text-muted mb-1">{{ material.fornecedor_principal.get_tipo_display }}</p>
+                    {% if material.fornecedor_principal.email %}
+                        <p class="supplier-info">
+                            <i class="fas fa-envelope"></i>{{ material.fornecedor_principal.email }}
+                        </p>
+                    {% endif %}
+                    {% if material.fornecedor_principal.telefone %}
+                        <p class="supplier-info">
+                            <i class="fas fa-phone"></i>{{ material.fornecedor_principal.telefone }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notes -->
+            {% if material.observacoes %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-sticky-note"></i> Observações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="notes-text">{{ material.observacoes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

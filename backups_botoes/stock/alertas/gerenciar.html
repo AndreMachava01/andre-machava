@@ -1,0 +1,191 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+<!-- FILTROS - REMOVIDO (USAR SISTEMA UNIFICADO) -->
+<!-- Substituir por: {% include 'includes/filters_unified.html' with entity_name='nome_entidade' %} -->
+
+{% block title %}Gerenciamento de Alertas - Sistema de Gestão{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="alertas-container">
+    <!-- Header -->
+    <div class="alertas-header">
+        <h1 class="alertas-title">
+            <i class="fas fa-bell"></i>
+            Gerenciamento de Alertas
+        </h1>
+        <p class="alertas-subtitle">
+            Sistema automático de monitoramento e alertas críticos
+        </p>
+    </div>
+
+    <!-- Content -->
+    <div class="alertas-content">
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <span class="stat-title">Total de Alertas</span>
+                    <div class="stat-icon info">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ total_alertas }}</div>
+                <p class="stat-description">Alertas no sistema</p>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <span class="stat-title">Não Lidos</span>
+                    <div class="stat-icon warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ alertas_nao_lidos }}</div>
+                <p class="stat-description">Requerem atenção</p>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <span class="stat-title">Tipos de Alerta</span>
+                    <div class="stat-icon success">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ alertas_por_tipo|length }}</div>
+                <p class="stat-description">Categorias diferentes</p>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <span class="stat-title">Críticos</span>
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ alertas_criticos|length }}</div>
+                <p class="stat-description">Ação urgente</p>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="actions-grid">
+            <div class="action-card">
+                <div class="action-icon success">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h3 class="action-title">Criar Alertas</h3>
+                <p class="action-description">Executa a verificação automática e cria novos alertas do sistema</p>
+                <form method="post" action="{% url "stock:alertas_criar_manuais" %}" style="display: inline;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-play"></i> Executar Agora
+                    </button>
+                </form>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon warning">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h3 class="action-title">Limpar Antigas</h3>
+                <p class="action-description">Remove notificações antigas (mais de 30 dias) que já foram lidas</p>
+                
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon info">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <h3 class="action-title">Marcar Todos</h3>
+                <p class="action-description">Marca todos os alertas não lidos como lidos</p>
+                
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon danger">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="action-title">Ver Notificações</h3>
+                <p class="action-description">Acessa a lista completa de notificações do sistema</p>
+                <a href="#"stock:notificacoes_list' %}" class="action-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-list"></i> Ver Lista
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas Críticos -->
+        {% if alertas_criticos %}
+        <div class="alertas-list">
+            <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                Alertas Críticos
+            </h3>
+            
+            {% for alerta in alertas_criticos %}
+            <div class="alert-item {{ alerta.tipo }}">
+                <div class="alert-header">
+                    <div class="alert-title">{{ alerta.titulo }}</div>
+                    <div class="alert-date">{{ alerta.data_criacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="alert-message">{{ alerta.mensagem }}</div>
+                <div class="alert-actions">
+                    {% if alerta.url %}
+                    <a href="{{ alerta.url }}" class="alert-action primary">
+                        <i class="fas fa-external-link-alt"></i> Ver Detalhes
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'stock:notificacao_marcar_lida' alerta.id %}" class="alert-action">
+                        <i class="fas fa-check"></i> Marcar Lido
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Alertas Recentes -->
+        {% if alertas_recentes %}
+        <div class="alertas-list">
+            <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-history" style="color: #3b82f6;"></i>
+                Alertas Recentes
+            </h3>
+            
+            {% for alerta in alertas_recentes %}
+            <div class="alert-item {{ alerta.tipo }}">
+                <div class="alert-header">
+                    <div class="alert-title">{{ alerta.titulo }}</div>
+                    <div class="alert-date">{{ alerta.data_criacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="alert-message">{{ alerta.mensagem }}</div>
+                <div class="alert-actions">
+                    {% if alerta.url %}
+                    <a href="{{ alerta.url }}" class="alert-action primary">
+                        <i class="fas fa-external-link-alt"></i> Ver Detalhes
+                    </a>
+                    {% endif %}
+                    {% if not alerta.lida %}
+                    <a href="{% url 'stock:notificacao_marcar_lida' alerta.id %}" class="alert-action">
+                        <i class="fas fa-check"></i> Marcar Lido
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Navegação -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="#"stock:main' %}" class="action-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i> Voltar ao Stock
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

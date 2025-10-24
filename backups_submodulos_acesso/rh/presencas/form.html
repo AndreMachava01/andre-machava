@@ -1,0 +1,134 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}
+    {% if presenca %}
+        Editar Presença
+    {% else %}
+        Nova Presença
+    {% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Presenças</a></li>
+            <li class="breadcrumb-item active">{% if presenca %}Editar{% else %}Nova{% endif %} Presença</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1>
+                    <i class="fas fa-calendar-check me-2"></i>{% if presenca %}Editar{% else %}Nova{% endif %} Presença
+                </h1>
+                <p>{% if presenca %}Editar registro de presença{% else %}Registrar nova presença{% endif %}</p>
+            </div>
+            <div class="action-btns -responsive">
+                <a href="#" class="btn btn btn-secondary btn-responsive -responsive">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        {% if not presenca %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Informação:</strong> Registre a presença de um funcionário para uma data específica. Marque o tipo de presença e, se necessário, registre horas extras trabalhadas.
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'rh:presenca_add' %}"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="funcionario">Funcionário *</label>
+                <select id="funcionario" name="funcionario" required>
+                    <option value="">Selecione um funcionário</option>
+                    {% for funcionario in funcionarios %}
+                    <option value="{{ funcionario.id }}" {% if presenca and presenca.funcionario.id == funcionario.id %}selected{% endif %}>
+                        {{ funcionario.nome_completo }} ({{ funcionario.codigo_funcionario }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="data">Data *</label>
+                <input type="date" id="data" name="data" value="{{ presenca.data|date:'Y-m-d'|default:'' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_presenca">Tipo de Presença *</label>
+                <select id="tipo_presenca" name="tipo_presenca" required>
+                    <option value="">Selecione um tipo</option>
+                    {% for tipo in tipos_presenca %}
+                    <option value="{{ tipo.id }}" {% if presenca and presenca.tipo_presenca.id == tipo.id %}selected{% endif %}>
+                        {{ tipo.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="horas_extras">Horas Extras (opcional)</label>
+                <input type="number" id="horas_extras" name="horas_extras" value="{{ presenca.horas_extras|default:'' }}" step="0.5" min="0" max="24" placeholder="Ex: 2.5">
+                <div class="help-text">Digite apenas se houver horas extras trabalhadas</div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" placeholder="Observações sobre a presença">{{ presenca.observacoes|default:'' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="justificativa">Justificativa</label>
+                <textarea id="justificativa" name="justificativa" placeholder="Justificativa para faltas ou atrasos">{{ presenca.justificativa|default:'' }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save me-1"></i>Salvar
+                </button>
+                <a href="#"rh:presencas' %}" class="btn btn-outline btn-responsive -responsive">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dataInput = document.getElementById('data');
+    
+    // Definir data padrão como hoje se não estiver editando
+    {% if not presenca %}
+    if (!dataInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dataInput.value = today;
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

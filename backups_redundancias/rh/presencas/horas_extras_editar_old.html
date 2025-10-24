@@ -1,0 +1,206 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Editar Horas Extras{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editar-container">
+    <div class="header-section">
+        <a href="{% url 'rh:horas_extras' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+        <h1 class="header-title">
+            <i class="fas fa-edit"></i>
+            Editar Horas Extras
+        </h1>
+    </div>
+
+    <div class="form-section">
+        <h2 class="form-title">
+            <i class="fas fa-clock"></i>
+            Dados das Horas Extras
+        </h2>
+
+        <!-- Informações do registro -->
+        <div class="info-section">
+            <div class="info-title">
+                <i class="fas fa-info-circle"></i>
+                Informações do Registro
+            </div>
+            <div class="info-content">
+                <strong>Funcionário:</strong> {{ horas_extras.funcionario.nome_completo }} ({{ horas_extras.funcionario.codigo_funcionario }})<br>
+                <strong>Data:</strong> {{ horas_extras.data|date:"d/m/Y" }}<br>
+                <strong>Criado em:</strong> {{ horas_extras.data_criacao|date:"d/m/Y H:i" }}<br>
+                {% if horas_extras.criado_por %}
+                <strong>Criado por:</strong> {{ horas_extras.criado_por.get_full_name|default:horas_extras.criado_por.username }}
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="funcionario">
+                        <i class="fas fa-user"></i>
+                        Funcionário <span class="required">*</span>
+                    </label>
+                    <select name="funcionario" id="funcionario" required>
+                        {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}" {% if funcionario.id == horas_extras.funcionario.id %}selected{% endif %}>
+                            {{ funcionario.nome_completo }} ({{ funcionario.codigo_funcionario }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data">
+                        <i class="fas fa-calendar"></i>
+                        Data <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data" id="data" value="{{ horas_extras.data|date:'Y-m-d' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">
+                        <i class="fas fa-tag"></i>
+                        Tipo de Horas Extras <span class="required">*</span>
+                    </label>
+                    <select name="tipo" id="tipo" required>
+                        {% for codigo, nome in tipos_choices %}
+                        <option value="{{ codigo }}" {% if codigo == horas_extras.tipo %}selected{% endif %}>
+                            {{ nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora_inicio">
+                        <i class="fas fa-clock"></i>
+                        Hora de Início
+                    </label>
+                    <input type="time" name="hora_inicio" id="hora_inicio" value="{{ horas_extras.hora_inicio|time:'H:i' }}">
+                    <div class="help-text">Hora de início do trabalho extra</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora_fim">
+                        <i class="fas fa-clock"></i>
+                        Hora de Fim
+                    </label>
+                    <input type="time" name="hora_fim" id="hora_fim" value="{{ horas_extras.hora_fim|time:'H:i' }}">
+                    <div class="help-text">Hora de fim do trabalho extra</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantidade_horas">
+                        <i class="fas fa-hourglass-half"></i>
+                        Quantidade de Horas <span class="required">*</span>
+                    </label>
+                    <input type="number" name="quantidade_horas" id="quantidade_horas" 
+                           step="0.5" min="0" max="24" value="{{ horas_extras.quantidade_horas }}" required>
+                    <div class="help-text">Digite as horas extras em formato decimal (ex: 2.5 = 2h30min)</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="valor_por_hora">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Valor por Hora Extra (MT) <span class="required">*</span>
+                    </label>
+                    <input type="number" name="valor_por_hora" id="valor_por_hora" 
+                           step="0.01" min="0" value="{{ horas_extras.valor_por_hora }}" required>
+                    <div class="help-text">Valor em Meticais por hora extra</div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="observacoes">
+                        <i class="fas fa-comment"></i>
+                        Observações
+                    </label>
+                    <textarea name="observacoes" id="observacoes" placeholder="Observações sobre as horas extras...">{{ horas_extras.observacoes }}</textarea>
+                    <div class="help-text">Informações adicionais sobre as horas extras (opcional)</div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'rh:horas_extras' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cálculo automático de horas baseado no horário
+    const horaInicioInput = document.getElementById('hora_inicio');
+    const horaFimInput = document.getElementById('hora_fim');
+    const quantidadeHorasInput = document.getElementById('quantidade_horas');
+    
+    function calcularHoras() {
+        if (horaInicioInput.value && horaFimInput.value) {
+            const inicio = new Date('2000-01-01T' + horaInicioInput.value);
+            const fim = new Date('2000-01-01T' + horaFimInput.value);
+            
+            if (fim > inicio) {
+                const diffMs = fim - inicio;
+                const diffHours = diffMs / (1000 * 60 * 60);
+                quantidadeHorasInput.value = Math.round(diffHours * 2) / 2; // Arredondar para 0.5
+            }
+        }
+    }
+    
+    if (horaInicioInput && horaFimInput) {
+        horaInicioInput.addEventListener('change', calcularHoras);
+        horaFimInput.addEventListener('change', calcularHoras);
+    }
+    
+    // Validação do campo de quantidade de horas
+    if (quantidadeHorasInput) {
+        quantidadeHorasInput.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value > 24) {
+                this.setCustomValidity('As horas extras não podem exceder 24 horas por dia');
+            } else if (value < 0) {
+                this.setCustomValidity('As horas extras não podem ser negativas');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        // Formatação automática do campo de horas extras
+        quantidadeHorasInput.addEventListener('blur', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value)) {
+                // Arredondar para 0.5 mais próximo
+                const rounded = Math.round(value * 2) / 2;
+                this.value = rounded;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+

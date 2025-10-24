@@ -1,0 +1,179 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if categoria %}
+        Editar Categoria - {{ categoria.nome }}
+    {% else %}
+        Nova Categoria
+    {% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Categorias</a></li>
+            <li class="breadcrumb-item active">
+                {% if categoria %}Editar{% else %}Nova{% endif %} Categoria
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-{% if categoria %}edit{% else %}plus{% endif %}"></i>
+                {% if categoria %}
+                    Editar Categoria
+                {% else %}
+                    Nova Categoria
+                {% endif %}
+            </h2>
+            <a href="#" class="btn-outline-secondary btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="post"action="."method="post">{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <!-- Informações Básicas -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label required-field">Nome da Categoria</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" 
+                                           value="{% if categoria %}{{ categoria.nome }}{% endif %}" required
+                                           placeholder="Nome descritivo da categoria">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="codigo" class="form-label required-field">Código</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" 
+                                           value="{% if categoria %}{{ categoria.codigo }}{% endif %}" required
+                                           placeholder="Código único para identificação">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label required-field">Tipo de Categoria</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione o tipo</option>
+                                        {% for value, label in tipos %}
+                                            <option value="{{ value }}" 
+                                                    {% if categoria and categoria.tipo == value %}selected{% elif not categoria and value == 'AMBOS' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="categoria_pai" class="form-label">Categoria Pai</label>
+                                    <select class="form-select" id="categoria_pai" name="categoria_pai">
+                                        <option value="">Selecione uma categoria pai (opcional)</option>
+                                        {% for cat in categorias_pai %}
+                                            <option value="{{ cat.id }}" 
+                                                    {% if categoria and categoria.categoria_pai and categoria.categoria_pai.id == cat.id %}selected{% endif %}>
+                                                {{ cat.nome }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note"></i> Descrição</h5>
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="4" 
+                                      placeholder="Descrição detalhada da categoria (opcional)">{% if categoria %}{{ categoria.descricao }}{% endif %}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex justify-content-between">
+                        <a href="#"stock:categorias' %}" class="btn btn-secondary btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-save"></i>
+                            {% if categoria %}
+                                Atualizar Categoria
+                            {% else %}
+                                Criar Categoria
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validação do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios.');
+        }
+    });
+    
+    // Remover classe de erro quando o usuário começar a digitar
+    requiredFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
+</script>
+{% endblock %}
+

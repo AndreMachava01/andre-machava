@@ -1,0 +1,185 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Critérios de Avaliação - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Critérios</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-list-check"></i>
+                    Critérios de Avaliação
+                </h1>
+                <p class="page-subtitle">
+                    Gerencie os critérios utilizados nas avaliações de desempenho
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:criterio_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Critério
+                </a>
+                <a href="{% url 'rh:avaliacoes' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-list-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_criterios|default:"0" }}</h3>
+                <p class="stat-label">Total de Critérios</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ criterios_ativos|default:"0" }}</h3>
+                <p class="stat-label">Critérios Ativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ peso_total|default:"0" }}%</h3>
+                <p class="stat-label">Peso Total</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ media_peso|default:"0" }}%</h3>
+                <p class="stat-label">Peso Médio</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if criterios %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Critérios
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ criterios|length }} critério(s)
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Peso</th>
+                            <th>Status</th>
+                            <th>Ordem</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for criterio in criterios %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">{{ criterio.nome }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-secondary" title="{{ criterio.descricao }}">
+                                    {{ criterio.descricao|truncatechars:60|default:"-" }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary">{{ criterio.peso }}%</span>
+                            </td>
+                            <td>
+                                {% if criterio.ativo %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="cell-tertiary">{{ criterio.ordem|default:"-" }}</span>
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'rh:criterio_edit' criterio.id %}" class="btn-action secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'rh:criterio_delete' criterio.id %}" class="btn-action danger" title="Eliminar" 
+                                       onclick="return confirm('Tem certeza que deseja eliminar este critério?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-list-check"></i>
+                <h4>Nenhum critério encontrado</h4>
+                <p>Adicione o primeiro critério de avaliação.</p>
+                <a href="{% url 'rh:criterio_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Critério
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Animate cards on load
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

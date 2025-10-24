@@ -1,0 +1,132 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Etiquetas</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}"
+    subtitle="{% if form.instance.pk %}Editar informações da Etiqueta{% else %}Criar nova Etiqueta{% endif %}"
+    icon="fas fa-tags"
+%}    </div>
+
+    <!-- Formulário -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-edit"></i>
+                {% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.codigo.id_for_label }}" class="form-label">
+                                <i class="fas fa-barcode"></i> Código da Etiqueta
+                            </label>
+                            {{ form.codigo }}
+                            {% if form.codigo.errors %}
+                                <div class="form-errors">
+                                    {% for error in form.codigo.errors %}
+                                        <span class="error-message">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag"></i> Tipo da Etiqueta
+                            </label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="form-errors">
+                                    {% for error in form.tipo.errors %}
+                                        <span class="error-message">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.conteudo.id_for_label }}" class="form-label">
+                        <i class="fas fa-file-text"></i> Conteúdo da Etiqueta
+                    </label>
+                    {{ form.conteudo }}
+                    {% if form.conteudo.errors %}
+                        <div class="form-errors">
+                            {% for error in form.conteudo.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">
+                        Digite o conteúdo que será impresso na etiqueta
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+                        <i class="fas fa-comment-alt"></i> Observações
+                    </label>
+                    {{ form.observacoes }}
+                    {% if form.observacoes.errors %}
+                        <div class="form-errors">
+                            {% for error in form.observacoes.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}Atualizar Etiqueta{% else %}Criar Etiqueta{% endif %}
+                    </button>
+                    <a href="#"stock:pod:etiquetas_list' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

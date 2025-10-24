@@ -1,0 +1,127 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Critérios de Avaliação{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="criterios-container">
+    <!-- Cabeçalho da Página -->
+    <div class="header-section">
+        <h1 class="header-title">
+            <i class="fas fa-clipboard-list"></i>
+            Critérios de Avaliação
+        </h1>
+        <p style="margin: 8px 0 0 0; opacity: 0.9;">Gerencie os critérios utilizados nas avaliações de desempenho</p>
+        <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+            <a href="#" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-plus"></i>
+                Adicionar Critério
+            </a>
+            <a href="#"rh:avaliacoes' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Avaliações
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-section">
+        <div class="summary-card">
+            <div class="summary-value">{{ criterios.count }}</div>
+            <div class="summary-card h3">Total de Critérios</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ criterios|length }}</div>
+            <div class="summary-card h3">Critérios Ativos</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">
+                {% if criterios %}
+                    {{ criterios|length|floatformat:0 }}
+                {% else %}
+                    0
+                {% endif %}
+            </div>
+            <div class="summary-card h3">Critérios Disponíveis</div>
+        </div>
+    </div>
+
+    <!-- Tabela de Critérios -->
+    <div class="content-section">
+        <div class="section-header">
+            <h3 class="section-title">Lista de Critérios</h3>
+        </div>
+        
+        {% if criterios %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Nome</th>
+                    <th style="width: 35%;">Descrição</th>
+                    <th style="width: 15%;">Peso</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 10%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for criterio in criterios %}
+                <tr>
+                    <td>
+                        <div class="criterio-name">{{ criterio.nome }}</div>
+                    </td>
+                    <td>
+                        <div class="criterio-desc">
+                            {% if criterio.descricao %}
+                                {{ criterio.descricao|truncatewords:15 }}
+                            {% else %}
+                                <em style="color: #9ca3af;">Sem descrição</em>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="peso-badge">{{ criterio.peso }}</span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{% if criterio.ativo %}ativo{% else %}inativo{% endif %}">
+                            {% if criterio.ativo %}Ativo{% else %}Inativo{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                            <a href="#"rh:criterio_edit' criterio.id %}" class="action-btn btn-edit btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar Critério">
+                                <i class="fas fa-edit"></i>
+                                Editar
+                            </a>
+                            <a href="#"rh:criterio_delete' criterio.id %}" class="action-btn btn-delete btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Deletar Critério">
+                                <i class="fas fa-trash"></i>
+                                Deletar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="empty-title">Nenhum critério encontrado</div>
+            <div class="empty-desc">
+                Comece criando o primeiro critério de avaliação para o seu sistema.
+            </div>
+            <a href="#"rh:criterio_add' %}" class="add-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-plus"></i>
+                Criar Primeiro Critério
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

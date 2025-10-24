@@ -4,289 +4,19 @@
 {% block title %}Ordem de Compra - Impressão{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
 
-    /* Botões de Ação Padronizados */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: #f0fdf4;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background: #10b981;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #059669;
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-        background: #6b7280;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #4b5563;
-        transform: translateY(-1px);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: #6b7280;
-        border: 1px solid #6b7280;
-    }
-
-    .btn-outline:hover {
-        background: #6b7280;
-        color: white;
-        transform: translateY(-1px);
-    }
-
-    /* Estilos para o documento de impressão */
-    .print-container {
-        background: white;
-        color: black;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 0.9rem;
-    }
-
-    .document-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #8b5cf6;
-    }
-
-    .company-info h1 {
-        color: #8b5cf6;
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .company-info h2 {
-        color: #374151;
-        font-size: 1rem;
-        font-weight: 600;
-        margin: 5px 0 0 0;
-    }
-
-    .header-date {
-        color: #6b7280;
-        font-size: 1rem;
-        font-weight: 500;
-    }
-
-    .section {
-        margin-bottom: 20px;
-        background: #f9fafb;
-        border-radius: 8px;
-        padding: 15px;
-        border-left: 4px solid #8b5cf6;
-    }
-
-    .section h3 {
-        color: #8b5cf6;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0 0 15px 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 15px;
-    }
-
-    .info-item {
-        background: white;
-        padding: 12px;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-        font-size: 0.9rem;
-    }
-
-    .info-item strong {
-        color: #374151;
-        font-weight: 600;
-    }
-
-    .items-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin-top: 15px;
-    }
-
-    .items-table thead th {
-        background: #8b5cf6;
-        color: white;
-        padding: 12px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .items-table tbody td {
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-        font-size: 0.9rem;
-    }
-
-    .items-table tbody tr:nth-child(even) {
-        background: #f9fafb;
-    }
-
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-
-    .total-row {
-        background: #8b5cf6 !important;
-        color: white !important;
-        font-weight: 700;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-    }
-
-    .summary-item {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        text-align: center;
-    }
-
-    .summary-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #8b5cf6;
-        margin-bottom: 8px;
-    }
-
-    .summary-label {
-        font-size: 0.9rem;
-        color: #6b7280;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .signatures {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 40px;
-        margin-top: 40px;
-    }
-
-    .signature-space {
-        text-align: center;
-    }
-
-    .signature-line {
-        height: 1px;
-        background: #374151;
-        margin: 30px 0 10px 0;
-    }
-
-    .signature-name {
-        font-weight: 600;
-        color: #8b5cf6;
-        margin: 0;
-    }
-
-    .document-footer {
-        text-align: center;
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 2px solid #e5e7eb;
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
-
-    .document-footer p {
-        margin: 5px 0;
-    }
-
-    @media print {
-        .action-buttons {
-            display: none !important;
-        }
-        
-        .print-container {
-            box-shadow: none;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        body {
-            background: white;
-            color: black;
-        }
-        
-        .section {
-            break-inside: avoid;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 <!-- Botões de Ação Padronizados -->
-<div class="action-buttons">
-    <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn btn-secondary">
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="document-btn document-btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
         <i class="fas fa-arrow-left"></i> Voltar ao Preview
     </a>
-    <button onclick="window.print()" class="btn btn-primary">
+    <button class="document-btn document-btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
         <i class="fas fa-print"></i> Imprimir Ordem
     </button>
-    <a href="{% url 'stock:main' %}" class="btn btn-outline">
+    <a href="#"stock:main' %}" class="document-btn document-btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
         <i class="fas fa-home"></i> Dashboard Stock
     </a>
 </div>
@@ -368,7 +98,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in itens %}
+                {% for items in itens  %}
                 <tr>
                     <td>{{ item.descricao }}</td>
                     <td>{{ item.produto.codigo|default:"N/A" }}</td>
@@ -398,7 +128,7 @@
             </div>
             <div class="summary-item">
                 <div class="summary-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
-                <div class="summary-label">Valor Total</div>
+                <div class="summary-label">Valor|default:0 total</div>
             </div>
         </div>
     </div>
@@ -418,13 +148,13 @@
         <div class="signature-space">
             <div class="signature-line"></div>
             <p class="signature-name">{{ ordem_compra.sucursal_destino.nome }}</p>
-            <p style="font-size: 0.8rem; color: #6b7280; margin: 5px 0 0 0;">Responsável pela Compra</p>
+            <p style="font-size: 8px; color: #6b7280; margin: 5px 0 0 0;">Responsável pela Compra</p>
         </div>
 
         <div class="signature-space">
             <div class="signature-line"></div>
             <p class="signature-name">{{ ordem_compra.fornecedor.nome }}</p>
-            <p style="font-size: 0.8rem; color: #6b7280; margin: 5px 0 0 0;">Fornecedor</p>
+            <p style="font-size: 8px; color: #6b7280; margin: 5px 0 0 0;">Fornecedor</p>
         </div>
     </div>
 

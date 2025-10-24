@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_list.html" %}
 
 {% block title %}Gestão de Fornecedores - Stock{% endblock %}
 
@@ -17,25 +17,12 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-truck"></i>
-                    Gestão de Fornecedores
-                </h1>
-                <p class="page-subtitle">
-                    Gerencie fornecedores e parceiros comerciais
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:fornecedor_add' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Novo Fornecedor
-                </a>
-            </div>
-        </div>
-    </div>
+    {% load static %}
+{% include "includes/header.html" with
+    title="Gestão de Fornecedores"
+    subtitle="Gerencie fornecedores e parceiros comerciais"
+    icon="fas fa-truck"
+%}    </div>
     
     <!-- Statistics Cards -->
     <div class="stats-grid">
@@ -44,7 +31,7 @@
                 <i class="fas fa-truck"></i>
             </div>
             <div class="stat-content">
-                <h3 class="stat-number">{{ page_obj.paginator.count|default:"0" }}</h3>
+                <h3 class="stat-number">{{ page_obj.paginator.count|default:0|default:"0" }}</h3>
                 <p class="stat-label">Total de Fornecedores</p>
             </div>
         </div>
@@ -80,56 +67,8 @@
         </div>
     </div>
     
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <h3 class="filters-title">
-            <i class="fas fa-filter"></i>
-            Filtros de Busca
-        </h3>
-        <form method="get" class="filters-row">
-            <div class="filter-group">
-                <label class="filter-label">Pesquisar</label>
-                <div class="table-search">
-                    <i class="fas fa-search table-search-icon"></i>
-                    <input type="text" name="q" value="{{ search_query|default:'' }}" 
-                           class="form-control" placeholder="Nome, código ou email...">
-                </div>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select name="status" class="form-select">
-                    <option value="">Todos os status</option>
-                    <option value="ATIVO" {% if status == 'ATIVO' %}selected{% endif %}>Ativo</option>
-                    <option value="INATIVO" {% if status == 'INATIVO' %}selected{% endif %}>Inativo</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Tipo</label>
-                <select name="tipo" class="form-select">
-                    <option value="">Todos os tipos</option>
-                    <option value="LOCAL" {% if tipo == 'LOCAL' %}selected{% endif %}>Local</option>
-                    <option value="NACIONAL" {% if tipo == 'NACIONAL' %}selected{% endif %}>Nacional</option>
-                    <option value="INTERNACIONAL" {% if tipo == 'INTERNACIONAL' %}selected{% endif %}>Internacional</option>
-                </select>
-            </div>
-            
-            <div class="filter-actions">
-                <button type="submit" class="btn-search">
-                    <i class="fas fa-search"></i>
-                    Buscar
-                </button>
-                
-                {% if search_query or status or tipo %}
-                    <button type="button" class="btn-clear" onclick="clearFilters()">
-                        <i class="fas fa-times"></i>
-                        Limpar
-                    </button>
-                {% endif %}
-            </div>
-        </form>
-    </div>
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='fornecedores' %}
     
     <!-- Table Section -->
     <div class="table-container">
@@ -192,13 +131,13 @@
                             </td>
                             <td>
                                 <div class="cell-actions">
-                                    <a href="/stock/fornecedores/{{ fornecedor.id }}/" class="btn-action success" title="Ver detalhes">
+                                    <a href="#"stock:fornecedor_detail' fornecedor.id %}?v={{ timestamp }}" class="btn-action-sm success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="/stock/fornecedores/{{ fornecedor.id }}/edit/" class="btn-action secondary" title="Editar">
+                                    <a href="#"stock:fornecedor_edit' fornecedor.id %}" class="btn-action-sm secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="/stock/fornecedores/{{ fornecedor.id }}/delete/" class="btn-action danger" title="Eliminar">
+                                    <a href="#"stock:fornecedor_delete' fornecedor.id %}" class="btn-action-sm danger btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -213,27 +152,27 @@
             {% if page_obj.has_other_pages %}
                 <div class="pagination-modern">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-double-left"></i>
                         </a>
-                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-left"></i>
                         </a>
                     {% endif %}
                     
                     {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
-                            <span class="page-btn active">{{ num }}</span>
+                            <span class="page-btn active btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button" role="button">{{ num }}</span>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                            <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">{{ num }}</a>
+                            <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">{{ num }}</a>
                         {% endif %}
                     {% endfor %}
                     
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-right"></i>
                         </a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-double-right"></i>
                         </a>
                     {% endif %}
@@ -249,7 +188,7 @@
                     {% endif %}
                     adicione o primeiro fornecedor.
                 </p>
-                <a href="{% url 'stock:fornecedor_add' %}" class="btn btn-primary">
+                <a href="#"stock:fornecedor_add' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-plus"></i>
                     Adicionar Fornecedor
                 </a>
@@ -258,58 +197,4 @@
     </div>
 </div>
 
-<script>
-// Função para limpar filtros
-function clearFilters() {
-    document.querySelector('input[name="q"]').value = '';
-    document.querySelector('select[name="status"]').value = '';
-    document.querySelector('select[name="tipo"]').value = '';
-    document.querySelector('form').submit();
-}
-
-// Auto-submit nos filtros
-document.addEventListener('DOMContentLoaded', function() {
-    const statusSelect = document.querySelector('select[name="status"]');
-    const tipoSelect = document.querySelector('select[name="tipo"]');
-    
-    if (statusSelect) {
-        statusSelect.addEventListener('change', function() {
-            document.querySelector('form').submit();
-        });
-    }
-    
-    if (tipoSelect) {
-        tipoSelect.addEventListener('change', function() {
-            document.querySelector('form').submit();
-        });
-    }
-    
-    // Busca inteligente
-    const searchInput = document.querySelector('input[name="q"]');
-    let searchTimeout;
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(function() {
-                if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
-                    document.querySelector('form').submit();
-                }
-            }, 500);
-        });
-    }
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-</script>
 {% endblock %}

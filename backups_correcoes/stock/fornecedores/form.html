@@ -1,0 +1,287 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if fornecedor %}
+        Editar Fornecedor - {{ fornecedor.nome }}
+    {% else %}
+        Novo Fornecedor
+    {% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedores' %}">Fornecedores</a></li>
+            <li class="breadcrumb-item active">
+                {% if fornecedor %}Editar{% else %}Novo{% endif %} Fornecedor
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>
+                <i class="fas fa-{% if fornecedor %}edit{% else %}plus{% endif %}"></i>
+                {% if fornecedor %}
+                    Editar Fornecedor
+                {% else %}
+                    Novo Fornecedor
+                {% endif %}
+            </h2>
+            <a href="{% url 'stock:fornecedores' %}" class="btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Informações Básicas -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label required-field">Nome/Razão Social</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" 
+                                           value="{% if fornecedor %}{{ fornecedor.nome }}{% endif %}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label required-field">Tipo</label>
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="">Selecione o tipo</option>
+                                        {% for value, label in tipos %}
+                                            <option value="{{ value }}" 
+                                                    {% if fornecedor and fornecedor.tipo == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nuit" class="form-label">NUIT</label>
+                                    <input type="text" class="form-control" id="nuit" name="nuit" 
+                                           value="{% if fornecedor %}{{ fornecedor.nuit }}{% endif %}"
+                                           placeholder="Número de Identificação Única do Trabalhador">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{% if fornecedor %}{{ fornecedor.email }}{% endif %}"
+                                           placeholder="email@exemplo.com">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telefone" class="form-label">Telefone</label>
+                                    <input type="text" class="form-control" id="telefone" name="telefone" 
+                                           value="{% if fornecedor %}{{ fornecedor.telefone }}{% endif %}"
+                                           placeholder="+258 XX XXX XXXX">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Website</label>
+                                    <input type="url" class="form-control" id="website" name="website" 
+                                           value="{% if fornecedor %}{{ fornecedor.website }}{% endif %}"
+                                           placeholder="https://www.exemplo.com">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endereço -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-map-marker-alt"></i> Endereço</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="endereco" class="form-label">Endereço</label>
+                                    <input type="text" class="form-control" id="endereco" name="endereco" 
+                                           value="{% if fornecedor %}{{ fornecedor.endereco }}{% endif %}"
+                                           placeholder="Rua, número, bairro">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="cidade" class="form-label">Cidade</label>
+                                    <input type="text" class="form-control" id="cidade" name="cidade" 
+                                           value="{% if fornecedor %}{{ fornecedor.cidade }}{% endif %}"
+                                           placeholder="Cidade">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="provincia" class="form-label">Província</label>
+                                    <input type="text" class="form-control" id="provincia" name="provincia" 
+                                           value="{% if fornecedor %}{{ fornecedor.provincia }}{% endif %}"
+                                           placeholder="Província">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="codigo_postal" class="form-label">Código Postal</label>
+                                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" 
+                                           value="{% if fornecedor %}{{ fornecedor.codigo_postal }}{% endif %}"
+                                           placeholder="XXXX">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="pais" class="form-label">País</label>
+                                    <input type="text" class="form-control" id="pais" name="pais" 
+                                           value="{% if fornecedor %}{{ fornecedor.pais }}{% else %}Moçambique{% endif %}"
+                                           placeholder="País">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Financeiras -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-money-bill-wave"></i> Informações Financeiras</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="limite_credito" class="form-label">Limite de Crédito (MT)</label>
+                                    <input type="number" class="form-control" id="limite_credito" name="limite_credito" 
+                                           value="{% if fornecedor %}{{ fornecedor.limite_credito }}{% endif %}"
+                                           step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="prazo_pagamento" class="form-label">Prazo de Pagamento (dias)</label>
+                                    <input type="number" class="form-control" id="prazo_pagamento" name="prazo_pagamento" 
+                                           value="{% if fornecedor %}{{ fornecedor.prazo_pagamento }}{% endif %}"
+                                           min="0" placeholder="30">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="desconto_padrao" class="form-label">Desconto Padrão (%)</label>
+                                    <input type="number" class="form-control" id="desconto_padrao" name="desconto_padrao" 
+                                           value="{% if fornecedor %}{{ fornecedor.desconto_padrao }}{% endif %}"
+                                           step="0.01" min="0" max="100" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label required-field">Status</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if fornecedor and fornecedor.status == value %}selected{% elif not fornecedor and value == 'ATIVO' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
+                                      placeholder="Informações adicionais sobre o fornecedor...">{% if fornecedor %}{{ fornecedor.observacoes }}{% endif %}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'stock:fornecedores' %}" class="btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            {% if fornecedor %}
+                                Atualizar Fornecedor
+                            {% else %}
+                                Criar Fornecedor
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validação do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios.');
+        }
+    });
+    
+    // Remover classe de erro quando o usuário começar a digitar
+    requiredFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
+</script>
+{% endblock %}

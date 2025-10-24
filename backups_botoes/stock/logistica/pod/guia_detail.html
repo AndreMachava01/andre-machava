@@ -1,0 +1,175 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Detalhes da Guia - {{ guia.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Guias de Remessa</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ guia.codigo }}</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Detalhes da Guia - {{ guia.codigo }}"
+    subtitle="Informações completas da Guia de Remessa"
+    icon="fas fa-file-alt"
+%}    </div>
+
+    <!-- Informações Principais -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações da Guia
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Código</div>
+                                <div class="info-value">
+                                    <span class="badge badge-secondary">{{ guia.codigo }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if guia.status == 'ATIVA' %}success{% elif guia.status == 'CANCELADA' %}danger{% else %}secondary{% endif %}">
+                                        {{ guia.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data Prevista</div>
+                                <div class="info-value">{{ guia.data_prevista_entrega|date:"d/m/Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data de Criação</div>
+                                <div class="info-value">{{ guia.data_criacao|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Impressa</div>
+                                <div class="info-value">
+                                    {% if guia.impressa %}
+                                        <i class="fas fa-check text-success"></i> Sim
+                                    {% else %}
+                                        <i class="fas fa-clock text-warning"></i> Não
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Destinatário -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i>
+                        Informações do Destinatário
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Nome</div>
+                                <div class="info-value">{{ guia.nome_destinatario }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Documento</div>
+                                <div class="info-value">{{ guia.documento_destinatario|default:"N/A" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="info-item">
+                                <div class="info-label">Endereço</div>
+                                <div class="info-value">{{ guia.endereco_entrega|default:"N/A" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            {% if guia.observacoes %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-comment-alt"></i>
+                        Observações
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>{{ guia.observacoes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Ações Rápidas -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i>
+                        Ações Rápidas
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-btns-vertical -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                        {% if not guia.impressa %}
+                            <a href="#"stock:pod:imprimir_guia' guia.id %}" class="btn btn btn btn btn btn btn btn-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                <i class="fas fa-print"></i>
+                                Imprimir Guia
+                            </a>
+                        {% endif %}
+                        <a href="#"stock:pod:guias_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-list"></i>
+                            Ver Todas as Guias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

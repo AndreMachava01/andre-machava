@@ -1,0 +1,114 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Produtos do Fornecedor{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Fornecedores</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedor_detail' fornecedor.id %}">{{ fornecedor.nome }}</a></li>
+            <li class="breadcrumb-item active">Produtos</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="modern-container">
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-boxes"></i>
+                Itens do Fornecedor
+            </h1>
+            <p class="hero-subtitle">
+                Visualize todos os produtos e materiais fornecidos por {{ fornecedor.nome }}
+            </p>
+            <div class="hero-btns btn-responsive">
+                <a href="#"stock:fornecedor_associar_produto' fornecedor.id %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-plus"></i>
+                    Associar|default:0 items
+                </a>
+                <a href="#"stock:fornecedor_detail' fornecedor.id %}" class="btn-modern btn btn-secondary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar ao Fornecedor
+                </a>
+                <a href="#"stock:fornecedores' %}" class="btn-modern btn btn-secondary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-list"></i>
+                    Todos os Fornecedores
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        {% if produtos %}
+            <div class="products-grid">
+                       {% for fornecedor_produto in produtos %}
+                           <div class="product-card">
+                               <div class="product-name">
+                                   {{ fornecedor_produto.item.nome }}
+                               </div>
+                               <div class="product-code">
+                                   Código: {{ fornecedor_produto.item.codigo }}
+                               </div>
+                               <div class="product-type">
+                                   Tipo: {{ fornecedor_produto.tipo_item }}
+                               </div>
+                               <div class="product-price">
+                                   Preço: {{ fornecedor_produto.preco_fornecedor|floatformat:2 }} MT
+                               </div>
+                               <div class="product-delivery">
+                                   Prazo de entrega: {{ fornecedor_produto.prazo_entrega }} dias
+                               </div>
+                               <div class="product-status {% if fornecedor_produto.ativo %}status-active{% else %}status-inactive{% endif %}">
+                                   {% if fornecedor_produto.ativo %}
+                                       <i class="fas fa-check-circle"></i> Ativo
+                                   {% else %}
+                                       <i class="fas fa-times-circle"></i> Inativo
+                                   {% endif %}
+                               </div>
+                               <div class="product-actions">
+                                   <a href="#"stock:fornecedor_editar_associacao' fornecedor.id fornecedor_produto.id %}" 
+                                      class="btn-action btn-edit btn-responsive btn-responsive" title="Editar">
+                                       <i class="fas fa-edit"></i>
+                                   </a>
+                                   <form method="post" action="{% url 'stock:fornecedor_remover_associacao' fornecedor.id fornecedor_produto.id %}" 
+                                         style="display: inline;" 
+                                         onsubmit="return confirm('Tem certeza que deseja remover este|default:0 items?')"action="."method="post">{% csrf_token %}
+                                       {% csrf_token %}
+                                       <button type="submit" class="btn-action btn-delete" title="Remover" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                           <i class="fas fa-trash"></i>
+                                       </button>
+                                   </form>
+                               </div>
+                           </div>
+                       {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>Nenhum|default:0 items encontrado</h3>
+                <p>Este fornecedor ainda não possui produtos ou materiais cadastrados.</p>
+                <a href="#"stock:fornecedor_detail' fornecedor.id %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar ao Fornecedor
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

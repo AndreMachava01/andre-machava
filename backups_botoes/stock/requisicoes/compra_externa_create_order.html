@@ -1,0 +1,387 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Criar Ordem de Compra{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "stock:main" %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:requisicoes:list" %}">Requisições</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:requisicoes:compra_externa_detail' requisicao.id %}">{{ requisicao.codigo }}</a></li>
+            <li class="breadcrumb-item active">Criar Ordem de Compra</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="modern-container">
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-shopping-cart"></i>
+                Criar Ordem de Compra
+            </h1>
+            <p class="hero-subtitle">
+                Crie uma ordem de compra a partir da requisição {{ requisicao.codigo }}
+            </p>
+            <div class="hero-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à Requisição
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="item-info">
+            <div class="item-name">{{ requisicao.codigo }}</div>
+            <div class="item-details">
+                <span>Sucursal:</span> {{ requisicao.sucursal_origem.nome }} | 
+                <span>Status:</span> {{ requisicao.get_status_display }} | 
+                <span>Data:</span> {{ requisicao.data_criacao|date:"d/m/Y" }}
+            </div>
+        </div>
+
+        {% if itens_requisicao %}
+            <form method="post" id="orderForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                <input type="hidden" name="requisicao_id" value="{{ requisicao.id }}">
+                
+                <div class="form-container">
+                    <h3 style="color: #fbbf24; margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i>
+                        Informações da Ordem
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="numero_cotacao" class="form-label">
+                            <i class="fas fa-file-invoice"></i>
+                            Número da Cotação *
+                        </label>
+                        <input type="text" 
+                               name="numero_cotacao" 
+                               id="numero_cotacao" 
+                               class="form-control" 
+                               placeholder="Ex: COT-2024-001"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fornecedor" class="form-label">
+                            <i class="fas fa-truck"></i>
+                            Fornecedor *
+                        </label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select name="fornecedor" id="fornecedor" class="form-control" required style="flex: 1;">
+                                <option value="#">Selecione um fornecedor...</option>
+                                <optgroup label="Fornecedores Registrados">
+                                    {% for fornecedor in fornecedores %}
+                                        <option value="{{ fornecedor.id }}">
+                                            {{ fornecedor.nome }}{% if fornecedor.nuit %} - NUIT: {{ fornecedor.nuit }}{% endif %}{% if fornecedor.contacto %} - {{ fornecedor.contacto }}{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Fornecedor Não Registrado">
+                                    <option value="novo_fornecedor">➕ Novo Fornecedor</option>
+                                    <option value="externo_temporario">🔗 Fornecedor Externo (Temporário)</option>
+                                </optgroup>
+                            </select>
+                            <button type="button" class="btn-modern btn btn btn btn btn btn btn-secondary-modern" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i>
+                    Criar Ordem de Compra
+                </button>
+            </form>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>Nenhum|default:0 items disponível</h3>
+                <p>Esta requisição não possui itens para criar uma ordem de compra.</p>
+                <a href="#"stock:requisicoes:compra_externa_detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à Requisição
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleItemRow(checkbox) {
+    const row = checkbox.closest('tr');
+    const quantityInput = row.querySelector('.quantity-input');
+    const priceInput = row.querySelector('.price-input');
+    
+    if (checkbox.checked) {
+        quantityInput.disabled = false;
+        priceInput.disabled = false;
+        quantityInput.required = true;
+        priceInput.required = true;
+        // Definir valores padrão se estiverem vazios
+        if (!quantityInput.value || quantityInput.value === '0') {
+            quantityInput.value = '';
+        }
+        if (!priceInput.value || priceInput.value === '0') {
+            priceInput.value = '';
+        }
+    } else {
+        quantityInput.disabled = true;
+        priceInput.disabled = true;
+        quantityInput.required = false;
+        priceInput.required = false;
+        quantityInput.value = '0';
+        priceInput.value = '0';
+        calculateTotal(quantityInput);
+    }
+    
+    updateSubmitButton();
+}
+
+function calculateTotal(input) {
+    const row = input.closest('tr');
+    const quantityInput = row.querySelector('.quantity-input');
+    const priceInput = row.querySelector('.price-input');
+    const totalCell = row.querySelector('.total-cell');
+    
+    const quantity = parseFloat(quantityInput.value) || 0;
+    const price = parseFloat(priceInput.value) || 0;
+    const total = quantity * price;
+    
+    totalCell.textContent = total.toFixed(2) + ' MT';
+    
+    updateSubmitButton();
+}
+
+function updateSubmitButton() {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    let hasValidItems = false;
+    
+    checkedBoxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const quantityInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        
+        if (quantity > 0 && price > 0) {
+            hasValidItems = true;
+        }
+    });
+    
+    submitBtn.disabled = !hasValidItems;
+}
+
+// Função para controlar campos do fornecedor
+function toggleSupplierFields() {
+    const supplierSelect = document.getElementById('fornecedor');
+    const novoFornecedorSection = document.getElementById('novo-fornecedor-section');
+    const externoTemporarioSection = document.getElementById('externo-temporario-section');
+    
+    // Esconder todas as seções primeiro
+    novoFornecedorSection.style.display = 'none';
+    externoTemporarioSection.style.display = 'none';
+    
+    // Resetar campos obrigatórios
+    document.getElementById('fornecedor').required = true;
+    document.getElementById('novo_fornecedor_nome').required = false;
+    document.getElementById('novo_fornecedor_nuit').required = false;
+    document.getElementById('externo_nome').required = false;
+    document.getElementById('externo_nuit').required = false;
+    
+    if (supplierSelect.value === 'novo_fornecedor') {
+        novoFornecedorSection.style.display = 'block';
+        document.getElementById('novo_fornecedor_nome').required = true;
+        document.getElementById('novo_fornecedor_nuit').required = true;
+    } else if (supplierSelect.value === 'externo_temporario') {
+        externoTemporarioSection.style.display = 'block';
+        document.getElementById('externo_nome').required = true;
+        document.getElementById('externo_nuit').required = true;
+    }
+    
+    updateSubmitButton();
+}
+
+// Adicionar listener para mudanças no select do fornecedor
+document.getElementById('fornecedor').addEventListener('change', toggleSupplierFields);
+
+// Função para validar NUIT em tempo real
+function validateNUIT(input) {
+    const nuit = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+    input.value = nuit;
+    
+    const isValid = /^\d{9}$/.test(nuit);
+    
+    // Aplicar estilo visual
+    if (nuit.length === 0) {
+        input.style.borderColor = '#6b7280';
+        input.style.backgroundColor = '#374151';
+    } else if (nuit.length < 9) {
+        input.style.borderColor = '#f59e0b';
+        input.style.backgroundColor = 'rgba(251, 191, 36, 0.1)';
+        input.title = `NUIT deve ter 9 dígitos. Atual: ${nuit.length}`;
+    } else if (isValid) {
+        input.style.borderColor = '#10b981';
+        input.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+        input.title = 'NUIT válido';
+        return true;
+    } else {
+        input.style.borderColor = '#ef4444';
+        input.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        input.title = 'NUIT inválido';
+    }
+    
+    return false;
+}
+
+// Adicionar listeners para validação de NUIT
+document.addEventListener('DOMContentLoaded', function() {
+    const nuitInputs = document.querySelectorAll('input[name*="nuit"]');
+    nuitInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateNUIT(this);
+            updateSubmitButton();
+        });
+        
+        input.addEventListener('keypress', function(e) {
+            // Permitir apenas números
+            if (!/\d/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+
+// Validação adicional antes do envio
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+    
+    console.log('Itens selecionados:', checkedBoxes.length);
+    
+    if (checkedBoxes.length === 0) {
+        e.preventDefault();
+        alert('Selecione pelo menos um|default:0 items para criar a ordem de compra.');
+        return;
+    }
+    
+    // Desabilitar campos não selecionados para não enviar dados desnecessários
+    const allCheckboxes = document.querySelectorAll('.item-checkbox');
+    allCheckboxes.forEach(checkbox => {
+        if (!checkbox.checked) {
+            const row = checkbox.closest('tr');
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            quantityInput.disabled = true;
+            priceInput.disabled = true;
+            quantityInput.value = '0';
+            priceInput.value = '0';
+        } else {
+            // Garantir que campos selecionados estejam habilitados
+            const row = checkbox.closest('tr');
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            quantityInput.disabled = false;
+            priceInput.disabled = false;
+        }
+    });
+    
+    let hasValidItems = false;
+    checkedBoxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const quantityInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        
+        console.log(`Item ${checkbox.value}: quantidade=${quantity}, preço=${price}`);
+        
+        if (quantity > 0 && price > 0) {
+            hasValidItems = true;
+        }
+    });
+    
+    if (!hasValidItems) {
+        e.preventDefault();
+        alert('Defina quantidade e preço para pelo menos um|default:0 items selecionado.');
+        return;
+    }
+    
+    console.log('Formulário válido, enviando...');
+    
+    // Validação específica para fornecedores não registrados
+    const supplierValue = document.getElementById('fornecedor').value;
+    
+    if (supplierValue === 'novo_fornecedor') {
+        const nome = document.getElementById('novo_fornecedor_nome').value.trim();
+        const nuit = document.getElementById('novo_fornecedor_nuit').value.trim();
+        
+        if (!nome) {
+            e.preventDefault();
+            alert('Nome do fornecedor é obrigatório para criar um novo fornecedor.');
+            return false;
+        }
+        
+        if (!nuit) {
+            e.preventDefault();
+            alert('NUIT é obrigatório para criar um novo fornecedor.');
+            return false;
+        }
+        
+        if (!/^\d{9}$/.test(nuit)) {
+            e.preventDefault();
+            alert('NUIT deve ter exatamente 9 dígitos.');
+            return false;
+        }
+        
+    } else if (supplierValue === 'externo_temporario') {
+        const nome = document.getElementById('externo_nome').value.trim();
+        const nuit = document.getElementById('externo_nuit').value.trim();
+        
+        if (!nome) {
+            e.preventDefault();
+            alert('Nome da empresa/fornecedor externo é obrigatório.');
+            return false;
+        }
+        
+        if (!nuit) {
+            e.preventDefault();
+            alert('NUIT é obrigatório para fornecedores externos.');
+            return false;
+        }
+        
+        if (!/^\d{9}$/.test(nuit)) {
+            e.preventDefault();
+            alert('NUIT deve ter exatamente 9 dígitos.');
+            return false;
+        }
+    } else if (supplierValue === '#') {
+        e.preventDefault();
+        alert('Selecione um fornecedor ou opte por criar um novo.');
+        return false;
+    }
+    
+    // Log dos dados que serão enviados
+    const formData = new FormData(document.getElementById('orderForm'));
+    console.log('Dados do formulário:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+    
+    // Mostrar loading no botão
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando Ordem...';
+    submitBtn.disabled = true;
+    
+    // Permitir que o formulário seja enviado
+    return true;
+});
+</script>
+{% endblock %}

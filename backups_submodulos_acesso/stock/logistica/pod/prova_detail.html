@@ -1,0 +1,284 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes da POD - {{ prova.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Provas de Entrega</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ prova.codigo }}</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-signature"></i>
+                    Detalhes da POD - {{ prova.codigo }}
+                </h1>
+                <p class="page-subtitle">
+                    Informações completas da Prova de Entrega
+                </p>
+            </div>
+            <div class="header-actions">
+                {% if not prova.validada %}
+                    <a href="#"stock:pod:adicionar_documento' prova.id %}" class="btn btn btn-info btn-responsive -responsive">
+                        <i class="fas fa-paperclip"></i>
+                        Adicionar Documento
+                    </a>
+                    <a href="#"stock:pod:adicionar_assinatura' prova.id %}" class="btn btn btn-warning btn-responsive -responsive">
+                        <i class="fas fa-signature"></i>
+                        Adicionar Assinatura
+                    </a>
+                    <a href="#"stock:pod:validar_prova' prova.id %}" class="btn btn btn-success btn-responsive -responsive">
+                        <i class="fas fa-check"></i>
+                        Validar POD
+                    </a>
+                {% endif %}
+                <a href="#"stock:pod:provas_list' %}" class="btn btn btn-secondary btn-responsive -responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Principais -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações da POD
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Código POD</div>
+                                <div class="info-value">
+                                    <span class="badge badge-secondary">{{ prova.codigo }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
+                                        {{ prova.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Tipo de Entrega</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
+                                        {{ prova.get_tipo_entrega_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Validada</div>
+                                <div class="info-value">
+                                    {% if prova.validada %}
+                                        <i class="fas fa-check text-success"></i> Sim
+                                    {% else %}
+                                        <i class="fas fa-clock text-warning"></i> Não
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data de Entrega</div>
+                                <div class="info-value">{{ prova.data_entrega|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data de Criação</div>
+                                <div class="info-value">{{ prova.data_criacao|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Destinatário -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i>
+                        Informações do Destinatário
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Nome</div>
+                                <div class="info-value">{{ prova.nome_destinatario }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Documento</div>
+                                <div class="info-value">{{ prova.documento_destinatario|default:"N/A" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="info-item">
+                                <div class="info-label">Endereço</div>
+                                <div class="info-value">{{ prova.endereco_entrega|default:"N/A" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            {% if prova.observacoes %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-comment-alt"></i>
+                        Observações
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>{{ prova.observacoes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Rastreamento -->
+            {% if prova.rastreamento_entrega %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-search"></i>
+                        Rastreamento
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">Código de Rastreamento</div>
+                        <div class="info-value">
+                            <a href="{% url 'stock:logistica:rastreamento_detail' prova.rastreamento_entrega.id %}">
+                                #{{ prova.rastreamento_entrega.id }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Documentos -->
+            {% if prova.documentos.all %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-paperclip"></i>
+                        Documentos Anexados
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% for documento in prova.documentos.all %}
+                    <div class="document-item">
+                        <i class="fas fa-file"></i>
+                        <a href="{{ documento.arquivo.url }}" target="_blank">
+                            {{ documento.nome }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Assinatura -->
+            {% if prova.assinatura %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-signature"></i>
+                        Assinatura Digital
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="signature-preview">
+                        <img src="{{ prova.assinatura.url }}" alt="Assinatura" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.signature-preview {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+}
+
+.signature-preview img {
+    max-width: 100%;
+    height: auto;
+}
+</style>
+{% endblock %}

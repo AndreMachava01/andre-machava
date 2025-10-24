@@ -1,271 +1,25 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Canhoto de Salário - {{ funcionario_folha.funcionario.nome_completo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
 
-    /* Botões de Ação Padronizados */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: #f0fdf4;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background: #10b981;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #059669;
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-        background: #6b7280;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #4b5563;
-        transform: translateY(-1px);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: #6b7280;
-        border: 1px solid #6b7280;
-    }
-
-    .btn-outline:hover {
-        background: #6b7280;
-        color: white;
-        transform: translateY(-1px);
-    }
-
-    @media print {
-        .action-buttons {
-            display: none !important;
-        }
-        
-        .canhoto-container {
-            max-width: 100%;
-            margin: 0;
-            padding: 5px;
-            background: white;
-        }
-        
-        .canhoto-header {
-            padding-bottom: 5px;
-            margin-bottom: 3px;
-        }
-        
-        .canhoto-title {
-            font-size: 12px;
-        }
-        
-        .canhoto-subtitle {
-            font-size: 7px;
-        }
-        
-        .info-section {
-            font-size: 7px;
-        }
-        
-        .section-title {
-            font-size: 9px;
-            margin: 5px 0 2px 0;
-            padding: 2px 0;
-        }
-        
-        .dados-horizontais th,
-        .resumo-table th,
-        .dados-horizontais td,
-        .resumo-table td {
-            padding: 2px;
-            font-size: 8px;
-        }
-        
-        .resumo-table td[colspan="3"] {
-            font-size: 2px;
-            padding: 1px;
-        }
-        
-        .valor-total {
-            font-size: 9px;
-        }
-        
-        .declaracao {
-            padding: 5px;
-            font-size: 8px;
-        }
-        
-        .assinatura-table td {
-            padding: 2px;
-            font-size: 8px;
-        }
-    }
-    
-    .canhoto-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 10px;
-        background: var(--bg-card);
-    }
-    
-    .canhoto-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 3px solid #10b981;
-        padding-bottom: 10px;
-        margin-bottom: 5px;
-    }
-    
-    .logo-section img {
-        max-height: 40px;
-        width: auto;
-    }
-    
-    .canhoto-title {
-        font-size: 14px;
-        font-weight: bold;
-        color: var(--text-primary);
-        margin: 0;
-        text-align: center;
-    }
-    
-    .canhoto-subtitle {
-        font-size: 8px;
-        color: var(--text-primary);
-        margin: 2px 0 0 0;
-        text-align: center;
-    }
-    
-    .info-section {
-        text-align: right;
-        font-size: 8px;
-        color: var(--text-primary);
-    }
-    
-    .section-title {
-        font-size: 10px;
-        font-weight: bold;
-        color: var(--text-primary);
-        margin: 8px 0 3px 0;
-        padding: 3px 0;
-        border-bottom: 1px solid #333;
-    }
-    
-    .dados-horizontais,
-    .resumo-table,
-    .assinatura-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 8px;
-    }
-    
-    .dados-horizontais th,
-    .resumo-table th {
-        background: #d4edda;
-        padding: 3px;
-        text-align: left;
-        font-weight: bold;
-        border: 1px solid #333;
-        font-size: 9px;
-    }
-    
-    .dados-horizontais td,
-    .resumo-table td {
-        padding: 3px;
-        border: 1px solid #333;
-        vertical-align: top;
-        font-size: 9px;
-    }
-    
-    .resumo-table td[colspan="3"] {
-        font-size: 3px;
-        padding: 1px;
-        text-align: center;
-        font-weight: bold;
-    }
-    
-    .valor {
-        text-align: right;
-        font-weight: 600;
-    }
-    
-    .valor-total {
-        text-align: right;
-        font-weight: bold;
-        font-size: 10px;
-        color: #059669;
-    }
-    
-    .declaracao {
-        background: var(--bg-card);
-        padding: 8px;
-        border-radius: 4px;
-        margin: 8px 0;
-        border-left: 2px solid #3b82f6;
-        font-size: 9px;
-    }
-    
-    .assinatura-section {
-        margin-top: 15px;
-    }
-    
-    .assinatura-table td {
-        padding: 3px;
-        border: none;
-        font-size: 9px;
-    }
-    
-</style>
 {% endblock %}
 
 {% block content %}
 <!-- Action Buttons -->
-<div class="action-buttons">
-    <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"rh:folha_detail' folha.id %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
         <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
     </a>
-    <a href="{% url 'rh:folha_salarial' %}" class="btn btn-outline">
+    <a href="#"rh:folha_salarial' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
         <i class="fas fa-list"></i>Lista de Folhas
     </a>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
         <i class="fas fa-home"></i>Dashboard
     </a>
-    <button onclick="window.print()" class="btn btn-primary">
+    <button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
         <i class="fas fa-print"></i>Imprimir
     </button>
 </div>
@@ -316,122 +70,10 @@
     
     <!-- Resumo Salarial -->
     <h2 class="section-title">💰 RESUMO SALARIAL</h2>
-    <table class="resumo-table">
-        <thead>
-            <tr>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Valor (MT)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Dias de Trabalho</td>
-                <td class="valor">{{ funcionario_folha.dias_trabalhados }}</td>
-                <td class="valor">{{ funcionario_folha.salario_base|floatformat:2 }}</td>
-            </tr>
-            <tr>
-                <td>Horas Extras</td>
-                <td class="valor">{{ funcionario_folha.horas_extras|floatformat:2 }}h</td>
-                <td class="valor">{{ funcionario_folha.get_horas_extras_valor|floatformat:2 }}</td>
-            </tr>
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
-            </tr>
-            <tr>
-                <td colspan="3" style="background: #f0f9ff; padding: 8px; font-weight: bold; color: #374151; text-align: center; font-size: 10px;">
-                    💰 SUBSÍDIOS E BENEFÍCIOS
-                </td>
-            </tr>
-            {% for beneficio in funcionario_folha.beneficios_folha.all %}
-            <tr>
-                <td>{{ beneficio.beneficio.nome }}</td>
-                <td class="valor">{{ beneficio.beneficio.valor|floatformat:2 }}{% if beneficio.beneficio.tipo_valor == 'PERCENTUAL' %}%{% endif %}</td>
-                <td class="valor">{{ beneficio.valor|floatformat:2 }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td>Subsídio de Alimentação</td>
-                <td class="valor">-</td>
-                <td class="valor">0.00</td>
-            </tr>
-            <tr>
-                <td>Subsídio de Transporte</td>
-                <td class="valor">-</td>
-                <td class="valor">0.00</td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
-            </tr>
-            <tr>
-                <td colspan="3" style="background: #f3f4f6; padding: 8px; font-weight: bold; color: #374151; text-align: center; font-size: 10px;">
-                    💸 DESCONTOS
-                </td>
-            </tr>
-            {% for desconto in funcionario_folha.descontos_folha.all %}
-            <tr>
-                <td>{{ desconto.desconto.nome }}</td>
-                <td class="valor">
-                    {% if desconto.desconto.codigo == 'IR001' %}
-                        {{ funcionario_folha.get_irps_taxa_display }}
-                    {% else %}
-                        {{ desconto.desconto.valor|floatformat:2 }}{% if desconto.desconto.tipo_valor == 'PERCENTUAL' %}%{% endif %}
-                    {% endif %}
-                </td>
-                <td class="valor">{{ desconto.valor|floatformat:2 }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td>INSS</td>
-                <td class="valor">3%</td>
-                <td class="valor">{{ funcionario_folha.get_inss_valor|floatformat:2 }}</td>
-            </tr>
-            <tr>
-                <td>IRPS</td>
-                <td class="valor">{{ funcionario_folha.get_irps_taxa_display }}</td>
-                <td class="valor">{{ funcionario_folha.get_irps_valor|floatformat:2 }}</td>
-            </tr>
-            <tr>
-                <td>Desconto Adicional</td>
-                <td class="valor">2%</td>
-                <td class="valor">{{ funcionario_folha.get_desconto_adicional_valor|floatformat:2 }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
-            </tr>
-        </tbody>
-    </table>
-    
+
     <!-- Resumo Final Simplificado -->
     <h2 class="section-title">💵 RESUMO FINAL</h2>
-    <table class="resumo-table">
-        <tbody>
-            <tr>
-                <td><strong>Vencimento Mensal:</strong></td>
-                <td class="valor">{{ funcionario_folha.salario_base|floatformat:2 }} MT</td>
-            </tr>
-            <tr>
-                <td><strong>Total de Subsídios e Benefícios:</strong></td>
-                <td class="valor">{{ funcionario_folha.total_beneficios|floatformat:2 }} MT</td>
-            </tr>
-            <tr>
-                <td><strong>Horas Extras:</strong></td>
-                <td class="valor">{{ funcionario_folha.get_horas_extras_valor|floatformat:2 }} MT</td>
-            </tr>
-            <tr>
-                <td><strong>Total de Descontos:</strong></td>
-                <td class="valor">{{ funcionario_folha.total_descontos|floatformat:2 }} MT</td>
-            </tr>
-            <tr>
-                <td><strong>SALÁRIO LÍQUIDO:</strong></td>
-                <td class="valor-total">{{ funcionario_folha.salario_liquido|floatformat:2 }} MT</td>
-            </tr>
-        </tbody>
-    </table>
-    
-    
+
     <!-- Declaração -->
     <div class="declaracao">
         <h2 class="section-title">📝 DECLARAÇÃO</h2>
@@ -441,16 +83,7 @@
     
     <!-- Assinatura -->
     <div class="assinatura-section">
-        <table class="assinatura-table">
-            <tr>
-                <td>Data: ___/{{ folha.mes_referencia|date:"m" }}/2025</td>
-                <td>Assinatura do Trabalhador: _____________________</td>
-            </tr>
-            <tr>
-                <td></td>
-                <td><strong>{{ funcionario_folha.funcionario.nome_completo }}</strong></td>
-            </tr>
-        </table>
+        
     </div>
     
     <!-- Rodapé -->

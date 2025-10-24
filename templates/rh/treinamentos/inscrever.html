@@ -1,28 +1,21 @@
-{% extends "base_admin.html" %}
-{% load static %}
+{% extends "base_list.html" %}
+
 
 {% block title %}Inscrever Funcionários - {{ treinamento.nome }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header {
-        background: var(--blue-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="modern-container">
     <!-- Breadcrumb Navigation -->
     <div class="breadcrumb-nav">
-        <a href="{% url 'rh:main' %}">
+        <a href="{% url "rh:main" %}">
             <i class="fas fa-home"></i> RH
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'rh:treinamentos' %}">Treinamentos</a>
+        <a href="{% url "rh:treinamentos" %}">Treinamentos</a>
         <i class="fas fa-chevron-right"></i>
         <a href="{% url 'rh:treinamento_detail' treinamento.id %}">{{ treinamento.nome }}</a>
         <i class="fas fa-chevron-right"></i>
@@ -30,25 +23,12 @@
     </div>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-user-plus"></i>
-                    Inscrever Funcionários - {{ treinamento.nome }}
-                </h1>
-                <p class="page-subtitle">
-                    Selecione os funcionários para inscrever no treinamento
-                </p>
-            </div>
-                   <div class="header-actions">
-                       <a href="{% url 'rh:treinamento_detail' treinamento.id %}" class="btn btn-primary">
-                           <i class="fas fa-arrow-left"></i>
-                           Voltar aos Detalhes
-                       </a>
-                   </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Inscrever Funcionários - {{ treinamento.nome }}"
+    subtitle="Selecione os funcionários para inscrever no treinamento"
+    icon="fas fa-user-plus"
+%}    </div>
 
     <!-- Mensagens -->
     {% if messages %}
@@ -102,45 +82,7 @@
     </div>
 
     <!-- Filtros -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
-        </div>
-        <div class="card-body">
-            <form method="get" class="form-grid">
-                <div class="form-group">
-                    <label for="search" class="form-label">Pesquisar Funcionário</label>
-                    <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}" placeholder="Nome ou cargo...">
-                </div>
-                
-                <div class="form-group">
-                    <label for="departamento" class="form-label">Departamento</label>
-                    <select name="departamento" id="departamento" class="form-select">
-                        <option value="">Todos os departamentos</option>
-                        {% for departamento in departamentos %}
-                        <option value="{{ departamento.id }}" {% if departamento_filter == departamento.id|stringformat:"s" %}selected{% endif %}>
-                            {{ departamento.nome }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i>
-                        Filtrar
-                    </button>
-                    <a href="{% url 'rh:treinamento_inscrever' treinamento.id %}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i>
-                        Limpar
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
+    {% include 'includes/filters_unified.html' with entity_name='treinamentos_inscrever' %}
 
     <!-- Lista de Funcionários -->
     <div class="card">
@@ -179,11 +121,10 @@
                                 </div>
                             </div>
                             
-                            <form method="post">
+                            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                                 {% csrf_token %}
                                 <input type="hidden" name="funcionario" value="{{ funcionario.id }}">
-                                <button type="submit" class="btn btn-success w-100" 
-                                        {% if treinamento.vagas_disponiveis <= 0 %}disabled{% endif %}>
+                                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                                     <i class="fas fa-user-plus"></i>
                                     {% if treinamento.vagas_disponiveis <= 0 %}
                                         Sem Vagas
@@ -202,7 +143,7 @@
                 <i class="fas fa-user-slash"></i>
                 <h4>Nenhum funcionário disponível</h4>
                 <p>Não há funcionários disponíveis para inscrição ou todos já estão inscritos.</p>
-                <a href="{% url 'rh:treinamento_inscricoes' treinamento.id %}" class="btn btn-primary">
+                <a href="#"rh:treinamento_inscricoes' treinamento.id %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-list"></i>
                     Ver Inscrições
                 </a>

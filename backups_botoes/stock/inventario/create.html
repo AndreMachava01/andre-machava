@@ -1,0 +1,133 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Criar Inventário{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-plus"></i>
+            Criar Novo Inventário
+        </h1>
+        <p class="hero-subtitle">
+            Configure um novo inventário físico para contagem de stock
+        </p>
+        <div class="hero-actions">
+            <a href="#" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-card">
+            <h2 class="form-title">
+                <i class="fas fa-clipboard-check"></i>
+                Dados do Inventário
+            </h2>
+            
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Nome do Inventário <span class="required">*</span>
+                        </label>
+                        <input type="text" name="nome" class="form-control" 
+                               placeholder="Ex: Inventário Mensal - Janeiro 2025" required>
+                        <div class="form-help">Nome descritivo para identificar o inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Sucursal <span class="required">*</span>
+                        </label>
+                        <select name="sucursal" class="form-control" required>
+                            <option value="">Selecione uma sucursal</option>
+                            {% for sucursal in sucursais %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Sucursal onde será realizado o inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Data e Hora de Início <span class="required">*</span>
+                        </label>
+                        <input type="datetime-local" name="data_inicio" class="form-control" required>
+                        <div class="form-help">Data e hora prevista para início do inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Data e Hora de Término
+                        </label>
+                        <input type="datetime-local" name="data_fim" class="form-control">
+                        <div class="form-help">Data e hora limite para conclusão do inventário (opcional)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Responsável <span class="required">*</span>
+                        </label>
+                        <select name="usuario_responsavel" class="form-control" required>
+                            <option value="">Selecione um funcionário responsável</option>
+                            {% for funcionario_data in usuarios %}
+                                <option value="{{ funcionario_data.funcionario.id }}">
+                                    {{ funcionario_data.nome_display }} ({{ funcionario_data.codigo }})
+                                    {% if funcionario_data.email != 'N/A' %} - {{ funcionario_data.email }}{% endif %}
+                                    - {{ funcionario_data.sucursal }} - {{ funcionario_data.cargo }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Funcionário responsável pela execução do inventário</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Observações</label>
+                    <textarea name="observacoes" class="form-control form-textarea" 
+                              placeholder="Observações adicionais sobre o inventário..."></textarea>
+                    <div class="form-help">Informações adicionais sobre o inventário (opcional)</div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="#"stock:inventario:list' %}" class="btn-form btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-save"></i>
+                        Criar Inventário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Definir data/hora atual como padrão
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    const datetimeLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.querySelector('input[name="data_inicio"]').value = datetimeLocal;
+});
+</script>
+{% endblock %}

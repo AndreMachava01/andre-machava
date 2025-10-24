@@ -1,0 +1,187 @@
+{% extends "base_list.html" %}
+
+
+{% block title %}Controle de Inventário{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url "dashboard" %}">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:main" %}">Stock</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Inventário</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Controle de Inventário"
+    subtitle="Gestão de inventários físicos e ajustes de estoque"
+    icon="fas fa-clipboard-list"
+%}    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ inventarios_planejados|default:"0" }}</div>
+                <div class="stats-label">Inventários Planejados</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-calendar"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ inventarios_andamento|default:"0" }}</div>
+                <div class="stats-label">Em Andamento</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-play"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ inventarios_finalizados|default:"0" }}</div>
+                <div class="stats-label">Finalizados</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ ajustes_pendentes|default:"0" }}</div>
+                <div class="stats-label">Ajustes Pendentes</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    {% include 'includes/filters_unified.html' with entity_name='inventario' %}
+
+    <!-- Inventários List -->
+    {% if inventarios %}
+        <div class="table-container">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Sucursal</th>
+                        <th>Status</th>
+                        <th>Progresso</th>
+                        <th>Responsável</th>
+                        <th>Data Início</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inventario in inventarios %}
+                    <tr>
+                        <td>
+                            <strong>{{ inventario.codigo }}</strong>
+                        </td>
+                        <td>{{ inventario.nome }}</td>
+                        <td>{{ inventario.sucursal.nome }}</td>
+                        <td>
+                            <span class="badge badge-{{ inventario.status|lower }}">
+                                {{ inventario.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ inventario.progresso|default:0 }}%"></div>
+                            </div>
+                            <div class="progress-text">{{ inventario.progresso|default:0 }}%</div>
+                        </td>
+                        <td>
+                            {% if inventario.responsavel %}
+                                {{ inventario.responsavel.get_full_name|default:inventario.responsavel.username }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ inventario.data_inicio|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="action-btns btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button">
+                                <a href="#"stock:inventario:detail' inventario.id %}" class="btn-action btn-view btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if inventario.status == 'PLANEJADO' %}
+                                <a href="#"stock:inventario:detail' inventario.id %}" class="btn-action btn-edit btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Iniciar">
+                                    <i class="fas fa-play"></i>
+                                </a>
+                                {% endif %}
+                                {% if inventario.status == 'EM_ANDAMENTO' %}
+                                <a href="#"stock:inventario:detail' inventario.id %}" class="btn-action btn-edit btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Continuar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if inventarios.has_other_pages %}
+        <div class="pagination-container">
+            <nav class="pagination-nav">
+                {% if inventarios.has_previous %}
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    Página {{ inventarios.number }} de {{ inventarios.paginator.num_pages }}
+                </span>
+
+                {% if inventarios.has_next %}
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list empty-icon"></i>
+            <h4 class="empty-title">Nenhum inventário encontrado</h4>
+            <p class="empty-subtitle">Não há inventários registrados no sistema.</p>
+            <a href="#"stock:inventario:create' %}" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-plus"></i>
+                Criar Primeiro Inventário
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // JavaScript específico para inventário se necessário
+</script>
+{% endblock %}

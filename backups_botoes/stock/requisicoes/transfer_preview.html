@@ -1,0 +1,103 @@
+
+
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Preview da Transferência - {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Ação Padronizados -->
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="document-btn document-btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-arrow-left"></i> Voltar à Requisição
+    </a>
+    <button class="document-btn document-btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button type="submit" class="btn btn-primary">
+                        <div class="btn-icon-wrapper btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="btn-content btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                            <span class="btn-title btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">Executar Transferência</span>
+                            <span class="btn-subtitle btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">Processar transferência</span>
+                        </div>
+                        <div class="btn-arrow btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn-main-action btn-disabled" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <div class="btn-icon-wrapper btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="btn-content btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                        <span class="btn-title btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">Não é Possível Executar</span>
+                        <span class="btn-subtitle btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">Corrija os problemas antes</span>
+                    </div>
+                    <div class="btn-arrow btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sucursalSelect = document.getElementById('sucursal-fornecedora');
+    const executeButton = document.querySelector('button[type="submit"]');
+    
+    if (sucursalSelect && executeButton) {
+        // Adicionar validação quando a sucursal é selecionada
+        sucursalSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const stockDisponivel = selectedOption.getAttribute('data-stock');
+            
+            if (this.value && stockDisponivel) {
+                // Mostrar informação do stock disponível
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'mt-2 p-2 bg-info text-white rounded';
+                infoDiv.innerHTML = `<small><i class="fas fa-info-circle"></i> Stock disponível: ${stockDisponivel} unidades</small>`;
+                
+                // Remover informação anterior se existir
+                const existingInfo = this.parentNode.querySelector('.bg-info');
+                if (existingInfo) {
+                    existingInfo.remove();
+                }
+                
+                this.parentNode.appendChild(infoDiv);
+            } else {
+                // Remover informação se voltar para automático
+                const existingInfo = this.parentNode.querySelector('.bg-info');
+                if (existingInfo) {
+                    existingInfo.remove();
+                }
+            }
+        });
+        
+        // Modificar o formulário para incluir a sucursal selecionada
+        const form = executeButton.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const sucursalId = sucursalSelect.value;
+                if (sucursalId) {
+                    // Adicionar campo hidden com a sucursal selecionada
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'sucursal_fornecedora_id';
+                    hiddenInput.value = sucursalId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

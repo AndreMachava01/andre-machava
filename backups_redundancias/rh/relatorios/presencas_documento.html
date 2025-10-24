@@ -1,0 +1,369 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    /* Botões de Ação Padronizados */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #6b7280;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-outline:hover {
+        background: #6b7280;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media print {
+        
+    }
+
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-card);
+            color: black;
+            font-family: Arial, sans-serif;
+        }
+        
+        .print-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background: var(--bg-card);
+        }
+
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+
+        .print-actions {
+            display: none;
+        }
+    }
+    
+    @media screen {
+
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .header-date {
+            font-size: 8px;
+            color: var(--text-primary);
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            color: #10b981;
+        }
+        
+        .company-info h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 5px;
+        }
+        
+        .section h3 {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 5px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .info-item {
+            padding: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            padding: 2px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            font-size: 8px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px;
+            text-align: left;
+            font-size: 9px;
+        }
+        
+        .items-table th {
+            background: #d4edda;
+            font-weight: bold;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: var(--bg-card);
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .document-footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+
+    }
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Relatório de Presenças{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="{% url 'rh:main' %}" class="btn btn-outline">
+        <i class="fas fa-users"></i>RH
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE PRESENÇAS</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Presenças e Ausências
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_inicio|date:"d/m/Y" }} a {{ data_fim|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Presenças:</strong> {{ total_presencas }}
+            </div>
+            <div class="summary-item">
+                <strong>Presentes:</strong> {{ presencas_presente }}
+            </div>
+            <div class="summary-item">
+                <strong>Ausentes:</strong> {{ presencas_ausente }}
+            </div>
+            <div class="summary-item">
+                <strong>Taxa de Presença:</strong> {{ percentual_presenca|floatformat:1 }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Presenças por Tipo -->
+    <div class="section">
+        <h3>Presenças por Tipo</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Tipo de Presença</th>
+                    <th>Quantidade</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in presencas_por_tipo %}
+                <tr>
+                    <td>{{ tipo.tipo_presenca__nome }}</td>
+                    <td class="text-center">{{ tipo.total }}</td>
+                    <td class="text-center">{{ tipo.percentual|floatformat:1 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Presenças por Funcionário -->
+    <div class="section">
+        <h3>Presenças por Funcionário</h3>
+        
+    </div>
+
+    <!-- Footer -->
+    <div class="document-footer">
+        <p>Documento gerado automaticamente em {{ "now"|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<!-- Botão de Impressão -->
+<div class="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i> Imprimir Relatório
+    </button>
+</div>
+
+{% endblock %}

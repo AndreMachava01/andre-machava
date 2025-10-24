@@ -12,7 +12,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Count
 
-from ..models_mobile import NotificacaoMobile
+# from ..models_mobile import NotificacaoMobile
 from ..models_stock import RastreamentoEntrega, EventoRastreamento
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class NotificationService:
                           titulo: str = '',
                           mensagem: str = '',
                           dados_extras: Dict[str, Any] = None,
-                          prioridade: str = 'NORMAL') -> NotificacaoMobile:
+                          prioridade: str = 'NORMAL') -> None:  # NotificacaoMobile:
         """
         Envia uma notificação para um usuário.
         
@@ -46,40 +46,40 @@ class NotificationService:
             prioridade: Prioridade da notificação
             
         Returns:
-            NotificacaoMobile criada
+            # NotificacaoMobile criada
         """
         try:
             destinatario = User.objects.get(id=destinatario_id)
             
             # Criar notificação no banco
-            notificacao = NotificacaoMobile.objects.create(
-                destinatario=destinatario,
-                tipo_notificacao=tipo_notificacao,
-                canal=canal,
-                titulo=titulo,
-                mensagem=mensagem,
-                dados_extras=dados_extras or {},
-                prioridade=prioridade
-            )
+            # notificacao = NotificacaoMobile.objects.create(
+            #     destinatario=destinatario,
+            #     tipo_notificacao=tipo_notificacao,
+            #     canal=canal,
+            #     titulo=titulo,
+            #     mensagem=mensagem,
+            #     dados_extras=dados_extras or {},
+            #     prioridade=prioridade
+            # )
             
             # Enviar via canal específico
-            if canal == 'PUSH':
-                self._enviar_push_notification(notificacao)
-            elif canal == 'EMAIL':
-                self._enviar_email_notification(notificacao)
-            elif canal == 'SMS':
-                self._enviar_sms_notification(notificacao)
-            elif canal == 'WHATSAPP':
-                self._enviar_whatsapp_notification(notificacao)
+            # if canal == 'PUSH':
+            #     self._enviar_push_notification(notificacao)
+            # elif canal == 'EMAIL':
+            #     self._enviar_email_notification(notificacao)
+            # elif canal == 'SMS':
+            #     self._enviar_sms_notification(notificacao)
+            # elif canal == 'WHATSAPP':
+            #     self._enviar_whatsapp_notification(notificacao)
             
-            logger.info(f"Notificação enviada: {notificacao.id} - {tipo_notificacao}")
-            return notificacao
+            # logger.info(f"Notificação enviada: {notificacao.id} - {tipo_notificacao}")
+            # return notificacao
             
         except Exception as e:
             logger.error(f"Erro ao enviar notificação: {e}")
             raise
     
-    def _enviar_push_notification(self, notificacao: NotificacaoMobile):
+    def _enviar_push_notification(self, notificacao):  # NotificacaoMobile):
         """Envia notificação push via Firebase."""
         try:
             if not self.firebase_server_key:
@@ -124,7 +124,7 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Erro ao enviar push notification: {e}")
     
-    def _enviar_email_notification(self, notificacao: NotificacaoMobile):
+    def _enviar_email_notification(self, notificacao):  # NotificacaoMobile):
         """Envia notificação por email."""
         try:
             from django.core.mail import send_mail
@@ -153,7 +153,7 @@ Acesse o sistema para mais detalhes.
         except Exception as e:
             logger.error(f"Erro ao enviar email notification: {e}")
     
-    def _enviar_sms_notification(self, notificacao: NotificacaoMobile):
+    def _enviar_sms_notification(self, notificacao):  # NotificacaoMobile):
         """Envia notificação por SMS."""
         try:
             # Implementar integração com provedor de SMS
@@ -163,7 +163,7 @@ Acesse o sistema para mais detalhes.
         except Exception as e:
             logger.error(f"Erro ao enviar SMS notification: {e}")
     
-    def _enviar_whatsapp_notification(self, notificacao: NotificacaoMobile):
+    def _enviar_whatsapp_notification(self, notificacao):  # NotificacaoMobile):
         """Envia notificação por WhatsApp."""
         try:
             # Implementar integração com WhatsApp Business API
@@ -408,7 +408,7 @@ Acesse o sistema para mais detalhes.
                                        data_fim: Optional[datetime.date] = None) -> Dict[str, Any]:
         """Obtém estatísticas de notificações."""
         
-        queryset = NotificacaoMobile.objects.all()
+        # queryset = NotificacaoMobile.objects.all()
         
         if data_inicio:
             queryset = queryset.filter(data_criacao__date__gte=data_inicio)

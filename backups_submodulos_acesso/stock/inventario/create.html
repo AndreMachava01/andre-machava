@@ -1,0 +1,380 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Criar Inventário{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-actions {
+        position: relative;
+        z-index: 2;
+        margin-top: 15px;
+    }
+
+    .btn-modern {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-modern:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-modern.btn-primary-modern {
+        background: var(--success-gradient);
+        border-color: transparent;
+    }
+
+    .btn-modern.btn-primary-modern:hover {
+        background: var(--success-gradient);
+        filter: brightness(1.1);
+    }
+
+    /* Form Styles */
+    .form-container {
+        padding: 30px;
+        background: #1f2937;
+        flex: 1;
+    }
+
+    .form-card {
+        background: #374151;
+        border-radius: 15px;
+        padding: 30px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-light);
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #d1d5db;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        background: #4b5563;
+        border: 1px solid #6b7280;
+        border-radius: 8px;
+        padding: 12px 15px;
+        color: #f9fafb;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #4b5563;
+    }
+
+    .btn-form {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-form.btn-primary {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-form.btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-form:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        color: white;
+        text-decoration: none;
+    }
+
+    .form-help {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin-top: 5px;
+    }
+
+    .required {
+        color: #ef4444;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-plus"></i>
+            Criar Novo Inventário
+        </h1>
+        <p class="hero-subtitle">
+            Configure um novo inventário físico para contagem de stock
+        </p>
+        <div class="hero-actions">
+            <a href="#" class="btn-modern btn-responsive -responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-card">
+            <h2 class="form-title">
+                <i class="fas fa-clipboard-check"></i>
+                Dados do Inventário
+            </h2>
+            
+            <form method="post"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Nome do Inventário <span class="required">*</span>
+                        </label>
+                        <input type="text" name="nome" class="form-control" 
+                               placeholder="Ex: Inventário Mensal - Janeiro 2025" required>
+                        <div class="form-help">Nome descritivo para identificar o inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Sucursal <span class="required">*</span>
+                        </label>
+                        <select name="sucursal" class="form-control" required>
+                            <option value="">Selecione uma sucursal</option>
+                            {% for sucursal in sucursais %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Sucursal onde será realizado o inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Data e Hora de Início <span class="required">*</span>
+                        </label>
+                        <input type="datetime-local" name="data_inicio" class="form-control" required>
+                        <div class="form-help">Data e hora prevista para início do inventário</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Data e Hora de Término
+                        </label>
+                        <input type="datetime-local" name="data_fim" class="form-control">
+                        <div class="form-help">Data e hora limite para conclusão do inventário (opcional)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Responsável <span class="required">*</span>
+                        </label>
+                        <select name="usuario_responsavel" class="form-control" required>
+                            <option value="">Selecione um funcionário responsável</option>
+                            {% for funcionario_data in usuarios %}
+                                <option value="{{ funcionario_data.funcionario.id }}">
+                                    {{ funcionario_data.nome_display }} ({{ funcionario_data.codigo }})
+                                    {% if funcionario_data.email != 'N/A' %} - {{ funcionario_data.email }}{% endif %}
+                                    - {{ funcionario_data.sucursal }} - {{ funcionario_data.cargo }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Funcionário responsável pela execução do inventário</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Observações</label>
+                    <textarea name="observacoes" class="form-control form-textarea" 
+                              placeholder="Observações adicionais sobre o inventário..."></textarea>
+                    <div class="form-help">Informações adicionais sobre o inventário (opcional)</div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="#"stock:inventario:list' %}" class="btn-form btn btn-secondary btn-responsive -responsive">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-form btn-primary" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-save"></i>
+                        Criar Inventário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Definir data/hora atual como padrão
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    const datetimeLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.querySelector('input[name="data_inicio"]').value = datetimeLocal;
+});
+</script>
+{% endblock %}

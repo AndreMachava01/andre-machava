@@ -1,58 +1,333 @@
-{% extends 'base_admin.html' %}
+<script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const progressBar = document.querySelector('.progress-bar-fill[data-progress]');
+                if (progressBar) {
+                    const progress = progressBar.getAttribute('data-progress');
+                    progressBar.style.setProperty('--progress-value', progress);
+                }
+            });
+
+let currentInventarioId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contagem-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Coletar dados de todos os inputs
+            const inputs = document.querySelectorAll('.quantidade-input');
+            const dados = {};
+            
+            inputs.forEach(input => {
+                const itemsId = input.dataset.itemId;
+                const quantidade = input.value.trim();
+                if (quantidade) {
+                    dados[`quantidade_${itemId}`] = quantidade;
+                }
+            });
+            
+            // Adicionar dados ao formulário
+            Object.keys(dados).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = dados[key];
+                form.appendChild(input);
+            });
+            
+            // Submeter via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.action === 'ask_stock_adjustment') {
+                    currentInventarioId = data.inventario_id;
+                    document.getElementById("itemsWithDifferences").textContent = 
+                        `${data.items_with_differences} item(s) têm diferenças em relação ao sistema.`;
+                    document.getElementById('stockAdjustmentModal').style.display = 'flex';
+                } else {
+                    // Recarregar página para mostrar mensagens
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                // Em caso de erro, submeter normalmente
+                form.submit();
+            });
+        });
+    }
+});
+
+function closeStockModal() {
+    document.getElementById('stockAdjustmentModal').style.display = 'none';
+}
+
+function finalizarInventario() {
+    const stockAction = document.querySelector('input[name="stock_action"]:checked').value;
+    const ajustarStock = stockAction === 'adjust';
+    
+    // Criar formulário para finalização
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/stock/inventario/${currentInventarioId}/finalizar-com-ajuste/`;
+    
+    // Adicionar CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Adicionar parâmetro de ajuste
+    const ajusteInput = document.createElement('input');
+    ajusteInput.type = 'hidden';
+    ajusteInput.name = 'ajustar_stock';
+    ajusteInput.value = ajustarStock;
+    form.appendChild(ajusteInput);
+    
+    // Submeter formulário
+    document.body.appendChild(form);
+    form.submit();
+}
+
+</script>
+
+{% extends "base_detail.html" %}
 {% load static %}
 
 {% block title %}Detalhes do Inventário{% endblock %}
 
-{% block extra_style %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
+{% block detail_cards %}
+<!-- Informações Básicas -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-list"></i>Informações Básicas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-hashtag"></i>Código:
+            </span>
+            <span class="info-value">{{ inventario.codigo }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-tag"></i>Nome:
+            </span>
+            <span class="info-value">{{ inventario.nome }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-building"></i>Sucursal:
+            </span>
+            <span class="info-value">{{ inventario.sucursal.nome }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar"></i>Data de Início:
+            </span>
+            <span class="info-value">{{ inventario.data_inicio|date:"d/m/Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar-check"></i>Data de Fim:
+            </span>
+            <span class="info-value">{{ inventario.data_fim|date:"d/m/Y"|default:"Em andamento" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-toggle-on"></i>Status:
+            </span>
+            <span class="badge {% if inventario.status == 'ABERTO' %}bg-warning{% elif inventario.status == 'FECHADO' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ inventario.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
 
-    body {
-        background: #1f2937;
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: white;
-    }
+<!-- Estatísticas do Inventário -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-bar"></i>Estatísticas
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-boxes"></i>Total de Itens:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #495057;">
+                {{ total_itens|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-check-circle"></i>Itens Contados:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #28a745;">
+                {{ itens_contados|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-percentage"></i>Progresso:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #17a2b8;">
+                {% if total_itens > 0 %}
+                    {% widthratio itens_contados total_itens 100 as progresso %}
+                    {{ progresso }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-user"></i>Responsável:
+            </span>
+            <span class="info-value">{{ inventario.responsavel.nome_completo|default:"Não definido" }}</span>
+        </div>
+    </div>
+</div>
 
-    .modern-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 10px;
-        padding: 0;
-        overflow: hidden;
-        min-height: calc(100vh - 20px);
-        display: flex;
-        flex-direction: column;
-    }
+<!-- Detalhes da Contagem -->
+{% if contagem_stats %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list-check"></i>Detalhes da Contagem
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-check"></i>Itens Conformes:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #28a745;">
+                {{ contagem_stats.itens_conformes|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-exclamation-triangle"></i>Itens com Diferença:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #ffc107;">
+                {{ contagem_stats.itens_com_diferenca|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-times"></i>Itens Não Encontrados:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #dc3545;">
+                {{ contagem_stats.itens_nao_encontrados|default:"0" }}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-plus"></i>Itens Extras:
+            </span>
+            <span class="info-value" style="font-weight: 700; color: #17a2b8;">
+                {{ contagem_stats.itens_extras|default:"0" }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-    .hero-section {
-        background: var(--purple-gradient);
-        padding: 20px 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
+<!-- Itens do Inventário -->
+{% if itens_inventario %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i>Itens do Inventário
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Código</th>
+                        <th><i class="fas fa-tag"></i> Nome</th>
+                        <th><i class="fas fa-boxes"></i> Quantidade Sistema</th>
+                        <th><i class="fas fa-check"></i> Quantidade Contada</th>
+                        <th><i class="fas fa-calculator"></i> Diferença</th>
+                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens_inventario %}
+                    <tr>
+                        <td><strong>{{ item.produto.codigo }}</strong></td>
+                        <td>{{ item.produto.nome }}</td>
+                        <td>{{ item.quantidade_sistema }} {{ item.produto.get_unidade_medida_display }}</td>
+                        <td>{{ item.quantidade_contada|default:"-" }} {{ item.produto.get_unidade_medida_display }}</td>
+                        <td>
+                            {% if item.quantidade_contada %}
+                                {% with item.quantidade_contada|add:0|sub:item.quantidade_sistema as diferenca %}
+                                    {% if diferenca > 0 %}
+                                        <span style="color: #28a745;">+{{ diferenca }}</span>
+                                    {% elif diferenca < 0 %}
+                                        <span style="color: #dc3545;">{{ diferenca }}</span>
+                                    {% else %}
+                                        <span style="color: #6c757d;">0</span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span style="color: #6c757d;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.quantidade_contada %}
+                                {% with item.quantidade_contada|add:0|sub:item.quantidade_sistema as diferenca %}
+                                    {% if diferenca == 0 %}
+                                        <span class="badge bg-success">Conforme</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Diferença</span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span class="badge bg-secondary">Pendente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+<!-- Observações -->
+{% if inventario.observacoes %}
+<div class="card card-full-width">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-sticky-note"></i>Observações
+        </h5>
+    </div>
+    <div class="card-body">
+        <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-style: italic; color: #374151;">{{ inventario.observacoes }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
         opacity: 0.3;
     }
 
@@ -125,19 +400,7 @@
         border-bottom: 1px solid #4b5563;
     }
 
-    .stat-card {
-        background: #374151;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid #4b5563;
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-medium);
-    }
+    /* Usar o sistema unificado de contadores do components.css */
 
     .stat-card:nth-child(1) { border-left: 4px solid #3b82f6; }
     .stat-card:nth-child(2) { border-left: 4px solid #10b981; }
@@ -384,7 +647,7 @@
     .fase-card.fase-concluida {
         background: #dcfce7;
         border-color: #10b981 !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 4px 12px var(--bg-white-transparent-light);
     }
     
     .fase-card.fase-pendente {
@@ -397,17 +660,11 @@
         color: #1e293b;
     }
     
-    .fase-card.fase-ativa .fase-numero {
-        color: #3b82f6;
-    }
+    .fase-card.fase-ativa 
     
-    .fase-card.fase-concluida .fase-numero {
-        color: #10b981;
-    }
+    .fase-card.fase-concluida 
     
-    .fase-card.fase-pendente .fase-numero {
-        color: #94a3b8;
-    }
+    .fase-card.fase-pendente 
 
     /* Action Buttons */
     .action-buttons {
@@ -442,407 +699,9 @@
 
     /* Responsividade */
     @media (max-width: 768px) {
-        .modern-container {
-            margin: 5px;
-            min-height: calc(100vh - 10px);
-        }
-        
-        .hero-section {
-            padding: 15px 20px;
-        }
-        
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            padding: 15px;
-        }
-        
-        .table-container {
-            margin: 10px;
-        }
-        
-        .table-modern {
-            font-size: 0.8rem;
-        }
-        
-        .form-inline {
-            flex-direction: column;
-            align-items: stretch;
-        }
+
     }
-</style>
-{% endblock %}
 
-{% block content %}
-<div class="modern-container">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <h1 class="hero-title">
-            <i class="fas fa-clipboard-check"></i>
-            {{ inventario.codigo }} - {{ inventario.nome }}
-        </h1>
-        <p class="hero-subtitle">
-            {{ inventario.sucursal.nome }} • {{ inventario.get_status_display }}
-        </p>
-        <div class="hero-actions">
-            <a href="{% url 'stock:inventario:list' %}" class="btn-modern">
-                <i class="fas fa-arrow-left"></i>
-                Voltar
-            </a>
-            {% if inventario.status == 'CONCLUIDO' %}
-            <a href="{% url 'stock:inventario:relatorio' inventario.id %}" class="btn-modern">
-                <i class="fas fa-chart-bar"></i>
-                Relatório
-            </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.total_itens }}</div>
-            <div class="stat-label">Total de Itens</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.itens_contados }}</div>
-            <div class="stat-label">Itens Contados</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.progresso }}%</div>
-            <div class="stat-label">Progresso</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.itens_com_diferenca }}</div>
-            <div class="stat-label">Com Diferenças</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.itens_para_recontar }}</div>
-            <div class="stat-label">Para Recontagem</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ contagem_stats.itens_finalizados }}</div>
-            <div class="stat-label">Finalizados (3x)</div>
-        </div>
-    </div>
-
-    <!-- Sistema de Fases -->
-    <div class="fases-container" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border: 2px solid #e2e8f0;">
-        <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.2rem;">
-            <i class="fas fa-layer-group"></i> Sistema de Fases de Contagem
-        </h3>
-        
-        <div class="fases-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-            <!-- Fase 1 -->
-            <div class="fase-card {% if contagem_stats.fase_atual == 1 %}fase-ativa{% elif contagem_stats.fase_atual > 1 %}fase-concluida{% else %}fase-pendente{% endif %}" 
-                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
-                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
-                    {% if contagem_stats.fase_atual > 1 %}✓{% else %}{{ contagem_stats.fase_atual|default:1 }}{% endif %}
-                </div>
-                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">1ª Contagem</div>
-                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem inicial de todos os itens</div>
-                {% if contagem_stats.fase_atual == 1 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-play"></i> EM ANDAMENTO
-                </div>
-                {% elif contagem_stats.fase_atual > 1 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-check"></i> CONCLUÍDA
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Fase 2 -->
-            <div class="fase-card {% if contagem_stats.fase_atual == 2 %}fase-ativa{% elif contagem_stats.fase_atual > 2 %}fase-concluida{% else %}fase-pendente{% endif %}" 
-                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
-                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
-                    {% if contagem_stats.fase_atual > 2 %}✓{% else %}{{ contagem_stats.fase_atual|default:1|add:1 }}{% endif %}
-                </div>
-                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">2ª Contagem</div>
-                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Recontagem dos itens com diferenças</div>
-                {% if contagem_stats.fase_atual == 2 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-play"></i> EM ANDAMENTO
-                </div>
-                {% elif contagem_stats.fase_atual > 2 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-check"></i> CONCLUÍDA
-                </div>
-                {% elif contagem_stats.fase_atual == 1 and contagem_stats.itens_com_diferenca > 0 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-clock"></i> PRÓXIMA
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Fase 3 -->
-            <div class="fase-card {% if contagem_stats.fase_atual == 3 %}fase-ativa{% elif contagem_stats.fase_atual > 3 %}fase-concluida{% else %}fase-pendente{% endif %}" 
-                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
-                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
-                    {% if contagem_stats.fase_atual > 3 %}✓{% else %}3{% endif %}
-                </div>
-                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">3ª Contagem</div>
-                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem final obrigatória</div>
-                {% if contagem_stats.fase_atual == 3 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-play"></i> EM ANDAMENTO
-                </div>
-                {% elif contagem_stats.fase_atual > 3 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-check"></i> CONCLUÍDA
-                </div>
-                {% elif contagem_stats.fase_atual == 2 and contagem_stats.itens_com_diferenca > 0 %}
-                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
-                    <i class="fas fa-clock"></i> PRÓXIMA
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Informação da Fase Atual -->
-        <div class="fase-info" style="margin-top: 15px; padding: 12px; background: #e0f2fe; border-radius: 8px; border-left: 4px solid #0284c7;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-info-circle" style="color: #0284c7;"></i>
-                <strong style="color: #0c4a6e;">Fase Atual:</strong>
-                <span style="color: #0c4a6e;">
-                    {% if contagem_stats.fase_atual == 1 %}
-                        Primeira contagem - Digite as quantidades encontradas em todos os itens
-                    {% elif contagem_stats.fase_atual == 2 %}
-                        Segunda contagem - Recontagem apenas dos itens com diferenças
-                    {% elif contagem_stats.fase_atual == 3 %}
-                        Terceira contagem - Contagem final obrigatória dos itens com diferenças
-                    {% else %}
-                        Inventário concluído - Todos os itens foram contados corretamente
-                    {% endif %}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="progress-section">
-        <h3 class="progress-title">
-            <i class="fas fa-tasks"></i>
-            Progresso do Inventário
-        </h3>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: {{ progresso }}%;">
-                <div class="progress-text">{{ progresso }}%</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    {% if inventario.status == 'EM_ANDAMENTO' %}
-    <div class="action-buttons">
-        {% if contagem_stats.pode_finalizar %}
-        <form method="post" action="{% url 'stock:inventario:finalizar' inventario.id %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn-action btn-finalizar" onclick="return confirm('Finalizar inventário? Todos os itens estão prontos para finalização.')">
-                <i class="fas fa-check-circle"></i>
-                Finalizar Inventário
-            </button>
-        </form>
-        {% else %}
-        <button type="button" class="btn-action btn-disabled" disabled title="Ainda há itens que precisam ser recontados">
-            <i class="fas fa-lock"></i>
-            Finalizar Inventário (Bloqueado)
-        </button>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Content Area -->
-    <div class="content-area">
-        {% if contagem_stats.fase_atual == 2 or contagem_stats.fase_atual == 3 %}
-        <div class="alert alert-warning" style="background: #f59e0b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <strong>Modo de Recontagem:</strong> Apenas itens com diferenças são exibidos para recontagem. Complete a contagem dos itens mostrados para continuar.
-        </div>
-        {% endif %}
-        
-        {% if itens_inventario %}
-            <div class="table-container">
-                <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Código</th>
-                            <th>Quantidade Sistema</th>
-                            <th>Quantidade Contada</th>
-                            <th>Diferença</th>
-                            <th>Contagens</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in itens_inventario %}
-                        <tr>
-                            <td>
-                                <strong>{{ item.item.nome }}</strong>
-                            </td>
-                            <td>{{ item.item.codigo }}</td>
-                            <td>{{ item.quantidade_sistema }}</td>
-                            <td>
-                                {% if inventario.status in 'PLANEJADO,EM_ANDAMENTO' %}
-                                    <input type="number" name="quantidade_{{ item.id }}" 
-                                           value="{{ item.quantidade_contada|default:'' }}" 
-                                           class="form-control-small quantidade-input" min="0" 
-                                           placeholder="Contar"
-                                           data-item-id="{{ item.id }}"
-                                           data-quantidade-sistema="{{ item.quantidade_sistema }}">
-                                {% else %}
-                                    {{ item.quantidade_contada|default:"-" }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.quantidade_contada %}
-                                    <span style="color: {% if item.diferenca > 0 %}#10b981{% elif item.diferenca < 0 %}#ef4444{% else %}#6b7280{% endif %}; font-weight: 600;">
-                                        {{ item.diferenca|add:0|floatformat:0 }}{% if item.diferenca > 0 %}+{% endif %}
-                                    </span>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="contagem-info">
-                                    <span class="contagem-badge {% if item.numero_contagem == 0 %}contagem-0{% elif item.numero_contagem == 1 %}contagem-1{% elif item.numero_contagem == 2 %}contagem-2{% else %}contagem-3{% endif %}">
-                                        {{ item.numero_contagem }}/3
-                                    </span>
-                                    {% if item.precisa_recontagem %}
-                                        <span class="recontagem-badge">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                        </span>
-                                    {% endif %}
-                                    {% if item.contagem_finalizada %}
-                                        <span class="finalizado-badge">
-                                            <i class="fas fa-check-circle"></i>
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>
-                                {% if item.quantidade_contada %}
-                                    {% if item.contagem_finalizada %}
-                                        <span class="status-badge status-success">
-                                            <i class="fas fa-check-circle"></i> Finalizado
-                                        </span>
-                                    {% elif item.precisa_recontagem %}
-                                        <span class="status-badge status-warning">
-                                            <i class="fas fa-redo"></i> Recontagem
-                                        </span>
-                                    {% else %}
-                                        <span class="status-badge status-info">
-                                            <i class="fas fa-check"></i> Contado
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="status-badge status-pending">
-                                        <i class="fas fa-clock"></i> Pendente
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                
-        <!-- Botões de Ação -->
-        {% if inventario.status in 'PLANEJADO,EM_ANDAMENTO' %}
-        <div class="action-buttons-container" style="margin-top: 20px; text-align: center;">
-            <!-- Botão de Impressão da Contagem Atual -->
-            <div class="print-buttons" style="margin-bottom: 20px;">
-                <h4 style="color: #374151; margin-bottom: 15px; font-size: 16px; font-weight: 600;">
-                    <i class="fas fa-print"></i> Documento para Contagem Manual
-                </h4>
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <!-- Botão da Contagem Atual -->
-                    <a href="{% url 'stock:inventario:imprimir_contagem' inventario.id contagem_stats.fase_atual %}" 
-                       target="_blank" 
-                       class="btn-action btn-secondary" 
-                       style="padding: 15px 25px; font-size: 1.1rem; text-decoration: none; font-weight: 600; min-width: 140px;">
-                        <i class="fas fa-file-alt" style="margin-right: 8px;"></i> 
-                        {% if contagem_stats.fase_atual == 1 %}
-                            1ª Contagem
-                        {% elif contagem_stats.fase_atual == 2 %}
-                            2ª Contagem
-                        {% elif contagem_stats.fase_atual == 3 %}
-                            3ª Contagem
-                        {% else %}
-                            Contagem Atual
-                        {% endif %}
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Botão Submeter Contagem -->
-            <div class="submit-container">
-                <form method="post" action="{% url 'stock:inventario:submeter_contagem' inventario.id %}" id="contagem-form">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-action btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">
-                        <i class="fas fa-check-circle"></i>
-                        {% if contagem_stats.fase_atual == 1 %}
-                            Submeter 1ª Contagem
-                        {% elif contagem_stats.fase_atual == 2 %}
-                            Submeter 2ª Contagem
-                        {% elif contagem_stats.fase_atual == 3 %}
-                            Submeter 3ª Contagem
-                        {% else %}
-                            Submeter Contagem
-                        {% endif %}
-                    </button>
-                </form>
-            </div>
-        </div>
-        {% endif %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="fas fa-clipboard-check"></i>
-                <h3>Nenhum item encontrado</h3>
-                <p>Este inventário não possui itens para contagem.</p>
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Modal de Confirmação de Ajuste de Stock -->
-<div id="stockAdjustmentModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-exclamation-triangle"></i> Finalizar Inventário</h3>
-            <span class="close" onclick="closeStockModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>Todas as 3 contagens foram realizadas!</p>
-            <p id="itemsWithDifferences"></p>
-            <p><strong>O que deseja fazer com o stock?</strong></p>
-            <div class="stock-options">
-                <label class="radio-option">
-                    <input type="radio" name="stock_action" value="adjust" checked>
-                    <span class="radio-label">
-                        <strong>Ajustar stock</strong> - Atualizar quantidades conforme contagem física
-                    </span>
-                </label>
-                <label class="radio-option">
-                    <input type="radio" name="stock_action" value="keep">
-                    <span class="radio-label">
-                        <strong>Manter stock</strong> - Manter quantidades do sistema
-                    </span>
-                </label>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-secondary" onclick="closeStockModal()">Cancelar</button>
-            <button type="button" class="btn-primary" onclick="finalizarInventario()">Finalizar</button>
-        </div>
-    </div>
-</div>
-
-<style>
 .modal {
     position: fixed;
     z-index: 1000;
@@ -952,98 +811,270 @@
 .btn-primary:hover {
     background: #7c3aed;
 }
+
 </style>
+{% endblock %}
 
-<script>
-let currentInventarioId = null;
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-clipboard-check"></i>
+            {{ inventario.codigo }} - {{ inventario.nome }}
+        </h1>
+        <p class="hero-subtitle">
+            {{ inventario.sucursal.nome }} • {{ inventario.get_status_display }}
+        </p>
+        <div class="hero-actions">
+            <a href="#"stock:inventario:list' %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+            <a href="#"stock:inventario:relatorio' inventario.id %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-chart-bar"></i>
+                Relatório
+            </a>
+        </div>
+    </div>
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contagem-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Coletar dados de todos os inputs
-            const inputs = document.querySelectorAll('.quantidade-input');
-            const dados = {};
-            
-            inputs.forEach(input => {
-                const itemId = input.dataset.itemId;
-                const quantidade = input.value.trim();
-                if (quantidade) {
-                    dados[`quantidade_${itemId}`] = quantidade;
-                }
-            });
-            
-            // Adicionar dados ao formulário
-            Object.keys(dados).forEach(key => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = dados[key];
-                form.appendChild(input);
-            });
-            
-            // Submeter via AJAX
-            fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.action === 'ask_stock_adjustment') {
-                    currentInventarioId = data.inventario_id;
-                    document.getElementById('itemsWithDifferences').textContent = 
-                        `${data.items_with_differences} item(s) têm diferenças em relação ao sistema.`;
-                    document.getElementById('stockAdjustmentModal').style.display = 'flex';
-                } else {
-                    // Recarregar página para mostrar mensagens
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                // Em caso de erro, submeter normalmente
-                form.submit();
-            });
-        });
-    }
-});
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.total|default:"0" }}</div>
+            <div class="stat-label">Total de Itens</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_contados }}</div>
+            <div class="stat-label">Itens Contados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.progresso }}%</div>
+            <div class="stat-label">Progresso</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_com_diferenca }}</div>
+            <div class="stat-label">Com Diferenças</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_para_recontar }}</div>
+            <div class="stat-label">Para Recontagem</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contagem_stats.itens_finalizados }}</div>
+            <div class="stat-label">Finalizados (3x)</div>
+        </div>
+    </div>
 
-function closeStockModal() {
-    document.getElementById('stockAdjustmentModal').style.display = 'none';
-}
+    <!-- Sistema de Fases -->
+    <div class="fases-container" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border: 2px solid #e2e8f0;">
+        <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.2rem;">
+            <i class="fas fa-layer-group"></i> Sistema de Fases de Contagem
+        </h3>
+        
+        <div class="fases-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <!-- Fase 1 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 1 %}fase-ativa{% elif contagem_stats.fase_atual > 1 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 1 %}✓{% else %}{{ contagem_stats.fase_atual|default:"1" }}{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">1ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem inicial de todos os itens</div>
+                {% if contagem_stats.fase_atual == 1 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 1 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Fase 2 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 2 %}fase-ativa{% elif contagem_stats.fase_atual > 2 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 2 %}✓{% else %}{{ contagem_stats.fase_atual|default:"1"|add:1 }}{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">2ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Recontagem dos itens com diferenças</div>
+                {% if contagem_stats.fase_atual == 2 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 2 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% elif contagem_stats.fase_atual == 1 and contagem_stats.itens_com_diferenca > 0 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-clock"></i> PRÓXIMA
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Fase 3 -->
+            <div class="fase-card {% if contagem_stats.fase_atual == 3 %}fase-ativa{% elif contagem_stats.fase_atual > 3 %}fase-concluida{% else %}fase-pendente{% endif %}" 
+                 style="padding: 15px; border-radius: 8px; text-align: center; border: 2px solid;">
+                <div class="fase-numero" style="font-size: 2rem; font-weight: bold; margin-bottom: 8px;">
+                    {% if contagem_stats.fase_atual > 3 %}✓{% else %}3{% endif %}
+                </div>
+                <div class="fase-titulo" style="font-weight: 600; margin-bottom: 5px;">3ª Contagem</div>
+                <div class="fase-descricao" style="font-size: 0.9rem; color: #64748b;">Contagem final obrigatória</div>
+                {% if contagem_stats.fase_atual == 3 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-play"></i> EM ANDAMENTO
+                </div>
+                {% elif contagem_stats.fase_atual > 3 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-check"></i> CONCLUÍDA
+                </div>
+                {% elif contagem_stats.fase_atual == 2 and contagem_stats.itens_com_diferenca > 0 %}
+                <div class="fase-status" style="margin-top: 8px; padding: 4px 8px; background: #f59e0b; color: white; border-radius: 4px; font-size: 0.8rem;">
+                    <i class="fas fa-clock"></i> PRÓXIMA
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Informação da Fase Atual -->
+        <div class="fase-info" style="margin-top: 15px; padding: 12px; background: #e0f2fe; border-radius: 8px; border-left: 4px solid #0284c7;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-info-circle" style="color: #0284c7;"></i>
+                <strong style="color: #0c4a6e;">Fase Atual:</strong>
+                <span style="color: #0c4a6e;">
+                    {% if contagem_stats.fase_atual == 1 %}
+                        Primeira contagem - Digite as quantidades encontradas em todos os itens
+                    {% elif contagem_stats.fase_atual == 2 %}
+                        Segunda contagem - Recontagem apenas dos itens com diferenças
+                    {% elif contagem_stats.fase_atual == 3 %}
+                        Terceira contagem - Contagem final obrigatória dos itens com diferenças
+                    {% else %}
+                        Inventário concluído - Todos os itens foram contados corretamente
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
 
-function finalizarInventario() {
-    const stockAction = document.querySelector('input[name="stock_action"]:checked').value;
-    const ajustarStock = stockAction === 'adjust';
-    
-    // Criar formulário para finalização
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/stock/inventario/${currentInventarioId}/finalizar-com-ajuste/`;
-    
-    // Adicionar CSRF token
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = csrfToken;
-    form.appendChild(csrfInput);
-    
-    // Adicionar parâmetro de ajuste
-    const ajusteInput = document.createElement('input');
-    ajusteInput.type = 'hidden';
-    ajusteInput.name = 'ajustar_stock';
-    ajusteInput.value = ajustarStock;
-    form.appendChild(ajusteInput);
-    
-    // Submeter formulário
-    document.body.appendChild(form);
-    form.submit();
-}
-</script>
+    <!-- Progress Bar -->
+    <div class="progress-section">
+        <h3 class="progress-title">
+            <i class="fas fa-tasks"></i>
+            Progresso do Inventário
+        </h3>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" data-progress="{{ progresso|default:0 }}">
+                <div class="progress-text">{{ progresso|default:0 }}%</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    {% if inventario.status == 'EM_ANDAMENTO' %}
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+        {% if contagem_stats.pode_finalizar %}
+        <form method="post" action="{% url 'stock:inventario:finalizar' inventario.id %}" style="display: inline;"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <button type="submit" class="btn-action btn-finalizar" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-check"></i>
+                Finalizar Inventário
+            </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if contagem_stats.fase_atual == 2 or contagem_stats.fase_atual == 3 %}
+        <div class="alert alert-warning" style="background: #f59e0b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Modo de Recontagem:</strong> Apenas itens com diferenças são exibidos para recontagem. Complete a contagem dos itens mostrados para continuar.
+        </div>
+        {% endif %}
+        
+        {% if itens_inventario %}
+            <div class="table-container">
+
+        <!-- Botões de Ação -->
+        {% if inventario.status in 'PLANEJADO,EM_ANDAMENTO' %}
+        <div class="action-btns-container -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-top: 20px; text-align: center;" role="button" role="button" role="button" role="button" role="button" role="button">
+            <!-- Botão de Impressão da Contagem Atual -->
+            <div class="print-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-bottom: 20px;" role="button" role="button" role="button" role="button" role="button" role="button">
+                <h4 style="color: #374151; margin-bottom: 15px; font-size: 16px; font-weight: 600;">
+                    <i class="fas fa-print"></i> Documento para Contagem Manual
+                </h4>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <!-- Botão da Contagem Atual -->
+                    <a href="#"stock:inventario:imprimir_contagem' inventario.id contagem_stats.fase_atual %}" 
+                       target="_blank" 
+                       class="btn-action btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
+                       style="padding: 15px 25px; font-size: 1.1rem; text-decoration: none; font-weight: 600; min-width: 140px;">
+                        <i class="fas fa-file-alt" style="margin-right: 8px;"></i> 
+                        {% if contagem_stats.fase_atual == 1 %}
+                            1ª Contagem
+                        {% elif contagem_stats.fase_atual == 2 %}
+                            2ª Contagem
+                        {% elif contagem_stats.fase_atual == 3 %}
+                            3ª Contagem
+                        {% else %}
+                            Contagem Atual
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Botão Submeter Contagem -->
+            <div class="submit-container">
+                
+            </div>
+        </div>
+        {% endif %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check"></i>
+                <h3>Nenhum item encontrado</h3>
+                <p>Este inventário não possui itens para contagem.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Ajuste de Stock -->
+<div id="stockAdjustmentModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Finalizar Inventário</h3>
+            <span class="close" onclick="" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Todas as 3 contagens foram realizadas!</p>
+            <p id="itemsWithDifferences"></p>
+            <p><strong>O que deseja fazer com o stock?</strong></p>
+            <div class="stock-options">
+                <label class="radio-option">
+                    <input type="radio" name="stock_action" value="adjust" checked>
+                    <span class="radio-label">
+                        <strong>Ajustar stock</strong> - Atualizar quantidades conforme contagem física
+                    </span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="stock_action" value="keep">
+                    <span class="radio-label">
+                        <strong>Manter stock</strong> - Manter quantidades do sistema
+                    </span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick=" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn btn-secondary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Finalizar</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

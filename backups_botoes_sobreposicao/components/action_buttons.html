@@ -1,0 +1,112 @@
+{% comment %}
+BOTÕES DE AÇÃO
+Template específico para botões de ação (Ver Detalhes, Editar, Apagar, etc.)
+
+Parâmetros:
+- actions: lista de ações disponíveis
+- layout: layout dos botões (inline, dropdown, toolbar)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+{% if layout == 'dropdown' %}
+<div class="actions-dropdown{% if class %} {{ class }}{% endif %}">
+    <button class="btn btn-action btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="fas fa-ellipsis-v"></i> Ações
+    </button>
+    <ul class="dropdown-menu">
+        {% for action in actions %}
+            <li>
+                {% include 'components/button_unified.html' with 
+                    type='action' 
+                    action=action.action 
+                    size='sm' 
+                    text=action.text 
+                    icon=action.icon 
+                    url=action.url 
+                    onclick=action.onclick 
+                    class='dropdown-item' %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% elif layout == 'toolbar' %}
+<div class="actions-toolbar{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=actions layout='horizontal' %}
+</div>
+{% else %}
+<div class="actions-inline{% if class %} {{ class }}{% endif %}">
+    {% for action in actions %}
+        {% include 'components/button_unified.html' with 
+            type='action' 
+            action=action.action 
+            size='sm' 
+            text=action.text 
+            icon=action.icon 
+            url=action.url 
+            onclick=action.onclick 
+            class='btn-action-inline' %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.actions-inline {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.actions-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    margin: 1rem 0;
+}
+
+.actions-dropdown .dropdown-menu {
+    min-width: 150px;
+}
+
+.actions-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.actions-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.btn-action-inline {
+    margin: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .actions-inline {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .actions-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-action-inline {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}
+</style>

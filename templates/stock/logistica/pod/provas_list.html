@@ -1,5 +1,4 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_list.html" %}
 
 {% block title %}Provas de Entrega{% endblock %}
 
@@ -22,94 +21,20 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
         <span>Provas de Entrega</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-file-signature"></i>
-                    Provas de Entrega
-                </h1>
-                <p class="page-subtitle">
-                    Gerenciamento de Provas de Entrega (POD)
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-success">
-                    <i class="fas fa-plus"></i>
-                    Nova POD
-                </a>
-                <a href="{% url 'stock:pod:dashboard' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar ao Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Provas de Entrega"
+    subtitle="Gerenciamento de Provas de Entrega (POD)"
+    icon="fas fa-file-signature"
+%}    </div>
 
-    <!-- Filtros -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="PENDENTE" {% if request.GET.status == 'PENDENTE' %}selected{% endif %}>Pendente</option>
-                            <option value="CONCLUIDA" {% if request.GET.status == 'CONCLUIDA' %}selected{% endif %}>Concluída</option>
-                            <option value="VALIDADA" {% if request.GET.status == 'VALIDADA' %}selected{% endif %}>Validada</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="tipo_entrega" class="form-label">Tipo de Entrega</label>
-                        <select name="tipo_entrega" id="tipo_entrega" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="COMPLETA" {% if request.GET.tipo_entrega == 'COMPLETA' %}selected{% endif %}>Completa</option>
-                            <option value="PARCIAL" {% if request.GET.tipo_entrega == 'PARCIAL' %}selected{% endif %}>Parcial</option>
-                            <option value="RECUSADA" {% if request.GET.tipo_entrega == 'RECUSADA' %}selected{% endif %}>Recusada</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="data_inicio" class="form-label">Data Início</label>
-                        <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="data_fim" class="form-label">Data Fim</label>
-                        <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                            Filtrar
-                        </button>
-                        <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i>
-                            Limpar
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
+{% include 'includes/filters_unified.html' with entity_name='default' %}
     </div>
 
     <!-- Lista de Provas -->
@@ -174,12 +99,12 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-info btn-sm">
+                                    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                        <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         {% if not prova.validada %}
-                                            <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn btn-success btn-sm">
+                                            <a href="#"stock:pod:validar_prova' prova.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                 <i class="fas fa-check"></i>
                                             </a>
                                         {% endif %}
@@ -197,35 +122,29 @@
                         <div class="pagination-info">
                             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
                         </div>
-                        <div class="pagination-buttons">
+                        <div class="pagination-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
                             {% if page_obj.has_previous %}
-                                <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
-                                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
                             {% else %}
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-double-left"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                                     <i class="fas fa-angle-left"></i>
                                 </button>
                             {% endif %}
 
                             {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
                             {% else %}
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-right"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                                     <i class="fas fa-angle-double-right"></i>
                                 </button>
                             {% endif %}
@@ -237,7 +156,7 @@
                     <i class="fas fa-file-signature fa-4x mb-4"></i>
                     <h4>Nenhuma prova encontrada</h4>
                     <p>Não há provas de entrega que correspondam aos filtros selecionados.</p>
-                    <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-success">
+                    <a href="#"stock:pod:prova_create' %}" class="btn btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-plus"></i>
                         Criar Nova POD
                     </a>

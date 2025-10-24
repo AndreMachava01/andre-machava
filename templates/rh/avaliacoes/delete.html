@@ -1,154 +1,28 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Eliminar Avaliação{% endblock %}
 
 {% block extra_css %}
-<style>
-    .confirmation-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 24px;
-        margin: 20px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .card-header {
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-color);
-        padding: 16px 24px;
-        margin: -24px -24px 20px -24px;
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .card-title {
-        color: var(--text-color);
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-    }
-    
-    .card-body {
-        padding: 0;
-    }
-    
-    .alert {
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        border: 1px solid;
-    }
-    
-    .alert-warning {
-        background-color: rgba(255, 193, 7, 0.1);
-        border-color: #ffc107;
-        color: #ffc107;
-    }
-    
-    .data-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 20px;
-    }
-    
-    .data-label {
-        font-weight: 600;
-        color: var(--text-secondary);
-        font-size: 13px;
-    }
-    
-    .data-value {
-        color: var(--text-color);
-        font-size: 14px;
-    }
-    
-    .card-footer {
-        border-top: 1px solid var(--border-color);
-        padding: 20px 0 0 0;
-        margin-top: 20px;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-    
-    .btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-outline {
-        background: transparent;
-        color: var(--text-color);
-        border-color: var(--border-color);
-    }
-    
-    .btn-outline:hover {
-        background: var(--bg-secondary);
-        color: var(--text-color);
-    }
-    
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-        border-color: #dc3545;
-    }
-    
-    .btn-danger:hover {
-        background: #c82333;
-        border-color: #bd2130;
-    }
-    
-    @media (max-width: 768px) {
-        .data-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .form-actions {
-            flex-direction: column;
-        }
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Breadcrumb -->
     <nav class="breadcrumb-modern">
-        <a href="{% url 'rh:main' %}">RH</a>
+        <a href="{% url "rh:main" %}">RH</a>
         <span class="breadcrumb-separator">›</span>
-        <a href="{% url 'rh:avaliacoes' %}">Avaliações</a>
+        <a href="">Avaliações</a>
         <span class="breadcrumb-separator">›</span>
         <span class="breadcrumb-current">Eliminar</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <h1>Eliminar Avaliação</h1>
-            <p>Confirme a eliminação desta avaliação de desempenho</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'rh:avaliacoes' %}" class="btn btn-outline">
-                <i class="fas fa-arrow-left"></i>
-                Voltar à Lista
-            </a>
-        </div>
-    </div>
-
+    
+{% include "includes/header.html" with
+    title="Eliminar Avaliação"
+%}
     <!-- Confirmation Card -->
     <div class="confirmation-card">
         <div class="card-header">
@@ -210,13 +84,13 @@
         </div>
         
         <div class="card-footer">
-            <form method="post" class="form-actions">
+            <form method="post" class="form-actions"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
-                <a href="{% url 'rh:avaliacao_detail' avaliacao_id=avaliacao.id %}" class="btn btn-outline">
+                <a href="#"rh:avaliacao_detail' avaliacao_id=avaliacao.id %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-times"></i>
                     Cancelar
                 </a>
-                <button type="submit" class="btn btn-danger">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                     <i class="fas fa-trash"></i>
                     Eliminar Avaliação
                 </button>

@@ -1,0 +1,232 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}{% if departamento %}Editar{% else %}Adicionar{% endif %} Departamento{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Departamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if departamento %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{% if departamento %}Editar{% else %}Adicionar{% endif %} Departamento"
+    subtitle="{% if departamento %}Editar informações do departamento{% else %}Adicionar novo departamento{% endif %}"
+    icon="fas fa-sitemap"
+%}    </div>
+    
+    <!-- Form Container -->
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome do Departamento <span class="required">*</span></label>
+                    <input type="text" id="nome" name="nome" value="{{ departamento.nome|default:'' }}" required 
+                           placeholder="Digite o nome do departamento">
+                    <div class="help-text">Nome completo do departamento conforme estrutura organizacional</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Código do Departamento</label>
+                    <div class="info-text">
+                        <i class="fas fa-tag"></i> 
+                        {{ departamento.codigo|default:"Será gerado automaticamente" }}
+                    </div>
+                    <div class="help-text">Código único gerado automaticamente para identificação</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Sucursal</label>
+                    <div class="info-text">
+                        <i class="fas fa-building"></i> 
+                        {{ sucursal.nome|default:"Nenhuma sucursal disponível" }}
+                    </div>
+                    <div class="help-text">Sucursal à qual este departamento está vinculado</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">Tipo de Departamento</label>
+                    <select id="tipo" name="tipo">
+                        <optgroup label="Gestão e Administração">
+                            <option value="ADM" {% if departamento.tipo == 'ADM' %}selected{% endif %}>
+                                Administrativo
+                            </option>
+                            <option value="FIN" {% if departamento.tipo == 'FIN' %}selected{% endif %}>
+                                Financeiro
+                            </option>
+                            <option value="RH" {% if departamento.tipo == 'RH' %}selected{% endif %}>
+                                Recursos Humanos
+                            </option>
+                            <option value="JUR" {% if departamento.tipo == 'JUR' %}selected{% endif %}>
+                                Jurídico
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Comercial e Marketing">
+                            <option value="COM" {% if departamento.tipo == 'COM' %}selected{% endif %}>
+                                Comercial
+                            </option>
+                            <option value="MKT" {% if departamento.tipo == 'MKT' %}selected{% endif %}>
+                                Marketing
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Operações e Produção">
+                            <option value="OPR" {% if departamento.tipo == 'OPR' %}selected{% endif %}>
+                                Operações
+                            </option>
+                            <option value="PROD" {% if departamento.tipo == 'PROD' %}selected{% endif %}>
+                                Produção
+                            </option>
+                            <option value="MANUT" {% if departamento.tipo == 'MANUT' %}selected{% endif %}>
+                                Manutenção
+                            </option>
+                            <option value="QUAL" {% if departamento.tipo == 'QUAL' %}selected{% endif %}>
+                                Qualidade
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Logística e Armazenamento">
+                            <option value="LOG" {% if departamento.tipo == 'LOG' %}selected{% endif %}>
+                                Logística
+                            </option>
+                            <option value="ALM" {% if departamento.tipo == 'ALM' %}selected{% endif %}>
+                                Armazém
+                            </option>
+                            <option value="COMP" {% if departamento.tipo == 'COMP' %}selected{% endif %}>
+                                Aprovisionamento
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Tecnologia e Comércio Exterior">
+                            <option value="TI" {% if departamento.tipo == 'TI' %}selected{% endif %}>
+                                Tecnologia de Informação
+                            </option>
+                            <option value="EXP" {% if departamento.tipo == 'EXP' %}selected{% endif %}>
+                                Exportação
+                            </option>
+                            <option value="IMP" {% if departamento.tipo == 'IMP' %}selected{% endif %}>
+                                Importação
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Governação e Controlo">
+                            <option value="GOV" {% if departamento.tipo == 'GOV' %}selected{% endif %}>
+                                Governação
+                            </option>
+                            <option value="AUD" {% if departamento.tipo == 'AUD' %}selected{% endif %}>
+                                Auditoria Interna
+                            </option>
+                            <option value="SEG" {% if departamento.tipo == 'SEG' %}selected{% endif %}>
+                                Segurança
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Responsabilidade e Comunicação">
+                            <option value="SOC" {% if departamento.tipo == 'SOC' %}selected{% endif %}>
+                                Responsabilidade Social
+                            </option>
+                            <option value="AMBI" {% if departamento.tipo == 'AMBI' %}selected{% endif %}>
+                                Ambiente
+                            </option>
+                            <option value="COMU" {% if departamento.tipo == 'COMU' %}selected{% endif %}>
+                                Comunicação
+                            </option>
+                        </optgroup>
+                        
+                        <optgroup label="Planeamento e Monitoria">
+                            <option value="PLAN" {% if departamento.tipo == 'PLAN' %}selected{% endif %}>
+                                Planeamento
+                            </option>
+                            <option value="MON" {% if departamento.tipo == 'MON' %}selected{% endif %}>
+                                Monitoria e Avaliação
+                            </option>
+                        </optgroup>
+                    </select>
+                    <div class="help-text">Categoria funcional do departamento para organização</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" 
+                              placeholder="Descreva as responsabilidades e funções do departamento...">{{ departamento.descricao|default:'' }}</textarea>
+                    <div class="help-text">Descrição detalhada das responsabilidades e funções do departamento</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" id="ativo" name="ativo" value="1" {% if not departamento or departamento.ativo %}checked{% endif %}>
+                    <label for="ativo">Departamento Ativo</label>
+                </div>
+                <div class="help-text">Marque para manter o departamento ativo na estrutura organizacional</div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    {% if departamento %}Atualizar{% else %}Adicionar{% endif %}
+                </button>
+                <a href="#"rh:departamentos' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('ativo');
+    const formCheck = checkbox.closest('.form-check');
+    
+    // Função para atualizar o estado visual
+    function updateCheckboxState() {
+        if (checkbox.checked) {
+            formCheck.classList.add('checked');
+        } else {
+            formCheck.classList.remove('checked');
+        }
+    }
+    
+    // Atualizar estado inicial
+    updateCheckboxState();
+    
+    // Atualizar quando o checkbox muda
+    checkbox.addEventListener('change', updateCheckboxState);
+    
+    // Atualizar quando clica no label
+    const label = document.querySelector('label[for="ativo"]');
+    label.addEventListener('click', function() {
+        setTimeout(updateCheckboxState, 10);
+    });
+});
+</script>
+{% endblock %}

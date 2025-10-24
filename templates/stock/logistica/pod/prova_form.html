@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Prova de Entrega (POD){% endblock %}
 
@@ -22,33 +22,20 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:provas_list' %}">Provas de Entrega</a>
+        <a href="">Provas de Entrega</a>
         <i class="fas fa-chevron-right"></i>
         <span>{% if form.instance.pk %}Editar{% else %}Nova{% endif %} POD</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-plus-circle"></i>
-                    {% if form.instance.pk %}Editar Prova de Entrega (POD){% else %}Nova Prova de Entrega (POD){% endif %}
-                </h1>
-                <p class="page-subtitle">
-                    {% if form.instance.pk %}Atualize os detalhes da prova de entrega existente.{% else %}Crie uma nova prova de entrega para registrar uma entrega.{% endif %}
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar às Provas
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="{% if form.instance.pk %}Editar Prova de Entrega (POD){% else %}Nova Prova de Entrega (POD){% endif %}"
+    subtitle="{% if form.instance.pk %}Atualize os detalhes da prova de entrega existente.{% else %}Crie uma nova prova de entrega para registrar uma entrega.{% endif %}"
+    icon="fas fa-plus-circle"
+%}    </div>
 
     <!-- Messages -->
     {% if messages %}
@@ -68,7 +55,7 @@
             </h3>
         </div>
         <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
 
                 <div class="row">
@@ -231,10 +218,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i> Salvar Prova de Entrega
                     </button>
-                    <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-secondary">
+                    <a href="#"stock:pod:provas_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
                 </div>

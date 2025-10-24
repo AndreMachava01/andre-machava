@@ -1,0 +1,335 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Requisição de Compra Externa {{ requisicao.codigo }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Formulário oculto para CSRF -->
+<form style="display: none;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+    {% csrf_token %}
+</form>
+
+<div class="modern-container">
+    <!-- Header -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-shopping-cart me-2"></i>Requisição de Compra Externa {{ requisicao.codigo }}
+            </h1>
+            <div class="hero-actions">
+                <a href="#"stock:requisicoes:list' %}" class="btn-modern btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar às Requisições
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Information Cards -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Informações Gerais</h3>
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ requisicao.codigo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-{{ requisicao.status|lower }}">{{ requisicao.get_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data de Criação:</span>
+                    <span class="info-value">{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Criado por:</span>
+                    <span class="info-value">{{ requisicao.criado_por.username|default:"-" }}</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-building"></i> Sucursal Solicitante</h3>
+                <div class="info-item">
+                    <span class="info-label">Nome:</span>
+                    <span class="info-value">{{ requisicao.sucursal_solicitante.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Endereço:</span>
+                    <span class="info-value">{{ requisicao.sucursal_solicitante.endereco|default:"Não informado" }}</span>
+                </div>
+                {% if requisicao.data_aprovacao %}
+                <div class="info-item">
+                    <span class="info-label">Data de Aprovação:</span>
+                    <span class="info-value">{{ requisicao.data_aprovacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Aprovado por:</span>
+                    <span class="info-value">{{ requisicao.aprovado_por.username|default:"-" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-calculator"></i> Resumo Financeiro</h3>
+                <div class="info-item">
+                    <span class="info-label">Total de Itens:</span>
+                    <span class="info-value">{{ requisicao.itens.count }} item(s)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor|default:0 total:</span>
+                    <span class="info-value">{{ requisicao.valor_total|floatformat:2 }} MT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        {% if requisicao.observacoes %}
+        <div class="info-card">
+            <h3><i class="fas fa-comment"></i> Observações</h3>
+            <p style="margin: 0; color: #e5e7eb; line-height: 1.6;">{{ requisicao.observacoes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Items Section -->
+        <div class="items-section">
+            <div class="items-header">
+                <div>
+                    <h3 class="items-title">
+                        <i class="fas fa-boxes"></i>
+                        Itens Solicitados
+                    </h3>
+                    <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 0.9rem;">
+                        Total: {{ requisicao.itens.count }} item{{ requisicao.itens.count|default:0|pluralize }} | 
+                        <strong style="color: #10b981;">Valor|default:0 total: {{ requisicao.valor_total|floatformat:2 }} MT</strong>
+                    </p>
+                </div>
+                {% if requisicao.status in 'RASCUNHO,PENDENTE,APROVADA' %}
+                    <a href="#"stock:requisicoes:compra_externa_add_item' id=requisicao.id %}" class="btn-add-item btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-plus"></i>Adicionar|default:0 items
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if requisicao.itens.exists %}
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantidade</th>
+                            <th>Preço Estimado</th>
+                            <th>Valor|default:0 total</th>
+                            <th>Observações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for items in requisicao.itens.all  %}
+                        <tr>
+                            <td>
+                                <div class="item-name">{{ item.item.nome }}</div>
+                                <div class="item-code">{{ item.item.codigo }} - {{ item.item.get_tipo_display }}</div>
+                            </td>
+                            <td>
+                                <span class="item-quantidade">{{ item.quantidade_solicitada }} {{ item.item.unidade_medida }}</span>
+                            </td>
+                            <td>
+                                {% if items.preco_unitario_estimado  %}
+                                    <span class="item-preco">{{ item.preco_unitario_estimado|floatformat:2 }} MT</span>
+                                {% else %}
+                                    <span class="item-preco nao-definido">Não definido</span>
+                                {% endif %}
+                                {% if requisicao.status in 'RASCUNHO,PENDENTE,APROVADA' %}
+                                    <br>
+                                    <button onclick="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="btn-acao btn-editar"
+                                            title="Editar|default:0 items" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="Remover|default:0 items" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button class="btn-action-large btn-submit" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                        <i class="fas fa-paper-plane"></i>Submeter para Aprovação
+                    </button>
+                {% endif %}
+                
+                {% if requisicao.status == 'PENDENTE' %}
+                    <button class="btn-action-large btn-approve" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn-action-large btn-reject" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                        <i class="fas fa-times"></i>Rejeitar
+                    </button>
+                {% endif %}
+                
+                {% if requisicao.status == 'APROVADA' %}
+                    {% if requisicao.itens.count|default:0 > 0 %}
+                        <button class="btn-action-large btn-submit" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button disabled class="btn-action-large secondary" title="Não é possível criar ordem de compra sem itens" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-shopping-cart"></i>Criar Ordem de Compra
+                        </button>
+                    {% endif %}
+                    <button class="btn-action-large btn-finalize" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn-action-large btn-cancel" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                        <i class="fas fa-ban"></i>Cancelar
+                    </button>
+                {% endif %}
+                
+                {% if requisicao.status == 'RASCUNHO' or requisicao.status == 'PENDENTE' or requisicao.status == 'REJEITADA' %}
+                    <button class="btn-action-large btn-delete" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-trash"></i>Deletar
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funções para ações dos itens
+function definirPreco(itemId, itemNome, precoAtual) {
+    const preco = prompt(`Definir preço estimado para "${itemNome}":`, precoAtual || '');
+    if (preco !== null && preco !== '') {
+        const precoNumero = parseFloat(preco.replace(',', '.'));
+        if (!isNaN(precoNumero) && precoNumero > 0) {
+            enviarPreco(itemId, precoNumero);
+        } else {
+            alert('Por favor, insira um preço válido maior que zero.');
+        }
+    }
+}
+
+function enviarPreco(itemId, preco) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "stock:requisicoes:compra_externa_update_preco" id=requisicao.id|default:0 items_id=0 %}'.replace('0', itemId);
+    
+    // Adicionar CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Adicionar preço
+    const precoInput = document.createElement('input');
+    precoInput.type = 'hidden';
+    precoInput.name = 'preco_unitario_estimado';
+    precoInput.value = preco;
+    form.appendChild(precoInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function editarItem(itemId) {
+    // Implementar edição de|default:0 items
+    alert('Funcionalidade de edição será implementada em breve!');
+}
+
+function removerItem(itemId, itemNome) {
+    if (confirm(`Tem certeza que deseja remover o|default:0 items "${itemNome}" desta requisição?`)) {
+        // Criar formulário para POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "stock:requisicoes:compra_externa_remove_item" id=requisicao.id|default:0 items_id=0 %}'.replace('0', itemId);
+        
+        // Adicionar CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Funções para ações da requisição
+function submeterRequisicao() {
+    if (confirm('Tem certeza que deseja submeter esta requisição para aprovação?')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_submit" id=requisicao.id %}');
+    }
+}
+
+function aprovarRequisicao() {
+    if (confirm('Tem certeza que deseja aprovar esta requisição?')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_approve" id=requisicao.id %}');
+    }
+}
+
+function rejeitarRequisicao() {
+    const motivo = prompt('Digite o motivo da rejeição:');
+    if (motivo) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_reject" id=requisicao.id %}', {motivo: motivo});
+    }
+}
+
+function cancelarRequisicao() {
+    if (confirm('Tem certeza que deseja cancelar esta requisição?')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_cancel" id=requisicao.id %}');
+    }
+}
+
+function finalizarRequisicao() {
+    if (confirm('Tem certeza que deseja finalizar esta requisição? Esta ação não pode ser desfeita.')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_finalize" id=requisicao.id %}');
+    }
+}
+
+function criarOrdemCompra() {
+    // Verificar se há itens na requisição
+    const itensCount = {{ requisicao.itens.count }};
+    if (itensCount === 0) {
+        alert('Não é possível criar ordem de compra para uma requisição sem itens.');
+        return;
+    }
+    
+    if (confirm('Tem certeza que deseja criar uma ordem de compra externa para esta requisição?')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_create_order" id=requisicao.id %}');
+    }
+}
+
+function deletarRequisicao() {
+    if (confirm('Tem certeza que deseja deletar esta requisição? Esta ação não pode ser desfeita.')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_delete" id=requisicao.id %}');
+    }
+}
+
+function enviarAcao(url, dados = {}) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    
+    // Adicionar CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Adicionar dados extras
+    for (const [key, value] of Object.entries(dados)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function imprimirRequisicao() {
+    // Abrir documento oficial em nova aba
+    window.open('{% url "stock:requisicoes:compra_externa_documento" id=requisicao.id %}', '_blank');
+}
+
+function duplicarRequisicao() {
+    if (confirm('Tem certeza que deseja duplicar esta requisição? Uma nova requisição será criada com todos os itens copiados.')) {
+        enviarAcao('{% url "stock:requisicoes:compra_externa_duplicate" id=requisicao.id %}');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Relatório de Feriados{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+    <a href="#"rh:relatorios' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-arrow-left"></i>Voltar aos Relatórios
+    </a>
+    <a href="#"rh:main' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-users"></i>RH
+    </a>
+    <a href="#"dashboard' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+        <i class="fas fa-home"></i>Dashboard
+    </a>
+    <button class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-print"></i>Imprimir
+    </button>
+</div>
+
+<!-- Filtros -->
+{% include 'includes/filters_unified.html' with entity_name='feriados_relatorio' %}
+
+<div class="print-container">
+    <!-- Header -->
+    <div class="document-header">
+        <div class="company-info">
+            <h1>RELATÓRIO DE FERIADOS</h1>
+            <h2>{{ data_relatorio|date:"d/m/Y H:i" }}</h2>
+        </div>
+        <div class="header-date">
+            <strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+
+    <!-- Rastreabilidade de Documentos -->
+    <div class="section">
+        <h3>📋 Rastreabilidade de Documentos</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Relatório:</strong> Calendário de Feriados
+            </div>
+            <div class="info-item">
+                <strong>Data de Geração:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+            <div class="info-item">
+                <strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}
+            </div>
+            <div class="info-item">
+                <strong>Período:</strong> {{ data_relatorio|date:"Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="section">
+        <h3>Estatísticas Gerais</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <strong>Total de Feriados:</strong> {{ total_feriados }}
+            </div>
+            <div class="summary-item">
+                <strong>Feriados Ativos:</strong> {{ feriados_ativos }}
+            </div>
+            <div class="summary-item">
+                <strong>Feriados Inativos:</strong> {{ feriados_inativos }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Feriados Próximos -->
+    {% if feriados_proximos %}
+    <div class="section">
+        <h3>📅 Próximos Feriados (30 dias)</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feriado in feriados_proximos %}
+                <tr>
+                    <td class="text-center">{{ feriado.data|date:"d/m/Y" }}</td>
+                    <td>{{ feriado.nome }}</td>
+                    <td>{{ feriado.get_tipo_display }}</td>
+                    <td class="text-center">
+                        <span class="status-badge status-active">Ativo</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas por Tipo -->
+    {% if feriados_por_tipo %}
+    <div class="section">
+        <h3>📊 Feriados por Tipo</h3>
+        
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas por Ano -->
+    {% if feriados_por_ano %}
+    <div class="section">
+        <h3>📈 Feriados por Ano</h3>
+        
+    </div>
+    {% endif %}
+
+    <!-- Lista Completa de Feriados -->
+    <div class="section">
+        <h3>📋 Lista Completa de Feriados</h3>
+        
+    </div>
+
+    <!-- Document Footer -->
+    <div class="document-footer">
+        <p>Relatório gerado automaticamente pelo Sistema de Gestão Empresarial</p>
+        <p>Data: {{ data_relatorio|date:"d/m/Y H:i" }} | Usuário: {{ request.user.get_full_name|default:request.user.username }}</p>
+    </div>
+</div>
+{% endblock %}

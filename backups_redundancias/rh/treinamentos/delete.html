@@ -1,0 +1,149 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Deletar Treinamento{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="{% url "rh:main" %}">
+            <i class="fas fa-home"></i> RH
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "rh:treinamentos" %}">Treinamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:treinamento_detail' treinamento.id %}">{{ treinamento.nome }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Deletar</span>
+    </div>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Deletar Treinamento"
+    subtitle="Esta ação não pode ser desfeita"
+    icon="fas fa-exclamation-triangle"
+%}    </div>
+
+    <!-- Aviso de Perigo -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Atenção! Esta ação não pode ser desfeita
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="mb-3">
+                Você está prestes a deletar permanentemente o treinamento <strong>"{{ treinamento.nome }}"</strong>. 
+                Esta ação irá remover todos os dados relacionados, incluindo inscrições, avaliações e histórico.
+            </p>
+        </div>
+    </div>
+
+    <!-- Informações do Treinamento -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-graduation-cap"></i>
+                Informações do Treinamento
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Nome:</strong> {{ treinamento.nome }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Tipo:</strong> 
+                        <span class="badge badge-info">{{ treinamento.get_tipo_display }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Status:</strong> 
+                        <span class="badge badge-{% if treinamento.status == 'EM_ANDAMENTO' %}success{% elif treinamento.status == 'PLANEJADO' %}warning{% elif treinamento.status == 'CONCLUIDO' %}primary{% else %}secondary{% endif %}">
+                            {{ treinamento.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Data de Início:</strong> {{ treinamento.data_inicio|date:"d/m/Y" }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Data de Fim:</strong> {{ treinamento.data_fim|date:"d/m/Y" }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Inscrições:</strong> {{ treinamento.inscricoes.count }} inscrições
+                    </div>
+                    
+                    {% if treinamento.instrutor %}
+                    <div class="info-item">
+                        <strong>Instrutor:</strong> {{ treinamento.instrutor }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consequências -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list"></i>
+                O que será removido:
+            </h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <i class="fas fa-check text-danger"></i>
+                    Todas as informações do treinamento
+                </li>
+                <li class="list-group-item">
+                    <i class="fas fa-check text-danger"></i>
+                    {{ treinamento.inscricoes.count }} inscrição(ões) de funcionários
+                </li>
+                <li class="list-group-item">
+                    <i class="fas fa-check text-danger"></i>
+                    Histórico de avaliações e notas
+                </li>
+                <li class="list-group-item">
+                    <i class="fas fa-check text-danger"></i>
+                    Dados de frequência e aprovação
+                </li>
+                <li class="list-group-item">
+                    <i class="fas fa-check text-danger"></i>
+                    Relatórios e estatísticas relacionadas
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="form-actions">
+        <a href="#"rh:treinamento_detail' treinamento.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-times"></i>
+            Cancelar
+        </a>
+        <form method="post" style="display: inline;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <button type="button" class="btn btn btn btn btn btn btn btn-danger" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-trash"></i>
+                Sim, Deletar Treinamento
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

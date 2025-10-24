@@ -1,0 +1,45 @@
+{% extends "admin/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form action="{{ app_path }}" method="post" id="login-form"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+        <div class="form-row">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }} {{ form.username }}
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            {{ form.password.label_tag }} {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}" class="btn btn-primary btn-responsive" class="btn btn btn-primary btn-responsive btn-responsive" class="btn btn btn-primary btn-responsive btn-responsive" class="btn btn btn-primary btn-responsive btn-responsive" class="btn btn btn-primary btn-responsive btn-responsive" class="btn btn btn-primary btn-responsive btn-responsive">
+        </div>
+        {% if show_bypass %}
+        <button type="button" class="bypass-btn" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" onclick=" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">
+            Bypass Login
+        </button>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+function bypassLogin() {
+    var form = document.getElementById('login-form');
+    var usernameInput = form.querySelector('input[name="username"]');
+    var passwordInput = form.querySelector('input[name="password"]');
+    
+    usernameInput.value = 'admin';
+    passwordInput.value = 'admin123';
+    form.submit();
+}
+</script>
+{% endblock %}
+
+

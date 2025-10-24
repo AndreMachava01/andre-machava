@@ -1,0 +1,101 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Eliminar Avaliação{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url "rh:main" %}">RH</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="">Avaliações</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Eliminar</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Eliminar Avaliação"
+%}
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmação de Eliminação
+            </h2>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong>Atenção!</strong> Esta ação não pode ser desfeita. A avaliação será permanentemente eliminada do sistema.
+            </div>
+            
+            <div class="data-grid">
+                <div>
+                    <div class="data-label">Funcionário</div>
+                    <div class="data-value">{{ avaliacao.funcionario.nome }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Departamento</div>
+                    <div class="data-value">{{ avaliacao.funcionario.departamento.nome }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Cargo</div>
+                    <div class="data-value">{{ avaliacao.funcionario.cargo.nome }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Avaliador</div>
+                    <div class="data-value">{{ avaliacao.avaliador.nome }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Tipo</div>
+                    <div class="data-value">{{ avaliacao.get_tipo_display }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Período</div>
+                    <div class="data-value">{{ avaliacao.data_inicio|date:"d/m/Y" }} - {{ avaliacao.data_fim|date:"d/m/Y" }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Status</div>
+                    <div class="data-value">
+                        <span class="badge bg-{% if avaliacao.status == 'CONCLUIDA' %}success{% elif avaliacao.status == 'EM_ANDAMENTO' %}warning{% else %}secondary{% endif %}">
+                            {{ avaliacao.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <div class="data-label">Nota Final</div>
+                    <div class="data-value">
+                        {% if avaliacao.nota_final %}
+                            {{ avaliacao.nota_final|floatformat:1 }}/10
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <form method="post" class="form-actions"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                <a href="#"rh:avaliacao_detail' avaliacao_id=avaliacao.id %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Eliminar Avaliação
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

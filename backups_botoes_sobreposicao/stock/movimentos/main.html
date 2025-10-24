@@ -1,0 +1,725 @@
+{% extends 'base_list.html' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Movimentações de Stock" entity_name='default' %}
+{% load static %}
+
+{% block title %}Movimentações de Stock{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        /* Cores funcionais para botões */
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --primary-color: #8b5cf6;
+        --secondary-color: #6b7280;
+        
+        /* Cores vibrantes */
+        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
+        
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 20px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-title i {
+        margin-right: 15px;
+        color: #fbbf24;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-modern {
+        background: var(--green-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 30px;
+        background: #374151;
+    }
+
+    /* Usar o sistema unificado de contadores do components.css */
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 1.5rem;
+        color: white;
+        background: var(--purple-gradient);
+        box-shadow: var(--shadow-light);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        color: #fbbf24;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #d1d5db;
+        font-weight: 500;
+    }
+
+    .content-section {
+        padding: 30px;
+        background: #374151;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #d1d5db;
+        margin-bottom: 8px;
+    }
+
+    .form-control-modern {
+        padding: 12px 16px;
+        border: 2px solid #6b7280;
+        border-radius: 10px;
+        background: #374151;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .btn-filter {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-search {
+        background: var(--green-gradient);
+        color: white;
+    }
+
+    .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-clear {
+        background: var(--red-gradient);
+        color: white;
+    }
+
+    .btn-clear:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .movements-section {
+        background: #4b5563;
+        border-radius: 16px;
+        padding: 25px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #6b7280;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fbbf24;
+        margin: 0;
+    }
+
+    .section-title i {
+        margin-right: 10px;
+        color: #8b5cf6;
+    }
+
+    .total-count {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .movements-table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid #6b7280;
+    }
+
+    .movements-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #374151;
+    }
+
+    .movements-table th {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-bottom: 2px solid #6b7280;
+    }
+
+    .movements-table td {
+        padding: 15px 12px;
+        border-bottom: 1px solid #4b5563;
+        color: #d1d5db;
+    }
+
+    .movements-table tbody tr:hover {
+        background: #4b5563;
+    }
+
+    .date-cell .date-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .date {
+        font-weight: 600;
+        color: white;
+    }
+
+    .time {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .product-cell .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .movement-code {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 0.9rem;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: white;
+    }
+
+    .product-code {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .item-type-badge {
+        background: var(--blue-gradient);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .item-specific-badge {
+        background: var(--orange-gradient);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .movement-type {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .movement-entrada {
+        background: var(--green-gradient);
+        color: white;
+    }
+
+    .movement-saída {
+        background: var(--red-gradient);
+        color: white;
+    }
+
+    .movement-ajuste {
+        background: var(--orange-gradient);
+        color: white;
+    }
+
+    .quantity {
+        font-weight: 600;
+        color: #fbbf24;
+        font-size: 1.1rem;
+    }
+
+    .sucursal {
+        color: #d1d5db;
+        font-weight: 500;
+    }
+
+    .user {
+        color: #9ca3af;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-view {
+        background: var(--blue-gradient);
+        color: white;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-edit {
+        background: var(--orange-gradient);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+
+    .pagination-container {
+        margin-top: 25px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #4b5563;
+        color: #d1d5db;
+        transition: all 0.3s ease;
+        border: 1px solid #6b7280;
+    }
+
+    .pagination-btn:hover {
+        background: var(--purple-gradient);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .pagination-info {
+        background: var(--purple-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0 15px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #d1d5db;
+        margin-bottom: 10px;
+    }
+
+    .empty-subtitle {
+        font-size: 1rem;
+        color: #9ca3af;
+        margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            
+            <div class="hero-actions">
+                <a href="#"stock:main' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-home"></i>
+                    Voltar ao Stock
+                </a>
+                <a href="#" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-plus"></i>
+                    Nova Movimentação
+                </a>
+                <a href="#"stock:transferencias:list' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-exchange-alt"></i>
+                    Transferências
+                </a>
+                <a href="#"stock:requisicoes:list' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-shopping-cart"></i>
+                    Requisição de Stock
+                </a>
+                <a href="#"stock:transferencias:verificar_stock' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-eye"></i>
+                    Ver Stock
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="stat-number">{{ movimentos_entrada|default:"0" }}</div>
+            <div class="stat-label">Entradas Este Mês</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="stat-number">{{ movimentos_saida|default:"0" }}</div>
+            <div class="stat-label">Saídas Este Mês</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="stat-number">{{ movimentos_ajuste|default:"0" }}</div>
+            <div class="stat-label">Ajustes Este Mês</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stat-number">{{ total_movimentos|default:"0" }}</div>
+            <div class="stat-label">Total Movimentações</div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+        <!-- Filters -->
+        {% include 'includes/filters_unified.html' with entity_name='default' %}
+
+        <!-- Movimentações List -->
+        <div class="movements-section">
+            
+    </div>
+
+            {% if movimentos %}
+                <div class="movements-table-container">
+                    <table class="movements-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Item</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Sucursal</th>
+                                <th>Usuário</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movimento in movimentos %}
+                            <tr>
+                                <td class="date-cell">
+                                    <div class="date-info">
+                                        <span class="date">{{ movimento.data_movimento|date:"d/m/Y" }}</span>
+                                        <span class="time">{{ movimento.data_movimento|time:"H:i" }}</span>
+                </div>
+                                </td>
+                                <td class="product-cell">
+                                    <div class="product-info">
+                                        <span class="movement-code">{{ movimento.codigo }}</span>
+                                        <span class="product-name">{{ movimento.item_nome }}</span>
+                                        <span class="product-code">
+                                            {{ movimento.item_codigo }}
+                                            <span class="item-type-badge">
+                                                {% if movimento.item_tipo == 'produto' %}
+                                                    Produto
+                                                {% else %}
+                                                    Material
+                                                {% endif %}
+                                            </span>
+                                            {% if movimento.item_especifico %}
+                                                <span class="item-specific-badge">{{ movimento.item_especifico }}</span>
+                                            {% endif %}
+                                        </span>
+            </div>
+                                </td>
+                                <td class="type-cell">
+                                    <span class="movement-type movement-{{ movimento.tipo_movimento.nome|lower|cut:' ' }}">
+                                        {{ movimento.tipo_movimento.nome }}
+                                    </span>
+                                </td>
+                                <td class="quantity-cell">
+                                    <span class="quantity">{{ movimento.quantidade }}</span>
+                                </td>
+                                <td class="sucursal-cell">
+                                    <span class="sucursal">{{ movimento.sucursal.nome }}</span>
+                                </td>
+                                <td class="user-cell">
+                                    <span class="user">
+                                        {% if movimento.usuario %}
+                                            {{ movimento.usuario.get_full_name|default:movimento.usuario.username }}
+                                        {% else %}
+                                            Sistema
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="actions-cell">
+                                    <div class="action-btns btn-responsive">
+                                        <a href="#"stock:movimento_detail' movimento.id %}" class="btn-action btn-view btn-responsive btn-responsive" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if perms.empresa.change_movimentostock %}
+                                        <a href="#"stock:movimento_edit' movimento.id %}" class="btn-action btn-edit btn-responsive btn-responsive" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+        </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if movimentos.has_other_pages %}
+                <div class="pagination-container">
+                    <nav class="pagination-nav">
+                        {% if movimentos.has_previous %}
+                            <a href="#" class="pagination-btn pagination-first btn-responsive btn-responsive">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                            <a href="#" class="pagination-btn pagination-prev btn-responsive btn-responsive">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        {% endif %}
+
+                        <span class="pagination-info">
+                            Página {{ movimentos.number }} de {{ movimentos.paginator.num_pages }}
+                        </span>
+
+                        {% if movimentos.has_next %}
+                            <a href="#" class="pagination-btn pagination-next btn-responsive btn-responsive">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                            <a href="#" class="pagination-btn pagination-last btn-responsive btn-responsive">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+            </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox empty-icon"></i>
+                    <h4 class="empty-title">Nenhuma movimentação encontrada</h4>
+                    <p class="empty-subtitle">Não há movimentações registradas no sistema.</p>
+                    <a href="#"stock:movimento_add' %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                        <i class="fas fa-plus"></i>
+                        Registrar Primeira Movimentação
+                    </a>
+        </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

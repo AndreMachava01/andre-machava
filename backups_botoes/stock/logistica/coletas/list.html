@@ -1,0 +1,223 @@
+{% extends "base_list.html" %}
+
+{% block title %}Coletas Logísticas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Coletas</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Coletas Logísticas"
+    subtitle="Gerenciamento de coleta de ordens de compra externas"
+    icon="fas fa-shopping-cart"
+%}    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.total }}</h3>
+                    <p class="stat-label">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.pendentes }}</h3>
+                    <p class="stat-label">Pendentes</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.em_andamento }}</h3>
+                    <p class="stat-label">Em Andamento</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.coletadas }}</h3>
+                    <p class="stat-label">Coletadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.urgentes }}</h3>
+                    <p class="stat-label">Urgentes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+    <!-- Lista de Coletas -->
+    <div class="coletas-list" style="background: #374151; border-radius: 15px; overflow: hidden;">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="modern-table" style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #1f2937;">
+                        <tr>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Ordem de Compra</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Fornecedor</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Destino</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Status</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Prioridade</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Transporte</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Data</th>
+                            <th style="padding: 15px; text-align: center; color: #d1d5db; font-weight: 600;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notificacao in page_obj %}
+                        <tr style="border-bottom: 1px solid #4b5563;">
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 600; color: #06b6d4;">{{ notificacao.ordem_compra.codigo }}</div>
+                                <div style="font-size: 0.85rem; color: #9ca3af;">{{ notificacao.ordem_compra.data_criacao|date:"d/m/Y H:i" }}</div>
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 500; color: #d1d5db;">{{ notificacao.ordem_compra.fornecedor.nome }}</div>
+                                <div style="font-size: 0.8rem; color: #9ca3af;">{{ notificacao.ordem_compra.numero_fatura }}</div>
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 500; color: #d1d5db;">{{ notificacao.ordem_compra.sucursal_destino.nome }}</div>
+                            </td>
+                            <td style="padding: 15px;">
+                                <span class="badge badge-{{ notificacao.get_status_color }}" 
+                                      style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                    {{ notificacao.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="padding: 15px;">
+                                <span class="badge badge-{{ notificacao.get_prioridade_color }}" 
+                                      style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                    {{ notificacao.get_prioridade_display }}
+                                </span>
+                            </td>
+                            <td style="padding: 15px;">
+                                {% if notificacao.transporte_escolhido %}
+                                    <div style="font-weight: 500; color: #d1d5db;">{{ notificacao.transporte_escolhido.nome }}</div>
+                                    <div style="font-size: 0.8rem; color: #9ca3af;">{{ notificacao.get_tipo_transporte_display }}</div>
+                                {% else %}
+                                    <span style="color: #9ca3af; font-style: italic;">Não atribuído</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-size: 0.85rem; color: #d1d5db;">
+                                    Notificada: {{ notificacao.data_notificacao|date:"d/m H:i" }}
+                                </div>
+                                {% if notificacao.data_atribuicao %}
+                                    <div style="font-size: 0.8rem; color: #9ca3af;">
+                                        Atribuída: {{ notificacao.data_atribuicao|date:"d/m H:i" }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px; text-align: center;">
+                                <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="display: flex; gap: 8px; justify-content: center;" role="button" role="button" role="button" role="button" role="button">
+                                    <a href="#"stock:logistica:coleta_detail' notificacao.id %}" 
+                                       class="btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
+                                       style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                       title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if notificacao.status == 'PENDENTE' %}
+                                        <a href="#"stock:logistica:coleta_atribuir' notificacao.id %}" 
+                                           class="btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
+                                           style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                           title="Atribuir Transporte">
+                                            <i class="fas fa-truck"></i>
+                                        </a>
+                                    {% elif notificacao.status == 'EM_ANDAMENTO' %}
+                                        <a href="#"stock:logistica:coleta_concluir' notificacao.id %}" 
+                                           class="btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" 
+                                           style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                           title="Concluir Coleta">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-container" style="padding: 20px; background: #1f2937; border-top: 1px solid #4b5563;">
+                    <div class="pagination" style="display: flex; justify-content: center; gap: 10px;">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}" 
+                               style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <span style="padding: 8px 12px; background: #667eea; color: white; border-radius: 6px;">
+                            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}" 
+                               style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state" style="padding: 40px; text-align: center; color: #9ca3af;">
+                <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="color: #d1d5db; margin-bottom: 10px;">Nenhuma coleta encontrada</h3>
+                <p>Não há coletas de compras que precisem de transporte logístico no momento.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+

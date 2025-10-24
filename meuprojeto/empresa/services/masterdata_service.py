@@ -11,10 +11,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from ..models_masterdata import (
-    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
+    Regiao, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
+from ..models_routing import ZonaEntrega
 from ..models_stock import RastreamentoEntrega, Transportadora, VeiculoInterno
 
 logger = logging.getLogger(__name__)

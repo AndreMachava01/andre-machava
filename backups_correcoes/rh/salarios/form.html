@@ -1,0 +1,176 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if salario %}Editar Salário{% else %}Adicionar Salário{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'rh:main' %}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="{% url 'rh:salarios' %}">Salários</a>
+        <span class="separator">›</span>
+        <span class="current">{% if salario %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>
+                <i class="fas fa-money-bill-wave"></i>
+                {% if salario %}Editar Salário{% else %}Adicionar Salário{% endif %}
+            </h1>
+        </div>
+        <div class="action-buttons">
+            <a href="{% url 'rh:salarios' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            O salário líquido será calculado automaticamente considerando os benefícios e descontos associados ao funcionário.
+        </div>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="funcionario">Funcionário <span class="required">*</span></label>
+                <select id="funcionario" name="funcionario" required>
+                    <option value="">Selecione o funcionário</option>
+                    {% for funcionario in funcionarios %}
+                    <option value="{{ funcionario.id }}" {% if salario.funcionario.id == funcionario.id %}selected{% endif %}>
+                        {{ funcionario.nome_completo }} - {{ funcionario.codigo_funcionario }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Funcionário para o qual o salário será registado</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="valor_base">Valor Base <span class="required">*</span></label>
+                <input type="number" id="valor_base" name="valor_base" value="{{ salario.valor_base|default:'' }}" step="0.01" min="0" required>
+                <div class="help-text">Valor base do salário em Meticais (MT)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data_inicio">Data de Início <span class="required">*</span></label>
+                <input type="date" id="data_inicio" name="data_inicio" value="{{ salario.data_inicio|date:'Y-m-d'|default:'' }}" required>
+                <div class="help-text">Data de início da vigência do salário</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data_fim">Data de Fim</label>
+                <input type="date" id="data_fim" name="data_fim" value="{{ salario.data_fim|date:'Y-m-d'|default:'' }}">
+                <div class="help-text">Data de fim da vigência (opcional)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Status <span class="required">*</span></label>
+                <select id="status" name="status" required>
+                    <option value="">Selecione o status</option>
+                    {% for codigo, nome in status_choices %}
+                    <option value="{{ codigo }}" {% if salario.status == codigo %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Status do salário</div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" placeholder="Observações adicionais sobre o salário...">{{ salario.observacoes|default:'' }}</textarea>
+                <div class="help-text">Informações adicionais sobre o salário (opcional)</div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'rh:salarios' %}" class="btn btn-outline">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if salario %}Atualizar Salário{% else %}Adicionar Salário{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação do formulário
+    const form = document.querySelector('form');
+    const funcionarioSelect = document.getElementById('funcionario');
+    const valorBaseInput = document.getElementById('valor_base');
+    const dataInicioInput = document.getElementById('data_inicio');
+    const statusSelect = document.getElementById('status');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Limpar mensagens de erro anteriores
+        document.querySelectorAll('.error-message').forEach(msg => msg.remove());
+        
+        // Validar funcionário
+        if (!funcionarioSelect.value) {
+            showError(funcionarioSelect, 'Funcionário é obrigatório');
+            isValid = false;
+        }
+        
+        // Validar valor base
+        if (!valorBaseInput.value || parseFloat(valorBaseInput.value) <= 0) {
+            showError(valorBaseInput, 'Valor base deve ser maior que zero');
+            isValid = false;
+        }
+        
+        // Validar data de início
+        if (!dataInicioInput.value) {
+            showError(dataInicioInput, 'Data de início é obrigatória');
+            isValid = false;
+        }
+        
+        // Validar status
+        if (!statusSelect.value) {
+            showError(statusSelect, 'Status é obrigatório');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    function showError(input, message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '12px';
+        errorDiv.style.marginTop = '4px';
+        errorDiv.textContent = message;
+        
+        input.parentNode.appendChild(errorDiv);
+        input.style.borderColor = '#dc3545';
+    }
+    
+    // Auto-focus no primeiro campo
+    funcionarioSelect.focus();
+});
+</script>
+{% endblock %}

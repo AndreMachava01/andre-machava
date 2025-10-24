@@ -1,0 +1,171 @@
+{% extends "base_list.html" %}
+
+
+{% block title %}Gestão de Presenças{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Presenças</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Gestão de Presenças"
+    subtitle="Controle de presenças e frequência dos funcionários"
+    icon="fas fa-calendar-check"
+%}    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_presencas|default:"0" }}</h3>
+                    <p class="stat-label">Total de Presenças</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ presencas_hoje|default:"0" }}</h3>
+                    <p class="stat-label">Presenças Hoje</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ presencas_mes|default:"0" }}</h3>
+                    <p class="stat-label">Este Mês</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ funcionarios_ativos|default:"0" }}</h3>
+                    <p class="stat-label">Funcionários Ativos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='presencas' %}
+    
+    <!-- Resumo Mensal (compacto) -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-calendar-alt"></i>
+                Resumo de Presenças por Mês — {{ ano }}
+            </h3>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Dias Úteis</th>
+                        <th>Presente</th>
+                        <th>Ausente</th>
+                        <th>Falta Just.</th>
+                        <th>Atraso</th>
+                        <th>Licença</th>
+                        <th>Férias</th>
+                        <th>Horas Extra</th>
+                        <th>Registos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resumo in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="cell-primary">{{ resumo.mes_nome }}</div>
+                            <div class="cell-tertiary">{{ resumo.primeiro_dia|date:"d/m" }} - {{ resumo.ultimo_dia|date:"d/m" }}</div>
+                        </td>
+                        <td>{{ resumo.dias_uteis }}</td>
+                        <td><span class="status-badge status-active">{{ resumo.total|default:0_presente|default:0 }}</span></td>
+                        <td><span class="status-badge status-inactive">{{ resumo.total|default:0_ausente|default:0 }}</span></td>
+                        <td>{{ resumo.total|default:0_falta_justificada|default:0 }}</td>
+                        <td><span class="status-badge status-warning">{{ resumo.total|default:0_atraso|default:0 }}</span></td>
+                        <td>{{ resumo.total|default:0_licenca|default:0 }}</td>
+                        <td>{{ resumo.total|default:0_ferias|default:0 }}</td>
+                        <td>
+                            {% if resumo.total|default:0_horas_extras %}
+                                {{ resumo.total|default:0_horas_extras }}h
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td>{{ resumo.total|default:0_registros|default:0 }}</td>
+                        <td>
+                            <div class="cell-actions" style="position: relative; z-index: 10;">
+                                <a href="#"rh:detalhes_mes' ano resumo.mes_num %}" class="btn-action-sm secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes do mês">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#"rh:calendario_presencas' %}?mes={{ resumo.mes_num }}&ano={{ ano }}" class="btn-action-sm primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver calendário do mês">
+                                    <i class="fas fa-calendar"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-submit filters
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="tipo"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

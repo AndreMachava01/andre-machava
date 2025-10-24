@@ -1,0 +1,330 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Validar POD - {{ prova.codigo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:provas_list' %}">Provas de Entrega</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:prova_detail' prova.id %}">{{ prova.codigo }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Validar POD</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-check-circle"></i>
+                    Validar POD - {{ prova.codigo }}
+                </h1>
+                <p class="page-subtitle">
+                    Confirmar e validar a Prova de Entrega
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn-secondary btn-responsive -responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Detalhes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações da POD -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações da POD
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Código POD</div>
+                                <div class="info-value">
+                                    <span class="badge badge-secondary">{{ prova.codigo }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Status Atual</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
+                                        {{ prova.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Tipo de Entrega</div>
+                                <div class="info-value">
+                                    <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
+                                        {{ prova.get_tipo_entrega_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <div class="info-label">Data de Entrega</div>
+                                <div class="info-value">{{ prova.data_entrega|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="info-item">
+                                <div class="info-label">Destinatário</div>
+                                <div class="info-value">{{ prova.nome_destinatario }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Validação -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-check"></i>
+                        Validação da POD
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post"action="."method="post">{% csrf_token %}
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.validada.id_for_label }}" class="form-label">
+                                <i class="fas fa-check-circle"></i> Confirmar Validação
+                            </label>
+                            <div class="form-check">
+                                {{ form.validada }}
+                                <label class="form-check-label" for="{{ form.validada.id_for_label }}">
+                                    Confirmo que esta POD está correta e pode ser validada
+                                </label>
+                            </div>
+                            {% if form.validada.errors %}
+                                <div class="form-errors">
+                                    {% for error in form.validada.errors %}
+                                        <span class="error-message">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.observacoes_validacao.id_for_label }}" class="form-label">
+                                <i class="fas fa-comment-alt"></i> Observações da Validação
+                            </label>
+                            {{ form.observacoes_validacao }}
+                            {% if form.observacoes_validacao.errors %}
+                                <div class="form-errors">
+                                    {% for error in form.observacoes_validacao.errors %}
+                                        <span class="error-message">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Adicione observações sobre a validação (opcional)
+                            </small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn btn-success" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                <i class="fas fa-check"></i>
+                                Validar POD
+                            </button>
+                            <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn-secondary btn-responsive -responsive">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Aviso -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Aviso Importante
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Atenção:</strong> Ao validar esta POD, você confirma que:
+                        <ul class="mt-2">
+                            <li>A entrega foi realizada conforme especificado</li>
+                            <li>Todas as informações estão corretas</li>
+                            <li>Os documentos estão em ordem</li>
+                            <li>A POD pode ser considerada válida</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Atual -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info"></i>
+                        Status Atual
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="status-item">
+                        <i class="fas fa-file-signature"></i>
+                        <span>POD Criada</span>
+                        <i class="fas fa-check text-success"></i>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Entrega Realizada</span>
+                        <i class="fas fa-check text-success"></i>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Validação Pendente</span>
+                        <i class="fas fa-clock text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    margin: 0;
+}
+
+.form-check-label {
+    margin: 0;
+    font-weight: 500;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.form-errors {
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    color: var(--accent-danger);
+    font-size: 0.875rem;
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.status-item i:first-child {
+    color: var(--text-secondary);
+}
+
+.status-item span {
+    flex: 1;
+    font-weight: 500;
+}
+
+textarea
+</style>
+{% endblock %}

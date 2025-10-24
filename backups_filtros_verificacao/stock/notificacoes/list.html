@@ -1,0 +1,112 @@
+{% extends "base_list.html" %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Notificações - Sistema de Gestão{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-bell"></i>
+                Notificações
+            </h1>
+            <p>Gerencie suas notificações do sistema</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-modern btn btn btn btn btn btn btn-secondary-modern" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn-action btn-mark-read" onclick=" title="Marcar como Lida" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h5>Nenhuma notificação encontrada</h5>
+                    <p>Não há notificações que correspondam aos filtros selecionados.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-modern">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Primeira</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Anterior</a>
+            {% endif %}
+            
+            <span class="active">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Próxima</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}{% if filtro_lida %}&lida={{ filtro_lida }}{% endif %}">Última</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function marcarLida(notificacaoId) {
+    fetch(`/stock/notificacoes/${notificacaoId}/marcar-lida/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erro ao marcar notificação como lida');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao marcar notificação como lida');
+    });
+}
+
+function marcarTodasLidas() {
+    if (confirm('Tem certeza que deseja marcar todas as notificações como lidas?')) {
+        fetch('/stock/notificacoes/marcar-todas-lidas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao marcar notificações como lidas');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao marcar notificações como lidas');
+        });
+    }
+}
+</script>
+{% endblock %}

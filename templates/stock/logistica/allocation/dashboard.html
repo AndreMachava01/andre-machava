@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Dashboard Alocação Automática{% endblock %}
 
@@ -26,29 +26,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-robot"></i>
-                    Dashboard Alocação Automática
-                </h1>
-                <p class="page-subtitle">
-                    Sistema Inteligente de Alocação de Recursos Logísticos
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:allocation:criteria_config' %}" class="btn btn-secondary">
-                    <i class="fas fa-cog"></i>
-                    Configurar Critérios
-                </a>
-                <a href="{% url 'stock:allocation:batch' %}" class="btn btn-primary">
-                    <i class="fas fa-layer-group"></i>
-                    Alocação em Lote
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Dashboard Alocação Automática"
+    subtitle="Sistema Inteligente de Alocação de Recursos Logísticos"
+    icon="fas fa-robot"
+%}    </div>
 
     <!-- Estatísticas Gerais -->
     <div class="stats-grid">
@@ -87,7 +70,7 @@
                 <i class="fas fa-chart-line"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.total_rastreamentos }}</div>
+                <div class="stat-number">{{ stats.total|default:0_rastreamentos }}</div>
                 <div class="stat-label">Total Processados</div>
             </div>
         </div>
@@ -103,7 +86,7 @@
                         Rastreamentos Não Alocados
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:allocation:batch' %}" class="btn btn-warning btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Alocar em Lote
                         </a>
                     </div>
@@ -133,11 +116,11 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:allocation:single' rastreamento.id %}" class="btn btn-primary btn-sm">
+                                            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                                <a href="#"stock:allocation:single' rastreamento.id %}" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-robot"></i>
                                                 </a>
-                                                <a href="{% url 'stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn btn-info btn-sm">
+                                                <a href="#"stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </div>
@@ -166,7 +149,7 @@
                         Alocações Recentes (24h)
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:allocation:history' %}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Histórico
                         </a>
                     </div>
@@ -174,50 +157,7 @@
                 <div class="card-body">
                     {% if rastreamentos_alocados_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Tipo</th>
-                                        <th>Custo</th>
-                                        <th>SLA</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for rastreamento in rastreamentos_alocados_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ rastreamento.codigo_rastreamento }}</span>
-                                        </td>
-                                        <td>
-                                            {% if rastreamento.veiculo_interno %}
-                                                <span class="badge badge-success">
-                                                    <i class="fas fa-truck"></i> Veículo Interno
-                                                </span>
-                                            {% elif rastreamento.transportadora %}
-                                                <span class="badge badge-info">
-                                                    <i class="fas fa-shipping-fast"></i> {{ rastreamento.transportadora.nome }}
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if rastreamento.custo_estimado %}
-                                                R$ {{ rastreamento.custo_estimado|floatformat:2 }}
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if rastreamento.sla_estimado_dias %}
-                                                {{ rastreamento.sla_estimado_dias }} dias
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -300,25 +240,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:allocation:criteria_config' %}" class="btn btn-outline-secondary btn-block">
+                            <a href="#"stock:allocation:criteria_config' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-cog"></i><br>
                                 Configurar Critérios
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:allocation:batch' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"stock:allocation:batch' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-layer-group"></i><br>
                                 Alocação em Lote
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:allocation:history' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"stock:allocation:history' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-history"></i><br>
                                 Histórico
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:allocation:stats' %}" class="btn btn-outline-success btn-block">
+                            <a href="#"stock:allocation:stats' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-chart-bar"></i><br>
                                 Estatísticas
                             </a>

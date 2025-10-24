@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Nova Movimentação de Stock{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -25,7 +17,7 @@
                 <i class="fas fa-exchange-alt"></i>
                 Nova Movimentação de Stock (Unificada)
             </h2>
-            <a href="{% url 'stock:movimentos' %}" class="btn-outline-secondary">
+            <a href="#" class="btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
         </div>
@@ -34,7 +26,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="form-container">
-                <form method="post">
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     
                     <!-- Informações Básicas -->
@@ -48,7 +40,7 @@
                                     <label for="item_search" class="form-label required-field">Item (Produto/Material)</label>
                                     <div class="search-container">
                                         <input type="text" class="form-control" id="item_search" 
-                                               placeholder="Digite o nome ou código do item..." autocomplete="off">
+                                               placeholder="Digite o nome ou código do|default:0 items..." autocomplete="off">
                                         <input type="hidden" id="item_id" name="item_id">
                                         <div class="search-results" id="item_results"></div>
                                     </div>
@@ -124,10 +116,10 @@
 
                     <!-- Botões de Ação -->
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'stock:movimentos' %}" class="btn-secondary">
+                        <a href="#"stock:movimentos' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-times"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                             <i class="fas fa-save"></i>
                             Registrar Movimentação
                         </button>
@@ -174,12 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipoMovimentoSelect = document.getElementById('tipo_movimento');
     const quantidadeInput = document.getElementById('quantidade');
     const precoUnitarioInput = document.getElementById('preco_unitario');
-    const itemSearch = document.getElementById('item_search');
-    const itemHidden = document.getElementById('item_id');
+    const itemsearch = document.getElementById('item_search');
+    const itemsHidden = document.getElementById('item_id');
     
     // Dados dos itens (passados do Django)
     const itens = [
-        {% for item in itens %}
+        {% for items in itens  %}
         {id: {{ item.id }}, nome: "{{ item.nome }}", codigo: "{{ item.codigo }}", tipo: "{{ item.get_tipo_display }}"},
         {% endfor %}
     ];
@@ -197,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         if (filtered.length === 0) {
-            resultsContainer.innerHTML = '<div class="no-results">Nenhum item encontrado</div>';
+            resultsContainer.innerHTML = '<div class="no-results">Nenhum|default:0 items encontrado</div>';
         } else {
             resultsContainer.innerHTML = filtered.map(item => `
                 <div class="search-item" data-id="${item.id}" data-name="${item.nome}" data-code="${item.codigo}" data-tipo="${item.tipo}">
@@ -221,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Event listener para seleção
         document.addEventListener('click', function(e) {
             if (e.target.closest('#item_results .search-item')) {
-                const item = e.target.closest('.search-item');
+                const items = e.target.closest('.search-item');
                 itemSearch.value = item.dataset.name;
                 itemHidden.value = item.dataset.id;
                 document.getElementById('item_results').style.display = 'none';
@@ -229,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fechar resultados ao clicar fora
+    // Fechar|default:0 resultsados ao clicar fora
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.search-container')) {
             document.querySelectorAll('.search-results').forEach(result => {
@@ -238,13 +230,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Calcular valor total automaticamente
+    // Calcular valor|default:0 total automaticamente
     function calcularValorTotal() {
         const quantidade = parseFloat(quantidadeInput.value) || 0;
         const precoUnitario = parseFloat(precoUnitarioInput.value) || 0;
         const valorTotal = quantidade * precoUnitario;
         
-        // Atualizar placeholder ou mostrar valor total
+        // Atualizar placeholder ou mostrar valor|default:0 total
         if (valorTotal > 0) {
             precoUnitarioInput.setAttribute('data-valor-total', valorTotal.toFixed(2));
         }

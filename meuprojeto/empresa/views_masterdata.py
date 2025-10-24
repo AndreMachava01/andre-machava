@@ -16,10 +16,11 @@ import logging
 
 from .decorators import require_stock_access
 from .models_masterdata import (
-    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
+    Regiao, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
+from .models_routing import ZonaEntrega
 from .services.masterdata_service import MasterdataService
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,167 @@
+<style>
+
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+
+.presenca-indicator {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    margin: 0 auto;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: white;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.presenca-indicator.vazio {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+}
+.presenca-indicator.presente {
+    background: #10b981;
+    border-color: #059669;
+}
+.presenca-indicator.ausente {
+    background: #ef4444;
+    border-color: #dc2626;
+}
+.calendario-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.calendario-table th, .calendario-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+.calendario-table th {
+    background-color: #f2f2f2;
+}
+.debug-info {
+    background: #f0f0f0;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 5px;
+}
+
+</style>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Calendário de Presenças - Debug{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="calendario-container">
+    <h1>Calendário de Presenças - Debug</h1>
+    
+    <div class="debug-info">
+        <h3>Informações de Debug:</h3>
+        <p><strong>Mês:</strong> {{ mes }}</p>
+        <p><strong>Ano:</strong> {{ ano }}</p>
+        <p><strong>Funcionários:</strong> {{ funcionarios|length }}</p>
+        <p><strong>Dias detalhados:</strong> {{ dias_detalhados|length }}</p>
+        <p><strong>Presenças dict:</strong> {{ presencas_dict|length }} caracteres</p>
+    </div>
+    
+    <table class="calendario-table">
+        <thead>
+            <tr>
+                <th>Funcionário</th>
+                {% for dia in dias_detalhados %}
+                <th>{{ dia.dia }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for funcionario in funcionarios_exibir %}
+            <tr>
+                <td>{{ funcionario.nome_completo }}</td>
+                {% for dia in dias_detalhados %}
+                <td>
+                    <div class="presenca-indicator vazio" 
+                         data-funcionario="{{ funcionario.id }}" 
+                         data-dia="{{ dia.dia }}"
+                         data-mes="{{ mes }}"
+                         data-ano="{{ ano }}"
+                         onclick="testarClique(this)">
+                    </div>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+console.log('Script carregado - Debug');
+
+// Dados das presenças
+const presencasData = {{ presencas_dict }};
+console.log('Dados de presenças:', presencasData);
+
+let contador = 0;
+
+function testarClique(elemento) {
+    contador++;
+    console.log(`Clique ${contador} detectado!`, elemento);
+    
+    const funcionarioId = elemento.dataset.funcionario;
+    const dia = elemento.dataset.dia;
+    const mes = elemento.dataset.mes;
+    const ano = elemento.dataset.ano;
+    
+    console.log('Dados:', { funcionarioId, dia, mes, ano });
+    
+    // Alternar entre vazio e presente
+    if (elemento.classList.contains('vazio')) {
+        elemento.className = 'presenca-indicator presente';
+        elemento.textContent = 'PR';
+        elemento.dataset.tipoAtual = 'PR';
+        elemento.title = 'Presente';
+    } else if (elemento.classList.contains('presente')) {
+        elemento.className = 'presenca-indicator ausente';
+        elemento.textContent = 'AU';
+        elemento.dataset.tipoAtual = 'AU';
+        elemento.title = 'Ausente';
+    } else {
+        elemento.className = 'presenca-indicator vazio';
+        elemento.textContent = '';
+        elemento.dataset.tipoAtual = '';
+        elemento.title = '';
+    }
+    
+    console.log('Elemento atualizado:', elemento);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado - Debug');
+    const indicadores = document.querySelectorAll('.presenca-indicator');
+    console.log(`Encontrados ${indicadores.length} indicadores de presença`);
+});
+</script>
+{% endblock %}
+
+

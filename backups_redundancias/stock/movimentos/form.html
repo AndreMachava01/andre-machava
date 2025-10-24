@@ -1,0 +1,807 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if movimento %}Editar{% else %}Nova{% endif %} Movimentação de Stock{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        /* Cores funcionais para botões */
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --primary-color: #8b5cf6;
+        --secondary-color: #6b7280;
+        
+        /* Cores vibrantes */
+        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
+        
+        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+
+    .modern-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: var(--shadow-medium);
+        margin: 20px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .hero-section {
+        background: var(--purple-gradient);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-title i {
+        margin-right: 15px;
+        color: #fbbf24;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-modern {
+        background: var(--green-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .btn-secondary-modern {
+        background: var(--blue-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-secondary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .content-section {
+        padding: 30px;
+        background: #374151;
+    }
+
+    .form-container {
+        background: #4b5563;
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+        margin-bottom: 30px;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h5 {
+        color: #fbbf24;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid #6b7280;
+        padding-bottom: 10px;
+    }
+
+    .form-section h5 i {
+        color: #8b5cf6;
+    }
+
+    .form-label {
+        color: #d1d5db;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #ef4444;
+    }
+
+    .form-control, .form-select {
+        background: #374151;
+        border: 2px solid #6b7280;
+        border-radius: 10px;
+        color: white;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        background: #374151;
+        color: white;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-check {
+        margin-bottom: 15px;
+    }
+
+    .form-check-input {
+        background: #374151;
+        border: 2px solid #6b7280;
+    }
+
+    .form-check-input:checked {
+        background: var(--purple-gradient);
+        border-color: #8b5cf6;
+    }
+
+    .form-check-label {
+        color: #d1d5db;
+        font-weight: 500;
+    }
+
+    .alert {
+        background: #374151;
+        border: 1px solid #6b7280;
+        border-radius: 10px;
+        color: #d1d5db;
+        padding: 15px;
+    }
+
+    .alert-info {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .search-container {
+        position: relative;
+    }
+
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #374151;
+        border: 1px solid #6b7280;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+
+    .search-result-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #4b5563;
+        transition: background 0.3s ease;
+    }
+
+    .search-result-item:hover {
+        background: #4b5563;
+    }
+
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: space-between;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #6b7280;
+    }
+
+    .btn-primary, .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary {
+        background: var(--green-gradient);
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .info-card {
+        background: #4b5563;
+        border-radius: 16px;
+        padding: 25px;
+        border: 1px solid #6b7280;
+        box-shadow: var(--shadow-light);
+    }
+
+    .info-card .card-header {
+        border-bottom: 2px solid #6b7280;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .info-card h5 {
+        color: #fbbf24;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-card h5 i {
+        color: #8b5cf6;
+    }
+
+    .info-card h6 {
+        color: #d1d5db;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .info-card ul {
+        color: #9ca3af;
+        padding-left: 20px;
+    }
+
+    .info-card li {
+        margin-bottom: 8px;
+    }
+
+    .info-card hr {
+        border-color: #6b7280;
+        margin: 20px 0;
+    }
+
+    .is-invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-exchange-alt"></i>
+                {% if movimento %}Editar{% else %}Nova{% endif %} Movimentação de Stock
+            </h1>
+            <div class="hero-actions">
+                <a href="" class="btn-modern btn-secondary-modern">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar às Movimentações
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+
+        <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                     <!-- Informações Básicas -->
+                     <div class="form-section">
+                         <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                         
+                         <div class="row">
+                             <!-- Coluna Esquerda -->
+                             <div class="col-md-6">
+                                 <!-- Item Movimentado (Read-only para edição) -->
+                                 {% if movimento %}
+                                 <div class="mb-3">
+                                     <label class="form-label">Item Movimentado:</label>
+                                     <div class="alert alert-info">
+                                         <strong>
+                                             {% if movimento_unificado %}
+                                                 <!-- Sistema unificado -->
+                                                 {% if movimento.item.tipo == 'PRODUTO' %}
+                                                     <i class="fas fa-cube me-2"></i>{{ movimento.item.nome }} ({{ movimento.item.codigo }})
+                                                 {% else %}
+                                                     <i class="fas fa-tools me-2"></i>{{ movimento.item.nome }} ({{ movimento.item.codigo }})
+                                                 {% endif %}
+                                             {% else %}
+                                                 <!-- Sistema antigo -->
+                                                 {% if movimento_tipo == 'produto' %}
+                                                     <i class="fas fa-cube me-2"></i>{{ movimento.produto.nome }} ({{ movimento.produto.codigo }})
+                                                 {% else %}
+                                                     <i class="fas fa-tools me-2"></i>{{ movimento.material.nome }} ({{ movimento.material.codigo }})
+                                                 {% endif %}
+                                             {% endif %}
+                                         </strong>
+                                         <br>
+                                         <small class="text-muted">O item não pode ser alterado após a criação da movimentação.</small>
+                                     </div>
+                                 </div>
+                                 {% else %}
+                                 <!-- Campo para escolher produto/material (apenas para nova movimentação) -->
+                                 <div class="mb-3">
+                                     <label class="form-label required-field">Tipo de Item:</label>
+                                     <div class="row">
+                                         <div class="col-6">
+                                             <div class="form-check">
+                                                 <input class="form-check-input" type="radio" name="tipo_item" id="tipo_produto" value="produto" checked>
+                                                 <label class="form-check-label" for="tipo_produto">
+                                                     <i class="fas fa-cube me-2"></i>Produto
+                                                 </label>
+                                             </div>
+                                         </div>
+                                         <div class="col-6">
+                                             <div class="form-check">
+                                                 <input class="form-check-input" type="radio" name="tipo_item" id="tipo_material" value="material">
+                                                 <label class="form-check-label" for="tipo_material">
+                                                     <i class="fas fa-tools me-2"></i>Material
+                                                 </label>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 
+                                 <div class="mb-3" id="campo_produto">
+                                     <label for="produto_search" class="form-label required-field">Produto</label>
+                                     <div class="search-container">
+                                         <input type="text" class="form-control" id="produto_search" 
+                                                placeholder="Digite o nome ou código do produto..." autocomplete="off">
+                                         <input type="hidden" id="produto" name="produto">
+                                         <div class="search-results" id="produto_results"></div>
+                                     </div>
+                                 </div>
+                                 
+                                 <div class="mb-3" id="campo_material" style="display: none;">
+                                     <label for="material_search" class="form-label required-field">Material</label>
+                                     <div class="search-container">
+                                         <input type="text" class="form-control" id="material_search" 
+                                                placeholder="Digite o nome ou código do material..." autocomplete="off">
+                                         <input type="hidden" id="material" name="material">
+                                         <div class="search-results" id="material_results"></div>
+                                     </div>
+                                 </div>
+                                 {% endif %}
+                             </div>
+                             
+                             <!-- Coluna Direita -->
+                             <div class="col-md-6">
+                                 <div class="mb-3">
+                                     <label for="sucursal" class="form-label required-field">Sucursal</label>
+                                     <select class="form-select" id="sucursal" name="sucursal" required>
+                                         <option value="">Selecione uma sucursal</option>
+                                         {% for sucursal in sucursais %}
+                                             <option value="{{ sucursal.id }}" {% if movimento and movimento.sucursal.id == sucursal.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                                         {% endfor %}
+                                     </select>
+                                 </div>
+                                 
+                                 <div class="mb-3">
+                                     <label for="tipo_movimento" class="form-label required-field">Tipo de Movimento</label>
+                                     <select class="form-select" id="tipo_movimento" name="tipo_movimento" required>
+                                         <option value="">Selecione o tipo de movimento</option>
+                                         {% for tipo in tipos_movimento %}
+                                             <option value="{{ tipo.id }}" data-aumenta="{{ tipo.aumenta_estoque|yesno:'true,false' }}" {% if movimento and movimento.tipo_movimento.id == tipo.id %}selected{% endif %}>
+                                                 {{ tipo.nome }} - {% if tipo.aumenta_estoque %}Entrada{% else %}Saída{% endif %}
+                                             </option>
+                                         {% endfor %}
+                                     </select>
+                                 </div>
+                                 
+                                 <div class="mb-3">
+                                     <label for="quantidade" class="form-label required-field">Quantidade</label>
+                                     <input type="number" class="form-control" id="quantidade" name="quantidade" 
+                                            min="1" required placeholder="Digite a quantidade" value="{% if movimento %}{{ movimento.quantidade }}{% endif %}">
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                    <!-- Informações Financeiras -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-money-bill-wave"></i> Informações Financeiras</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="preco_unitario" class="form-label required-field">Preço Unitário</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">MZN</span>
+                                        <input type="number" class="form-control" id="preco_unitario" name="preco_unitario" 
+                                               step="0.01" min="0.01" required placeholder="0.00" value="{% if movimento %}{{ movimento.preco_unitario }}{% endif %}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="referencia" class="form-label">Referência</label>
+                                    <input type="text" class="form-control" id="referencia" name="referencia" 
+                                           placeholder="Ex: Nº da nota fiscal, ordem de compra, etc." value="{% if movimento %}{{ movimento.referencia }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-sticky-note"></i> Observações</h5>
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
+                                      placeholder="Observações adicionais sobre a movimentação">{% if movimento %}{{ movimento.observacoes }}{% endif %}</textarea>
+                        </div>
+                    </div>
+
+                         <!-- Botões de Ação -->
+                         <div class="action-buttons">
+                             <a href="{% url 'stock:movimentos' %}" class="btn-secondary">
+                                 <i class="fas fa-times"></i> Cancelar
+                             </a>
+                             <button type="submit" class="btn-primary">
+                                 <i class="fas fa-save"></i>
+                                 {% if movimento %}
+                                     Atualizar Movimentação
+                                 {% else %}
+                                     Registrar Movimentação
+                                 {% endif %}
+                             </button>
+                         </div>
+                </form>
+            </div>
+        </div>
+        
+             <div class="col-lg-4">
+                 <div class="info-card">
+                     <div class="card-header">
+                         <h5><i class="fas fa-info-circle"></i> Informações</h5>
+                     </div>
+                     <div class="card-body">
+                    <h6>Tipos de Movimentação:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Entrada:</strong> Adição de produtos/materiais ao estoque</li>
+                        <li><strong>Saída:</strong> Remoção de produtos/materiais do estoque</li>
+                        <li><strong>Ajuste:</strong> Correção de inventário</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6>Importante:</h6>
+                    <ul class="list-unstyled">
+                        <li>• Todas as movimentações são registradas permanentemente</li>
+                        <li>• Afetam o estoque atual da sucursal</li>
+                        <li>• Verifique a quantidade disponível antes de saídas</li>
+                        <li>• Use referências para rastreabilidade</li>
+                    </ul>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Validação do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const requiredFields = form.querySelectorAll('[required]');
+    const tipoMovimentoSelect = document.getElementById('tipo_movimento');
+    const quantidadeInput = document.getElementById('quantidade');
+    const precoUnitarioInput = document.getElementById('preco_unitario');
+    
+    // Alternar entre produto e material
+    const tipoProdutoRadio = document.getElementById('tipo_produto');
+    const tipoMaterialRadio = document.getElementById('tipo_material');
+    const campoProduto = document.getElementById('campo_produto');
+    const campoMaterial = document.getElementById('campo_material');
+    const produtoSearch = document.getElementById('produto_search');
+    const materialSearch = document.getElementById('material_search');
+    const produtoHidden = document.getElementById('produto');
+    const materialHidden = document.getElementById('material');
+    
+    // Dados dos produtos e materiais (passados do Django)
+    const produtos = [
+        {% for produto in produtos %}
+        {id: {{ produto.id }}, nome: "{{ produto.nome }}", codigo: "{{ produto.codigo }}"},
+        {% endfor %}
+    ];
+    
+    const materiais = [
+        {% for material in materiais %}
+        {id: {{ material.id }}, nome: "{{ material.nome }}", codigo: "{{ material.codigo }}"},
+        {% endfor %}
+    ];
+    
+    // Função de busca
+    function searchItems(query, items, resultsContainer) {
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+        
+        const filtered = items.filter(item => 
+            item.nome.toLowerCase().includes(query.toLowerCase()) ||
+            item.codigo.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        if (filtered.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results">Nenhum item encontrado</div>';
+        } else {
+            resultsContainer.innerHTML = filtered.map(item => `
+                <div class="search-item" data-id="${item.id}" data-name="${item.nome}" data-code="${item.codigo}">
+                    <div class="search-item-name">${item.nome}</div>
+                    <div class="search-item-code">${item.codigo}</div>
+                </div>
+            `).join('');
+        }
+        
+        resultsContainer.style.display = 'block';
+    }
+    
+    // Event listeners para busca de produtos
+    if (produtoSearch) {
+        produtoSearch.addEventListener('input', function() {
+            const resultsContainer = document.getElementById('produto_results');
+            searchItems(this.value, produtos, resultsContainer);
+        });
+        
+        // Event listener para seleção
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#produto_results .search-item')) {
+                const item = e.target.closest('.search-item');
+                produtoSearch.value = item.dataset.name;
+                produtoHidden.value = item.dataset.id;
+                document.getElementById('produto_results').style.display = 'none';
+            }
+        });
+    }
+    
+    // Event listeners para busca de materiais
+    if (materialSearch) {
+        materialSearch.addEventListener('input', function() {
+            const resultsContainer = document.getElementById('material_results');
+            searchItems(this.value, materiais, resultsContainer);
+        });
+        
+        // Event listener para seleção
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#material_results .search-item')) {
+                const item = e.target.closest('.search-item');
+                materialSearch.value = item.dataset.name;
+                materialHidden.value = item.dataset.id;
+                document.getElementById('material_results').style.display = 'none';
+            }
+        });
+    }
+    
+    if (tipoProdutoRadio && tipoMaterialRadio) {
+        tipoProdutoRadio.addEventListener('change', function() {
+            if (this.checked) {
+                campoProduto.style.display = 'block';
+                campoMaterial.style.display = 'none';
+                produtoHidden.required = true;
+                materialHidden.required = false;
+                materialHidden.value = '';
+                materialSearch.value = '';
+            }
+        });
+        
+        tipoMaterialRadio.addEventListener('change', function() {
+            if (this.checked) {
+                campoProduto.style.display = 'none';
+                campoMaterial.style.display = 'block';
+                produtoHidden.required = false;
+                materialHidden.required = true;
+                produtoHidden.value = '';
+                produtoSearch.value = '';
+            }
+        });
+    }
+    
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            document.querySelectorAll('.search-results').forEach(result => {
+                result.style.display = 'none';
+            });
+        }
+    });
+    
+    // Calcular valor total automaticamente
+    function calcularValorTotal() {
+        const quantidade = parseFloat(quantidadeInput.value) || 0;
+        const precoUnitario = parseFloat(precoUnitarioInput.value) || 0;
+        const valorTotal = quantidade * precoUnitario;
+        
+        // Atualizar placeholder ou mostrar valor total
+        if (valorTotal > 0) {
+            precoUnitarioInput.setAttribute('data-valor-total', valorTotal.toFixed(2));
+        }
+    }
+    
+    quantidadeInput.addEventListener('input', calcularValorTotal);
+    precoUnitarioInput.addEventListener('input', calcularValorTotal);
+    
+    // Validação de tipo de movimento
+    tipoMovimentoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const aumenta = selectedOption.getAttribute('data-aumenta');
+        
+        if (aumenta === 'false') {
+            quantidadeInput.setAttribute('data-tipo', 'saida');
+            quantidadeInput.setAttribute('title', 'Para saídas, verifique se há estoque suficiente');
+        } else {
+            quantidadeInput.removeAttribute('data-tipo');
+            quantidadeInput.removeAttribute('title');
+        }
+    });
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        const quantidade = parseFloat(quantidadeInput.value);
+        const precoUnitario = parseFloat(precoUnitarioInput.value);
+        
+        if (quantidade <= 0) {
+            quantidadeInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (precoUnitario <= 0) {
+            precoUnitarioInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+        }
+    });
+    
+    // Remover classe de erro quando o usuário começar a digitar
+    requiredFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+
+
+

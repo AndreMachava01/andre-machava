@@ -1,0 +1,547 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{% if avaliacao %}Editar{% else %}Adicionar{% endif %} Avaliação de Desempenho - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if avaliacao %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-star"></i>
+                    {% if avaliacao %}Editar{% else %}Adicionar{% endif %} Avaliação de Desempenho
+                </h1>
+                {% if avaliacao %}
+                <p class="page-subtitle">
+                    Avaliação de {{ avaliacao.funcionario.nome_completo }} - {{ avaliacao.get_tipo_display }}
+                </p>
+                {% else %}
+                <p class="page-subtitle">
+                    Criar nova avaliação de desempenho para funcionário
+                </p>
+                {% endif %}
+            </div>
+            <div class="header-actions">
+                {% if avaliacao %}
+                <a href="{% url 'rh:avaliacao_detail' avaliacao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-eye"></i>
+                    Ver Detalhes
+                </a>
+                {% endif %}
+                <a href="{% url 'rh:avaliacoes' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <form method="post" id="avaliacaoForm" class="form-modern">
+        {% csrf_token %}
+        
+        <!-- Informações Básicas -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-info-circle"></i>
+                Informações Básicas
+            </h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="funcionario" class="form-label">
+                        Funcionário <span class="required">*</span>
+                    </label>
+                    <select name="funcionario" id="funcionario" class="form-select" required>
+                        <option value="">Selecione o funcionário</option>
+                        {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}" 
+                                {% if avaliacao and avaliacao.funcionario.id == funcionario.id %}selected{% endif %}>
+                            {{ funcionario.nome_completo }} - {{ funcionario.cargo.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="avaliador" class="form-label">
+                        Avaliador <span class="required">*</span>
+                    </label>
+                    <select name="avaliador" id="avaliador" class="form-select" required>
+                        <option value="">Selecione o avaliador</option>
+                        {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}" 
+                                {% if avaliacao and avaliacao.avaliador.id == funcionario.id %}selected{% endif %}>
+                            {{ funcionario.nome_completo }} - {{ funcionario.cargo.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo" class="form-label">
+                        Tipo de Avaliação <span class="required">*</span>
+                    </label>
+                    <select name="tipo" id="tipo" class="form-select" required>
+                        {% for value, label in TIPO_CHOICES %}
+                        <option value="{{ value }}" 
+                                {% if avaliacao and avaliacao.tipo == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status" class="form-label">
+                        Status <span class="required">*</span>
+                    </label>
+                    <select name="status" id="status" class="form-select" required>
+                        {% for value, label in STATUS_CHOICES %}
+                        <option value="{{ value }}" 
+                                {% if avaliacao and avaliacao.status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_inicio" class="form-label">
+                        Data de Início <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_inicio" id="data_inicio" class="form-control" required
+                           value="{% if avaliacao %}{{ avaliacao.data_inicio|date:'Y-m-d' }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="data_fim" class="form-label">
+                        Data de Fim <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_fim" id="data_fim" class="form-control" required
+                           value="{% if avaliacao %}{{ avaliacao.data_fim|date:'Y-m-d' }}{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados da Avaliação -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-chart-line"></i>
+                Resultados da Avaliação
+            </h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nota_geral" class="form-label">Nota Geral</label>
+                    <input type="number" name="nota_geral" id="nota_geral" class="form-control"
+                           min="0" max="10" step="0.1" 
+                           value="{% if avaliacao.nota_geral %}{{ avaliacao.nota_geral }}{% endif %}">
+                    <div class="form-help">Nota de 0 a 10</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="classificacao" class="form-label">Classificação</label>
+                    <select name="classificacao" id="classificacao" class="form-select">
+                        <option value="">Selecione a classificação</option>
+                        {% for value, label in CLASSIFICACAO_CHOICES %}
+                        <option value="{{ value }}" 
+                                {% if avaliacao and avaliacao.classificacao == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critérios de Avaliação -->
+        {% if criterios %}
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-list-check"></i>
+                Critérios de Avaliação
+            </h3>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Instruções:</strong> Avalie cada critério de 0 a 10. A nota será calculada automaticamente com base no peso de cada critério.
+            </div>
+            
+            <div class="criterios-grid">
+                {% for criterio in criterios %}
+                <div class="criterio-card">
+                    <div class="criterio-header">
+                        <div class="criterio-name">{{ criterio.nome }}</div>
+                        <div class="criterio-peso">{{ criterio.peso }}%</div>
+                    </div>
+                    {% if criterio.descricao %}
+                    <div class="criterio-desc">{{ criterio.descricao }}</div>
+                    {% endif %}
+                    
+                    <div class="criterio-fields">
+                        <div class="form-group">
+                            <label for="nota_{{ criterio.id }}" class="form-label">Nota (0-10)</label>
+                            <div class="nota-input-group">
+                                <input type="number" 
+                                       name="nota_{{ criterio.id }}" 
+                                       id="nota_{{ criterio.id }}"
+                                       class="form-control nota-input"
+                                       min="0" max="10" step="0.1"
+                                       value=""
+                                       onchange="updateSlider(this)">
+                                <input type="range" 
+                                       class="nota-range" 
+                                       min="0" max="10" step="0.1"
+                                       value="0"
+                                       onchange="updateInput(this)">
+                            </div>
+                            <div class="nota-labels">
+                                <span>0</span>
+                                <span>5</span>
+                                <span>10</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="obs_{{ criterio.id }}" class="form-label">Observações</label>
+                            <textarea name="obs_{{ criterio.id }}" 
+                                      id="obs_{{ criterio.id }}" 
+                                      class="form-control"
+                                      placeholder="Observações sobre o desempenho neste critério..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Metas e Objetivos -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-target"></i>
+                Metas e Objetivos
+            </h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="metas_estabelecidas" class="form-label">Metas Estabelecidas</label>
+                    <textarea name="metas_estabelecidas" id="metas_estabelecidas" 
+                              class="form-control" rows="4"
+                              placeholder="Descreva as metas estabelecidas para o funcionário...">{% if avaliacao.metas_estabelecidas %}{{ avaliacao.metas_estabelecidas }}{% endif %}</textarea>
+                    <div class="form-help">Use pontos ou quebras de linha para separar as metas</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="metas_alcancadas" class="form-label">Metas Alcançadas</label>
+                    <textarea name="metas_alcancadas" id="metas_alcancadas" 
+                              class="form-control" rows="4"
+                              placeholder="Descreva quais metas foram alcançadas...">{% if avaliacao.metas_alcancadas %}{{ avaliacao.metas_alcancadas }}{% endif %}</textarea>
+                    <div class="form-help">Descreva o progresso em relação às metas estabelecidas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise de Desempenho -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-chart-bar"></i>
+                Análise de Desempenho
+            </h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="pontos_fortes" class="form-label">Pontos Fortes</label>
+                    <textarea name="pontos_fortes" id="pontos_fortes" 
+                              class="form-control" rows="4"
+                              placeholder="Identifique os principais pontos fortes do funcionário...">{% if avaliacao.pontos_fortes %}{{ avaliacao.pontos_fortes }}{% endif %}</textarea>
+                    <div class="form-help">Destaque as competências e habilidades em que o funcionário se destaca</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pontos_melhoria" class="form-label">Pontos de Melhoria</label>
+                    <textarea name="pontos_melhoria" id="pontos_melhoria" 
+                              class="form-control" rows="4"
+                              placeholder="Identifique áreas que precisam de desenvolvimento...">{% if avaliacao.pontos_melhoria %}{{ avaliacao.pontos_melhoria }}{% endif %}</textarea>
+                    <div class="form-help">Identifique oportunidades de crescimento e desenvolvimento</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-comments"></i>
+                Observações
+            </h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="observacoes_avaliador" class="form-label">Observações do Avaliador</label>
+                    <textarea name="observacoes_avaliador" id="observacoes_avaliador" 
+                              class="form-control" rows="4"
+                              placeholder="Comentários adicionais do avaliador...">{% if avaliacao.observacoes_avaliador %}{{ avaliacao.observacoes_avaliador }}{% endif %}</textarea>
+                    <div class="form-help">Comentários gerais sobre o desempenho e recomendações</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes_funcionario" class="form-label">Observações do Funcionário</label>
+                    <textarea name="observacoes_funcionario" id="observacoes_funcionario" 
+                              class="form-control" rows="4"
+                              placeholder="Comentários do funcionário sobre a avaliação...">{% if avaliacao.observacoes_funcionario %}{{ avaliacao.observacoes_funcionario }}{% endif %}</textarea>
+                    <div class="form-help">Autoavaliação e comentários do funcionário</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plano de Desenvolvimento -->
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-graduation-cap"></i>
+                Plano de Desenvolvimento
+            </h3>
+            
+            <div class="form-group">
+                <label for="plano_desenvolvimento" class="form-label">Plano de Desenvolvimento</label>
+                <textarea name="plano_desenvolvimento" id="plano_desenvolvimento" 
+                          class="form-control" rows="4"
+                          placeholder="Descreva o plano de desenvolvimento para o funcionário...">{% if avaliacao.plano_desenvolvimento %}{{ avaliacao.plano_desenvolvimento }}{% endif %}</textarea>
+                <div class="form-help">Defina ações e estratégias para o desenvolvimento profissional do funcionário</div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if avaliacao %}Atualizar{% else %}Criar{% endif %} Avaliação
+            </button>
+            <a href="/rh/avaliacoes/" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+/* Estilos específicos para formulário de avaliação */
+.form-modern {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-5);
+}
+
+.criterios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-5);
+}
+
+.criterio-card {
+    background: var(--surface-medium);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+}
+
+.criterio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.criterio-name {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+}
+
+.criterio-peso {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.criterio-desc {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+    line-height: 1.5;
+}
+
+.nota-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.nota-input {
+    width: 100px;
+}
+
+.nota-range {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-light);
+    border-radius: var(--radius-full);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.nota-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.nota-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.nota-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    margin-top: var(--space-1);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    padding: var(--space-6);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+    margin-top: var(--space-6);
+}
+
+@media (max-width: 768px) {
+    
+    
+    
+    
+    
+}
+</style>
+
+<script>
+// Sincronizar input numérico com slider
+function updateSlider(input) {
+    const slider = input.parentNode.querySelector('.nota-range');
+    slider.value = input.value;
+}
+
+function updateInput(slider) {
+    const input = slider.parentNode.querySelector('input[type="number"]');
+    input.value = slider.value;
+}
+
+// Validação do formulário
+document.getElementById('avaliacaoForm').addEventListener('submit', function(e) {
+    const funcionario = document.getElementById('funcionario').value;
+    const avaliador = document.getElementById('avaliador').value;
+    const dataInicio = document.getElementById('data_inicio').value;
+    const dataFim = document.getElementById('data_fim').value;
+    
+    if (!funcionario || !avaliador || !dataInicio || !dataFim) {
+        e.preventDefault();
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+    }
+    
+    if (new Date(dataInicio) >= new Date(dataFim)) {
+        e.preventDefault();
+        alert('A data de início deve ser anterior à data de fim.');
+        return;
+    }
+    
+    if (funcionario === avaliador) {
+        e.preventDefault();
+        alert('O funcionário não pode ser o próprio avaliador.');
+        return;
+    }
+});
+
+// Auto-calcular nota geral baseada nos critérios
+function calculateOverallScore() {
+    const criterios = document.querySelectorAll('input[name^="nota_"]');
+    let totalWeightedScore = 0;
+    let totalWeight = 0;
+    
+    criterios.forEach(input => {
+        const nota = parseFloat(input.value) || 0;
+        const criterioId = input.name.split('_')[1];
+        const pesoElement = input.closest('.criterio-card').querySelector('.criterio-peso');
+        const peso = parseFloat(pesoElement.textContent.replace('%', '')) || 0;
+        
+        totalWeightedScore += nota * (peso / 100);
+        totalWeight += peso;
+    });
+    
+    if (totalWeight > 0) {
+        const notaGeral = (totalWeightedScore / totalWeight) * 10;
+        document.getElementById('nota_geral').value = notaGeral.toFixed(1);
+    }
+}
+
+// Adicionar listener para calcular nota geral
+document.querySelectorAll('input[name^="nota_"]').forEach(input => {
+    input.addEventListener('input', calculateOverallScore);
+});
+</script>
+{% endblock %}

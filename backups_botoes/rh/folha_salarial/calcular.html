@@ -1,0 +1,207 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Calcular Folha Salarial{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url "rh:main" %}">RH</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url "rh:folha_salarial" %}">Folha Salarial</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'rh:folha_detail' folha.id %}">{{ folha.mes_referencia|date:"F/Y" }}</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Calcular</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Calcular Folha Salarial"
+    icon="fas fa-calculator"
+%}
+    <!-- Informações da Folha -->
+    <div class="content-section">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Folha
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Mês de Referência</span>
+                        <span class="info-value">{{ folha.mes_referencia|date:"F/Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="status-badge status-{{ folha.status|lower }}">
+                            {{ folha.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Bruto</span>
+                        <span class="info-value">{{ folha.total|default:0_bruto|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Descontos</span>
+                        <span class="info-value">{{ folha.total|default:0_descontos|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Líquido</span>
+                        <span class="info-value">{{ folha.total|default:0_liquido|floatformat:2 }} MT</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total de Funcionários</span>
+                        <span class="info-value">{{ folha.total|default:0_funcionarios }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso -->
+    <div class="content-section">
+        <div class="warning-box">
+            <h4>
+                <i class="fas fa-exclamation-triangle"></i>
+                Aviso Importante
+            </h4>
+            <p>
+                O cálculo da folha salarial irá processar todos os funcionários ativos e calcular 
+                automaticamente salários, benefícios, descontos e valores líquidos. Esta operação 
+                não pode ser desfeita facilmente.
+            </p>
+        </div>
+    </div>
+
+    <!-- Seção de Cálculo -->
+    <div class="content-section">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-cogs"></i>
+                    Processo de Cálculo
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="calculo-steps">
+                    <div class="calculo-step active">
+                        <div class="step-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="step-title">1. Funcionários</div>
+                        <div class="step-description">Identificar funcionários ativos</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="step-title">2. Salários</div>
+                        <div class="step-description">Calcular salários base</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="step-title">3. Benefícios</div>
+                        <div class="step-description">Aplicar benefícios</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-minus-circle"></i>
+                        </div>
+                        <div class="step-title">4. Descontos</div>
+                        <div class="step-description">Aplicar descontos</div>
+                    </div>
+                    
+                    <div class="calculo-step">
+                        <div class="step-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="step-title">5. Totais</div>
+                        <div class="step-description">Calcular totais finais</div>
+                    </div>
+                </div>
+
+                <!-- Formulário de Cálculo -->
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="observacoes">Observações do Cálculo (Opcional)</label>
+                        <textarea name="observacoes" id="observacoes" rows="3" 
+                            placeholder="Adicione observações sobre este cálculo..."></textarea>
+                        <div class="help-text">
+                            Observações serão salvas no histórico da folha salarial
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="#"rh:folha_detail' folha.id %}" class="btn-modern btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </a>
+                        <button type="button" class="btn-modern btn-primary" 
+                            onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                            <i class="fas fa-calculator"></i>
+                            Calcular Folha
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação dos passos do cálculo
+    const steps = document.querySelectorAll('.calculo-step');
+    let currentStep = 0;
+    
+    function animateSteps() {
+        steps.forEach((step, index) => {
+            if (index <= currentStep) {
+                step.classList.add('active');
+                if (index < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                }
+            } else {
+                step.classList.remove('active', 'completed');
+            }
+        });
+    }
+    
+    // Simular progresso (opcional)
+    const interval = setInterval(() => {
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            animateSteps();
+        } else {
+            clearInterval(interval);
+        }
+    }, 1000);
+    
+    // Parar animação se o usuário interagir
+    document.addEventListener('click', () => {
+        clearInterval(interval);
+        steps.forEach(step => {
+            step.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Avaliar Participante - {{ inscricao.funcionario.nome_completo }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="avaliar-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div>
+            <a href="#"rh:treinamento_inscricoes' inscricao.treinamento.id %}" class="back-btn btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar às Inscrições
+            </a>
+            <h1 class="header-title">
+                <i class="fas fa-star"></i>
+                Avaliar Participante
+            </h1>
+        </div>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Informações do Participante -->
+    <div class="participant-info">
+        <div class="participant-header">
+            <div class="participant-avatar">
+                {{ inscricao.funcionario.nome_completo|first|upper }}
+            </div>
+            <div class="participant-details">
+                <h3>{{ inscricao.funcionario.nome_completo }}</h3>
+                <p><strong>Cargo:</strong> {{ inscricao.funcionario.cargo.nome }}</p>
+                <p><strong>Departamento:</strong> {{ inscricao.funcionario.cargo.departamento.nome }}</p>
+                <p><strong>Treinamento:</strong> {{ inscricao.treinamento.nome }}</p>
+            </div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Status da Inscrição</span>
+                <span class="info-value">
+                    <span class="badge status-{{ inscricao.status|lower }}">
+                        {{ inscricao.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Data de Inscrição</span>
+                <span class="info-value">{{ inscricao.data_inscricao|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Data de Início</span>
+                <span class="info-value">{{ inscricao.treinamento.data_inicio|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Carga Horária</span>
+                <span class="info-value">{{ inscricao.treinamento.carga_horaria }} horas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avaliação Atual (se existir) -->
+    {% if inscricao.nota_final or inscricao.frequencia_percentual %}
+    <div class="current-evaluation">
+        <h4 style="margin: 0 0 15px 0; color: #374151;">Avaliação Atual</h4>
+        <div class="evaluation-item">
+            <span class="evaluation-label">Nota Final:</span>
+            <span class="evaluation-value">
+                {% if inscricao.nota_final %}
+                    {{ inscricao.nota_final|floatformat:1 }}/10
+                {% else %}
+                    Não avaliado
+                {% endif %}
+            </span>
+        </div>
+        <div class="evaluation-item">
+            <span class="evaluation-label">Frequência:</span>
+            <span class="evaluation-value">
+                {% if inscricao.frequencia_percentual %}
+                    {{ inscricao.frequencia_percentual|floatformat:1 }}%
+                {% else %}
+                    Não avaliado
+                {% endif %}
+            </span>
+        </div>
+        <div class="evaluation-item">
+            <span class="evaluation-label">Aprovado:</span>
+            <span class="evaluation-value">
+                {% if inscricao.aprovado %}
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i> Sim
+                {% else %}
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i> Não
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulário de Avaliação -->
+    <div class="evaluation-form">
+        <h3 class="section-title">
+            <i class="fas fa-clipboard-check"></i>
+            Avaliação do Participante
+        </h3>
+        
+        <div class="evaluation-criteria">
+            <div class="criteria-title">Critérios de Avaliação</div>
+            <ul class="criteria-list">
+                <li><i class="fas fa-check"></i> Nota mínima para aprovação: 7.0</li>
+                <li><i class="fas fa-check"></i> Frequência mínima para aprovação: 75%</li>
+                <li><i class="fas fa-check"></i> Ambos os critérios devem ser atendidos para aprovação</li>
+            </ul>
+        </div>
+
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nota_final">Nota Final <span class="required">*</span></label>
+                    <input type="number" id="nota_final" name="nota_final" 
+                           value="{{ inscricao.nota_final|default:'' }}" 
+                           min="0" max="10" step="0.1" required>
+                    <div class="help-text">Nota de 0 a 10 (mínimo 7.0 para aprovação)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="frequencia_percentual">Frequência (%) <span class="required">*</span></label>
+                    <input type="number" id="frequencia_percentual" name="frequencia_percentual" 
+                           value="{{ inscricao.frequencia_percentual|default:'' }}" 
+                           min="0" max="100" step="0.1" required>
+                    <div class="help-text">Percentual de presença (mínimo 75% para aprovação)</div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" 
+                              placeholder="Observações sobre o desempenho do participante...">{{ inscricao.observacoes|default:'' }}</textarea>
+                    <div class="help-text">Comentários adicionais sobre a participação e desempenho</div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions">
+                <a href="#"rh:treinamento_inscricoes' inscricao.treinamento.id %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    Salvar Avaliação
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Validação em tempo real
+document.getElementById('nota_final').addEventListener('input', function() {
+    const nota = parseFloat(this.value);
+    if (nota < 0) this.value = 0;
+    if (nota > 10) this.value = 10;
+    updateApprovalStatus();
+});
+
+document.getElementById('frequencia_percentual').addEventListener('input', function() {
+    const frequencia = parseFloat(this.value);
+    if (frequencia < 0) this.value = 0;
+    if (frequencia > 100) this.value = 100;
+    updateApprovalStatus();
+});
+
+function updateApprovalStatus() {
+    const nota = parseFloat(document.getElementById('nota_final').value) || 0;
+    const frequencia = parseFloat(document.getElementById('frequencia_percentual').value) || 0;
+    
+    // Aqui você pode adicionar lógica para mostrar preview da aprovação
+    // Por exemplo, mudar cor dos campos baseado nos critérios
+    const notaField = document.getElementById('nota_final');
+    const frequenciaField = document.getElementById('frequencia_percentual');
+    
+    if (nota >= 7.0) {
+        notaField.style.borderColor = '#10b981';
+    } else {
+        notaField.style.borderColor = '#ef4444';
+    }
+    
+    if (frequencia >= 75.0) {
+        frequenciaField.style.borderColor = '#10b981';
+    } else {
+        frequenciaField.style.borderColor = '#ef4444';
+    }
+}
+
+// Inicializar validação
+updateApprovalStatus();
+</script>
+{% endblock %}

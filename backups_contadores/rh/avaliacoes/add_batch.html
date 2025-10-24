@@ -1,0 +1,426 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Avaliações em Lote{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Avaliações em Lote</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-users"></i>
+                    Avaliações em Lote
+                </h1>
+                <p class="page-subtitle">
+                    Criar avaliações de desempenho para múltiplos funcionários
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso -->
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Atenção:</strong> Esta funcionalidade criará avaliações para todos os funcionários que correspondam aos critérios selecionados. 
+        Verifique se já existem avaliações para o período antes de continuar.
+    </div>
+
+    <!-- Formulário -->
+    <div class="form-container">
+        <form method="post" id="batchForm">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="departamento" class="form-label">Departamento</label>
+                    <select name="departamento" id="departamento" class="form-select">
+                        <option value="">Todos os departamentos</option>
+                        {% for dept in departamentos %}
+                        <option value="{{ dept.id }}">{{ dept.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Selecione um departamento específico ou deixe em branco para todos</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo" class="form-label">Cargo</label>
+                    <select name="cargo" id="cargo" class="form-select">
+                        <option value="">Todos os cargos</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}">{{ cargo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Selecione um cargo específico ou deixe em branco para todos</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="avaliador" class="form-label">
+                        Avaliador <span class="required">*</span>
+                    </label>
+                    <select name="avaliador" id="avaliador" class="form-select" required>
+                        <option value="">Selecione um avaliador</option>
+                        {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}">{{ funcionario.nome_completo }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Funcionário responsável pelas avaliações</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo" class="form-label">
+                        Tipo de Avaliação <span class="required">*</span>
+                    </label>
+                    <select name="tipo" id="tipo" class="form-select" required>
+                        <option value="">Selecione o tipo</option>
+                        {% for codigo, nome in TIPO_CHOICES %}
+                        <option value="{{ codigo }}">{{ nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_inicio" class="form-label">
+                        Data de Início <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_inicio" id="data_inicio" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_fim" class="form-label">
+                        Data de Fim <span class="required">*</span>
+                    </label>
+                    <input type="date" name="data_fim" id="data_fim" class="form-control" required>
+                </div>
+            </div>
+
+            <!-- Pré-visualização -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-title">
+                    <i class="fas fa-eye"></i>
+                    Funcionários que serão avaliados
+                </div>
+                <div class="preview-list" id="previewList">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'rh:avaliacoes' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                    <i class="fas fa-users"></i>
+                    Criar Avaliações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const departamentoSelect = document.getElementById('departamento');
+    const cargoSelect = document.getElementById('cargo');
+    const avaliadorSelect = document.getElementById('avaliador');
+    const tipoSelect = document.getElementById('tipo');
+    const dataInicioInput = document.getElementById('data_inicio');
+    const dataFimInput = document.getElementById('data_fim');
+    const previewSection = document.getElementById('previewSection');
+    const previewList = document.getElementById('previewList');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Função para atualizar pré-visualização
+    function updatePreview() {
+        const departamento = departamentoSelect.value;
+        const cargo = cargoSelect.value;
+        
+        if (!departamento && !cargo) {
+            previewSection.style.display = 'none';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        // Simular busca de funcionários (em produção, seria uma chamada AJAX)
+        const funcionarios = [
+            { nome: 'João Silva', departamento: 'TI', cargo: 'Desenvolvedor' },
+            { nome: 'Maria Santos', departamento: 'TI', cargo: 'Analista' },
+            { nome: 'Pedro Costa', departamento: 'RH', cargo: 'Assistente' },
+            { nome: 'Ana Oliveira', departamento: 'RH', cargo: 'Coordenadora' }
+        ];
+
+        let funcionariosFiltrados = funcionarios;
+
+        if (departamento) {
+            funcionariosFiltrados = funcionariosFiltrados.filter(f => f.departamento === 'TI');
+        }
+
+        if (cargo) {
+            funcionariosFiltrados = funcionariosFiltrados.filter(f => f.cargo === 'Desenvolvedor');
+        }
+
+        // Atualizar lista de pré-visualização
+        previewList.innerHTML = '';
+        funcionariosFiltrados.forEach(funcionario => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.innerHTML = `
+                <div class="preview-item-info">
+                    <div class="preview-item-name">${funcionario.nome}</div>
+                    <div class="preview-item-details">${funcionario.departamento} • ${funcionario.cargo}</div>
+                </div>
+                <div class="preview-count">1 avaliação</div>
+            `;
+            previewList.appendChild(item);
+        });
+
+        previewSection.style.display = 'block';
+        submitBtn.disabled = funcionariosFiltrados.length === 0;
+    }
+
+    // Event listeners
+    departamentoSelect.addEventListener('change', updatePreview);
+    cargoSelect.addEventListener('change', updatePreview);
+
+    // Validação do formulário
+    const form = document.getElementById('batchForm');
+    form.addEventListener('submit', function(e) {
+        const avaliador = avaliadorSelect.value;
+        const tipo = tipoSelect.value;
+        const dataInicio = dataInicioInput.value;
+        const dataFim = dataFimInput.value;
+
+        if (!avaliador || !tipo || !dataInicio || !dataFim) {
+            e.preventDefault();
+            alert('Todos os campos obrigatórios devem ser preenchidos.');
+            return;
+        }
+
+        if (new Date(dataInicio) >= new Date(dataFim)) {
+            e.preventDefault();
+            alert('A data de início deve ser anterior à data de fim.');
+            return;
+        }
+
+        if (!confirm('Tem certeza que deseja criar as avaliações em lote?')) {
+            e.preventDefault();
+        }
+    });
+
+    // Definir data padrão (próximo mês)
+    const hoje = new Date();
+    const proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
+    
+    dataInicioInput.value = proximoMes.toISOString().split('T')[0];
+    dataFimInput.value = fimMes.toISOString().split('T')[0];
+});
+</script>
+
+<style>
+/* Estilos específicos para avaliações em lote */
+.form-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.form-control, .form-select {
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-input);
+    color: var(--text-color);
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.required {
+    color: var(--accent-danger);
+}
+
+.preview-section {
+    background: var(--surface-light);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.preview-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.preview-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.preview-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.preview-item-details {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.preview-count {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+    background: var(--surface-medium);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-light);
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-warning);
+}
+
+@media (max-width: 768px) {
+    
+    
+    
+}
+</style>
+
+{% endblock %}

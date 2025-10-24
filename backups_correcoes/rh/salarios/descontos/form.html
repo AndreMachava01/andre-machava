@@ -1,0 +1,155 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if desconto %}Editar Desconto{% else %}Adicionar Desconto{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 m-0"><i class="fas fa-minus-circle me-2"></i>{% if desconto %}Editar Desconto{% else %}Adicionar Desconto{% endif %}</h1>
+    <a href="{% url 'rh:descontos_salariais' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Voltar</a>
+  </div>
+
+  <div class="alert alert-warning">Descontos podem ser fixos ou percentuais. Para percentual, informe a base de cálculo.</div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="card p-3">
+    {% csrf_token %}
+
+    <!-- Identificação -->
+    <div class="mb-3">
+      <h5 class="mb-3"><i class="fas fa-id-card me-2"></i>Identificação</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="nome" class="form-label">Nome do Desconto <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="nome" name="nome" value="{{ desconto.nome|default:'' }}" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Código</label>
+          {% if desconto and desconto.codigo %}
+            <div class="form-control-plaintext"><strong>{{ desconto.codigo }}</strong></div>
+            <input type="hidden" name="codigo" id="codigo" value="{{ desconto.codigo }}">
+          {% else %}
+            <div class="form-control-plaintext" id="codigo-preview">Será gerado automaticamente</div>
+            <input type="hidden" name="codigo" id="codigo" value="">
+          {% endif %}
+        </div>
+        <div class="col-md-3">
+          <label for="tipo" class="form-label">Categoria <span class="text-danger">*</span></label>
+          <select id="tipo" name="tipo" class="form-select" required>
+            <option value="">Selecione…</option>
+            {% for codigo, nome in tipo_choices %}
+              <option value="{{ codigo }}" {% if desconto.tipo == codigo %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuração do Valor -->
+    <div class="mb-3">
+      <h5 class="mb-3"><i class="fas fa-calculator me-2"></i>Configuração do Valor</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="tipo_valor" class="form-label">Tipo de Valor <span class="text-danger">*</span></label>
+          <select id="tipo_valor" name="tipo_valor" class="form-select" required>
+            <option value="">Selecione…</option>
+            {% for codigo, nome in tipo_valor_choices %}
+              <option value="{{ codigo }}" {% if desconto.tipo_valor == codigo %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="valor" class="form-label">Valor <span class="text-danger">*</span></label>
+          <input type="number" step="0.01" min="0" class="form-control" id="valor" name="valor" value="{{ desconto.valor|default:'' }}" required>
+          <div class="form-text" id="valor_help">Valor do desconto (em MT ou %)</div>
+        </div>
+        <div class="col-md-4">
+          <label for="base_calculo" class="form-label">Base de Cálculo <span class="text-danger">*</span></label>
+          <select id="base_calculo" name="base_calculo" class="form-select" required>
+            <option value="">Selecione…</option>
+            {% for codigo, nome in base_calculo_choices %}
+              <option value="{{ codigo }}" {% if desconto.base_calculo == codigo %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12" id="grupo_base_outro" style="display:none;">
+          <label for="base_calculo_personalizada" class="form-label">Base de Cálculo (personalizada)</label>
+          <input type="text" class="form-control" id="base_calculo_personalizada" name="base_calculo_personalizada" value="{{ desconto.base_calculo_personalizada|default:'' }}" placeholder="Ex: Comissão de Vendas">
+        </div>
+      </div>
+    </div>
+
+    <!-- Observações e Status -->
+    <div class="mb-3">
+      <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Informações Adicionais</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label for="observacoes" class="form-label">Observações</label>
+          <textarea class="form-control" id="observacoes" name="observacoes" rows="3">{{ desconto.observacoes|default:'' }}</textarea>
+        </div>
+        <div class="col-12">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="ativo" name="ativo" {% if desconto.ativo or not desconto %}checked{% endif %}>
+            <label class="form-check-label" for="ativo">Desconto ativo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <a href="{% url 'rh:descontos_salariais' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i>{% if desconto %}Atualizar Desconto{% else %}Adicionar Desconto{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tipoValor = document.getElementById('tipo_valor');
+  const valor = document.getElementById('valor');
+  const valorHelp = document.getElementById('valor_help');
+  const base = document.getElementById('base_calculo');
+  const baseOutroGroup = document.getElementById('grupo_base_outro');
+  const basePers = document.getElementById('base_calculo_personalizada');
+  const nome = document.getElementById('nome');
+
+  function toggleBaseOutro() {
+    const isOutro = base.value === 'OUTRO';
+    baseOutroGroup.style.display = isOutro ? 'block' : 'none';
+    basePers.required = isOutro;
+    if (!isOutro) basePers.value = '';
+  }
+
+  tipoValor.addEventListener('change', function() {
+    valorHelp.textContent = (this.value === 'PERCENTUAL') ? 'Percentual sobre a base de cálculo (0-100)' : 'Valor do desconto (em MT)';
+  });
+  base.addEventListener('change', toggleBaseOutro);
+
+  // init
+  toggleBaseOutro();
+  nome.focus();
+});
+</script>
+{% endblock %}

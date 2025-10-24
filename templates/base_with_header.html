@@ -1,0 +1,47 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}" title="Página Inicial">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        {% for breadcrumb in breadcrumbs %}
+            <i class="fas fa-chevron-right"></i>
+            {% if breadcrumb.url %}
+                <a href="{{ breadcrumb.url }}" title="{{ breadcrumb.name }}">
+                    {% if breadcrumb.icon %}<i class="fas fa-{{ breadcrumb.icon }}"></i>{% endif %}
+                    {{ breadcrumb.name }}
+                </a>
+            {% else %}
+                <span>{{ breadcrumb.name }}</span>
+            {% endif %}
+        {% endfor %}
+    </nav>
+    
+    <!-- Header Padrão -->
+    {% include "includes/header.html" with 
+        title=page_title|default:"Título da Página" 
+        subtitle=page_subtitle|default:"" 
+        icon=page_icon|default:""
+        actions=header_actions|default:[]
+    %}
+    
+    <!-- Conteúdo da Página -->
+    {% block page_content %}{% endblock %}
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Scripts comuns para páginas com header unificado
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicione aqui scripts comuns que devem rodar em todas as páginas com header
+});
+</script>
+{% endblock %}

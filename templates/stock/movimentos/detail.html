@@ -1,446 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Detalhes da Movimentação{% endblock %}
 
 {% block extra_style %}
-<style>
-    :root {
-        /* Cores funcionais para botões */
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
-        --primary-color: #8b5cf6;
-        --secondary-color: #6b7280;
-        
-        /* Cores vibrantes */
-        --green-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --orange-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --red-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
-        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-        --yellow-gradient: linear-gradient(135deg, #eab308 0%, #facc15 100%);
-        
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
 
-    body {
-        background: #1f2937;
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: white;
-    }
-
-    .modern-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 20px;
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .breadcrumb-nav {
-        background: #4b5563;
-        padding: 15px 30px;
-        border-bottom: 1px solid #6b7280;
-    }
-
-    .breadcrumb {
-        background: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .breadcrumb-item {
-        color: #d1d5db;
-        font-size: 0.9rem;
-    }
-
-    .breadcrumb-item a {
-        color: #8b5cf6;
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .breadcrumb-item a:hover {
-        color: #a78bfa;
-    }
-
-    .breadcrumb-item.active {
-        color: #fbbf24;
-        font-weight: 600;
-    }
-
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        color: #6b7280;
-        margin-right: 8px;
-    }
-
-    .hero-section {
-        background: var(--purple-gradient);
-        padding: 40px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 1;
-    }
-
-    .hero-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 20px;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-title i {
-        margin-right: 15px;
-        color: #fbbf24;
-    }
-
-    .hero-actions {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 30px;
-    }
-
-    .btn-modern {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-modern::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn-modern:hover::before {
-        left: 100%;
-    }
-
-    .btn-primary-modern {
-        background: var(--green-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-secondary-modern {
-        background: var(--blue-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-secondary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-danger-modern {
-        background: var(--red-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-danger-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .content-section {
-        padding: 30px;
-        background: #374151;
-    }
-
-    .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 25px;
-        margin-bottom: 30px;
-    }
-
-    .detail-card {
-        background: #4b5563;
-        border-radius: 16px;
-        padding: 25px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-        transition: all 0.3s ease;
-    }
-
-    .detail-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .card-header {
-        border-bottom: 2px solid #6b7280;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-
-    .card-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #fbbf24;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .card-title i {
-        color: #8b5cf6;
-        font-size: 1.1rem;
-    }
-
-    .info-table {
-        width: 100%;
-    }
-
-    .info-table tr {
-        border-bottom: 1px solid #4b5563;
-    }
-
-    .info-table tr:last-child {
-        border-bottom: none;
-    }
-
-    .info-table td {
-        padding: 12px 0;
-        vertical-align: top;
-    }
-
-    .info-table td:first-child {
-        color: #d1d5db;
-        font-weight: 600;
-        width: 40%;
-        font-size: 0.9rem;
-    }
-
-    .info-table td:last-child {
-        color: white;
-        font-weight: 500;
-    }
-
-    .info-table i {
-        color: #8b5cf6;
-        margin-right: 8px;
-        width: 16px;
-    }
-
-    .movement-code {
-        background: var(--purple-gradient);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .badge.bg-info {
-        background: var(--blue-gradient) !important;
-        color: white;
-    }
-
-    .badge.bg-primary {
-        background: var(--purple-gradient) !important;
-        color: white;
-    }
-
-    .badge.bg-success {
-        background: var(--green-gradient) !important;
-        color: white;
-    }
-
-    .badge.bg-danger {
-        background: var(--red-gradient) !important;
-        color: white;
-    }
-
-    .badge.bg-warning {
-        background: var(--orange-gradient) !important;
-        color: white;
-    }
-
-    .badge.bg-secondary {
-        background: #6b7280 !important;
-        color: white;
-    }
-
-    .movement-type {
-        font-size: 1.1rem;
-        font-weight: 700;
-    }
-
-    .text-success {
-        color: #10b981 !important;
-    }
-
-    .text-danger {
-        color: #ef4444 !important;
-    }
-
-    .text-warning {
-        color: #f59e0b !important;
-    }
-
-    .text-info {
-        color: #3b82f6 !important;
-    }
-
-    .text-muted {
-        color: #9ca3af !important;
-    }
-
-    code {
-        background: #374151;
-        color: #fbbf24;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        border: 1px solid #6b7280;
-    }
-
-    .actions-card {
-        background: #4b5563;
-        border-radius: 16px;
-        padding: 25px;
-        border: 1px solid #6b7280;
-        box-shadow: var(--shadow-light);
-    }
-
-    .action-btn {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 20px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        margin-bottom: 12px;
-        width: 100%;
-        justify-content: center;
-    }
-
-    .action-btn.btn-primary {
-        background: var(--green-gradient);
-        color: white;
-    }
-
-    .action-btn.btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-light);
-    }
-
-    .action-btn.btn-danger {
-        background: var(--red-gradient);
-        color: white;
-    }
-
-    .action-btn.btn-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-light);
-    }
-
-    .action-btn.btn-outline-secondary {
-        background: transparent;
-        color: #d1d5db;
-        border: 2px solid #6b7280;
-    }
-
-    .action-btn.btn-outline-secondary:hover {
-        background: #6b7280;
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .divider {
-        border: none;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #6b7280, transparent);
-        margin: 25px 0;
-    }
-
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .hero-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .details-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .content-section {
-            padding: 20px;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -448,8 +12,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="breadcrumb-nav">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:movimentos' %}">Movimentações</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:main" %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="">Movimentações</a></li>
             <li class="breadcrumb-item active">Detalhes da Movimentação</li>
         </ol>
     </nav>
@@ -462,11 +26,11 @@
                 Detalhes da Movimentação
             </h1>
             <div class="hero-actions">
-                <a href="{% url 'stock:movimentos' %}" class="btn-modern btn-secondary-modern">
+                <a href="#" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i>
                     Voltar às Movimentações
                 </a>
-                <a href="{% url 'stock:movimento_edit' movimento.id %}" class="btn-modern btn-primary-modern">
+                <a href="#"stock:movimento_edit' movimento.id %}" class="btn-modern btn btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-edit"></i>
                     Editar Movimentação
                 </a>
@@ -551,7 +115,7 @@
                                 <td><strong class="text-info">{{ movimento.preco_unitario|floatformat:2 }} MT</strong></td>
                             </tr>
                             <tr>
-                                <td><i class="fas fa-calculator"></i>Valor Total:</td>
+                                <td><i class="fas fa-calculator"></i>Valor|default:0 total:</td>
                                 <td><strong class="text-success">{{ movimento.valor_total|floatformat:2 }} MT</strong></td>
                             </tr>
                             <tr>
@@ -593,62 +157,16 @@
                 </div>
             </div>
             
-            <!-- Informações do Item -->
+            <!-- Informações do|default:0 items -->
             <div class="detail-card">
                 <div class="card-header">
                     <h5 class="card-title">
                         <i class="fas fa-info-circle"></i>
-                        Informações do Item
+                        Informações do|default:0 items
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="info-table">
-                        <tbody>
-                            <tr>
-                                <td><i class="fas fa-tag"></i>Código:</td>
-                                <td><code>{{ movimento.item_codigo }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-font"></i>Nome:</td>
-                                <td><strong>{{ movimento.item_nome }}</strong></td>
-                            </tr>
-                            {% if movimento_tipo == 'produto' %}
-                                {% if movimento.produto.descricao %}
-                                <tr>
-                                    <td><i class="fas fa-align-left"></i>Descrição:</td>
-                                    <td class="text-muted">{{ movimento.produto.descricao|truncatewords:10 }}</td>
-                                </tr>
-                                {% endif %}
-                                {% if movimento.produto.categoria %}
-                                <tr>
-                                    <td><i class="fas fa-folder"></i>Categoria:</td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            <i class="fas fa-tag"></i>{{ movimento.produto.categoria.nome }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% else %}
-                                {% if movimento.material.descricao %}
-                                <tr>
-                                    <td><i class="fas fa-align-left"></i>Descrição:</td>
-                                    <td class="text-muted">{{ movimento.material.descricao|truncatewords:10 }}</td>
-                                </tr>
-                                {% endif %}
-                                {% if movimento.material.tipo %}
-                                <tr>
-                                    <td><i class="fas fa-tools"></i>Tipo:</td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            <i class="fas fa-cog"></i>{{ movimento.material.tipo }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% endif %}
-                        </tbody>
-                    </table>
+                    
                 </div>
             </div>
             
@@ -661,14 +179,14 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <a href="{% url 'stock:movimento_edit' movimento.id %}" class="action-btn btn-primary">
+                    <a href="#"stock:movimento_edit' movimento.id %}" class="action-btn btn btn btn btn btn btn btn btn-primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-edit"></i>Editar Movimentação
                     </a>
-                    <a href="{% url 'stock:movimento_delete' movimento.id %}" class="action-btn btn-danger">
+                    <a href="#"stock:movimento_delete' movimento.id %}" class="action-btn btn btn btn btn btn btn btn btn-danger btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-trash"></i>Eliminar Movimentação
                     </a>
                     <hr class="divider">
-                    <a href="{% url 'stock:movimentos' %}" class="action-btn btn-outline-secondary">
+                    <a href="#"stock:movimentos' %}" class="action-btn btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-list"></i>Ver Todas as Movimentações
                     </a>
                 </div>

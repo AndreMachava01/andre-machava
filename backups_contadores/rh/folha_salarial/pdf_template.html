@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folha Salarial {{ folha.mes_referencia|date:"F Y" }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-card);
+            color: black;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .modern-container {
+            width: 100%;
+            max-width: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .hero-section {
+            background: transparent;
+            padding: 20px 0;
+            color: #374151;
+            text-align: center;
+            border-bottom: 2px solid #374151;
+            margin-bottom: 20px;
+        }
+        
+        .hero-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .content-section {
+            padding: 0;
+            width: 100%;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .info-card h3 {
+            color: #374151;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 11px;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .info-value {
+            color: #374151;
+            font-weight: 600;
+        }
+        
+        .resumo-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .resumo-title {
+            color: #374151;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .resumo-item {
+            text-align: center;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .resumo-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .resumo-label {
+            font-size: 10px;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .itens-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            overflow-x: visible;
+        }
+        
+        .itens-title {
+            color: #374151;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .itens-table {
+            width: 100%;
+            min-width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            table-layout: fixed;
+            font-size: 11px;
+        }
+        
+        .itens-table th {
+            background: #374151;
+            color: white;
+            padding: 8px 6px;
+            font-size: 9px;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
+        .itens-table td {
+            padding: 6px 6px;
+            font-size: 9px;
+            color: #374151;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        
+        /* Larguras específicas das colunas - OTIMIZADO PARA PAISAGEM */
+        .itens-table th:nth-child(1), .itens-table td:nth-child(1) {
+            width: 200px;
+            text-align: left;
+        }
+        
+        .itens-table th:nth-child(2), .itens-table td:nth-child(2) {
+            width: 120px;
+        }
+        
+        .itens-table th:nth-child(3), .itens-table td:nth-child(3),
+        .itens-table th:nth-child(4), .itens-table td:nth-child(4),
+        .itens-table th:nth-child(5), .itens-table td:nth-child(5),
+        .itens-table th:nth-child(6), .itens-table td:nth-child(6) {
+            width: 100px;
+        }
+        
+        .itens-table th:nth-child(7), .itens-table td:nth-child(7),
+        .itens-table th:nth-child(8), .itens-table td:nth-child(8) {
+            width: 120px;
+        }
+        
+        .itens-table th:nth-child(9), .itens-table td:nth-child(9),
+        .itens-table th:nth-child(10), .itens-table td:nth-child(10) {
+            width: 100px;
+        }
+        
+        .itens-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .footer-section {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 15px 0;
+            text-align: center;
+            color: #6b7280;
+            font-size: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Estilos para impressão - PAISAGEM */
+        @media print {
+            body {
+                background: var(--bg-card) !important;
+                color: black !important;
+            }
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            .itens-table th,
+            .itens-table td {
+                padding: 6px 4px !important;
+                font-size: 10px !important;
+            }
+            
+            .itens-table th:nth-child(1), .itens-table td:nth-child(1) {
+                width: 180px !important;
+            }
+            
+            .itens-table th:nth-child(2), .itens-table td:nth-child(2) {
+                width: 100px !important;
+            }
+            
+            .itens-table th:nth-child(3), .itens-table td:nth-child(3),
+            .itens-table th:nth-child(4), .itens-table td:nth-child(4),
+            .itens-table th:nth-child(5), .itens-table td:nth-child(5),
+            .itens-table th:nth-child(6), .itens-table td:nth-child(6) {
+                width: 90px !important;
+            }
+            
+            .itens-table th:nth-child(7), .itens-table td:nth-child(7),
+            .itens-table th:nth-child(8), .itens-table td:nth-child(8) {
+                width: 110px !important;
+            }
+            
+            .itens-table th:nth-child(9), .itens-table td:nth-child(9),
+            .itens-table th:nth-child(10), .itens-table td:nth-child(10) {
+                width: 90px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="modern-container">
+        <!-- Header -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                FOLHA SALARIAL - {{ folha.mes_referencia|date:"F Y" }}
+            </h1>
+        </div>
+        
+        <!-- Content -->
+        <div class="content-section">
+            <!-- Informações da Folha -->
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-card">
+                        <h3>Informações da Folha</h3>
+                        <div class="info-item">
+                            <span class="info-label">Mês de Referência:</span>
+                            <span class="info-value">{{ folha.mes_referencia|date:"F Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">{{ folha.get_status_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Data de Criação:</span>
+                            <span class="info-value">{{ folha.data_criacao|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if folha.data_fechamento %}
+                        <div class="info-item">
+                            <span class="info-label">Data de Fechamento:</span>
+                            <span class="info-value">{{ folha.data_fechamento|date:"d/m/Y" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>Empresa</h3>
+                        <div class="info-item">
+                            <span class="info-label">Nome:</span>
+                            <span class="info-value">CONCEPTION</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Atividade:</span>
+                            <span class="info-value">Construção e Serviços</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Período:</span>
+                            <span class="info-value">{{ folha.mes_referencia|date:"F Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>Resumo</h3>
+                        <div class="info-item">
+                            <span class="info-label">Total Funcionários:</span>
+                            <span class="info-value">{{ total_funcionarios }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Bruto:</span>
+                            <span class="info-value">{{ total_bruto|floatformat:2 }} MT</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Líquido:</span>
+                            <span class="info-value">{{ total_liquido|floatformat:2 }} MT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumo Financeiro -->
+            <div class="resumo-section">
+                <h3 class="resumo-title">Resumo Financeiro</h3>
+                <div class="resumo-grid">
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_funcionarios }}</div>
+                        <div class="resumo-label">Funcionários</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_bruto|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Bruto</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_descontos|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Descontos</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-number">{{ total_liquido|floatformat:2 }} MT</div>
+                        <div class="resumo-label">Total Líquido</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalhamento por Funcionário -->
+            {% if funcionarios %}
+            <div class="itens-section">
+                <h3 class="itens-title">Detalhamento por Funcionário</h3>
+                <table class="itens-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Depto</th>
+                            <th>Salário Base</th>
+                            <th>Benefícios</th>
+                            <th>Descontos</th>
+                            <th>Faltas</th>
+                            <th>Bruto</th>
+                            <th>Líquido</th>
+                            <th>Dias</th>
+                            <th>Horas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for func_folha in funcionarios %}
+                        <tr>
+                            <td>
+                                <strong>{{ func_folha.funcionario.nome_completo }}</strong>
+                                <br>
+                                <small>{{ func_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
+                            </td>
+                            <td>{{ func_folha.funcionario.departamento.nome|default:"N/A" }}</td>
+                            <td>{{ func_folha.salario_base|floatformat:2 }}</td>
+                            <td>{{ func_folha.total_beneficios|floatformat:2 }}</td>
+                            <td>{{ func_folha.total_descontos|floatformat:2 }}</td>
+                            <td>{{ func_folha.desconto_faltas|floatformat:2 }}</td>
+                            <td><strong>{{ func_folha.salario_bruto|floatformat:2 }}</strong></td>
+                            <td><strong>{{ func_folha.salario_liquido|floatformat:2 }}</strong></td>
+                            <td>{{ func_folha.dias_trabalhados }}</td>
+                            <td>{{ func_folha.horas_trabalhadas|floatformat:1 }}h</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer-section">
+            <p>Relatório gerado em: {{ "now"|date:"d/m/Y às H:i" }}</p>
+            <p>CONCEPTION - Empresa de Construção e Serviços</p>
+        </div>
+    </div>
+</body>
+</html>

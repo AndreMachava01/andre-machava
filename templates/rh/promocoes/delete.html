@@ -1,32 +1,26 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Deletar Promoção{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
-<div class="nav-top">
-    <h1>
-        <i class="fas fa-trash-alt"></i>
-        Deletar Promoção
-    </h1>
-    <div class="header-actions">
-        <a href="{% url 'rh:promocao_detail' promocao.id %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Voltar
-        </a>
-    </div>
-</div>
+
+{% include "includes/header.html" with
+    title="Deletar Promoção"
+    icon="fas fa-trash-alt"
+    actions=[
+        {
+            'url': '{% url "rh:promocao_detail" promocao.id %}',
+            'text': 'Voltar',
+            'icon': 'fas fa-arrow-left me-2',
+            'class': 'btn btn-secondary btn-responsive'
+        }
+    ]
+%}
 
 <div class="form-container">
     <!-- Aviso -->
@@ -76,14 +70,14 @@
     </div>
     {% endif %}
     
-    <form method="POST">
+    <form method="POST"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
         {% csrf_token %}
         
         <div class="form-actions">
-            <a href="{% url 'rh:promocao_detail' promocao.id %}" class="btn btn-secondary">
+            <a href="#"rh:promocao_detail' promocao.id %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-times me-2"></i>Cancelar
             </a>
-            <button type="submit" class="btn btn-danger">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                 <i class="fas fa-trash-alt me-2"></i>Deletar Promoção
             </button>
         </div>

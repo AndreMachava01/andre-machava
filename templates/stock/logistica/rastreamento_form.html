@@ -1,75 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    .form-section {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .form-section h5 {
-        color: #495057;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #dee2e6;
-        padding-bottom: 8px;
-    }
-    
-    .transportation-type {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .transportation-option {
-        flex: 1;
-        padding: 15px;
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        background: white;
-        transition: all 0.3s ease;
-    }
-    
-    .transportation-option:hover {
-        border-color: #007bff;
-        background: #f8f9ff;
-    }
-    
-    .transportation-option.selected {
-        border-color: #007bff;
-        background: #e3f2fd;
-    }
-    
-    .transportation-option h6 {
-        margin-bottom: 10px;
-        color: #495057;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 5px;
-    }
-    
-    .required {
-        color: #dc3545;
-    }
-    
-    .btn-group {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 20px;
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -77,8 +12,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:logistica:main' %}">Logística</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:logistica:rastreamento_list' %}">Rastreamentos</a></li>
+            <li class="breadcrumb-item"><a href="{% url "stock:logistica:main" %}">Logística</a></li>
+            <li class="breadcrumb-item"><a href="">Rastreamentos</a></li>
             <li class="breadcrumb-item active">{{ title }}</li>
         </ol>
     </nav>
@@ -86,7 +21,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>{{ title }}</h2>
-        <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-secondary">
+        <a href="#" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
     </div>
@@ -94,7 +29,7 @@
     <!-- Form -->
     <div class="row">
         <div class="col-lg-8">
-            <form method="post" id="rastreamentoForm">
+            <form method="post" id="rastreamentoForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <!-- Tipo de Transporte -->
@@ -235,11 +170,11 @@
                 </div>
 
                 <!-- Botões -->
-                <div class="btn-group">
-                    <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-secondary">
+                <div class="btn-group btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button" role="button">
+                    <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i> Salvar Rastreamento
                     </button>
                 </div>

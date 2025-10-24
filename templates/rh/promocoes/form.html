@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}
     {% if promocao %}Editar Promoção{% else %}Nova Promoção{% endif %}
@@ -22,32 +22,19 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-trophy"></i>
-                    {% if promocao %}Editar Promoção{% else %}Nova Promoção{% endif %}
-                </h1>
-                <p class="page-subtitle">
-                    {% if promocao %}
+    
+{% include "includes/header.html" with
+    title="{% if promocao %}Editar Promoção{% else %}Nova Promoção{% endif %}"
+    subtitle="{% if promocao %}
                         Edite as informações da promoção
                     {% else %}
                         Crie uma nova promoção para funcionário
-                    {% endif %}
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar
-                </a>
-            </div>
-        </div>
-    </div>
+                    {% endif %}"
+    icon="fas fa-trophy"
+%}    </div>
 
     <div class="form-container">
-        <form method="POST" id="promocaoForm">
+        <form method="POST" id="promocaoForm"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
             {% csrf_token %}
             
             <!-- Informações Básicas -->
@@ -198,11 +185,11 @@
         
         <!-- Ações -->
         <div class="form-actions">
-            <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary">
+            <a href="#"rh:promocoes' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-times"></i>
                 Cancelar
             </a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                 <i class="fas fa-save"></i>
                 {% if promocao %}Atualizar{% else %}Solicitar{% endif %}
             </button>
@@ -274,10 +261,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const aumento = salarioNovo - salarioAnterior;
             const percentual = salarioAnterior > 0 ? (aumento / salarioAnterior) * 100 : 0;
             
-            document.getElementById('prevSalary').textContent = salarioAnterior.toFixed(2) + ' MT';
-            document.getElementById('newSalary').textContent = salarioNovo.toFixed(2) + ' MT';
-            document.getElementById('increaseValue').textContent = aumento.toFixed(2) + ' MT';
-            document.getElementById('increasePercent').textContent = percentual.toFixed(1) + '%';
+            document.getElementById("prevSalary").textContent = salarioAnterior || 0.toFixed(2) + ' MT';
+            document.getElementById("newSalary").textContent = salarioNovo || 0.toFixed(2) + ' MT';
+            document.getElementById("increaseValue").textContent = aumento || 0.toFixed(2) + ' MT';
+            document.getElementById("increasePercent").textContent = percentual || 0.toFixed(1) + '%';
             
             // Colorir baseado no tipo de mudança
             const increaseValue = document.getElementById('increaseValue');
@@ -310,204 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-/* Estilos específicos para formulário de promoções */
-.form-container {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: var(--card-shadow);
-    border: 1px solid var(--border-color);
-    margin-top: 20px;
-}
 
-.form-section {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 25px;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.form-label {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.form-control, .form-select {
-    height: 36px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-input);
-    color: var(--text-color);
-    font-size: 13px;
-    transition: all 0.2s ease;
-}
-
-.form-control:focus, .form-select:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-textarea.form-control {
-    height: auto;
-    min-height: 80px;
-    resize: vertical;
-}
-
-.help-text {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-.required {
-    color: var(--accent-danger);
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.form-check-input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent-primary);
-}
-
-.form-check-label {
-    font-size: 14px;
-    color: var(--text-primary);
-    cursor: pointer;
-}
-
-.salary-preview {
-    background: var(--surface-light);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 20px;
-}
-
-.salary-preview h4 {
-    margin: 0 0 15px 0;
-    color: var(--text-primary);
-    font-size: 16px;
-}
-
-.salary-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.salary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background: var(--surface-dark);
-    border-radius: 6px;
-}
-
-.salary-item .label {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.salary-item .value {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-    margin-top: 30px;
-}
-
-.btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-primary {
-    background: var(--gradient-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-    background: var(--surface-medium);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background: var(--surface-light);
-    transform: translateY(-2px);
-}
-
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .salary-details {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-}
-</style>
 
 {% endblock %}

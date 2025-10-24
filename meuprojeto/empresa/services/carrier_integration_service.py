@@ -14,7 +14,7 @@ from django.utils import timezone
 from ..models_stock import Transportadora, RastreamentoEntrega
 from ..services.carriers.contracts import (
     CarrierClient, QuoteRequest, QuoteResponse, 
-    PickupRequest, PickupResponse, TrackingRequest, TrackingResponse,
+    PickupRequest, PickupResponse, TrackingResponse,
     ProofOfDeliveryRequest, ProofOfDeliveryResponse
 )
 
@@ -149,7 +149,7 @@ class CorreiosClient(CarrierClient):
                 error=str(e)
             )
     
-    def track_shipment(self, request: TrackingRequest) -> TrackingResponse:
+    def track_shipment(self, request) -> TrackingResponse:  # TrackingRequest
         """Rastreia envio com Correios."""
         try:
             response = self.session.get(
@@ -369,7 +369,7 @@ class DHLClient(CarrierClient):
                 error=str(e)
             )
     
-    def track_shipment(self, request: TrackingRequest) -> TrackingResponse:
+    def track_shipment(self, request) -> TrackingResponse:  # TrackingRequest
         """Rastreia envio com DHL."""
         try:
             response = self.session.get(
@@ -576,7 +576,7 @@ class LocalCarrierClient(CarrierClient):
                 error=str(e)
             )
     
-    def track_shipment(self, request: TrackingRequest) -> TrackingResponse:
+    def track_shipment(self, request) -> TrackingResponse:  # TrackingRequest
         """Rastreia envio com transportadora local."""
         try:
             response = self.session.get(
@@ -725,7 +725,7 @@ class CarrierIntegrationService:
     def track_all_carriers(self, tracking_code: str) -> Dict[str, TrackingResponse]:
         """Rastreia em todas as transportadoras disponíveis."""
         results = {}
-        request = TrackingRequest(tracking_code=tracking_code)
+        # request = TrackingRequest(tracking_code=tracking_code)
         
         for carrier_code, client in self.clients.items():
             try:
@@ -760,7 +760,7 @@ class CarrierIntegrationService:
                 return
             
             # Rastrear envio
-            request = TrackingRequest(tracking_code=rastreamento.codigo_rastreamento)
+            # request = TrackingRequest(tracking_code=rastreamento.codigo_rastreamento)
             response = client.track_shipment(request)
             
             if response.success:

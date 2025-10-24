@@ -1,0 +1,159 @@
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Relatórios de Estoque" entity_name='default' %}
+{% load static %}
+
+{% block title %}Relatórios de Estoque{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            
+            <p class="hero-subtitle">Selecione o relatório desejado para visualizar ou exportar os dados</p>
+            <div class="hero-actions">
+                <a href="#"stock:main' %}" class="btn-modern btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-home"></i>
+                    Voltar ao Stock
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-number">{{ total_produtos|default:"0" }}</div>
+            <div class="stat-label">Total de Produtos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="stat-number">{{ total_movimentos|default:"0" }}</div>
+            <div class="stat-label">Movimentações</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+            <div class="stat-number">{{ produtos_estoque_baixo|default:"0" }}</div>
+            <div class="stat-label">Estoque Baixo</div>
+                    </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-export"></i>
+                </div>
+            <div class="stat-number">6</div>
+            <div class="stat-label">Relatórios Disponíveis</div>
+            </div>
+        </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+
+        <!-- Reports Grid -->
+        <div class="reports-grid">
+            <!-- Estoque Atual -->
+        <div class="report-card">
+            
+                <h3 class="report-title">Estoque Atual</h3>
+            </div>
+            <p class="report-description">
+                Relatório com a situação atual do estoque, mostrando quantidades disponíveis, reservadas e em uso.
+            </p>
+            <a href="#"stock:relatorio_estoque_atual' %}" class="report-btn estoque -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        <div class="report-card">
+            
+                <h3 class="report-title">Estoque Mínimo</h3>
+            </div>
+            <p class="report-description">
+                Lista de itens com estoque abaixo do nível mínimo configurado.
+            </p>
+            <a href="#"stock:relatorio_estoque_minimo' %}" class="report-btn alert -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        <div class="report-card">
+            
+                <h3 class="report-title">Movimentações</h3>
+            </div>
+            <p class="report-description">
+                Relatório detalhado de todas as movimentações de estoque em um período específico.
+            </p>
+            <a href="#"stock:relatorio_movimentacoes' %}" class="report-btn movimentacao -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        <div class="report-card">
+            
+                <h3 class="report-title">Ordens de Compra</h3>
+            </div>
+            <p class="report-description">
+                Relatório de ordens de compra emitidas, com status e valores totais.
+            </p>
+            <a href="#"stock:relatorio_ordens_compra' %}" class="report-btn compra -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        <div class="report-card">
+            
+                <h3 class="report-title">Devoluções</h3>
+            </div>
+            <p class="report-description">
+                Relatório de itens devolvidos por clientes ou para fornecedores.
+            </p>
+            <a href="#"stock:relatorio_devolucoes' %}" class="report-btn devolucao -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        <div class="report-card">
+            
+                <h3 class="report-title">Transferências</h3>
+            </div>
+            <p class="report-description">
+                Relatório de transferências de estoque entre sucursais.
+            </p>
+            <a href="#"stock:relatorio_transferencias' %}" class="report-btn transferencia -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-file-export"></i>
+                Gerar Relatório
+            </a>
+        </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Adiciona classe ativa ao menu de relatórios
+        $('#menu-relatorios').addClass('active');
+    });
+</script>
+{% endblock %}

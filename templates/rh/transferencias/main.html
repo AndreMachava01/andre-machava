@@ -1,5 +1,5 @@
-{% extends "base_admin.html" %}
-{% load static %}
+{% extends "base_list.html" %}
+
 
 {% block title %}Transferências de Funcionários{% endblock %}
 
@@ -18,25 +18,12 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-exchange-alt"></i>
-                    Transferências de Funcionários
-                </h1>
-                <p class="page-subtitle">
-                    Gerencie transferências entre departamentos e sucursais
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'rh:transferencia_add' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Nova Transferência
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Transferências de Funcionários"
+    subtitle="Gerencie transferências entre departamentos e sucursais"
+    icon="fas fa-exchange-alt"
+%}    </div>
     
     <!-- Statistics Cards -->
     <div class="stats-grid">
@@ -81,64 +68,8 @@
         </div>
     </div>
     
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <h3 class="filters-title">
-            <i class="fas fa-filter"></i>
-            Filtros de Busca
-        </h3>
-        <form method="get" class="filters-row">
-            <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select name="status" class="form-select">
-                    <option value="">Todos os status</option>
-                    {% for value, label in status_choices %}
-                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>
-                            {{ label }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Funcionário</label>
-                <select name="funcionario" class="form-select">
-                    <option value="">Todos os funcionários</option>
-                    {% for funcionario in funcionarios %}
-                        <option value="{{ funcionario.id }}" {% if funcionario_id == funcionario.id|stringformat:"s" %}selected{% endif %}>
-                            {{ funcionario.nome_completo }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Sucursal</label>
-                <select name="sucursal" class="form-select">
-                    <option value="">Todas as sucursais</option>
-                    {% for sucursal in sucursais %}
-                        <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>
-                            {{ sucursal.nome }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-actions">
-                <button type="submit" class="btn-search">
-                    <i class="fas fa-search"></i>
-                    Buscar
-                </button>
-                
-                {% if status or funcionario_id or sucursal_id %}
-                    <a href="{% url 'rh:transferencias' %}" class="btn-clear">
-                        <i class="fas fa-times"></i>
-                        Limpar
-                    </a>
-                {% endif %}
-            </div>
-        </form>
-    </div>
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='transferencias' %}
     
     <!-- Table Section -->
     <div class="table-container">
@@ -209,32 +140,32 @@
                             <td>{{ transferencia.data_efetiva|date:"d/m/Y" }}</td>
                             <td>
                                 <div class="cell-actions">
-                                    <a href="{% url 'rh:transferencia_detail' transferencia.id %}" 
-                                       class="btn-action secondary" title="Ver detalhes">
+                                    <a href="#"rh:transferencia_detail' transferencia.id %}" 
+                                       class="btn-action secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     
                                     {% if transferencia.status == 'PENDENTE' %}
-                                        <a href="{% url 'rh:transferencia_edit' transferencia.id %}" 
-                                           class="btn-action primary" title="Editar">
+                                        <a href="#"rh:transferencia_edit' transferencia.id %}" 
+                                           class="btn-action primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{% url 'rh:transferencia_aprovar' transferencia.id %}" 
-                                           class="btn-action success" title="Aprovar">
+                                        <a href="#"rh:transferencia_aprovar' transferencia.id %}" 
+                                           class="btn-action success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Aprovar">
                                             <i class="fas fa-check"></i>
                                         </a>
-                                        <a href="{% url 'rh:transferencia_rejeitar' transferencia.id %}" 
-                                           class="btn-action danger" title="Rejeitar">
+                                        <a href="#"rh:transferencia_rejeitar' transferencia.id %}" 
+                                           class="btn-action danger btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Rejeitar">
                                             <i class="fas fa-times"></i>
                                         </a>
                                     {% elif transferencia.status == 'APROVADO' %}
-                                        <a href="{% url 'rh:transferencia_implementar' transferencia.id %}" 
-                                           class="btn-action primary" title="Implementar">
+                                        <a href="#"rh:transferencia_implementar' transferencia.id %}" 
+                                           class="btn-action primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Implementar">
                                             <i class="fas fa-cogs"></i>
                                         </a>
                                     {% elif transferencia.status == 'IMPLEMENTADO' %}
-                                        <a href="{% url 'rh:transferencia_efetivar' transferencia.id %}" 
-                                           class="btn-action success" title="Efetivar">
+                                        <a href="#"rh:transferencia_efetivar' transferencia.id %}" 
+                                           class="btn-action success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Efetivar">
                                             <i class="fas fa-check-circle"></i>
                                         </a>
                                     {% endif %}
@@ -250,10 +181,10 @@
             {% if page_obj.has_other_pages %}
                 <div class="pagination-modern">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1{% if status %}&status={{ status }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-double-left"></i>
                         </a>
-                        <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-left"></i>
                         </a>
                     {% endif %}
@@ -263,10 +194,10 @@
                     </span>
                     
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-right"></i>
                         </a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}{% if status %}&status={{ status }}{% endif %}{% if funcionario_id %}&funcionario={{ funcionario_id }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn">
+                        <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-angle-double-right"></i>
                         </a>
                     {% endif %}
@@ -282,7 +213,7 @@
                     {% endif %}
                     adicione a primeira transferência.
                 </p>
-                <a href="{% url 'rh:transferencia_add' %}" class="btn btn-primary">
+                <a href="#"rh:transferencia_add' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-plus"></i>
                     Nova Transferência
                 </a>
@@ -291,35 +222,7 @@
     </div>
 </div>
 
-<style>
-/* Estilos específicos para transferências */
-.transfer-flow {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
 
-.transfer-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.transfer-arrow {
-    color: var(--primary-color);
-    font-weight: bold;
-    font-size: 14px;
-}
-
-/* Larguras específicas das colunas */
-.table th:nth-child(1), .table td:nth-child(1) { width: 180px; min-width: 180px; } /* Funcionário */
-.table th:nth-child(2), .table td:nth-child(2) { width: 300px; min-width: 300px; } /* Transferência */
-.table th:nth-child(3), .table td:nth-child(3) { width: 120px; min-width: 120px; } /* Status */
-.table th:nth-child(4), .table td:nth-child(4) { width: 120px; min-width: 120px; } /* Data Solicitação */
-.table th:nth-child(5), .table td:nth-child(5) { width: 120px; min-width: 120px; } /* Data Efetiva */
-.table th:nth-child(6), .table td:nth-child(6) { width: 160px; min-width: 160px; } /* Ações */
-</style>
 
 <script>
 // Auto-submit nos filtros

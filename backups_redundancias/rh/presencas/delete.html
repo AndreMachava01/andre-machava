@@ -1,0 +1,89 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Excluir Presença{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "rh:main" %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Presenças</a></li>
+            <li class="breadcrumb-item active">Excluir Presença</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Excluir Presença"
+    icon="fas fa-exclamation-triangle me-2"
+%}    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Atenção!</strong> Você está prestes a excluir uma presença registrada. Esta ação não pode ser desfeita. Tem certeza que deseja continuar?
+            </div>
+
+            <div class="data-grid">
+                <div class="data-label">Funcionário:</div>
+                <div class="data-value">{{ presenca.funcionario.nome_completo }} ({{ presenca.funcionario.codigo_funcionario }})</div>
+                
+                <div class="data-label">Data:</div>
+                <div class="data-value">{{ presenca.data|date:"d/m/Y" }}</div>
+                
+                <div class="data-label">Tipo de Presença:</div>
+                <div class="data-value">{{ presenca.tipo_presenca.nome }}</div>
+                
+                {% if presenca.horas_extras %}
+                <div class="data-label">Horas Extras:</div>
+                <div class="data-value">{{ presenca.horas_extras }}h</div>
+                {% endif %}
+                
+                {% if presenca.aprovado_por %}
+                <div class="data-label">Aprovado por:</div>
+                <div class="data-value">{{ presenca.aprovado_por.get_full_name|default:presenca.aprovado_por.username }}</div>
+                {% endif %}
+                
+                <div class="data-label">Data de Criação:</div>
+                <div class="data-value">{{ presenca.data_criacao|date:"d/m/Y H:i" }}</div>
+                
+                {% if presenca.data_atualizacao %}
+                <div class="data-label">Última Atualização:</div>
+                <div class="data-value">{{ presenca.data_atualizacao|date:"d/m/Y H:i" }}</div>
+                {% endif %}
+                
+                {% if presenca.observacoes %}
+                <div class="data-label">Observações:</div>
+                <div class="data-value">{{ presenca.observacoes }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <form method="post" style="display: inline;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                <button type="button" class="btn btn btn btn btn btn btn btn-danger" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-trash me-1"></i>Sim, Excluir
+                </button>
+            </form>
+            <a href="#"rh:presencas' %}" class="btn btn-outline btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-times me-1"></i>Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

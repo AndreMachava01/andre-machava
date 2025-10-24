@@ -313,8 +313,19 @@ def inventario_detail(request, id):
         itens_para_exibir = itens_inventario
     
     context = {
+        'object': inventario,
+        'object_name': inventario.nome,
+        'entity_name': 'inventario',
+        'breadcrumb_url': 'stock:inventario:list',
+        'breadcrumb_title': 'Inventários',
+        'header_icon': 'clipboard-list',
+        'page_subtitle': 'Detalhes completos do inventário',
+        'back_url': 'stock:inventario:list',
+        'edit_url': 'stock:inventario:update_item',
         'inventario': inventario,
         'itens_inventario': itens_para_exibir,
+        'total_itens': total_itens,
+        'itens_contados': itens_contados,
         'contagem_stats': contagem_stats,
         'itens_com_diferenca': itens_com_diferenca,
         'itens_para_recontar': itens_com_diferenca_nao_finalizados,

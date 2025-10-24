@@ -1,4 +1,71 @@
-{% extends 'base_admin.html' %}
+<script>
+
+
+// Gráfico de Prioridades
+var ctx = document.getElementById("prioridadeChart");
+var prioridadeChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for items in planejamentos_prioridade  %}'{{ item.prioridade }}',{% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for items in planejamentos_prioridade  %}{{ item.count }},{% endfor %}
+            ],
+            backgroundColor: [
+                {% for items in planejamentos_prioridade  %}
+                {% if items.prioridade == 'URGENTE'  %}'#e74c3c'{% elif items.prioridade == 'ALTA'  %}'#f39c12'{% elif items.prioridade == 'NORMAL'  %}'#3498db'{% else %}'#95a5a6'{% endif %},
+                {% endfor %}
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Gráfico de Status
+var ctx2 = document.getElementById("statusChart");
+var statusChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for items in rotas_status  %}'{{ item.status }}',{% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for items in rotas_status  %}{{ item.count }},{% endfor %}
+            ],
+            backgroundColor: [
+                {% for items in rotas_status  %}
+                {% if items.status == 'PLANEJADA'  %}'#3498db'{% elif items.status == 'EM_EXECUCAO'  %}'#f39c12'{% elif items.status == 'CONCLUIDA'  %}'#27ae60'{% else %}'#95a5a6'{% endif %},
+                {% endfor %}
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+</script>
+
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Dashboard de Roteirização{% endblock %}
@@ -10,10 +77,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0">Dashboard de Roteirização</h1>
                 <div>
-                    <a href="{% url 'routing:otimizar_rotas' %}" class="btn btn-primary">
+                    <a href="#"routing:otimizar_rotas' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-route"></i> Otimizar Rotas
                     </a>
-                    <a href="{% url 'routing:planejamento_create' %}" class="btn btn-success">
+                    <a href="#"routing:planejamento_create' %}" class="btn btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-plus"></i> Novo Planejamento
                     </a>
                 </div>
@@ -108,9 +175,9 @@
                         <canvas id="prioridadeChart"></canvas>
                     </div>
                     <div class="mt-4 text-center small">
-                        {% for item in planejamentos_prioridade %}
+                        {% for items in planejamentos_prioridade  %}
                         <span class="mr-2">
-                            <i class="fas fa-circle text-{% if item.prioridade == 'URGENTE' %}danger{% elif item.prioridade == 'ALTA' %}warning{% elif item.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}"></i>
+                            <i class="fas fa-circle text-{% if items.prioridade == 'URGENTE'  %}danger{% elif items.prioridade == 'ALTA'  %}warning{% elif items.prioridade == 'NORMAL'  %}primary{% else %}secondary{% endif %}"></i>
                             {{ item.prioridade }} ({{ item.count }})
                         </span>
                         {% endfor %}
@@ -130,9 +197,9 @@
                         <canvas id="statusChart"></canvas>
                     </div>
                     <div class="mt-4 text-center small">
-                        {% for item in rotas_status %}
+                        {% for items in rotas_status  %}
                         <span class="mr-2">
-                            <i class="fas fa-circle text-{% if item.status == 'PLANEJADA' %}info{% elif item.status == 'EM_EXECUCAO' %}warning{% elif item.status == 'CONCLUIDA' %}success{% else %}secondary{% endif %}"></i>
+                            <i class="fas fa-circle text-{% if items.status == 'PLANEJADA'  %}info{% elif items.status == 'EM_EXECUCAO'  %}warning{% elif items.status == 'CONCLUIDA'  %}success{% else %}secondary{% endif %}"></i>
                             {{ item.status }} ({{ item.count }})
                         </span>
                         {% endfor %}
@@ -148,7 +215,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Planejamentos Próximos (7 dias)</h6>
-                    <a href="{% url 'routing:planejamentos_list' %}" class="btn btn-sm btn-primary">Ver Todos</a>
+                    <a href="#" class="btn btn-sm btn btn btn btn btn btn btn btn-primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">Ver Todos</a>
                 </div>
                 <div class="card-body">
                     {% if proximos_7_dias %}
@@ -207,25 +274,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:zonas_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"routing:zonas_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-map-marked-alt"></i><br>
                                 Zonas de Entrega
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:planejamentos_list' %}" class="btn btn-outline-success btn-block">
+                            <a href="#"routing:planejamentos_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-calendar-plus"></i><br>
                                 Planejamentos
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:rotas_list' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"routing:rotas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-route"></i><br>
                                 Rotas
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:configuracoes' %}" class="btn btn-outline-secondary btn-block">
+                            <a href="#"routing:configuracoes' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-cog"></i><br>
                                 Configurações
                             </a>
@@ -238,69 +305,7 @@
 </div>
 
 <!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-// Gráfico de Prioridades
-var ctx = document.getElementById("prioridadeChart");
-var prioridadeChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: [
-            {% for item in planejamentos_prioridade %}'{{ item.prioridade }}',{% endfor %}
-        ],
-        datasets: [{
-            data: [
-                {% for item in planejamentos_prioridade %}{{ item.count }},{% endfor %}
-            ],
-            backgroundColor: [
-                {% for item in planejamentos_prioridade %}
-                {% if item.prioridade == 'URGENTE' %}'#e74c3c'{% elif item.prioridade == 'ALTA' %}'#f39c12'{% elif item.prioridade == 'NORMAL' %}'#3498db'{% else %}'#95a5a6'{% endif %},
-                {% endfor %}
-            ],
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        }
-    }
-});
 
-// Gráfico de Status
-var ctx2 = document.getElementById("statusChart");
-var statusChart = new Chart(ctx2, {
-    type: 'doughnut',
-    data: {
-        labels: [
-            {% for item in rotas_status %}'{{ item.status }}',{% endfor %}
-        ],
-        datasets: [{
-            data: [
-                {% for item in rotas_status %}{{ item.count }},{% endfor %}
-            ],
-            backgroundColor: [
-                {% for item in rotas_status %}
-                {% if item.status == 'PLANEJADA' %}'#3498db'{% elif item.status == 'EM_EXECUCAO' %}'#f39c12'{% elif item.status == 'CONCLUIDA' %}'#27ae60'{% else %}'#95a5a6'{% endif %},
-                {% endfor %}
-            ],
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        }
-    }
-});
-</script>
+
 {% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Eliminar Tipo de Presença{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="nav-top">
+        <div class="nav-title">
+            <a href="#" class="back-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Tipos
+            </a>
+            <h1>Eliminar Tipo de Presença</h1>
+        </div>
+    </div>
+
+    <div class="delete-card">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2>Confirmar Eliminação</h2>
+        <p>Tem certeza que deseja eliminar este tipo de presença? Esta ação não pode ser desfeita.</p>
+
+        <div class="tipo-info">
+            <h3>Detalhes do Tipo de Presença</h3>
+            <div class="info-item">
+                <span class="info-label">Nome:</span>
+                <span class="info-value">{{ tipo.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Código:</span>
+                <span class="info-value">{{ tipo.codigo }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Cor:</span>
+                <span class="info-value">
+                    <span class="tipo-badge" style="background-color: {{ tipo.cor }};">
+                        {{ tipo.cor }}
+                    </span>
+                </span>
+            </div>
+            {% if tipo.descricao %}
+            <div class="info-item">
+                <span class="info-label">Descrição:</span>
+                <span class="info-value">{{ tipo.descricao }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">Desconta Salário:</span>
+                <span class="info-value">
+                    <span class="status-badge status-{{ tipo.desconta_salario|yesno:'true,false' }}">
+                        {{ tipo.desconta_salario|yesno:"Sim,Não" }}
+                    </span>
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                    <span class="status-badge status-{{ tipo.ativo|yesno:'true,false' }}">
+                        {{ tipo.ativo|yesno:"Ativo,Inativo" }}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <form method="post" class="form-actions"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-trash"></i>
+                Sim, Eliminar
+            </button>
+            <a href="#"rh:tipos_presenca' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

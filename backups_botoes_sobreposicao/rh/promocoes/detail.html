@@ -1,0 +1,301 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Detalhes da Promoção{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Promoções</a></li>
+            <li class="breadcrumb-item active">{{ promocao.funcionario.nome_completo }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>
+                    <i class="fas fa-trophy me-2"></i>Detalhes da Promoção
+                </h1>
+                <p>
+                    {{ promocao.funcionario.nome_completo }} - {{ promocao.get_tipo_display }}
+                </p>
+            </div>
+            <a href="#" class="btn btn-outline-secondary btn-responsive btn-responsive">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+        <div class="detail-container">
+            <div class="main-content">
+                <!-- Informações Básicas -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Informações Básicas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <span class="info-label">Funcionário</span>
+                            <span class="info-value">{{ promocao.funcionario.nome_completo }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Código</span>
+                            <span class="info-value">{{ promocao.funcionario.codigo_funcionario }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Tipo</span>
+                            <span class="badge bg-primary">{{ promocao.get_tipo_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="badge {% if promocao.status == 'PENDENTE' %}bg-warning{% elif promocao.status == 'APROVADO' %}bg-success{% elif promocao.status == 'IMPLEMENTADO' %}bg-info{% elif promocao.status == 'REJEITADO' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ promocao.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Data da Solicitação</span>
+                            <span class="info-value">{{ promocao.data_solicitacao|date:"d/m/Y" }}</span>
+                        </div>
+                        {% if promocao.data_aprovacao %}
+                        <div class="info-item">
+                            <span class="info-label">Data da Aprovação</span>
+                            <span class="info-value">{{ promocao.data_aprovacao|date:"d/m/Y" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if promocao.data_implementacao %}
+                        <div class="info-item">
+                            <span class="info-label">Data da Implementação</span>
+                            <span class="info-value">{{ promocao.data_implementacao|date:"d/m/Y" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Comparação Salarial -->
+                <div class="salary-comparison">
+                    <h4>Comparação Salarial</h4>
+                    <div class="salary-grid">
+                        <div class="salary-item">
+                            <div class="label">Salário Anterior</div>
+                            <div class="value">{{ promocao.salario_anterior|floatformat:2 }} MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Salário Novo</div>
+                            <div class="value">{{ promocao.salario_novo|floatformat:2 }} MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Valor do Aumento</div>
+                            <div class="value {% if promocao.valor_aumento > 0 %}increase{% elif promocao.valor_aumento < 0 %}decrease{% endif %}">
+                                {{ promocao.valor_aumento|floatformat:2 }} MT
+                            </div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Percentual</div>
+                            <div class="value {% if promocao.percentual_aumento > 0 %}increase{% elif promocao.percentual_aumento < 0 %}decrease{% endif %}">
+                                {{ promocao.percentual_aumento|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informações de Cargo (se for promoção) -->
+                {% if promocao.tipo == 'PROMOCAO' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-briefcase me-2"></i>Informações de Cargo
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <span class="info-label">Cargo Anterior</span>
+                            <span class="info-value">{{ promocao.cargo_anterior.nome|default:"N/A" }}</span>
+                        </div>
+                        {% if promocao.cargo_novo %}
+                        <div class="info-item">
+                            <span class="info-label">Novo Cargo</span>
+                            <span class="info-value">{{ promocao.cargo_novo.nome }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Motivação e Justificativa -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comment-alt me-2"></i>Motivação e Justificativa
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-content">
+                            <h5>Motivo</h5>
+                            <p>{{ promocao.motivo }}</p>
+                        </div>
+                        {% if promocao.justificativa %}
+                        <div class="text-content">
+                            <h5>Justificativa Detalhada</h5>
+                            <p>{{ promocao.justificativa }}</p>
+                        </div>
+                        {% endif %}
+                        {% if promocao.observacoes %}
+                        <div class="text-content">
+                            <h5>Observações</h5>
+                            <p>{{ promocao.observacoes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Histórico
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon pendente">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Solicitação Criada</div>
+                                    <div class="timeline-date">{{ promocao.data_solicitacao|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if promocao.data_aprovacao %}
+                            <div class="timeline-item">
+                                <div class="timeline-icon aprovado">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Aprovada por {% if promocao.aprovado_por %}{{ promocao.aprovado_por.get_full_name|default:promocao.aprovado_por.username }}{% else %}Sistema{% endif %}</div>
+                                    <div class="timeline-date">{{ promocao.data_aprovacao|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if promocao.data_implementacao %}
+                            <div class="timeline-item">
+                                <div class="timeline-icon implementado">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Implementada</div>
+                                    <div class="timeline-date">{{ promocao.data_implementacao|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if promocao.status == 'REJEITADO' and promocao.rejeitado_por %}
+                            <div class="timeline-item">
+                                <div class="timeline-icon rejeitado">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Rejeitada por {% if promocao.rejeitado_por %}{{ promocao.rejeitado_por.get_full_name|default:promocao.rejeitado_por.username }}{% else %}Sistema{% endif %}</div>
+                                    <div class="timeline-date">{{ promocao.data_atualizacao|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Ações -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>Ações
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="actions">
+                            {% if promocao.status == 'PENDENTE' %}
+                                <a href="#"rh:promocao_edit' promocao.id %}" class="btn btn btn-warning btn-responsive btn-responsive">
+                                    <i class="fas fa-edit me-2"></i>Editar
+                                </a>
+                                <a href="#"rh:promocao_aprovar' promocao.id %}" class="btn btn btn-success btn-responsive btn-responsive">
+                                    <i class="fas fa-check me-2"></i>Aprovar
+                                </a>
+                                <a href="#"rh:promocao_rejeitar' promocao.id %}" class="btn btn btn-danger btn-responsive btn-responsive">
+                                    <i class="fas fa-times me-2"></i>Rejeitar
+                                </a>
+                            {% elif promocao.status == 'APROVADO' %}
+                                <a href="#"rh:promocao_implementar' promocao.id %}" class="btn btn btn-primary btn-responsive btn-responsive">
+                                    <i class="fas fa-play me-2"></i>Implementar
+                                </a>
+                            {% endif %}
+                            
+                            <a href="#"rh:promocoes' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                                <i class="fas fa-list me-2"></i>Lista de Promoções
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info me-2"></i>Informações do Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if promocao.status == 'PENDENTE' %}
+                            <div class="alert alert-warning">
+                                <strong>Pendente:</strong> Aguardando aprovação.
+                                {% if promocao.dias_pendente > 0 %}
+                                    <br><small>Pendente há {{ promocao.dias_pendente }} dia(s).</small>
+                                {% endif %}
+                            </div>
+                        {% elif promocao.status == 'APROVADO' %}
+                            <div class="alert alert-info">
+                                <strong>Aprovado:</strong> Pronto para implementação.
+                            </div>
+                        {% elif promocao.status == 'IMPLEMENTADO' %}
+                            <div class="alert alert-info">
+                                <strong>Implementado:</strong> Promoção/aumento efetivado.
+                            </div>
+                        {% elif promocao.status == 'REJEITADO' %}
+                            <div class="alert alert-danger">
+                                <strong>Rejeitado:</strong> Promoção/aumento rejeitado.
+                                {% if promocao.motivo_rejeicao %}
+                                    <br><small>{{ promocao.motivo_rejeicao }}</small>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

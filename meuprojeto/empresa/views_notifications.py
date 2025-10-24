@@ -17,7 +17,7 @@ from django.conf import settings
 
 from .decorators import require_stock_access
 from .models_stock import RastreamentoEntrega, EventoRastreamento
-from .models_mobile import NotificacaoMobile
+# from .models_mobile import NotificacaoMobile
 from .services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
@@ -34,34 +34,34 @@ def notifications_dashboard(request):
     
     # Métricas de notificações
     metricas = {
-        'notificacoes_enviadas': NotificacaoMobile.objects.count(),
-        'notificacoes_nao_lidas': NotificacaoMobile.objects.filter(lida=False).count(),
-        'notificacoes_hoje': NotificacaoMobile.objects.filter(
-            data_criacao__date=timezone.now().date()
-        ).count(),
+        'notificacoes_enviadas': 0,  # NotificacaoMobile.objects.count(),
+        'notificacoes_nao_lidas': 0,  # NotificacaoMobile.objects.filter(lida=False).count(),
+        'notificacoes_hoje': 0,  # NotificacaoMobile.objects.filter(
+        #     data_criacao__date=timezone.now().date()
+        # ).count(),
         'taxa_leitura': 0,
     }
     
     # Calcular taxa de leitura
-    total_notificacoes = NotificacaoMobile.objects.count()
+    total_notificacoes = 0  # NotificacaoMobile.objects.count()
     if total_notificacoes > 0:
-        lidas = NotificacaoMobile.objects.filter(lida=True).count()
+        lidas = 0  # NotificacaoMobile.objects.filter(lida=True).count()
         metricas['taxa_leitura'] = round((lidas / total_notificacoes) * 100, 2)
     
     # Notificações recentes
-    notificacoes_recentes = NotificacaoMobile.objects.select_related(
-        'destinatario'
-    ).order_by('-data_criacao')[:10]
+    notificacoes_recentes = []  # NotificacaoMobile.objects.select_related(
+    #     'destinatario'
+    # ).order_by('-data_criacao')[:10]
     
     # Estatísticas por tipo
-    stats_por_tipo = NotificacaoMobile.objects.values('tipo_notificacao').annotate(
-        count=Count('id')
-    ).order_by('-count')
+    stats_por_tipo = []  # NotificacaoMobile.objects.values('tipo_notificacao').annotate(
+    #     count=Count('id')
+    # ).order_by('-count')
     
     # Estatísticas por canal
-    stats_por_canal = NotificacaoMobile.objects.values('canal').annotate(
-        count=Count('id')
-    ).order_by('-count')
+    stats_por_canal = []  # NotificacaoMobile.objects.values('canal').annotate(
+    #     count=Count('id')
+    # ).order_by('-count')
     
     context = {
         'metricas': metricas,
@@ -88,7 +88,7 @@ def notificacoes_list(request):
     data_inicio = request.GET.get('data_inicio', '')
     data_fim = request.GET.get('data_fim', '')
     
-    notificacoes = NotificacaoMobile.objects.select_related('destinatario')
+    notificacoes = []  # NotificacaoMobile.objects.select_related('destinatario')
     
     if search:
         notificacoes = notificacoes.filter(
@@ -120,8 +120,8 @@ def notificacoes_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Opções para filtros
-    tipo_choices = NotificacaoMobile.TIPO_NOTIFICACAO_CHOICES
-    canal_choices = NotificacaoMobile.CANAL_CHOICES
+    tipo_choices = []  # NotificacaoMobile.TIPO_NOTIFICACAO_CHOICES
+    canal_choices = []  # NotificacaoMobile.CANAL_CHOICES
     
     context = {
         'page_obj': page_obj,
@@ -142,7 +142,7 @@ def notificacoes_list(request):
 @require_stock_access
 def notificacao_detail(request, notificacao_id):
     """Detalhes de uma notificação."""
-    notificacao = get_object_or_404(NotificacaoMobile, id=notificacao_id)
+    # notificacao = get_object_or_404(NotificacaoMobile, id=notificacao_id)
     
     # Marcar como lida se for o destinatário
     if request.user == notificacao.destinatario and not notificacao.lida:
@@ -198,9 +198,9 @@ def enviar_notificacao(request):
     # GET - mostrar formulário
     from django.contrib.auth.models import User
     usuarios = User.objects.filter(is_active=True).order_by('username')
-    tipo_choices = NotificacaoMobile.TIPO_NOTIFICACAO_CHOICES
-    canal_choices = NotificacaoMobile.CANAL_CHOICES
-    prioridade_choices = NotificacaoMobile.PRIORIDADE_CHOICES
+    tipo_choices = []  # NotificacaoMobile.TIPO_NOTIFICACAO_CHOICES
+    canal_choices = []  # NotificacaoMobile.CANAL_CHOICES
+    prioridade_choices = []  # NotificacaoMobile.PRIORIDADE_CHOICES
     
     context = {
         'usuarios': usuarios,
@@ -322,7 +322,7 @@ def api_marcar_como_lida(request, notificacao_id):
     """API para marcar notificação como lida."""
     if request.method == 'POST':
         try:
-            notificacao = get_object_or_404(NotificacaoMobile, id=notificacao_id)
+            # notificacao = get_object_or_404(NotificacaoMobile, id=notificacao_id)
             
             if request.user == notificacao.destinatario:
                 notificacao.lida = True
@@ -349,9 +349,9 @@ def api_obter_notificacoes_usuario(request):
             nao_lidas = request.GET.get('nao_lidas', 'false') == 'true'
             limite = int(request.GET.get('limite', 20))
             
-            notificacoes = NotificacaoMobile.objects.filter(
-                destinatario=request.user
-            )
+            notificacoes = []  # NotificacaoMobile.objects.filter(
+            #     destinatario=request.user
+            # )
             
             if nao_lidas:
                 notificacoes = notificacoes.filter(lida=False)

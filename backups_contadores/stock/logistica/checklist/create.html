@@ -1,0 +1,709 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Novo Checklist de Viatura{% endblock %}
+
+{% block extra_style %}
+<style>
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-primary);
+    }
+
+    .modern-container {
+        background: var(--surface-dark);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-dark) 100%);
+        padding: var(--space-6);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-content h1 {
+        font-size: var(--text-3xl);
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+    }
+
+    .header-content p {
+        margin: var(--space-2) 0 0 0;
+        opacity: 0.9;
+        font-size: var(--text-sm);
+    }
+
+    .btn-modern {
+        padding: var(--space-3) var(--space-5);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .content-section {
+        flex: 1;
+        padding: var(--space-6);
+        overflow-y: auto;
+    }
+
+    .form-card {
+        background: var(--surface-medium);
+        border-radius: 16px;
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+        border: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--space-5);
+        padding-bottom: var(--space-3);
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-5);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: var(--space-2);
+        color: var(--text-secondary);
+        font-size: var(--text-sm);
+    }
+
+    .required-field {
+        color: var(--accent-danger);
+    }
+
+    .form-control {
+        padding: var(--space-3);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--surface-dark);
+        color: var(--text-primary);
+        font-size: var(--text-sm);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .help-text {
+        font-size: var(--text-xs);
+        color: var(--text-tertiary);
+        margin-top: var(--space-1);
+    }
+
+    .preview-section {
+        background: var(--surface-dark);
+        border: 1px solid var(--accent-info);
+        border-radius: 12px;
+        padding: var(--space-5);
+        margin-bottom: var(--space-6);
+    }
+
+    .preview-title {
+        font-weight: 600;
+        color: var(--accent-info);
+        margin-bottom: var(--space-4);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .preview-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--space-4);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: var(--space-4);
+        background: var(--surface-medium);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        color: var(--accent-primary);
+        margin-bottom: var(--space-1);
+    }
+
+    .stat-label {
+        font-size: var(--text-xs);
+        color: var(--text-tertiary);
+    }
+
+    .checklist-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--space-5);
+    }
+
+    .category-section {
+        background: var(--surface-dark);
+        border-radius: 12px;
+        padding: var(--space-5);
+        border-left: 4px solid var(--accent-primary);
+    }
+
+    .category-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--space-4);
+        font-size: var(--text-base);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--space-3);
+        padding: var(--space-2);
+        background: var(--surface-medium);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-color);
+    }
+
+    .checklist-item:hover {
+        background: var(--surface-light);
+        border-color: var(--accent-primary);
+    }
+
+    .checklist-item input[type="checkbox"] {
+        margin-right: var(--space-3);
+        transform: scale(1.2);
+        accent-color: var(--accent-primary);
+    }
+
+    .checklist-item label {
+        flex: 1;
+        margin: 0;
+        font-weight: 500;
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: var(--text-sm);
+    }
+
+    .status-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-left: var(--space-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xs);
+        font-weight: 700;
+    }
+
+    .status-ok {
+        background: var(--accent-success);
+        color: white;
+    }
+
+    .status-error {
+        background: var(--accent-danger);
+        color: white;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--space-4);
+        justify-content: flex-end;
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-save {
+        background: var(--accent-primary);
+        color: white;
+        padding: var(--space-3) var(--space-6);
+        border: none;
+        border-radius: 12px;
+        font-size: var(--text-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-save:hover {
+        background: var(--accent-primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        background: var(--surface-light);
+        color: var(--text-secondary);
+        padding: var(--space-3) var(--space-6);
+        border: none;
+        border-radius: 12px;
+        font-size: var(--text-sm);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-cancel:hover {
+        background: var(--surface-lighter);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-clipboard-check"></i>
+                Novo Checklist de Viatura
+            </h1>
+            <p>Avaliação completa do estado da viatura</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'stock:logistica:checklist_print_blank' %}" target="_blank" class="btn-modern btn-secondary">
+                <i class="fas fa-file-alt"></i>Imprimir em Branco
+            </a>
+            <a href="" class="btn-modern btn-secondary">
+                <i class="fas fa-arrow-left"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-section">
+        <form method="POST" class="checklist-form">
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações Básicas
+                </h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="veiculo" class="form-label">Veículo <span class="required-field">*</span></label>
+                        <select name="veiculo" id="veiculo" class="form-control" required>
+                            <option value="">Selecione um veículo</option>
+                            {% for veiculo in veiculos %}
+                            <option value="{{ veiculo.id }}">{{ veiculo.nome }} ({{ veiculo.placa }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo" class="form-label">Tipo de Checklist <span class="required-field">*</span></label>
+                        <select name="tipo" id="tipo" class="form-control" required>
+                            <option value="">Selecione o tipo</option>
+                            {% for tipo_value, tipo_label in tipos %}
+                            <option value="{{ tipo_value }}">{{ tipo_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="motorista" class="form-label">Motorista <span class="required-field">*</span></label>
+                        <input type="text" name="motorista" id="motorista" class="form-control" required placeholder="Nome do motorista presente">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="local_inspecao" class="form-label">Local da Inspeção <span class="required-field">*</span></label>
+                        <input type="text" name="local_inspecao" id="local_inspecao" class="form-control" required placeholder="Local onde foi realizada a inspeção">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quilometragem" class="form-label">Quilometragem <span class="required-field">*</span></label>
+                        <input type="number" name="quilometragem" id="quilometragem" class="form-control" required placeholder="Quilometragem atual">
+                        <div class="help-text">Quilometragem no momento da inspeção</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview de Estatísticas -->
+            <div class="preview-section" id="preview-section" style="display: none;">
+                <div class="preview-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Estatísticas do Checklist
+                </div>
+                <div class="preview-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-itens">0</div>
+                        <div class="stat-label">Total de Itens</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="itens-ok">0</div>
+                        <div class="stat-label">Itens OK</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="itens-erro">0</div>
+                        <div class="stat-label">Itens com Problema</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="pontuacao">0%</div>
+                        <div class="stat-label">Pontuação</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens do Checklist -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-list-check"></i>
+                    Itens de Verificação
+                </h2>
+                
+                <div class="checklist-items">
+                    <!-- Sistema de Freios -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-stop-circle"></i>
+                            Sistema de Freios
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="freios_funcionando" id="freios_funcionando" checked>
+                            <label for="freios_funcionando">Freios funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="fluido_freio_ok" id="fluido_freio_ok" checked>
+                            <label for="fluido_freio_ok">Fluido de freio em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pastilhas_ok" id="pastilhas_ok" checked>
+                            <label for="pastilhas_ok">Pastilhas de freio em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Sistema de Direção -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-steering-wheel"></i>
+                            Sistema de Direção
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="direcao_funcionando" id="direcao_funcionando" checked>
+                            <label for="direcao_funcionando">Direção funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="fluido_direcao_ok" id="fluido_direcao_ok" checked>
+                            <label for="fluido_direcao_ok">Fluido de direção em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Sistema Elétrico -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-bolt"></i>
+                            Sistema Elétrico
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="bateria_ok" id="bateria_ok" checked>
+                            <label for="bateria_ok">Bateria em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="alternador_ok" id="alternador_ok" checked>
+                            <label for="alternador_ok">Alternador funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="farois_funcionando" id="farois_funcionando" checked>
+                            <label for="farois_funcionando">Faróis funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="luzes_sinalizacao" id="luzes_sinalizacao" checked>
+                            <label for="luzes_sinalizacao">Luzes de sinalização funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Pneus e Rodas -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-circle"></i>
+                            Pneus e Rodas
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pneus_pressao_ok" id="pneus_pressao_ok" checked>
+                            <label for="pneus_pressao_ok">Pressão dos pneus adequada</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="pneus_desgaste_ok" id="pneus_desgaste_ok" checked>
+                            <label for="pneus_desgaste_ok">Desgaste dos pneus dentro do limite</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="rodas_ok" id="rodas_ok" checked>
+                            <label for="rodas_ok">Rodas em bom estado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Motor e Fluidos -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-cog"></i>
+                            Motor e Fluidos
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="motor_funcionando" id="motor_funcionando" checked>
+                            <label for="motor_funcionando">Motor funcionando corretamente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="oleo_motor_ok" id="oleo_motor_ok" checked>
+                            <label for="oleo_motor_ok">Óleo do motor em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="agua_radiador_ok" id="agua_radiador_ok" checked>
+                            <label for="agua_radiador_ok">Água do radiador em nível adequado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="combustivel_ok" id="combustivel_ok" checked>
+                            <label for="combustivel_ok">Combustível suficiente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Documentação -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-file-alt"></i>
+                            Documentação
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="documentos_ok" id="documentos_ok" checked>
+                            <label for="documentos_ok">Documentação do veículo em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="seguro_ok" id="seguro_ok" checked>
+                            <label for="seguro_ok">Seguro do veículo em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="licenciamento_ok" id="licenciamento_ok" checked>
+                            <label for="licenciamento_ok">Licenciamento em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Limpeza e Aparência -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-broom"></i>
+                            Limpeza e Aparência
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="limpeza_interior" id="limpeza_interior" checked>
+                            <label for="limpeza_interior">Interior limpo e organizado</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="limpeza_exterior" id="limpeza_exterior" checked>
+                            <label for="limpeza_exterior">Exterior limpo</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+
+                    <!-- Equipamentos de Segurança -->
+                    <div class="category-section">
+                        <div class="category-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Equipamentos de Segurança
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="extintor_ok" id="extintor_ok" checked>
+                            <label for="extintor_ok">Extintor presente e em dia</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="triangulo_ok" id="triangulo_ok" checked>
+                            <label for="triangulo_ok">Triângulo de sinalização presente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="macaco_ok" id="macaco_ok" checked>
+                            <label for="macaco_ok">Macaco presente e funcionando</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                        
+                        <div class="checklist-item">
+                            <input type="checkbox" name="chave_roda_ok" id="chave_roda_ok" checked>
+                            <label for="chave_roda_ok">Chave de roda presente</label>
+                            <div class="status-indicator status-ok">✓</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-card">
+                <h2 class="section-title">
+                    <i class="fas fa-comment-alt"></i>
+                    Observações e Recomendações
+                </h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea name="observacoes" id="observacoes" rows="4" class="form-control" placeholder="Observações sobre a inspeção..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recomendacoes" class="form-label">Recomendações</label>
+                        <textarea name="recomendacoes" id="recomendacoes" rows="4" class="form-control" placeholder="Recomendações para manutenção..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions">
+                <a href="{% url 'stock:logistica:checklist_list' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i>Cancelar
+                </a>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i>Salvar Checklist
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const previewSection = document.getElementById('preview-section');
+    
+    function updatePreview() {
+        const totalItens = checkboxes.length;
+        const itensOk = Array.from(checkboxes).filter(cb => cb.checked).length;
+        const itensErro = totalItens - itensOk;
+        const pontuacao = Math.round((itensOk / totalItens) * 100);
+        
+        document.getElementById('total-itens').textContent = totalItens;
+        document.getElementById('itens-ok').textContent = itensOk;
+        document.getElementById('itens-erro').textContent = itensErro;
+        document.getElementById('pontuacao').textContent = pontuacao + '%';
+        
+        // Mostrar preview se houver pelo menos um item marcado
+        if (totalItens > 0) {
+            previewSection.style.display = 'block';
+        }
+        
+        // Atualizar indicadores visuais
+        checkboxes.forEach(checkbox => {
+            const indicator = checkbox.parentElement.querySelector('.status-indicator');
+            if (checkbox.checked) {
+                indicator.className = 'status-indicator status-ok';
+                indicator.textContent = '✓';
+            } else {
+                indicator.className = 'status-indicator status-error';
+                indicator.textContent = '✗';
+            }
+        });
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePreview);
+    });
+    
+    // Atualizar preview inicial
+    updatePreview();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,535 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Confirmar Ordem de Compra{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+    
+    body {
+        background: #1f2937;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: white;
+    }
+    
+    .page-container {
+        background: #374151;
+        border-radius: 20px;
+        border: 1px solid #4b5563;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        padding: 0;
+        overflow: hidden;
+        min-height: calc(100vh - 20px);
+    }
+    
+    .page-header {
+        background: var(--purple-gradient);
+        padding: 20px 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .page-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-top: 8px;
+        font-weight: 400;
+    }
+    
+    .page-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .btn-action {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-action:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .page-content {
+        padding: 30px;
+    }
+    
+    .info-card {
+        background: #4b5563;
+        border-radius: 12px;
+        border: 1px solid #6b7280;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .info-card-title {
+        color: #f9fafb;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-card-title i {
+        color: #8b5cf6;
+    }
+    
+    .info-card-subtitle {
+        color: #d1d5db;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .info-item {
+        background: #374151;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #4b5563;
+    }
+    
+    .info-label {
+        color: #9ca3af;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        color: #f9fafb;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .tipo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-top: 25px;
+    }
+    
+    .tipo-option {
+        background: #1f2937;
+        border-radius: 15px;
+        padding: 30px;
+        border: 2px solid #4b5563;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .tipo-option:hover {
+        border-color: #8b5cf6;
+        background-color: #2d3748;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+    }
+    
+    .tipo-option.selected {
+        border-color: #10b981;
+        background-color: #064e3b;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    .tipo-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+    
+    .tipo-title {
+        color: #d1d5db;
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+    
+    .tipo-description {
+        color: #9ca3af;
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+    
+    .tipo-radio {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .tipo-radio input[type="radio"] {
+        transform: scale(1.3);
+        accent-color: #10b981;
+    }
+    
+    .tipo-radio label {
+        color: #d1d5db;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    
+    .info-adicional {
+        background: #1f2937;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 25px;
+        border-left: 4px solid #8b5cf6;
+    }
+    
+    .info-adicional-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .info-adicional-header i {
+        color: #8b5cf6;
+        font-size: 1.2rem;
+    }
+    
+    .info-adicional-header span {
+        color: #d1d5db;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .info-adicional-text {
+        color: #9ca3af;
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 35px;
+    }
+    
+    .btn-confirm {
+        background: #10b981;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-confirm:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-cancel {
+        background: #6b7280;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-cancel:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-modern {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 15px 30px;
+        background: #374151;
+        border-bottom: 1px solid #4b5563;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-modern a {
+        color: #9ca3af;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-modern a:hover {
+        color: #d1d5db;
+    }
+    
+    .breadcrumb-modern i {
+        font-size: 0.8rem;
+    }
+    
+    .breadcrumb-modern span {
+        color: #d1d5db;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        
+        
+        
+        
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/requisicoes/">
+            <i class="fas fa-clipboard-list"></i>
+            Requisições
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">
+            {{ ordem_compra.codigo }}
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Confirmar Ordem</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-check-circle"></i>
+                    Confirmar Ordem de Compra
+                </h1>
+                <p class="page-subtitle">
+                    {{ ordem_compra.codigo }} - {{ ordem_compra.fornecedor.nome }}
+                </p>
+            </div>
+            <div class="page-actions">
+                <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-action btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Informações da Ordem -->
+        <div class="info-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Informações da Ordem
+            </h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Código da Ordem</div>
+                    <div class="info-value">{{ ordem_compra.codigo }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Fornecedor</div>
+                    <div class="info-value">{{ ordem_compra.fornecedor.nome }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Valor|default:0 total</div>
+                    <div class="info-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total de Itens</div>
+                    <div class="info-value">{{ ordem_compra.itens.count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seleção do Tipo de Recebimento -->
+        <div class="info-card">
+            <h3 class="info-card-title">
+                <i class="fas fa-shipping-fast"></i>
+                Escolha o Tipo de Recebimento
+            </h3>
+            <p class="info-card-subtitle">
+                Defina como a ordem de compra será recebida:
+            </p>
+            
+            <form method="post" class="tipo-recebimento-form"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                
+                <div class="tipo-options">
+                    <!-- Opção COLETAR -->
+                    <div class="tipo-option" onclick="COLETAR')"" tabindex="0">
+                        <i class="fas fa-truck tipo-icon" style="color: #10b981;"></i>
+                        <h4 class="tipo-title">COLETAR</h4>
+                        <p class="tipo-description">
+                            A empresa irá buscar os produtos no fornecedor.<br>
+                            Será criada uma notificação para a logística.
+                        </p>
+                        <div class="tipo-radio">
+                            <input type="radio" name="tipo_recebimento" value="COLETAR" id="coletar">
+                            <label for="coletar">Selecionar Coleta</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Opção FORNECIMENTO -->
+                    <div class="tipo-option" onclick="FORNECIMENTO')"" tabindex="0">
+                        <i class="fas fa-box tipo-icon" style="color: #3b82f6;"></i>
+                        <h4 class="tipo-title">FORNECIMENTO</h4>
+                        <p class="tipo-description">
+                            O fornecedor entregará os produtos na empresa.<br>
+                            Aguardar entrega para receber o stock.
+                        </p>
+                        <div class="tipo-radio">
+                            <input type="radio" name="tipo_recebimento" value="FORNECIMENTO" id="fornecimento">
+                            <label for="fornecimento">Selecionar Fornecimento</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informação adicional -->
+                <div class="info-adicional">
+                    <div class="info-adicional-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Importante</span>
+                    </div>
+                    <p class="info-adicional-text">
+                        Após confirmar o tipo de recebimento, a ordem será aprovada e você poderá receber o stock quando os produtos chegarem.
+                    </p>
+                </div>
+                
+                <!-- Botões de ação -->
+                <div class="form-actions">
+                    <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-cancel btn-responsive btn-responsive">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-confirm" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-check"></i> Confirmar Ordem
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectTipo(tipo) {
+    // Remover seleção anterior
+    document.querySelectorAll('.tipo-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Selecionar nova opção
+    const selectedOption = event.currentTarget;
+    selectedOption.classList.add('selected');
+    
+    // Marcar radio button
+    document.querySelector(`input[value="${tipo}"]`).checked = true;
+}
+
+// Validação do formulário
+document.querySelector('.tipo-recebimento-form').addEventListener('submit', function(e) {
+    const tipoSelecionado = document.querySelector('input[name="tipo_recebimento"]:checked');
+    
+    if (!tipoSelecionado) {
+        e.preventDefault();
+        alert('Por favor, selecione um tipo de recebimento!');
+        return false;
+    }
+    
+    const confirmacao = confirm(`Confirmar ordem para ${tipoSelecionado.value}?`);
+    if (!confirmacao) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Auto-selecionar primeira opção ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    const primeiraOpcao = document.querySelector('.tipo-option');
+    if (primeiraOpcao) {
+        primeiraOpcao.click();
+    }
+});
+</script>
+{% endblock %}

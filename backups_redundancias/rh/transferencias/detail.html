@@ -1,0 +1,187 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Detalhes da Transferência{% endblock %}
+
+{% block header_title %}Detalhes da Transferência{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="detail-container">
+        <!-- Status e Informações Básicas -->
+        <div class="detail-section">
+            <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Status:</strong>
+                    {% if transferencia.status == 'PENDENTE' %}
+                        <span class="badge badge-pendente">{{ transferencia.get_status_display }}</span>
+                    {% elif transferencia.status == 'APROVADO' %}
+                        <span class="badge badge-aprovado">{{ transferencia.get_status_display }}</span>
+                    {% elif transferencia.status == 'REJEITADO' %}
+                        <span class="badge badge-rejeitado">{{ transferencia.get_status_display }}</span>
+                    {% elif transferencia.status == 'IMPLEMENTADO' %}
+                        <span class="badge badge-implementado">{{ transferencia.get_status_display }}</span>
+                    {% elif transferencia.status == 'EFETIVADO' %}
+                        <span class="badge badge-efetivado">{{ transferencia.get_status_display }}</span>
+                    {% else %}
+                        <span class="badge badge-cancelado">{{ transferencia.get_status_display }}</span>
+                    {% endif %}
+                </div>
+                <div class="info-item">
+                    <strong>Data de Solicitação:</strong>
+                    <span>{{ transferencia.data_solicitacao|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Data Efetiva:</strong>
+                    <span>{{ transferencia.data_efetiva|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Criado por:</strong>
+                    <span>{{ transferencia.criado_por.get_full_name|default:transferencia.criado_por.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionário -->
+        <div class="detail-section">
+            <h5><i class="fas fa-user"></i> Funcionário</h5>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Nome:</strong>
+                    <span>{{ transferencia.funcionario.nome_completo }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Código:</strong>
+                    <span>{{ transferencia.funcionario.codigo_funcionario }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Cargo Atual:</strong>
+                    <span>{{ transferencia.funcionario.cargo.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Status:</strong>
+                    <span>{{ transferencia.funcionario.get_status_display }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transferência -->
+        <div class="detail-section">
+            <h5><i class="fas fa-exchange-alt"></i> Transferência</h5>
+            <div class="transfer-flow">
+                <div class="transfer-origin">
+                    <h6><i class="fas fa-map-marker-alt"></i> Origem</h6>
+                    <p><strong>{{ transferencia.sucursal_origem.nome }}</strong></p>
+                    <p>{{ transferencia.departamento_origem.nome }}</p>
+                    <p><small class="text-muted">Cargo: {{ transferencia.funcionario.cargo.nome }}</small></p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="transfer-destination">
+                    <h6><i class="fas fa-flag-checkered"></i> Destino</h6>
+                    <p><strong>{{ transferencia.sucursal_destino.nome }}</strong></p>
+                    <p>{{ transferencia.departamento_destino.nome }}</p>
+                    {% if transferencia.cargo_novo %}
+                        <p class="text-info"><strong>Novo Cargo: {{ transferencia.cargo_novo.nome }}</strong></p>
+                    {% else %}
+                        <p><small class="text-muted">Cargo: {{ transferencia.funcionario.cargo.nome }} (mantido)</small></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Motivo e Observações -->
+        <div class="detail-section">
+            <h5><i class="fas fa-comment"></i> Motivo e Observações</h5>
+            <div class="info-grid">
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <strong>Motivo:</strong>
+                    <span>{{ transferencia.motivo }}</span>
+                </div>
+                {% if transferencia.observacoes %}
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <strong>Observações:</strong>
+                    <span>{{ transferencia.observacoes }}</span>
+                </div>
+                {% endif %}
+                {% if transferencia.motivo_rejeicao %}
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <strong>Motivo da Rejeição:</strong>
+                    <span class="text-danger">{{ transferencia.motivo_rejeicao }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="detail-section">
+            <h5><i class="fas fa-history"></i> Histórico</h5>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h6>Solicitação</h6>
+                    <p>{{ transferencia.data_solicitacao|date:"d/m/Y" }} - {{ transferencia.criado_por.get_full_name|default:transferencia.criado_por.username }}</p>
+                </div>
+                
+                {% if transferencia.data_aprovacao %}
+                <div class="timeline-item">
+                    <h6>Aprovação</h6>
+                    <p>{{ transferencia.data_aprovacao|date:"d/m/Y" }} - {{ transferencia.aprovado_por.get_full_name|default:transferencia.aprovado_por.username }}</p>
+                </div>
+                {% endif %}
+                
+                {% if transferencia.data_implementacao %}
+                <div class="timeline-item">
+                    <h6>Implementação</h6>
+                    <p>{{ transferencia.data_implementacao|date:"d/m/Y" }}</p>
+                </div>
+                {% endif %}
+                
+                {% if transferencia.data_efetivacao %}
+                <div class="timeline-item">
+                    <h6>Efetivação</h6>
+                    <p>{{ transferencia.data_efetivacao|date:"d/m/Y" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="action-buttons">
+            <a href="{% url 'rh:transferencias' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            
+            {% if transferencia.status == 'PENDENTE' %}
+                <a href="{% url 'rh:transferencia_edit' transferencia.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                <a href="{% url 'rh:transferencia_aprovar' transferencia.id %}" class="btn btn-success">
+                    <i class="fas fa-check"></i> Aprovar
+                </a>
+                <a href="{% url 'rh:transferencia_rejeitar' transferencia.id %}" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Rejeitar
+                </a>
+            {% elif transferencia.status == 'APROVADO' %}
+                <a href="{% url 'rh:transferencia_implementar' transferencia.id %}" class="btn btn-info">
+                    <i class="fas fa-cogs"></i> Implementar
+                </a>
+            {% elif transferencia.status == 'IMPLEMENTADO' %}
+                <a href="{% url 'rh:transferencia_efetivar' transferencia.id %}" class="btn btn-primary">
+                    <i class="fas fa-check-circle"></i> Efetivar
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

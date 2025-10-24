@@ -1,0 +1,168 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Excluir Departamento{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'rh:main' %}">RH</a></li>
+            <li class="breadcrumb-item"><a href="">Departamentos</a></li>
+            <li class="breadcrumb-item active">Excluir Departamento</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1>
+                    <i class="fas fa-exclamation-triangle me-2"></i>Excluir Departamento
+                </h1>
+                <p>Confirmar exclusão do departamento</p>
+            </div>
+            <div class="action-btns btn-responsive">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Tem certeza que deseja excluir este departamento?
+            </div>
+
+            <div class="data-grid">
+                <div class="data-label">Nome:</div>
+                <div class="data-value">{{ departamento.nome }}</div>
+                
+                <div class="data-label">Código:</div>
+                <div class="data-value">{{ departamento.codigo|default:"-" }}</div>
+                
+                <div class="data-label">Tipo:</div>
+                <div class="data-value">{{ departamento.get_tipo_display }}</div>
+                
+                <div class="data-label">Status:</div>
+                <div class="data-value">
+                    {% if departamento.ativo %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                </div>
+                
+                {% if departamento.descricao %}
+                <div class="data-label">Descrição:</div>
+                <div class="data-value">{{ departamento.descricao }}</div>
+                {% endif %}
+            </div>
+
+            {% if funcionarios_vinculados or cargos_vinculados %}
+            <div class="alert alert-info mt-3">
+                <h6><i class="fas fa-exchange-alt me-2"></i>Dados Vinculados Encontrados</h6>
+                <p>Este departamento possui dados vinculados que serão migrados automaticamente:</p>
+                
+                {% if funcionarios_vinculados %}
+                <div class="migration-section">
+                    <h6><i class="fas fa-users me-2"></i>Funcionários ({{ funcionarios_vinculados.count }})</h6>
+                    <ul class="migration-list">
+                        {% for funcionario in funcionarios_vinculados %}
+                        <li><i class="fas fa-user me-1"></i>{{ funcionario.nome_completo }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if cargos_vinculados %}
+                <div class="migration-section">
+                    <h6><i class="fas fa-briefcase me-2"></i>Cargos ({{ cargos_vinculados.count }})</h6>
+                    <ul class="migration-list">
+                        {% for cargo in cargos_vinculados %}
+                        <li><i class="fas fa-briefcase me-1"></i>{{ cargo.nome }} ({{ cargo.codigo_cargo }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="migration-form mt-3">
+                    <h6><i class="fas fa-arrow-right me-2"></i>Selecionar Departamento de Destino</h6>
+                    <p>Escolha para qual departamento os dados serão migrados:</p>
+                    <div class="form-group">
+                        <label for="departamento_destino">Departamento de Destino *</label>
+                        <select id="departamento_destino" name="departamento_destino" required class="form-control">
+                            <option value="">Selecione um departamento...</option>
+                            {% regroup departamentos_disponiveis by sucursal as sucursais_grouped %}
+                            {% for sucursal in sucursais_grouped %}
+                                <optgroup label="🏢 {{ sucursal.grouper.nome }}">
+                                    {% for dept in sucursal.list %}
+                                        <option value="{{ dept.id }}">
+                                            {{ dept.nome }} ({{ dept.codigo }})
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer">
+            {% if funcionarios_vinculados or cargos_vinculados %}
+            <form method="post" style="display: inline;" id="migration-form"action="."method="post">{% csrf_token %}
+                {% csrf_token %}
+                <button type="submit" class="btn btn btn-warning" onclick=" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-exchange-alt me-1"></i>Excluir e Migrar Dados
+                </button>
+            </form>
+            {% else %}
+            
+            {% endif %}
+            <a href="#"rh:departamentos' %}" class="btn btn-outline btn-responsive btn-responsive">
+                <i class="fas fa-times me-1"></i>Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if funcionarios_vinculados or cargos_vinculados %}
+<script>
+function validateMigration() {
+    const select = document.getElementById('departamento_destino');
+    if (!select.value) {
+        alert('Por favor, selecione um departamento de destino para migrar os dados.');
+        select.focus();
+        return false;
+    }
+    
+    const confirmMsg = `Tem certeza que deseja excluir este departamento e migrar todos os dados vinculados para "${select.options[select.selectedIndex].text}"?`;
+    return confirm(confirmMsg);
+}
+</script>
+{% endif %}
+{% endblock %}

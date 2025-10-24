@@ -1,304 +1,12 @@
 {% extends "base_admin.html" %}
-{% load static %}
+
 
 {% block title %}
     {% if treinamento %}Editar Treinamento{% else %}Adicionar Treinamento{% endif %}
 {% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Form Container */
-    .form-container {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid var(--border-color);
-        margin-top: 20px;
-    }
 
-    /* Form Grid */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 25px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-bottom: 8px;
-    }
-
-    .form-group.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .form-group label {
-        font-weight: 500;
-        color: var(--text-color);
-        font-size: 12px;
-        line-height: 1.2;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        padding: 8px 12px;
-        height: 36px;
-        line-height: 20px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 13px;
-        background-color: var(--bg-input);
-        color: var(--text-color);
-        transition: all 0.2s ease;
-        width: 100%;
-        box-sizing: border-box;
-        font-family: inherit;
-    }
-
-    .form-group textarea {
-        height: auto;
-        min-height: 80px;
-        resize: vertical;
-    }
-
-    .form-group select {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        background-size: 16px;
-        padding-right: 32px;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(65, 118, 144, 0.15);
-    }
-
-    .help-text {
-        font-size: 11px;
-        color: var(--text-muted);
-        margin-top: 2px;
-        line-height: 1.3;
-    }
-
-    .form-check {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 8px;
-        padding: 12px 16px;
-        background: var(--bg-secondary);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .form-check:hover {
-        background: var(--bg-hover);
-        border-color: var(--primary-color);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-check input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        margin: 0;
-        cursor: pointer;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background: var(--bg-input);
-        border: 2px solid var(--border-color);
-        border-radius: 4px;
-        position: relative;
-        transition: all 0.3s ease;
-    }
-
-    .form-check input[type="checkbox"]:checked {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(65, 118, 144, 0.2);
-    }
-
-    .form-check input[type="checkbox"]:checked::after {
-        content: '✓';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 14px;
-        font-weight: bold;
-        line-height: 1;
-    }
-
-    .form-check label {
-        font-size: 13px;
-        color: var(--text-color);
-        cursor: pointer;
-        margin: 0;
-        font-weight: 600;
-        flex: 1;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .btn {
-        padding: 8px 16px;
-        height: 36px;
-        font-size: 12px;
-        font-weight: 500;
-        border-radius: 6px;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        box-sizing: border-box;
-    }
-
-    .btn-primary {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-
-    .btn-primary:hover {
-        background: var(--primary-hover);
-        border-color: var(--primary-hover);
-    }
-
-    .btn-secondary {
-        background: transparent;
-        color: var(--text-color);
-        border-color: var(--border-color);
-    }
-
-    .btn-secondary:hover {
-        background: var(--bg-hover);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .alert {
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-size: 13px;
-        border: 1px solid transparent;
-    }
-
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border-color: #c3e6cb;
-    }
-
-    .alert-error {
-        background: #f8d7da;
-        color: #721c24;
-        border-color: #f5c6cb;
-    }
-
-    .alert-info {
-        background: #d1ecf1;
-        color: #0c5460;
-        border-color: #bee5eb;
-    }
-
-    /* Cost calculation */
-    .cost-calculation {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .cost-calculation h4 {
-        margin: 0 0 15px 0;
-        color: var(--text-color);
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .cost-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 13px;
-    }
-
-    .cost-item:last-child {
-        border-bottom: none;
-    }
-
-    .cost-total {
-        font-weight: 600;
-        color: var(--primary-color);
-        background: var(--bg-hover);
-        padding: 12px;
-        border-radius: 6px;
-        margin-top: 10px;
-    }
-
-    /* Dark mode adjustments */
-    @media (prefers-color-scheme: dark) {
-        .form-container {
-            background: var(--card-bg);
-            border-color: var(--border-color);
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            background-color: var(--bg-input);
-            border-color: var(--border-color);
-            color: var(--text-color);
-        }
-        
-        .alert-success {
-            background: rgba(21, 87, 36, 0.3);
-            color: #90ee90;
-            border-color: rgba(21, 87, 36, 0.5);
-        }
-        
-        .alert-error {
-            background: rgba(114, 28, 36, 0.3);
-            color: #ffb3b3;
-            border-color: rgba(114, 28, 36, 0.5);
-        }
-        
-        .alert-info {
-            background: rgba(12, 84, 96, 0.3);
-            color: #87ceeb;
-            border-color: rgba(12, 84, 96, 0.5);
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -312,31 +20,18 @@
         <i class="fas fa-chevron-right"></i>
         <a href="/rh/">RH</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'rh:treinamentos' %}">Treinamentos</a>
+        <a href="">Treinamentos</a>
         <i class="fas fa-chevron-right"></i>
         <span>{% if treinamento %}Editar{% else %}Adicionar{% endif %}</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-graduation-cap"></i>
-                    {% if treinamento %}Editar Treinamento{% else %}Adicionar Treinamento{% endif %}
-                </h1>
-                <p class="page-subtitle">
-                    {% if treinamento %}Modifique as informações do treinamento{% else %}Crie um novo treinamento{% endif %}
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'rh:treinamentos' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar aos Treinamentos
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="{% if treinamento %}Editar Treinamento{% else %}Adicionar Treinamento{% endif %}"
+    subtitle="{% if treinamento %}Modifique as informações do treinamento{% else %}Crie um novo treinamento{% endif %}"
+    icon="fas fa-graduation-cap"
+%}    </div>
 
     <!-- Mensagens -->
     {% if messages %}
@@ -347,7 +42,7 @@
         {% endfor %}
     {% endif %}
 
-    <form method="post" class="form-container">
+    <form method="post" class="form-container"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
         {% csrf_token %}
         
         <!-- Seção 1: Informações Básicas -->
@@ -409,7 +104,7 @@
             <div class="form-group">
                 <label for="carga_horaria">Carga Horária (horas)</label>
                 <input type="number" id="carga_horaria" name="carga_horaria" value="{{ treinamento.carga_horaria|default:0 }}" min="0">
-                <div class="help-text">Duração total em horas</div>
+                <div class="help-text">Duração|default:0 total em horas</div>
             </div>
         </div>
 
@@ -488,9 +183,9 @@
             </div>
             
             <div class="form-group">
-                <label for="custo_total">Custo Total (MT)</label>
+                <label for="custo_total">Custo|default:0 total (MT)</label>
                 <input type="number" id="custo_total" name="custo_total" value="{{ treinamento.custo_total|default:0 }}" step="0.01" min="0">
-                <div class="help-text">Custo total do treinamento</div>
+                <div class="help-text">Custo|default:0 total do treinamento</div>
             </div>
         </div>
         
@@ -506,7 +201,7 @@
                 <span id="max-capacity">0</span>
             </div>
             <div class="cost-item cost-total">
-                <span>Custo total estimado:</span>
+                <span>Custo|default:0 total estimado:</span>
                 <span id="estimated-total">0,00 MT</span>
             </div>
         </div>
@@ -570,11 +265,11 @@
 
         <!-- Ações -->
         <div class="form-actions">
-            <a href="{% url 'rh:treinamentos' %}" class="btn btn-secondary">
+            <a href="#"rh:treinamentos' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-times"></i>
                 Cancelar
             </a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                 <i class="fas fa-save"></i>
                 {% if treinamento %}Atualizar Treinamento{% else %}Criar Treinamento{% endif %}
             </button>
@@ -601,7 +296,7 @@ function updateCostCalculation() {
         maximumFractionDigits: 2
     }) + ' MT';
     
-    // Atualizar campo de custo total
+    // Atualizar campo de custo|default:0 total
     document.getElementById('custo_total').value = custoTotal;
     
     // Mostrar/ocultar cálculo

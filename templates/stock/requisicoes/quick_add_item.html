@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
-{% block title %}Adicionar Item Rapidamente - {{ requisicao.codigo }}{% endblock %}
+{% block title %}Adicionar|default:0 items Rapidamente - {{ requisicao.codigo }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -20,10 +12,10 @@
     <!-- Header -->
     <div class="hero-section">
         <h1 class="hero-title">
-            <i class="fas fa-plus-circle"></i> Adicionar Item Rapidamente
+            <i class="fas fa-plus-circle"></i> Adicionar|default:0 items Rapidamente
         </h1>
         <div class="hero-actions">
-            <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-modern btn-secondary-modern">
+            <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                 <i class="fas fa-arrow-left"></i>Voltar
             </a>
         </div>
@@ -32,7 +24,7 @@
     <!-- Content -->
     <div class="content-area">
         <div class="form-container">
-            <!-- Informações do Item -->
+            <!-- Informações do|default:0 items -->
             <div class="item-info">
                 <h4><i class="fas fa-box"></i> Item Selecionado</h4>
                 <div class="item-details">
@@ -65,7 +57,7 @@
                 {% if stock_disponivel == 0 %}
                 <div class="stock-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Este item não está disponível na sucursal {{ requisicao.sucursal_destino.nome }}!
+                    Este|default:0 items não está disponível na sucursal {{ requisicao.sucursal_destino.nome }}!
                 </div>
                 {% elif stock_disponivel < 10 %}
                 <div class="stock-warning">
@@ -76,7 +68,7 @@
             </div>
 
             <!-- Formulário -->
-            <form method="post">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 <input type="hidden" name="item" value="{{ item.id }}">
                 
@@ -129,15 +121,15 @@
                         <i class="fas fa-comment"></i> Observações
                     </label>
                     <textarea name="observacoes" id="observacoes" class="form-control-modern form-textarea" 
-                              placeholder="Observações sobre este item (opcional)"></textarea>
-                    <div class="form-help">Informações adicionais sobre este item</div>
+                              placeholder="Observações sobre este|default:0 items (opcional)"></textarea>
+                    <div class="form-help">Informações adicionais sobre este|default:0 items</div>
                 </div>
 
                 <div class="form-actions">
-                    <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn-form btn-cancel">
+                    <a href="#"stock:requisicoes:detail' requisicao.id %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn-form btn-submit" {% if stock_disponivel == 0 %}disabled{% endif %}>
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-plus"></i>Adicionar à Requisição
                     </button>
                 </div>
@@ -171,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const stockDisponivel = {{ stock_disponivel }};
         
         if (stockDisponivel === 0) {
-            alert('Este item não está disponível na sucursal de destino!');
+            alert('Este|default:0 items não está disponível na sucursal de destino!');
             e.preventDefault();
             return false;
         }

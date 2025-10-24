@@ -1,0 +1,93 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Tipos de Presença{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tipos-container">
+    <div class="nav-top">
+        <div class="nav-title">
+            <a href="#"rh:presencas' %}" class="back-btn btn-responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Presenças
+            </a>
+            <h1>Tipos de Presença</h1>
+        </div>
+        <a href="#"rh:tipo_presenca_add' %}" class="add-btn btn-responsive">
+            <i class="fas fa-plus"></i>
+            Novo Tipo
+        </a>
+    </div>
+
+    <div class="tipos-list">
+        {% if tipos %}
+        <table class="tipos-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Cor</th>
+                    <th>Desconta Salário</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in tipos %}
+                <tr>
+                    <td>
+                        <strong>{{ tipo.nome }}</strong>
+                        {% if tipo.descricao %}
+                        <br><small style="color: #718096;">{{ tipo.descricao|truncatechars:50 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ tipo.codigo }}</td>
+                    <td>
+                        <span class="tipo-badge" style="background-color: {{ tipo.cor }};">
+                            {{ tipo.cor }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ tipo.desconta_salario|yesno:'true,false' }}">
+                            {{ tipo.desconta_salario|yesno:"Sim,Não" }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ tipo.ativo|yesno:'true,false' }}">
+                            {{ tipo.ativo|yesno:"Ativo,Inativo" }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="#"rh:tipo_presenca_edit' tipo.id %}" class="action-button edit-btn btn-responsive" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#"rh:tipo_presenca_delete' tipo.id %}" class="action-button delete-btn btn-responsive" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-cog"></i>
+            <h3>Nenhum tipo de presença cadastrado</h3>
+            <p>Adicione o primeiro tipo de presença para começar.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

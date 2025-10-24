@@ -1,0 +1,315 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Adicionar Critério{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/avaliacoes/">Avaliações</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/criterios/">Critérios</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if is_edit %}Editar{% else %}Adicionar{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-{% if is_edit %}edit{% else %}plus-circle{% endif %}"></i>
+                    {% if is_edit %}Editar{% else %}Adicionar{% endif %} Critério de Avaliação
+                </h1>
+                <p class="page-subtitle">
+                    {% if is_edit %}
+                        Edite as informações do critério de avaliação
+                    {% else %}
+                        Crie um novo critério para ser utilizado nas avaliações de desempenho
+                    {% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="form-container">
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome" class="form-label">
+                    Nome do Critério <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       id="nome" 
+                       name="nome" 
+                       class="form-control" 
+                       placeholder="Ex: Comunicação, Liderança, Produtividade..."
+                       value="{% if criterio %}{{ criterio.nome }}{% endif %}"
+                       required>
+                <div class="help-text">
+                    Nome descritivo do critério de avaliação
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao" class="form-label">
+                    Descrição
+                </label>
+                <textarea id="descricao" 
+                          name="descricao" 
+                          class="form-control" 
+                          rows="4"
+                          placeholder="Descreva o que será avaliado neste critério...">{% if criterio %}{{ criterio.descricao }}{% endif %}</textarea>
+                <div class="help-text">
+                    Descrição detalhada do que será avaliado neste critério
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="peso" class="form-label">
+                    Peso <span class="required">*</span>
+                </label>
+                <input type="number" 
+                       id="peso" 
+                       name="peso" 
+                       class="form-control" 
+                       step="0.01" 
+                       min="0.01" 
+                       max="10.00" 
+                       value="{% if criterio %}{{ criterio.peso }}{% else %}1.00{% endif %}"
+                       placeholder="1.00"
+                       required>
+                <div class="help-text">
+                    Peso do critério na avaliação (1.00 = peso padrão, valores maiores = mais importante)
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" 
+                           id="ativo" 
+                           name="ativo" 
+                           class="form-check-input" 
+                           {% if not criterio or criterio.ativo %}checked{% endif %}>
+                    <label for="ativo" class="form-check-label">
+                        Critério ativo
+                    </label>
+                </div>
+                <div class="help-text">
+                    Critérios ativos aparecem nas opções de avaliação
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="#"rh:criterios' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    {% if is_edit %}Atualizar{% else %}Salvar{% endif %} Critério
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação do formulário
+    const form = document.querySelector('form');
+    const nomeInput = document.getElementById('nome');
+    const pesoInput = document.getElementById('peso');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Limpar erros anteriores
+        document.querySelectorAll('.form-error').forEach(error => error.remove());
+        
+        // Validar nome
+        if (!nomeInput.value.trim()) {
+            showError(nomeInput, 'Nome do critério é obrigatório');
+            isValid = false;
+        }
+        
+        // Validar peso
+        const peso = parseFloat(pesoInput.value);
+        if (isNaN(peso) || peso <= 0) {
+            showError(pesoInput, 'Peso deve ser um número maior que zero');
+            isValid = false;
+        } else if (peso > 10) {
+            showError(pesoInput, 'Peso não pode ser maior que 10');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    function showError(input, message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'form-error';
+        errorDiv.textContent = message;
+        input.parentNode.appendChild(errorDiv);
+        input.style.borderColor = '#dc2626';
+    }
+    
+    // Limpar erro quando o usuário digitar
+    [nomeInput, pesoInput].forEach(input => {
+        input.addEventListener('input', function() {
+            this.style.borderColor = '#d1d5db';
+            const error = this.parentNode.querySelector('.form-error');
+            if (error) {
+                error.remove();
+            }
+        });
+    });
+});
+</script>
+
+<style>
+/* Estilos específicos para formulário de critérios */
+.form-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.form-control {
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-input);
+    color: var(--text-color);
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.required {
+    color: var(--accent-danger);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-primary);
+}
+
+.form-check-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+    background: var(--surface-medium);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-light);
+    transform: translateY(-2px);
+}
+
+.form-error {
+    color: var(--accent-danger);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    
+}
+</style>
+
+{% endblock %}

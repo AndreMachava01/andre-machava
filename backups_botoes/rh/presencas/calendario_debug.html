@@ -1,0 +1,106 @@
+
+
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Calendário de Presenças - Debug{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="calendario-container">
+    <h1>Calendário de Presenças - Debug</h1>
+    
+    <div class="debug-info">
+        <h3>Informações de Debug:</h3>
+        <p><strong>Mês:</strong> {{ mes }}</p>
+        <p><strong>Ano:</strong> {{ ano }}</p>
+        <p><strong>Funcionários:</strong> {{ funcionarios|length }}</p>
+        <p><strong>Dias detalhados:</strong> {{ dias_detalhados|length }}</p>
+        <p><strong>Presenças dict:</strong> {{ presencas_dict|length }} caracteres</p>
+    </div>
+    
+    <table class="calendario-table">
+        <thead>
+            <tr>
+                <th>Funcionário</th>
+                {% for dia in dias_detalhados %}
+                <th>{{ dia.dia }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for funcionario in funcionarios_exibir %}
+            <tr>
+                <td>{{ funcionario.nome_completo }}</td>
+                {% for dia in dias_detalhados %}
+                <td>
+                    <div class="presenca-indicator vazio" 
+                         data-funcionario="{{ funcionario.id }}" 
+                         data-dia="{{ dia.dia }}"
+                         data-mes="{{ mes }}"
+                         data-ano="{{ ano }}"
+                         onclick="0"" tabindex="0"" tabindex="0"" tabindex="0"" tabindex="0">
+                    </div>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+console.log('Script carregado - Debug');
+
+// Dados das presenças
+const presencasData = {{ presencas_dict }};
+console.log('Dados de presenças:', presencasData);
+
+let contador = 0;
+
+function testarClique(elemento) {
+    contador++;
+    console.log(`Clique ${contador} detectado!`, elemento);
+    
+    const funcionarioId = elemento.dataset.funcionario;
+    const dia = elemento.dataset.dia;
+    const mes = elemento.dataset.mes;
+    const ano = elemento.dataset.ano;
+    
+    console.log('Dados:', { funcionarioId, dia, mes, ano });
+    
+    // Alternar entre vazio e presente
+    if (elemento.classList.contains('vazio')) {
+        elemento.className = 'presenca-indicator presente';
+        elemento.textContent = 'PR';
+        elemento.dataset.tipoAtual = 'PR';
+        elemento.title = 'Presente';
+    } else if (elemento.classList.contains('presente')) {
+        elemento.className = 'presenca-indicator ausente';
+        elemento.textContent = 'AU';
+        elemento.dataset.tipoAtual = 'AU';
+        elemento.title = 'Ausente';
+    } else {
+        elemento.className = 'presenca-indicator vazio';
+        elemento.textContent = '';
+        elemento.dataset.tipoAtual = '';
+        elemento.title = '';
+    }
+    
+    console.log('Elemento atualizado:', elemento);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado - Debug');
+    const indicadores = document.querySelectorAll('.presenca-indicator');
+    console.log(`Encontrados ${indicadores.length} indicadores de presença`);
+});
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,168 @@
+{% extends "base_list.html" %}
+
+{% block title %}Provas de Entrega{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Provas de Entrega</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Provas de Entrega"
+    subtitle="Gerenciamento de Provas de Entrega (POD)"
+    icon="fas fa-file-signature"
+%}    </div>
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+    </div>
+
+    <!-- Lista de Provas -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list"></i>
+                Lista de Provas de Entrega
+            </h3>
+            <div class="card-actions">
+                <span class="badge badge-info">{{ page_obj|length }} provas encontradas</span>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Código POD</th>
+                                <th>Rastreamento</th>
+                                <th>Destinatário</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Data Entrega</th>
+                                <th>Validada</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prova in page_obj %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-secondary">{{ prova.codigo }}</span>
+                                </td>
+                                <td>
+                                    {% if prova.rastreamento_entrega %}
+                                        <a href="{% url 'stock:logistica:rastreamento_detail' prova.rastreamento_entrega.id %}">
+                                            #{{ prova.rastreamento_entrega.id }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ prova.nome_destinatario|truncatechars:30 }}</td>
+                                <td>
+                                    <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
+                                        {{ prova.get_tipo_entrega_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
+                                        {{ prova.status }}
+                                    </span>
+                                </td>
+                                <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if prova.validada %}
+                                        <i class="fas fa-check text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-clock text-warning"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                                        <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if not prova.validada %}
+                                            <a href="#"stock:pod:validar_prova' prova.id %}" class="btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                {% if is_paginated %}
+                    <nav class="pagination-nav">
+                        <div class="pagination-info">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </div>
+                        <div class="pagination-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                            {% if page_obj.has_previous %}
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                    <i class="fas fa-angle-left"></i>
+                                </button>
+                            {% endif %}
+
+                            {% if page_obj.has_next %}
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">button class="btn btn-outline-secondary btn-sm" disabled class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-file-signature fa-4x mb-4"></i>
+                    <h4>Nenhuma prova encontrada</h4>
+                    <p>Não há provas de entrega que correspondam aos filtros selecionados.</p>
+                    <a href="#"stock:pod:prova_create' %}" class="btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-plus"></i>
+                        Criar Nova POD
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -300,8 +300,8 @@ class RotaMotorista(models.Model):
         return f"{self.codigo} - {self.nome_rota}"
 
 
-class ParadaRota(models.Model):
-    """Paradas individuais em uma rota."""
+class ParadaRotaMobile(models.Model):
+    """Paradas individuais em uma rota mobile."""
     
     STATUS_CHOICES = [
         ('PENDENTE', 'Pendente'),
@@ -346,8 +346,8 @@ class ParadaRota(models.Model):
     problema_relatado = models.TextField(blank=True)
     
     class Meta:
-        verbose_name = "Parada Rota"
-        verbose_name_plural = "Paradas Rota"
+        verbose_name = "Parada Rota Mobile"
+        verbose_name_plural = "Paradas Rota Mobile"
         ordering = ['rota_motorista', 'ordem_parada']
         unique_together = ['rota_motorista', 'ordem_parada']
         indexes = [

@@ -1,0 +1,214 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Nova Transferência{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-plus"></i>Nova Transferência
+            </h1>
+            <div class="hero-actions">
+                <a href="#" class="btn-modern btn btn btn btn btn btn btn-primary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-card">
+                <h3 class="form-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    Dados da Transferência
+                </h3>
+
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #fca5a5;">
+                                <i class="fas fa-exclamation-circle"></i> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Após criar a transferência, você poderá adicionar os produtos/materiais a serem transferidos.</span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="sucursal_origem" class="form-label">
+                                    Sucursal de Origem {% if not is_admin %}<span class="required">*</span>{% endif %}
+                                </label>
+                                {% if is_admin %}
+                                    <select class="form-control-modern" id="sucursal_origem" name="sucursal_origem" required>
+                                        <option value="">Selecione a sucursal de origem</option>
+                                        {% for sucursal in sucursais_origem %}
+                                            <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Escolha a sucursal de origem da transferência</div>
+                                {% else %}
+                                    <input type="text" class="form-control-modern" 
+                                           value="{{ sucursal_origem_default.nome }}" 
+                                           readonly>
+                                    <div class="form-text">Sua sucursal atual</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="sucursal_destino" class="form-label">
+                                    Sucursal de Destino <span class="required">*</span>
+                                </label>
+                                <select class="form-control-modern" id="sucursal_destino" name="sucursal_destino" required>
+                                    <option value="">Selecione a sucursal de destino</option>
+                                    {% for sucursal in sucursais_destino %}
+                                        <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Escolha a sucursal de destino da transferência</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control-modern" id="observacoes" name="observacoes" 
+                                  rows="3" placeholder="Observações sobre a transferência (opcional)"></textarea>
+                        <div class="form-text">Informações adicionais sobre esta transferência</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="#"stock:transferencias:list' %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                            <i class="fas fa-times"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-save"></i>Criar Transferência
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-card">
+                <h3 class="info-title">
+                    <i class="fas fa-info-circle"></i>
+                    Como Funciona
+                </h3>
+                
+                <div class="info-step">
+                    <div class="step-title">
+                        <span class="step-number">1</span>
+                        Criar Transferência
+                    </div>
+                    <div class="step-description">
+                        Defina a sucursal de destino e observações iniciais.
+                    </div>
+                </div>
+                
+                <div class="info-step">
+                    <div class="step-title">
+                        <span class="step-number">2</span>
+                        Adicionar Itens
+                    </div>
+                    <div class="step-description">
+                        Adicione os produtos/materiais e quantidades a serem transferidos.
+                    </div>
+                </div>
+                
+                <div class="info-step">
+                    <div class="step-title">
+                        <span class="step-number">3</span>
+                        Confirmar Envio
+                    </div>
+                    <div class="step-description">
+                        Confirme o envio da transferência para a sucursal de destino.
+                    </div>
+                </div>
+                
+                <div class="info-step">
+                    <div class="step-title">
+                        <span class="step-number">4</span>
+                        Recebimento
+                    </div>
+                    <div class="step-description">
+                        A sucursal de destino recebe e confirma os itens transferidos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DEBUG TRANSFERENCIA CREATE FORM ===');
+    
+    const form = document.querySelector('form');
+    console.log('Form encontrado:', form);
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('=== FORMULÁRIO SENDO SUBMETIDO ===');
+            console.log('Evento:', e);
+            console.log('Target:', e.target);
+            
+            // Verificar se os campos estão preenchidos
+            const sucursalDestino = document.getElementById('sucursal_destino');
+            const sucursalOrigem = document.getElementById('sucursal_origem');
+            
+            console.log('Sucursal destino element:', sucursalDestino);
+            console.log('Sucursal destino value:', sucursalDestino ? sucursalDestino.value : 'não encontrado');
+            console.log('Sucursal origem element:', sucursalOrigem);
+            console.log('Sucursal origem value:', sucursalOrigem ? sucursalOrigem.value : 'não encontrado');
+            
+            // Verificar todos os campos do formulário
+            const formData = new FormData(form);
+            console.log('FormData|default:0 entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: ${value}`);
+            }
+            
+            if (sucursalDestino && !sucursalDestino.value) {
+                console.log('ERRO: Sucursal de destino não selecionada');
+                alert('Por favor, selecione a sucursal de destino');
+                e.preventDefault();
+                return false;
+            }
+            
+            console.log('Formulário OK, submetendo...');
+            console.log('Não prevenindo o submit - deixando o Django processar');
+        });
+        
+        // Também adicionar listener no botão
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            console.log('Botão submit encontrado:', submitBtn);
+            submitBtn.addEventListener('click', function(e) {
+                console.log('=== BOTÃO SUBMIT CLICADO ===');
+                console.log('Evento:', e);
+                console.log('Target:', e.target);
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

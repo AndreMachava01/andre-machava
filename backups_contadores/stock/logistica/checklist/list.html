@@ -1,0 +1,116 @@
+{% extends 'base_list.html' %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Checklists de Viaturas" entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Checklists de Viaturas{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+
+    <!-- Content -->
+    <div class="content-section">
+
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ page_obj.paginator.count|default:"0" }}</div>
+                <div class="stat-label">Total de Checklists</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ page_obj|length }}</div>
+                <div class="stat-label">Nesta Página</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ page_obj.paginator.num_pages|default:"1" }}</div>
+                <div class="stat-label">Páginas</div>
+            </div>
+        </div>
+
+        <!-- Lista de Checklists -->
+        {% if page_obj %}
+        <div class="checklist-grid">
+            {% for checklist in page_obj %}
+            <div class="checklist-card">
+                <span class="status-badge status-{{ checklist.status_final|lower }}">
+                    {{ checklist.get_status_final_display }}
+                </span>
+
+                    <div class="checklist-type">{{ checklist.get_tipo_display }}</div>
+                </div>
+                
+                <div class="checklist-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Veículo:</span>
+                        <span class="detail-value">{{ checklist.veiculo.nome }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Inspetor:</span>
+                        <span class="detail-value">{{ checklist.inspetor.get_full_name|default:checklist.inspetor.username }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Data:</span>
+                        <span class="detail-value">{{ checklist.data_inspecao|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Quilometragem:</span>
+                        <span class="detail-value">{{ checklist.quilometragem|floatformat:0 }} km</span>
+                    </div>
+                </div>
+                
+                <div class="pontuacao-section">
+                    <div class="pontuacao-valor">{{ checklist.get_pontuacao_total }}%</div>
+                    <div class="pontuacao-label">Pontuação</div>
+                </div>
+                
+                <div class="checklist-actions">
+                    <a href="{% url 'stock:logistica:checklist_detail' checklist.id %}" class="btn-action btn-detail">
+                        <i class="fas fa-eye"></i>Ver
+                    </a>
+                    <a href="{% url 'stock:logistica:checklist_print' checklist.id %}" class="btn-action btn-print" target="_blank">
+                        <i class="fas fa-print"></i>Imprimir
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Estado vazio -->
+        <div class="empty-state">
+            <i class="fas fa-clipboard-check"></i>
+            <h3>Nenhum checklist encontrado</h3>
+            <p>Não há checklists de viaturas que correspondam aos filtros selecionados.</p>
+            <a href="{% url 'stock:logistica:checklist_create' %}" class="btn-create">
+                <i class="fas fa-plus"></i>Criar Primeiro Checklist
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Animate cards on load
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.checklist-card, .stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

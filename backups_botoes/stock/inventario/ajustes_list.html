@@ -1,0 +1,155 @@
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Ajustes de Inventário" entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Ajustes de Inventário{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        
+        <p class="hero-subtitle">
+            Gestão de ajustes de stock baseados em inventários físicos
+        </p>
+        <div class="hero-actions">
+            <a href="#" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-clipboard-check"></i>
+                Ver Inventários
+            </a>
+            <a href="#"stock:dashboard' %}" class="btn-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_ajustes }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ajustes_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ ajustes_aprovados }}</div>
+            <div class="stat-label">Aprovados</div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if ajustes %}
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Item</th>
+                            <th>Sucursal</th>
+                            <th>Tipo</th>
+                            <th>Diferença</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ajuste in ajustes %}
+                        <tr>
+                            <td>
+                                <strong>{{ ajuste.codigo }}</strong>
+                            </td>
+                            <td>{{ ajuste.item.nome }}</td>
+                            <td>{{ ajuste.sucursal.nome }}</td>
+                            <td>{{ ajuste.get_tipo_ajuste_display }}</td>
+                            <td>
+                                <span style="color: {% if ajuste.diferenca > 0 %}#10b981{% elif ajuste.diferenca < 0 %}#ef4444{% else %}#6b7280{% endif %}; font-weight: 600;">
+                                    {{ ajuste.diferenca|add:0|floatformat:0 }}{% if ajuste.diferenca > 0 %}+{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ajuste.aprovado %}
+                                    <span class="status-badge status-aprovado">Aprovado</span>
+                                {% else %}
+                                    <span class="status-badge status-pendente">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ajuste.data_ajuste|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                                    {% if not ajuste.aprovado %}
+                                    <form method="post" action="{% url 'stock:inventario:ajuste_aprovar' ajuste.id %}" style="display: inline;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                                        {% csrf_token %}
+                                        <button type="button" class="btn-action btn-approve" title="Aprovar ajuste" onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <span class="btn-action btn-view btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes" onclick=" tabindex="0" role="button"" tabindex="0" role="button"" tabindex="0" role="button"" tabindex="0" role="button"" tabindex="0" role="button"" tabindex="0">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if ajustes.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                <div style="display: inline-flex; gap: 10px; align-items: center;">
+                    {% if ajustes.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ ajustes.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span style="padding: 8px 12px; background: #374151; color: #d1d5db; border-radius: 6px;">
+                        Página {{ ajustes.number }} de {{ ajustes.paginator.num_pages }}
+                    </span>
+                    
+                    {% if ajustes.has_next %}
+                        <a href="?page={{ ajustes.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ ajustes.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if tipo_ajuste %}&tipo_ajuste={{ tipo_ajuste }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}{% if aprovado %}&aprovado={{ aprovado }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}" 
+                           style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-adjust"></i>
+                <h3>Nenhum ajuste encontrado</h3>
+                <p>Não há ajustes de inventário que correspondam aos filtros aplicados.</p>
+                <a href="{% url "stock:inventario:list" %}">Ver inventários</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

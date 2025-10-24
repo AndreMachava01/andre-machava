@@ -1,0 +1,117 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Concluir Operação{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:main" %}">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:operacoes_list" %}">
+            <i class="fas fa-tasks"></i>
+            Operações
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Concluir Operação</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Concluir Operação"
+    subtitle="{{ notificacao.get_tipo_operacao_display }} - {{ notificacao.codigo_operacao }}"
+    icon="fas fa-check-double"
+%}    </div>
+
+    <!-- Confirmação -->
+    <div class="confirmation-card">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3><i class="fas fa-truck"></i> Confirmar Conclusão da Operação</h3>
+        <div class="confirmation-text">
+            Tem certeza que deseja marcar esta operação como concluída?<br>
+            Esta ação não pode ser desfeita.
+        </div>
+        
+        <!-- Informações da Operação -->
+        <div class="operation-info">
+            <h4><i class="fas fa-info-circle"></i> Detalhes da Operação</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Tipo</div>
+                    <div class="info-value">
+                        <span class="badge badge-primary">
+                            <i class="{{ notificacao.get_tipo_operacao_icon }}"></i>
+                            {{ notificacao.get_tipo_operacao_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Código</div>
+                    <div class="info-value">{{ notificacao.codigo_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Origem</div>
+                    <div class="info-value">{{ notificacao.origem_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Destino</div>
+                    <div class="info-value">{{ notificacao.destino_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Transporte</div>
+                    <div class="info-value">
+                        {% if notificacao.transporte_escolhido %}
+                            {{ notificacao.transporte_escolhido.nome }}
+                        {% else %}
+                            Não atribuído
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Valor</div>
+                    <div class="info-value">{{ notificacao.valor_operacao|floatformat:2 }} MT</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-check"></i>
+                    Sim, Concluir Operação
+                </button>
+                <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+

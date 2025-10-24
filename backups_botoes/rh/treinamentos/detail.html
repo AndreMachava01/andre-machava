@@ -1,0 +1,311 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Detalhes do Treinamento{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="{% url "rh:main" %}">
+            <i class="fas fa-home"></i> RH
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">Treinamentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ treinamento.nome }}</span>
+    </div>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{{ treinamento.nome }}"
+    subtitle="Detalhes do treinamento e gestão de inscrições"
+    icon="fas fa-graduation-cap"
+%}    </div>
+
+    <!-- Informações Principais -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações Gerais
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <strong>Nome:</strong> {{ treinamento.nome }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Tipo:</strong> 
+                        <span class="badge badge-info">{{ treinamento.get_tipo_display }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Status:</strong> 
+                        <span class="badge badge-{% if treinamento.status == 'EM_ANDAMENTO' %}success{% elif treinamento.status == 'PLANEJADO' %}warning{% elif treinamento.status == 'CONCLUIDO' %}primary{% else %}secondary{% endif %}">
+                            {{ treinamento.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Prioridade:</strong> 
+                        <span class="badge badge-{% if treinamento.prioridade == 'ALTA' %}danger{% elif treinamento.prioridade == 'MEDIA' %}warning{% else %}info{% endif %}">
+                            {{ treinamento.get_prioridade_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Carga Horária:</strong> {{ treinamento.carga_horaria }} horas
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Duração:</strong> {{ treinamento.duracao_dias }} dias
+                    </div>
+                    
+                    {% if treinamento.descricao %}
+                    <div class="info-item">
+                        <strong>Descrição:</strong> {{ treinamento.descricao }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        Datas e Local
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <strong>Data de Início:</strong> {{ treinamento.data_inicio|date:"d/m/Y" }}
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>Data de Fim:</strong> {{ treinamento.data_fim|date:"d/m/Y" }}
+                    </div>
+                    
+                    {% if treinamento.data_limite_inscricao %}
+                    <div class="info-item">
+                        <strong>Limite de Inscrição:</strong> {{ treinamento.data_limite_inscricao|date:"d/m/Y" }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if treinamento.local %}
+                    <div class="info-item">
+                        <strong>Local:</strong> {{ treinamento.local }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if treinamento.instrutor %}
+                    <div class="info-item">
+                        <strong>Instrutor:</strong> {{ treinamento.instrutor }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if treinamento.instituicao %}
+                    <div class="info-item">
+                        <strong>Instituição:</strong> {{ treinamento.instituicao }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progresso das Inscrições -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-bar"></i>
+                Progresso das Inscrições
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <strong>Inscrições Confirmadas:</strong>
+                        <span class="badge badge-primary">{{ treinamento.inscricoes.count }} / {{ treinamento.capacidade_maxima }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <strong>Vagas Disponíveis:</strong>
+                        <span class="badge badge-success">{{ treinamento.vagas_disponiveis }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <strong>Percentual:</strong>
+                        <span class="badge badge-info">{{ treinamento.percentual_preenchimento|floatformat:1 }}%</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ treinamento.percentual_preenchimento }}%" aria-valuenow="{{ treinamento.percentual_preenchimento }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo e Requisitos -->
+    {% if treinamento.objetivos or treinamento.requisitos or treinamento.conteudo_programatico %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-book"></i>
+                Conteúdo e Requisitos
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if treinamento.objetivos %}
+            <div class="info-item">
+                <strong>Objetivos:</strong> {{ treinamento.objetivos }}
+            </div>
+            {% endif %}
+            
+            {% if treinamento.requisitos %}
+            <div class="info-item">
+                <strong>Requisitos:</strong> {{ treinamento.requisitos }}
+            </div>
+            {% endif %}
+            
+            {% if treinamento.conteudo_programatico %}
+            <div class="info-item">
+                <strong>Conteúdo Programático:</strong> {{ treinamento.conteudo_programatico }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Custos -->
+    {% if treinamento.custo_por_participante > 0 or treinamento.custo_total > 0 %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-dollar-sign"></i>
+                Informações Financeiras
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if treinamento.custo_por_participante > 0 %}
+            <div class="info-item">
+                <strong>Custo por Participante:</strong> {{ treinamento.custo_por_participante|floatformat:2 }} MT
+            </div>
+            {% endif %}
+            
+            {% if treinamento.custo_total > 0 %}
+            <div class="info-item">
+                <strong>Custo|default:0 total:</strong> {{ treinamento.custo_total|floatformat:2 }} MT
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Inscrições -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-users"></i>
+                Inscrições ({{ inscricoes.count }})
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if inscricoes %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Status</th>
+                            <th>Data de Inscrição</th>
+                            <th>Nota Final</th>
+                            <th>Frequência</th>
+                            <th>Aprovado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inscricao in inscricoes %}
+                        <tr>
+                            <td>
+                                <strong>{{ inscricao.funcionario.nome_completo }}</strong>
+                                <br><small class="text-muted">{{ inscricao.funcionario.cargo.nome }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if inscricao.status == 'CONFIRMADA' %}success{% elif inscricao.status == 'PENDENTE' %}warning{% elif inscricao.status == 'CANCELADA' %}danger{% else %}secondary{% endif %}">
+                                    {{ inscricao.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ inscricao.data_inscricao|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if inscricao.nota_final %}
+                                    {{ inscricao.nota_final|floatformat:1 }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if inscricao.frequencia_percentual %}
+                                    {{ inscricao.frequencia_percentual|floatformat:1 }}%
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if inscricao.aprovado %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-plus"></i>
+                <h4>Nenhuma inscrição ainda</h4>
+                <p>Este treinamento ainda não possui inscrições.</p>
+                       <a href="#"rh:treinamento_inscrever' treinamento.id %}" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                           <i class="fas fa-user-plus"></i>
+                           Inscrever Funcionários
+                       </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Animate cards on load
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

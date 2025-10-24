@@ -1,0 +1,184 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Meios Circulantes Internos{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<!-- Botões de Navegação -->
+<div class="navigation-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;" role="button" role="button" role="button" role="button" role="button">
+    <a href="#" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; background: var(--purple-gradient); color: white; border: none;">
+        <i class="fas fa-arrow-left"></i>
+        Voltar à Logística
+    </a>
+    <a href="#" class="btn btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-warehouse"></i>
+        Stock Principal
+    </a>
+    <a href="#" class="btn btn-outline-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
+        <i class="fas fa-home"></i>
+        Dashboard
+    </a>
+</div>
+
+<!-- Breadcrumb -->
+<div style="background: #374151; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+    <nav style="display: flex; align-items: center; gap: 8px;">
+        <a href="/dashboard/" style="color: #06b6d4; text-decoration: none;">Dashboard</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/" style="color: #06b6d4; text-decoration: none;">Stock</a>
+        <span style="color: #6b7280;">›</span>
+        <a href="/stock/logistica/" style="color: #06b6d4; text-decoration: none;">Logística</a>
+        <span style="color: #6b7280;">›</span>
+        <span style="color: white; font-weight: 600;">Viaturas Internas</span>
+    </nav>
+</div>
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-car"></i>
+                    Meios Circulantes Internos
+                </h1>
+                <p class="page-subtitle">
+                    Gestão de viaturas para entregas e executivo
+                </p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center; position: relative; z-index: 1000;">
+                <a href="" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                    <i class="fas fa-plus"></i>
+                    Nova Viatura
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='viaturas' %}
+
+        <!-- Lista de Viaturas -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-car"></i>
+                    Viaturas da Empresa ({{ page_obj.paginator.count }})
+                </h3>
+            </div>
+            
+            {% if page_obj %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Código</th>
+                            <th style="width: 200px;">Veículo</th>
+                            <th style="width: 120px;">Tipo</th>
+                            <th style="width: 120px;">Categoria</th>
+                            <th style="width: 150px;">Sucursal</th>
+                            <th style="width: 100px;">Placa</th>
+                            <th style="width: 180px;">Motorista</th>
+                            <th style="width: 100px;">Status</th>
+                            <th style="width: 120px;">Quilometragem</th>
+                            <th style="width: 120px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for viatura in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 600; color: #06b6d4;">{{ viatura.codigo }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 600;">{{ viatura.nome }}</div>
+                                <div class="cell-tertiary" style="font-size: 0.85rem;">{{ viatura.marca }} {{ viatura.modelo }}</div>
+                            </td>
+                            <td>
+                                {% if viatura.tipo == 'VIATURA_INTERNA_ENTREGA' %}
+                                    <span class="badge badge-success">Entregas</span>
+                                {% elif viatura.tipo == 'VIATURA_INTERNA_EXECUTIVO' %}
+                                    <span class="badge badge-warning">Executivo</span>
+                                {% else %}
+                                    <span class="badge badge-info">{{ viatura.get_tipo_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ viatura.categoria_veiculo }}</span>
+                            </td>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 500;">{{ viatura.sucursal.nome|default:"N/A" }}</div>
+                                {% if viatura.sucursal %}
+                                    <div class="cell-tertiary" style="font-size: 0.8rem; color: #9ca3af;">{{ viatura.sucursal.cidade }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 600; font-family: monospace; background: rgba(6, 182, 212, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;">{{ viatura.placa }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 500;">{{ viatura.motorista_responsavel }}</div>
+                                <div class="cell-tertiary" style="font-size: 0.8rem; color: #9ca3af;">
+                                    <i class="fas fa-phone" style="margin-right: 4px;"></i>{{ viatura.telefone_motorista|default:"Telefone não cadastrado" }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if viatura.status == 'ATIVA' %}
+                                    <span class="status-badge status-active">{{ viatura.get_status_display }}</span>
+                                {% elif viatura.status == 'MANUTENCAO' %}
+                                    <span class="status-badge status-warning">{{ viatura.get_status_display }}</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">{{ viatura.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-primary" style="font-weight: 600;">
+                                    <i class="fas fa-tachometer-alt" style="margin-right: 6px; color: #06b6d4;"></i>{{ viatura.quilometragem_atual|default:"0" }} km
+                                </div>
+                                {% if viatura.proxima_revisao %}
+                                    <div class="cell-tertiary" style="font-size: 0.8rem; color: #f59e0b;">
+                                        <i class="fas fa-calendar" style="margin-right: 4px;"></i>Revisão: {{ viatura.proxima_revisao|date:"d/m/Y" }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="#"stock:logistica:viatura_detail' viatura.id %}" 
+                                       class="btn-action primary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#"stock:logistica:viatura_edit' viatura.id %}" 
+                                       class="btn-action secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn-action danger" 
+                                            data-id="{{ viatura.id }}" 
+                                            data-nome="{{ viatura.nome }}" 
+                                            onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">button type="submit"  class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i>
+                    Excluir
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(button) {
+    const id = button.getAttribute('data-id');
+    const nome = button.getAttribute('data-nome');
+    
+    document.getElementById('nomeViatura').innerText = nome;
+    document.getElementById('formExclusao').action = `/stock/logistica/viaturas/${id}/delete/`;
+    document.getElementById('modalExclusao').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('modalExclusao').style.display = 'none';
+}
+</script>
+{% endblock %}

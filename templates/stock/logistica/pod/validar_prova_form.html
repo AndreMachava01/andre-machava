@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Validar POD - {{ prova.codigo }}{% endblock %}
 
@@ -22,9 +22,9 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:provas_list' %}">Provas de Entrega</a>
+        <a href="{% url "stock:pod:provas_list" %}">Provas de Entrega</a>
         <i class="fas fa-chevron-right"></i>
         <a href="{% url 'stock:pod:prova_detail' prova.id %}">{{ prova.codigo }}</a>
         <i class="fas fa-chevron-right"></i>
@@ -32,25 +32,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-check-circle"></i>
-                    Validar POD - {{ prova.codigo }}
-                </h1>
-                <p class="page-subtitle">
-                    Confirmar e validar a Prova de Entrega
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar aos Detalhes
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Validar POD - {{ prova.codigo }}"
+    subtitle="Confirmar e validar a Prova de Entrega"
+    icon="fas fa-check-circle"
+%}    </div>
 
     <!-- Informações da POD -->
     <div class="row">
@@ -117,7 +104,7 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                         {% csrf_token %}
                         
                         <div class="form-group">
@@ -157,11 +144,11 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                                 <i class="fas fa-check"></i>
                                 Validar POD
                             </button>
-                            <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-secondary">
+                            <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-times"></i>
                                 Cancelar
                             </a>
@@ -224,110 +211,5 @@
     </div>
 </div>
 
-<style>
-.info-item {
-    margin-bottom: 1rem;
-}
 
-.info-label {
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-.info-value {
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-label {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-check-input {
-    margin: 0;
-}
-
-.form-check-label {
-    margin: 0;
-    font-weight: 500;
-}
-
-.form-text {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-}
-
-.form-errors {
-    margin-top: 0.5rem;
-}
-
-.error-message {
-    color: var(--accent-danger);
-    font-size: 0.875rem;
-    display: block;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem;
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-}
-
-.status-item i:first-child {
-    color: var(--text-secondary);
-}
-
-.status-item span {
-    flex: 1;
-    font-weight: 500;
-}
-
-textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-}
-</style>
 {% endblock %}

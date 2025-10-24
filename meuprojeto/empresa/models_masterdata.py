@@ -51,60 +51,7 @@ class Regiao(models.Model):
         return f"{self.codigo} - {self.nome}"
 
 
-class ZonaEntrega(models.Model):
-    """Zonas de entrega para otimização logística."""
-    
-    codigo = models.CharField(max_length=20, unique=True)
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True)
-    
-    # Relacionamentos
-    regiao = models.ForeignKey(Regiao, on_delete=models.CASCADE, related_name='zonas')
-    
-    # Configurações de entrega
-    prazo_entrega_dias = models.PositiveIntegerField(default=1)
-    custo_adicional = models.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        default=Decimal('0.00')
-    )
-    
-    # Restrições
-    peso_maximo_kg = models.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        null=True, 
-        blank=True
-    )
-    volume_maximo_m3 = models.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        null=True, 
-        blank=True
-    )
-    
-    # Horários de funcionamento
-    horario_inicio = models.TimeField(default='08:00')
-    horario_fim = models.TimeField(default='18:00')
-    dias_funcionamento = models.JSONField(
-        default=list,
-        help_text="Lista de dias da semana (0=Segunda, 6=Domingo)"
-    )
-    
-    # Status
-    ativo = models.BooleanField(default=True)
-    
-    # Auditoria
-    data_criacao = models.DateTimeField(auto_now_add=True)
-    data_atualizacao = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = "Zona de Entrega"
-        verbose_name_plural = "Zonas de Entrega"
-        ordering = ['regiao', 'nome']
-    
-    def __str__(self):
-        return f"{self.codigo} - {self.nome}"
+# ZonaEntrega movida para models_routing.py para evitar conflito de modelos
 
 
 class HubLogistico(models.Model):

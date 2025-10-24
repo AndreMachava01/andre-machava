@@ -4,34 +4,7 @@
 {% block title %}Detalhes do Rastreamento - {{ rastreamento.codigo_rastreamento }}{% endblock %}
 
 {% block extra_style %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
-    .page-container { background: #1f2937; border: 1px solid #4b5563; border-radius: 16px; margin: 10px; overflow: hidden; box-shadow: var(--shadow-medium); }
-    .page-header { background: var(--purple-gradient); padding: 18px 24px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
-    .page-title { margin: 0; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .header-actions { display: flex; gap: 10px; }
-    .btn { padding: 10px 16px; border-radius: 8px; border: none; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-secondary { background: #4b5563; color: #f9fafb; border: 1px solid #6b7280; }
-    .btn-primary { background: var(--primary-gradient); color: #fff; }
-    .page-content { background: #111827; padding: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 16px; box-shadow: var(--shadow-light); }
-    .card h3 { margin: 0 0 12px; color: #f3f4f6; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .item { display: grid; grid-template-columns: 140px 1fr; gap: 10px; margin-bottom: 10px; color: #e5e7eb; }
-    .item .label { color: #9ca3af; font-weight: 600; }
-    .status-badge { padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; background: #4b5563; color: #fff; }
-    .timeline { display: grid; gap: 12px; }
-    .timeline-item { border-left: 3px solid #8b5cf6; padding-left: 12px; }
-    .timeline-header { display: flex; justify-content: space-between; color: #e5e7eb; font-weight: 600; }
-    .timeline-description { color: #d1d5db; }
-    .muted { color: #9ca3af; }
-    @media print { .header-actions { display: none; } .page-container { border: none; margin: 0; border-radius: 0; } }
-    </style>
+
 {% endblock %}
 
 {% block content %}
@@ -39,8 +12,8 @@
     <div class="page-header">
         <h1 class="page-title"><i class="fas fa-shipping-fast"></i> {{ rastreamento.codigo_rastreamento }}</h1>
         <div class="header-actions">
-            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
-            <a href="{% url 'stock:logistica:operacoes_list' %}" class="btn btn-primary"><i class="fas fa-tasks"></i> Operações</a>
+            <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive"><i class="fas fa-arrow-left"></i> Voltar</a>
+            <a href="#"stock:logistica:operacoes_list' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive"><i class="fas fa-tasks"></i> Operações</a>
         </div>
     </div>
     <div class="page-content">
@@ -65,7 +38,7 @@
 
             <div class="card">
                 <h3><i class="fas fa-box"></i> Envio</h3>
-                <div class="item"><div class="label">Peso Total:</div><div>{{ rastreamento.peso_total|default:"-" }} kg</div></div>
+                <div class="item"><div class="label">Peso|default:0 total:</div><div>{{ rastreamento.peso_total|default:"-" }} kg</div></div>
                 <div class="item"><div class="label">Valor Declarado:</div><div>{{ rastreamento.valor_declarado|default:"-" }} MT</div></div>
                 <div class="item"><div class="label">Custo Envio:</div><div>{{ rastreamento.custo_envio|default:"-" }} MT</div></div>
                 <div class="item"><div class="label">Prevista:</div><div>{{ rastreamento.data_entrega_prevista|date:"d/m/Y H:i"|default:"-" }}</div></div>

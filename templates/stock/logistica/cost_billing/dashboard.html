@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Dashboard Custos & Faturamento{% endblock %}
 
@@ -26,29 +26,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-dollar-sign"></i>
-                    Dashboard Custos & Faturamento
-                </h1>
-                <p class="page-subtitle">
-                    Gestão Financeira da Operação Logística
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:cost_billing:custo_create' %}" class="btn btn-success">
-                    <i class="fas fa-plus"></i>
-                    Novo Custo
-                </a>
-                <a href="{% url 'stock:cost_billing:fatura_create' %}" class="btn btn-primary">
-                    <i class="fas fa-file-invoice"></i>
-                    Nova Fatura
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Dashboard Custos & Faturamento"
+    subtitle="Gestão Financeira da Operação Logística"
+    icon="fas fa-dollar-sign"
+%}    </div>
 
     <!-- Estatísticas de Custos -->
     <div class="stats-grid">
@@ -88,7 +71,7 @@
             </div>
             <div class="stat-content">
                 <div class="stat-number">R$ {{ stats_custos.valor_total|floatformat:2 }}</div>
-                <div class="stat-label">Valor Total</div>
+                <div class="stat-label">Valor|default:0 total</div>
             </div>
         </div>
     </div>
@@ -146,7 +129,7 @@
                         Custos Pendentes de Aprovação
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:cost_billing:custos_list' %}?status=PENDENTE" class="btn btn-warning btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -174,14 +157,14 @@
                                         <td>R$ {{ custo.valor|floatformat:2 }}</td>
                                         <td>{{ custo.data_custo|date:"d/m/Y" }}</td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:cost_billing:custo_detail' custo.id %}" class="btn btn-info btn-sm">
+                                            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                                <a href="#"stock:cost_billing:custo_detail' custo.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{% url 'stock:cost_billing:custo_approve' custo.id %}" class="btn btn-success btn-sm">
+                                                <a href="#"stock:cost_billing:custo_approve' custo.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-check"></i>
                                                 </a>
-                                                <a href="{% url 'stock:cost_billing:custo_reject' custo.id %}" class="btn btn-danger btn-sm">
+                                                <a href="#"stock:cost_billing:custo_reject' custo.id %}" class="btn btn btn btn btn btn btn btn btn-danger btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-times"></i>
                                                 </a>
                                             </div>
@@ -210,7 +193,7 @@
                         Faturas Pendentes de Pagamento
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:cost_billing:faturas_list' %}?status=ENVIADO" class="btn btn-warning btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -218,39 +201,7 @@
                 <div class="card-body">
                     {% if faturas_pendentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Número</th>
-                                        <th>Cliente</th>
-                                        <th>Valor</th>
-                                        <th>Vencimento</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for fatura in faturas_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ fatura.numero_fatura }}</span>
-                                        </td>
-                                        <td>{{ fatura.cliente_nome }}</td>
-                                        <td>R$ {{ fatura.valor_liquido|floatformat:2 }}</td>
-                                        <td>{{ fatura.data_vencimento|date:"d/m/Y" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:cost_billing:fatura_detail' fatura.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:cost_billing:fatura_mark_paid' fatura.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-check"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -273,7 +224,7 @@
                         Custos Recentes (7 dias)
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -281,38 +232,7 @@
                 <div class="card-body">
                     {% if custos_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Descrição</th>
-                                        <th>Tipo</th>
-                                        <th>Centro de Custo</th>
-                                        <th>Valor</th>
-                                        <th>Status</th>
-                                        <th>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for custo in custos_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ custo.codigo }}</span>
-                                        </td>
-                                        <td>{{ custo.descricao|truncatechars:50 }}</td>
-                                        <td>{{ custo.tipo_custo.nome }}</td>
-                                        <td>{{ custo.centro_custo.nome }}</td>
-                                        <td>R$ {{ custo.valor|floatformat:2 }}</td>
-                                        <td>
-                                            <span class="badge badge-{% if custo.status == 'APROVADO' %}success{% elif custo.status == 'PENDENTE' %}warning{% elif custo.status == 'REJEITADO' %}danger{% elif custo.status == 'RATEADO' %}info{% else %}secondary{% endif %}">
-                                                {{ custo.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ custo.data_custo|date:"d/m/Y" }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -338,25 +258,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-outline-danger btn-block">
+                            <a href="#"stock:cost_billing:custos_list' %}" class="btn btn-outline-danger btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-receipt"></i><br>
                                 Custos Logísticos
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"stock:cost_billing:faturas_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-file-invoice"></i><br>
                                 Faturas de Frete
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:cost_billing:stats' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"stock:cost_billing:stats' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-chart-bar"></i><br>
                                 Estatísticas
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="btn btn-outline-secondary btn-block">
+                            <a href="#" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-cog"></i><br>
                                 Configurações
                             </a>

@@ -1,0 +1,215 @@
+{% extends 'base_list.html' %}
+
+{% block title %}Gestão de Categorias - Stock{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">Stock</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Categorias</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-tags"></i>
+                    Gestão de Categorias
+                </h1>
+                <p class="page-subtitle">
+                    Gerir categorias de produtos e materiais
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:categoria_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Categoria
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ page_obj.paginator.count|default:"0" }}</h3>
+                    <p class="stat-label">Total de Categorias</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ categorias_ativas|default:"0" }}</h3>
+                    <p class="stat-label">Categorias Ativas</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_produtos|default:"0" }}</h3>
+                    <p class="stat-label">Produtos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ total_materiais|default:"0" }}</h3>
+                    <p class="stat-label">Materiais</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='categorias' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if page_obj %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Categorias
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} categorias
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Produtos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="cell-code">{{ categoria.codigo }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-primary">{{ categoria.nome }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-secondary">{{ categoria.descricao|default:"N/A" }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ categoria.get_tipo_display|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                {% if categoria.status == 'ATIVO' %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="cell-primary">{{ categoria.produtos_count|default:"0" }}</span>
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:categoria_detail' categoria.id %}?v={{ timestamp }}" class="btn-action-sm success" title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'stock:categoria_edit' categoria.id %}" class="btn-action-sm secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'stock:categoria_delete' categoria.id %}" class="btn-action-sm danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-tags"></i>
+                <h4>Nenhuma categoria encontrada</h4>
+                <p>
+                    {% if search_query or status or tipo %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    adicione a primeira categoria.
+                </p>
+                <a href="{% url 'stock:categoria_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Categoria
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

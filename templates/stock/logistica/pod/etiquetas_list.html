@@ -1,5 +1,6 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_list.html" %}
+
+{% include 'includes/filters_unified.html' with entity_name='default' %}
 
 {% block title %}Etiquetas de Rastreamento{% endblock %}
 
@@ -22,31 +23,18 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
         <span>Etiquetas de Rastreamento</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-tags"></i>
-                    Etiquetas de Rastreamento
-                </h1>
-                <p class="page-subtitle">
-                    Gerencie todas as etiquetas de rastreamento para suas operações logísticas
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-primary">
-                    <i class="fas fa-truck"></i>
-                    Ver Rastreamentos
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Etiquetas de Rastreamento"
+    subtitle="Gerencie todas as etiquetas de rastreamento para suas operações logísticas"
+    icon="fas fa-tags"
+%}    </div>
 
     <!-- Messages -->
     {% if messages %}
@@ -57,56 +45,6 @@
             </div>
         {% endfor %}
     {% endif %}
-
-    <!-- Filters and Search -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="tipo" class="form-label">Tipo de Etiqueta</label>
-                    <select name="tipo" id="tipo" class="form-control">
-                        <option value="">Todos</option>
-                        {% for value, label in tipo_choices %}
-                            <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="data_criacao_min" class="form-label">Data Criação (Min)</label>
-                    <input type="date" name="data_criacao_min" id="data_criacao_min" class="form-control"
-                           value="{{ request.GET.data_criacao_min }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="data_criacao_max" class="form-label">Data Criação (Max)</label>
-                    <input type="date" name="data_criacao_max" id="data_criacao_max" class="form-control"
-                           value="{{ request.GET.data_criacao_max }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="search" class="form-label">Pesquisar</label>
-                    <input type="text" name="search" id="search" class="form-control"
-                           placeholder="Código, Rastreamento..." value="{{ request.GET.search }}">
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i>
-                        Aplicar Filtros
-                    </button>
-                    <a href="{% url 'stock:pod:etiquetas_list' %}" class="btn btn-secondary ms-2">
-                        <i class="fas fa-redo"></i>
-                        Limpar
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Etiquetas List -->
     <div class="card">
@@ -159,12 +97,12 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn-info btn-sm" title="Ver Detalhes">
+                                    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                        <a href="#"stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver Detalhes">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         {% if not etiqueta.impressa %}
-                                            <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn-success btn-sm" title="Imprimir Etiqueta">
+                                            <a href="#"stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Imprimir Etiqueta">
                                                 <i class="fas fa-print"></i>
                                             </a>
                                         {% endif %}

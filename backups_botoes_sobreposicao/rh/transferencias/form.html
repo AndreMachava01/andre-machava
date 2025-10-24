@@ -1,0 +1,348 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}
+    {% if transferencia %}Editar Transferência{% else %}Nova Transferência{% endif %}
+{% endblock %}
+
+{% block header_title %}
+    {% if transferencia %}Editar Transferência{% else %}Nova Transferência{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const funcionarioSelect = document.getElementById('funcionario');
+    const sucursalDestinoSelect = document.getElementById('sucursal_destino');
+    const departamentoDestinoSelect = document.getElementById('departamento_destino');
+    const previewDiv = document.getElementById('transfer-preview');
+    const origemGroup = document.getElementById('origem-group');
+    const origemDisplay = document.getElementById('origem-display');
+    
+    // Carregar dados do funcionário quando selecionado
+    funcionarioSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+            // Mostrar sucursal de origem
+            const sucursalOrigemNome = selectedOption.dataset.sucursalOrigemNome;
+            const departamentoOrigemNome = selectedOption.dataset.departamentoOrigemNome;
+            const cargoAtualNome = selectedOption.dataset.cargoAtualNome;
+            
+            origemDisplay.innerHTML = `
+                <div style="text-align: center; padding: 15px;">
+                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">
+                        <i class="fas fa-building"></i> ${sucursalOrigemNome}
+                    </h4>
+                    <p style="margin: 0; color: #666; font-size: 14px;">
+                        Sucursal atual do funcionário
+                    </p>
+                </div>
+            `;
+            origemGroup.style.display = 'block';
+            
+            // Filtrar sucursais de destino (remover a de origem)
+            const sucursalOrigemId = selectedOption.dataset.sucursalOrigem;
+            Array.from(sucursalDestinoSelect.options).forEach(option => {
+                if (option.value === sucursalOrigemId) {
+                    option.style.display = 'none';
+                    option.disabled = true;
+                } else {
+                    option.style.display = 'block';
+                    option.disabled = false;
+                }
+            });
+            
+            // Limpar seleções de destino
+            sucursalDestinoSelect.value = '';
+            departamentoDestinoSelect.innerHTML = '<option value="">Selecione uma sucursal primeiro</option>';
+            
+        } else {
+            origemGroup.style.display = 'none';
+            // Mostrar todas as sucursais novamente
+            Array.from(sucursalDestinoSelect.options).forEach(option => {
+                option.style.display = 'block';
+                option.disabled = false;
+            });
+        }
+        
+        updatePreview();
+    });
+    
+    // Carregar departamentos quando sucursal for selecionada
+    sucursalDestinoSelect.addEventListener('change', function() {
+        const sucursalId = this.value;
+        console.log('Sucursal selecionada:', sucursalId);
+        
+        if (sucursalId) {
+            console.log('Fazendo requisição para:', `/rh/api/departamentos/sucursal/${sucursalId}/`);
+            
+            fetch(`/rh/api/departamentos/sucursal/${sucursalId}/`)
+                .then(response => {
+                    console.log('Resposta da API:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados recebidos:', data);
+                    departamentoDestinoSelect.innerHTML = '<option value="">Selecione um departamento</option>';
+                    
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept.id;
+                            option.textContent = dept.nome;
+                            departamentoDestinoSelect.appendChild(option);
+                        });
+                        
+                        // Verificar se deve manter o mesmo departamento
+                        checkManterDepartamento();
+                    }
+                })
+                .catch(err => {
+                    console.error('[Transferências] Erro ao carregar departamentos:', err);
+                    departamentoDestinoSelect.innerHTML = '<option value="">Falha ao carregar departamentos</option>';
+                })
+                .finally(() => {
+                    updatePreview();
+                });
+        } else {
+            departamentoDestinoSelect.innerHTML = '<option value="">Selecione uma sucursal primeiro</option>';
+            updatePreview();
+        }
+    });
+    
+    // Atualizar preview quando dados mudarem
+    function updatePreview() {
+        const funcionario = funcionarioSelect.options[funcionarioSelect.selectedIndex];
+        const sucursalDestino = sucursalDestinoSelect.options[sucursalDestinoSelect.selectedIndex];
+        const departamentoDestino = departamentoDestinoSelect.options[departamentoDestinoSelect.selectedIndex];
+        
+        if (funcionario.value && sucursalDestino.value && departamentoDestino.value) {
+            const sucursalOrigemNome = funcionario.dataset.sucursalOrigemNome;
+            const departamentoOrigemNome = funcionario.dataset.departamentoOrigemNome;
+            
+            previewDiv.innerHTML = `
+                <h6><i class="fas fa-eye"></i> Pré-visualização da Transferência</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Funcionário:</strong><br>
+                        ${funcionario.textContent}
+                    </div>
+                    <div class="col-md-8">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="flex: 1; text-align: center; padding: 10px; background: #e3f2fd; border-radius: 6px;">
+                                <strong style="color: #1976d2;">ORIGEM</strong><br>
+                                <small>${sucursalOrigemNome}</small><br>
+                                <small>${departamentoOrigemNome}</small>
+                            </div>
+                            <div style="font-size: 1.5em; color: #007bff;">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div style="flex: 1; text-align: center; padding: 10px; background: #e8f5e8; border-radius: 6px;">
+                                <strong style="color: #2e7d32;">DESTINO</strong><br>
+                                <small>${sucursalDestino.textContent}</small><br>
+                                <small>${departamentoDestino.textContent}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    }
+    
+    departamentoDestinoSelect.addEventListener('change', updatePreview);
+    
+    // Função para verificar se deve manter o mesmo departamento
+    function checkManterDepartamento() {
+        const manterDepartamentoCheckbox = document.getElementById('manter_departamento');
+        const funcionario = funcionarioSelect.options[funcionarioSelect.selectedIndex];
+        
+        if (manterDepartamentoCheckbox.checked && funcionario.value) {
+            const departamentoOrigemNome = funcionario.dataset.departamentoOrigemNome;
+            console.log('Tentando manter departamento:', departamentoOrigemNome);
+            
+            // Procurar por departamento com o mesmo nome
+            const options = departamentoDestinoSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].textContent === departamentoOrigemNome) {
+                    options[i].selected = true;
+                    console.log('Departamento encontrado e selecionado:', departamentoOrigemNome);
+                    updatePreview();
+                    return;
+                }
+            }
+            
+            // Se não encontrou, mostrar aviso
+            console.log('Departamento não encontrado na sucursal de destino:', departamentoOrigemNome);
+            alert(`O departamento "${departamentoOrigemNome}" não existe na sucursal de destino. Selecione um departamento manualmente.`);
+        }
+    }
+    
+    // Event listener para o checkbox de manter departamento
+    document.getElementById('manter_departamento').addEventListener('change', function() {
+        if (this.checked) {
+            checkManterDepartamento();
+        } else {
+            // Limpar seleção se desmarcado
+            departamentoDestinoSelect.value = '';
+            updatePreview();
+        }
+    });
+    
+    // Inicializar se já houver funcionário selecionado (modo edição)
+    if (funcionarioSelect.value) {
+        funcionarioSelect.dispatchEvent(new Event('change'));
+    }
+    // Inicializar se já houver sucursal selecionada (modo edição)
+    if (sucursalDestinoSelect.value) {
+        sucursalDestinoSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="funcionario">Funcionário <span class="required">*</span></label>
+                <select class="form-control" id="funcionario" name="funcionario" required>
+                    <option value="">Selecione um funcionário</option>
+                    {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}" 
+                                data-sucursal-origem="{{ funcionario.sucursal.id }}"
+                                data-sucursal-origem-nome="{{ funcionario.sucursal.nome }}"
+                                data-departamento-origem="{{ funcionario.departamento.id }}"
+                                data-departamento-origem-nome="{{ funcionario.departamento.nome }}"
+                                data-cargo-atual="{{ funcionario.cargo.id }}"
+                                data-cargo-atual-nome="{{ funcionario.cargo.nome }}"
+                                {% if transferencia and transferencia.funcionario.id == funcionario.id %}selected{% endif %}>
+                            {{ funcionario.nome_completo }} ({{ funcionario.codigo_funcionario }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Selecione o funcionário que será transferido</div>
+            </div>
+            
+            <!-- Sucursal de Origem (somente leitura) -->
+            <div class="form-group" id="origem-group" style="display: none;">
+                <label><i class="fas fa-map-marker-alt"></i> Sucursal Atual do Funcionário</label>
+                <div class="origem-card" id="origem-display">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="sucursal_destino">Sucursal de Destino <span class="required">*</span></label>
+                        <select class="form-control" id="sucursal_destino" name="sucursal_destino" required>
+                            <option value="">Selecione uma sucursal</option>
+                            {% for sucursal in sucursais %}
+                                <option value="{{ sucursal.id }}" 
+                                        {% if transferencia and transferencia.sucursal_destino.id == sucursal.id %}selected{% endif %}>
+                                    {{ sucursal.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Sucursal para onde o funcionário será transferido</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="departamento_destino">Departamento de Destino <span class="required">*</span></label>
+                        <select class="form-control" id="departamento_destino" name="departamento_destino" required>
+                            <option value="">Selecione uma sucursal primeiro</option>
+                            {% if transferencia and transferencia.departamento_destino %}
+                                <option value="{{ transferencia.departamento_destino.id }}" selected>
+                                    {{ transferencia.departamento_destino.nome }}
+                                </option>
+                            {% endif %}
+                        </select>
+                        <div class="help-text">Departamento de destino na nova sucursal</div>
+                        
+                        <!-- Checkbox para manter o mesmo departamento -->
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="manter_departamento" name="manter_departamento">
+                            <label class="form-check-label" for="manter_departamento">
+                                <i class="fas fa-copy"></i> Manter o mesmo departamento na sucursal de destino
+                            </label>
+                        </div>
+                        <div class="help-text">Se marcado, o funcionário será transferido para o mesmo departamento na nova sucursal (se existir)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cargo_novo">Novo Cargo (opcional)</label>
+                <select class="form-control" id="cargo_novo" name="cargo_novo">
+                    <option value="">Manter cargo atual</option>
+                    {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" 
+                                {% if transferencia and transferencia.cargo_novo and transferencia.cargo_novo.id == cargo.id %}selected{% endif %}>
+                            {{ cargo.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Se não selecionado, o funcionário manterá o cargo atual</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="data_efetiva">Data Efetiva da Transferência <span class="required">*</span></label>
+                        <input type="date" class="form-control" id="data_efetiva" name="data_efetiva" 
+                               value="{% if transferencia %}{{ transferencia.data_efetiva|date:'Y-m-d' }}{% endif %}" 
+                               required>
+                        <div class="help-text">Data em que a transferência deve ser efetivada</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="motivo">Motivo da Transferência <span class="required">*</span></label>
+                <textarea class="form-control" id="motivo" name="motivo" rows="3" 
+                          required>{% if transferencia %}{{ transferencia.motivo }}{% endif %}</textarea>
+                <div class="help-text">Descreva o motivo da transferência</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea class="form-control" id="observacoes" name="observacoes" rows="2">{% if transferencia %}{{ transferencia.observacoes }}{% endif %}</textarea>
+                <div class="help-text">Observações adicionais (opcional)</div>
+            </div>
+            
+            <div id="transfer-preview" class="transfer-preview" style="display: none;">
+                <!-- Preview será preenchido via JavaScript -->
+            </div>
+            
+            <div class="btn-group btn-responsive btn-responsive" role="button">
+                <a href="#"rh:transferencias' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i> 
+                    {% if transferencia %}Atualizar{% else %}Solicitar{% endif %} Transferência
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

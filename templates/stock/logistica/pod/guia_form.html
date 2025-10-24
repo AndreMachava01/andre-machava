@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Guia de Remessa{% endblock %}
 
@@ -22,33 +22,20 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:guias_list' %}">Guias de Remessa</a>
+        <a href="">Guias de Remessa</a>
         <i class="fas fa-chevron-right"></i>
         <span>{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Guia</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-plus-circle"></i>
-                    {% if form.instance.pk %}Editar Guia de Remessa{% else %}Nova Guia de Remessa{% endif %}
-                </h1>
-                <p class="page-subtitle">
-                    {% if form.instance.pk %}Atualize os detalhes da guia de remessa existente.{% else %}Crie uma nova guia de remessa para suas operações logísticas.{% endif %}
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar às Guias
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="{% if form.instance.pk %}Editar Guia de Remessa{% else %}Nova Guia de Remessa{% endif %}"
+    subtitle="{% if form.instance.pk %}Atualize os detalhes da guia de remessa existente.{% else %}Crie uma nova guia de remessa para suas operações logísticas.{% endif %}"
+    icon="fas fa-plus-circle"
+%}    </div>
 
     <!-- Messages -->
     {% if messages %}
@@ -68,7 +55,7 @@
             </h3>
         </div>
         <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
 
                 <div class="row">
@@ -208,7 +195,7 @@
                                 <div class="text-danger small mt-1">{{ form.peso.errors }}</div>
                             {% endif %}
                             <small class="form-text text-muted">
-                                Peso total da mercadoria em quilogramas.
+                                Peso|default:0 total da mercadoria em quilogramas.
                             </small>
                         </div>
                     </div>
@@ -257,10 +244,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i> Salvar Guia de Remessa
                     </button>
-                    <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-secondary">
+                    <a href="#"stock:pod:guias_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
                 </div>

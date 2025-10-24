@@ -1,0 +1,32 @@
+{% comment %}
+BOTÕES DE SUBMÓDULOS
+Template específico para botões de acesso aos submódulos (Funcionários, Produtos, Materiais, Cargos, etc.)
+
+Parâmetros:
+- submodules: lista de submódulos com suas configurações
+- layout: layout dos botões (grid, list, sidebar)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+<div class="submodules-container{% if layout == 'grid' %} submodules-grid{% elif layout == 'sidebar' %} submodules-sidebar{% endif %}{% if class %} {{ class }}{% endif %}">
+    {% for submodule in submodules %}
+        <div class="submodule-item">
+            {% include 'components/button_unified.html' with 
+                type='submodule' 
+                size='md' 
+                text=submodule.name 
+                icon=submodule.icon 
+                url=submodule.url 
+                class='btn-submodule-main' 
+                id=submodule.id %}
+            
+            {% if submodule.count %}
+                <span class="submodule-count">{{ submodule.count }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+

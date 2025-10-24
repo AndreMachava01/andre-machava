@@ -1,151 +1,19 @@
 {% extends "base_admin.html" %}
-{% load static %}
+
 
 {% block title %}Calcular Folha Salarial{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    
-    .info-item {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 1rem;
-        text-align: center;
-    }
-    
-    .info-label {
-        display: block;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.5rem;
-    }
-    
-    .info-value {
-        display: block;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-color);
-    }
-    
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-aberta {
-        background: #e3f2fd;
-        color: #1976d2;
-    }
-    
-    .status-fechada {
-        background: #f3e5f5;
-        color: #7b1fa2;
-    }
-    
-    .status-paga {
-        background: #e8f5e8;
-        color: #388e3c;
-    }
-    
-    .warning-box {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin: 2rem 0;
-    }
-    
-    .warning-box h4 {
-        color: #856404;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .warning-box p {
-        color: #856404;
-        margin: 0;
-        line-height: 1.5;
-    }
-    
-    .calculo-steps {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin: 2rem 0;
-    }
-    
-    .calculo-step {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 1.5rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        opacity: 0.6;
-    }
-    
-    .calculo-step.active {
-        opacity: 1;
-        border-color: var(--primary-color);
-        background: var(--primary-light);
-    }
-    
-    .calculo-step.completed {
-        opacity: 1;
-        border-color: var(--success-color);
-        background: var(--success-light);
-    }
-    
-    .step-icon {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: var(--primary-color);
-    }
-    
-    .calculo-step.completed .step-icon {
-        color: var(--success-color);
-    }
-    
-    .step-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--text-color);
-    }
-    
-    .step-description {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Breadcrumb -->
     <nav class="breadcrumb-modern">
-        <a href="{% url 'rh:main' %}">RH</a>
+        <a href="{% url "rh:main" %}">RH</a>
         <span class="breadcrumb-separator">›</span>
-        <a href="{% url 'rh:folha_salarial' %}">Folha Salarial</a>
+        <a href="{% url "rh:folha_salarial" %}">Folha Salarial</a>
         <span class="breadcrumb-separator">›</span>
         <a href="{% url 'rh:folha_detail' folha.id %}">{{ folha.mes_referencia|date:"F/Y" }}</a>
         <span class="breadcrumb-separator">›</span>
@@ -153,22 +21,11 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <h1>
-                <i class="fas fa-calculator"></i>
-                Calcular Folha Salarial
-            </h1>
-            <p>Processar cálculos automáticos para {{ folha.mes_referencia|date:"F/Y" }}</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-outline">
-                <i class="fas fa-arrow-left"></i>
-                Voltar
-            </a>
-        </div>
-    </div>
-
+    
+{% include "includes/header.html" with
+    title="Calcular Folha Salarial"
+    icon="fas fa-calculator"
+%}
     <!-- Informações da Folha -->
     <div class="content-section">
         <div class="card">
@@ -192,19 +49,19 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Total Bruto</span>
-                        <span class="info-value">{{ folha.total_bruto|floatformat:2 }} MT</span>
+                        <span class="info-value">{{ folha.total|default:0_bruto|floatformat:2 }} MT</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Total Descontos</span>
-                        <span class="info-value">{{ folha.total_descontos|floatformat:2 }} MT</span>
+                        <span class="info-value">{{ folha.total|default:0_descontos|floatformat:2 }} MT</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Total Líquido</span>
-                        <span class="info-value">{{ folha.total_liquido|floatformat:2 }} MT</span>
+                        <span class="info-value">{{ folha.total|default:0_liquido|floatformat:2 }} MT</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Total de Funcionários</span>
-                        <span class="info-value">{{ folha.total_funcionarios }}</span>
+                        <span class="info-value">{{ folha.total|default:0_funcionarios }}</span>
                     </div>
                 </div>
             </div>
@@ -279,7 +136,7 @@
                 </div>
 
                 <!-- Formulário de Cálculo -->
-                <form method="post">
+                <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                     {% csrf_token %}
                     
                     <div class="form-group">
@@ -292,12 +149,12 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{% url 'rh:folha_detail' folha.id %}" class="btn-modern btn-secondary">
+                        <a href="#"rh:folha_detail' folha.id %}" class="btn-modern btn btn btn btn btn btn btn btn-secondary btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             <i class="fas fa-times"></i>
                             Cancelar
                         </a>
-                        <button type="submit" class="btn-modern btn-primary" 
-                            onclick="return confirm('Tem certeza que deseja calcular esta folha salarial? Esta operação irá processar todos os funcionários ativos.')">
+                        <button type="button" class="btn-modern btn-primary" 
+                            onclick="1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
                             <i class="fas fa-calculator"></i>
                             Calcular Folha
                         </button>

@@ -1,0 +1,134 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Excluir Funcionário{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "rh:funcionarios" %}">Funcionários</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'rh:funcionario_detail' funcionario.id %}">{{ funcionario.nome_completo }}</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Excluir</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Excluir Funcionário"
+    subtitle="Confirme a exclusão permanente deste funcionário do sistema"
+    icon="fas fa-trash"
+%}    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmação de Exclusão
+            </h5>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <i class="fas fa-warning"></i>
+                <div>
+                    <h6>Atenção!</h6>
+                    <p>Esta ação não pode ser desfeita. Todos os dados relacionados a este funcionário serão permanentemente removidos do sistema.</p>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <h6>Dados que serão excluídos:</h6>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <span class="data-label">Código</span>
+                        <span class="data-value">{{ funcionario.codigo_funcionario }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Nome</span>
+                        <span class="data-value">{{ funcionario.nome_completo }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Sucursal</span>
+                        <span class="data-value">{{ funcionario.sucursal.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Departamento</span>
+                        <span class="data-value">{{ funcionario.departamento.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Cargo</span>
+                        <span class="data-value">{{ funcionario.cargo.nome }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Status</span>
+                        <span class="data-value">{{ funcionario.get_status_display }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Data de Admissão</span>
+                        <span class="data-value">{{ funcionario.data_admissao|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Tipo de Contrato</span>
+                        <span class="data-value">{{ funcionario.get_tipo_contrato_display|default:"Não informado" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if funcionario.email or funcionario.telefone %}
+            <div class="data-section">
+                <h6>Contato:</h6>
+                <div class="contact-info">
+                    <p>
+                        {% if funcionario.email %}Email: {{ funcionario.email }}{% endif %}
+                        {% if funcionario.telefone %}<br>Telefone: {{ funcionario.telefone }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <h6>Impacto da Exclusão:</h6>
+                    <ul>
+                        <li>Histórico de presenças será mantido para fins de auditoria</li>
+                        <li>Registros de horas extras serão preservados</li>
+                        <li>Dados de folha salarial anteriores não serão afetados</li>
+                        <li>Relatórios e análises anteriores permanecerão intactos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <form method="post" style="display: contents;"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+                {% csrf_token %}
+                <a href="#"rh:funcionario_detail' funcionario.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="button" class="btn btn btn btn btn btn btn btn-danger" 
+                        onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                    <i class="fas fa-trash"></i>
+                    Confirmar Exclusão
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

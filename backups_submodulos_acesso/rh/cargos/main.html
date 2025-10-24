@@ -1,0 +1,228 @@
+{% extends 'base_list.html' %}
+
+{% block title %}Gestão de Cargos - RH{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Cargos</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-briefcase"></i>
+                    Gestão de Cargos
+                </h1>
+                <p class="page-subtitle">
+                    Defina cargos e suas responsabilidades na empresa
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="" class="btn -primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Cargo
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_cargos|default:"0" }}</h3>
+                <p class="stat-label">Total de Cargos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ cargos_ativos|default:"0" }}</h3>
+                <p class="stat-label">Cargos Ativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ cargos_inativos|default:"0" }}</h3>
+                <p class="stat-label">Cargos Inativos</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ funcionarios_com_cargo|default:"0" }}</h3>
+                <p class="stat-label">Funcionários com Cargo</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='cargos' %}
+    
+    <!-- Table Section -->
+    <div class="table-container">
+        {% if cargos %}
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-list"></i>
+                    Lista de Cargos
+                </h3>
+                <div class="table-actions">
+                    <span class="page-info">
+                        Mostrando {{ cargos.start_index }}-{{ cargos.end_index }} de {{ cargos.paginator.count }} cargos
+                    </span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Cargo</th>
+                            <th>Código</th>
+                            <th>Departamento</th>
+                            <th>Nível</th>
+                            <th>Categoria</th>
+                            <th>Status</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cargo in cargos %}
+                        <tr>
+                            <td>
+                                <div class="cell-primary">{{ cargo.nome }}</div>
+                            </td>
+                            <td>
+                                <span class="cell-code">{{ cargo.codigo_cargo|default:"N/A" }}</span>
+                            </td>
+                            <td>{{ cargo.departamento.nome|default:"N/A" }}</td>
+                            <td>
+                                <span class="cell-code">{{ cargo.get_nivel_display|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                <span class="cell-code">{{ cargo.get_categoria_display|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                {% if cargo.ativo %}
+                                    <span class="status-badge status-active">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="cell-tertiary" title="{{ cargo.descricao }}">
+                                    {{ cargo.descricao|truncatechars:60|default:"N/A" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-actions">
+                                    <a href="{% url 'rh:cargo_edit' cargo.id %}" class="btn-action secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#"rh:cargo_delete' cargo.id %}" class="btn-action danger" title="Eliminar" 
+                                       onclick="event.preventDefault(); return "Tem certeza que deseja eliminar este cargo?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if cargos.has_other_pages %}
+                <div class="pagination-modern">
+                    {% if cargos.has_previous %}
+                        <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ cargos.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ cargos.number }} de {{ cargos.paginator.num_pages }}
+                    </span>
+                    
+                    {% if cargos.has_next %}
+                        <a href="?page={{ cargos.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ cargos.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if departamento_id %}&departamento={{ departamento_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="table-empty">
+                <i class="fas fa-briefcase"></i>
+                <h4>Nenhum cargo encontrado</h4>
+                <p>
+                    {% if search_query or departamento_id or status %}
+                        Tente ajustar os filtros de pesquisa ou 
+                    {% endif %}
+                    adicione o primeiro cargo.
+                </p>
+                <a href="{% url 'rh:cargo_add' %}" class="btn -primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Cargo
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-submit nos filtros
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="departamento"], select[name="status"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}{% endblock %}
 
@@ -22,33 +22,20 @@
             Logística
         </a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <a href="{% url "stock:pod:dashboard" %}">POD & Documentos</a>
         <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:etiquetas_list' %}">Etiquetas</a>
+        <a href="">Etiquetas</a>
         <i class="fas fa-chevron-right"></i>
         <span>{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}</span>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-tags"></i>
-                    {% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}
-                </h1>
-                <p class="page-subtitle">
-                    {% if form.instance.pk %}Editar informações da Etiqueta{% else %}Criar nova Etiqueta{% endif %}
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:pod:etiquetas_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar à Lista
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="{% if form.instance.pk %}Editar Etiqueta{% else %}Nova Etiqueta{% endif %}"
+    subtitle="{% if form.instance.pk %}Editar informações da Etiqueta{% else %}Criar nova Etiqueta{% endif %}"
+    icon="fas fa-tags"
+%}    </div>
 
     <!-- Formulário -->
     <div class="card">
@@ -59,7 +46,7 @@
             </h3>
         </div>
         <div class="card-body">
-            <form method="post">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <div class="row">
@@ -127,11 +114,11 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i>
                         {% if form.instance.pk %}Atualizar Etiqueta{% else %}Criar Etiqueta{% endif %}
                     </button>
-                    <a href="{% url 'stock:pod:etiquetas_list' %}" class="btn btn-secondary">
+                    <a href="#"stock:pod:etiquetas_list' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i>
                         Cancelar
                     </a>
@@ -141,60 +128,5 @@
     </div>
 </div>
 
-<style>
-.form-group {
-    margin-bottom: 1.5rem;
-}
 
-.form-label {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
-}
-
-.form-text {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-}
-
-.form-errors {
-    margin-top: 0.5rem;
-}
-
-.error-message {
-    color: var(--accent-danger);
-    font-size: 0.875rem;
-    display: block;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-textarea.form-control {
-    resize: vertical;
-    min-height: 150px;
-}
-</style>
 {% endblock %}

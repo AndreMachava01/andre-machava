@@ -16,8 +16,8 @@ import math
 
 from .decorators import require_stock_access
 from .models_geolocation import (
-    EnderecoNormalizado, CoordenadaHistorica, CalculoDistancia, 
-    ConfiguracaoGeolocalizacao, ZonaGeografica
+    EnderecoNormalizado, CalculoDistancia, ETACalculo,
+    ConfiguracaoGeolocalizacao, ZonaGeografica, LogGeolocalizacao
 )
 from .models_stock import RastreamentoEntrega, VeiculoInterno
 from .services.geolocation_service import GeolocationService

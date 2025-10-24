@@ -13,12 +13,13 @@ from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal, InvalidOperation
 import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
 from .models_stock import (
     CategoriaProduto, Fornecedor, Receita, ItemReceita,
-    StockItem, TipoMovimentoStock, MovimentoItem, FornecedorProduto,
+    StockItem, TipoMovimentoStock, MovimentoItem, MovimentoStock, FornecedorProduto,
     Item, MovimentoItem
 )
 from .models_base import Sucursal
@@ -204,6 +205,7 @@ def stock_categorias(request):
             'search_query': search_query,
             'tipo': tipo,
             'status': status,
+            'timestamp': int(time.time()),  # Cache busting
             'tipos': CategoriaProduto.TIPO_CHOICES,
         }
         return render(request, 'stock/categorias/main.html', context)
@@ -390,6 +392,7 @@ def stock_fornecedores(request):
             'search_query': search_query,
             'tipo': tipo,
             'status': status,
+            'timestamp': int(time.time()),  # Cache busting
             'tipos': Fornecedor.TIPO_CHOICES,
             'status_choices': Fornecedor.STATUS_CHOICES,
         }
@@ -774,6 +777,7 @@ def stock_produtos(request):
             'categoria_id': categoria_id,
             'status': status,
             'tipo': tipo,
+            'timestamp': int(time.time()),  # Cache busting
             'categorias': CategoriaProduto.objects.filter(ativa=True).filter(
                 Q(tipo='PRODUTO') | Q(tipo='AMBOS') | Q(tipo='TODOS')
             ),
@@ -982,6 +986,15 @@ def stock_produto_detail(request, id):
         ).select_related('tipo_movimento', 'sucursal').order_by('-data_movimento')[:10]
         
         context = {
+            'object': produto,
+            'object_name': produto.nome,
+            'entity_name': 'produto',
+            'breadcrumb_url': 'stock:produtos',
+            'breadcrumb_title': 'Produtos',
+            'header_icon': 'box',
+            'page_subtitle': 'Detalhes completos do produto',
+            'back_url': 'stock:produtos',
+            'edit_url': 'stock:produto_edit',
             'produto': produto,
             'stocks_sucursais': stocks_sucursais,
             'movimentos_recentes': movimentos_recentes,
@@ -1016,9 +1029,9 @@ def stock_por_sucursal(request):
         if sucursal_id and int(sucursal_id) in sucursais_ids:
             stocks = stocks.filter(sucursal_id=sucursal_id)
         if produto_id:
-            stocks = stocks.filter(produto_id=produto_id)
+            stocks = stocks.filter(item_id=produto_id)
         
-        stocks = stocks.order_by('sucursal__nome', 'produto__nome')
+        stocks = stocks.order_by('sucursal__nome', 'item__nome')
         
         context = {
             'stocks': stocks,
@@ -1048,19 +1061,19 @@ def stock_sucursal_detail(request, sucursal_id):
         
         if search:
             stocks = stocks.filter(
-                Q(produto__nome__icontains=search) | 
-                Q(produto__codigo__icontains=search)
+                Q(item__nome__icontains=search) | 
+                Q(item__codigo__icontains=search)
             )
         
         if status_estoque:
             if status_estoque == 'BAIXO':
-                stocks = stocks.filter(quantidade_atual__lte=F('produto__estoque_minimo'))
+                stocks = stocks.filter(quantidade_atual__lte=F('item__estoque_minimo'))
             elif status_estoque == 'ALTO':
-                stocks = stocks.filter(quantidade_atual__gte=F('produto__estoque_maximo'))
+                stocks = stocks.filter(quantidade_atual__gte=F('item__estoque_maximo'))
             elif status_estoque == 'NORMAL':
                 stocks = stocks.filter(
-                    quantidade_atual__gt=F('produto__estoque_minimo'),
-                    quantidade_atual__lt=F('produto__estoque_maximo')
+                    quantidade_atual__gt=F('item__estoque_minimo'),
+                    quantidade_atual__lt=F('item__estoque_maximo')
                 )
         
         paginator = Paginator(stocks, 20)
@@ -2076,6 +2089,7 @@ def stock_materiais(request):
             'categoria_id': categoria_id,
             'tipo': tipo,
             'status': status,
+            'timestamp': int(time.time()),  # Cache busting
             'categorias': CategoriaProduto.objects.filter(ativa=True).filter(
                 Q(tipo='MATERIAL') | Q(tipo='AMBOS') | Q(tipo='TODOS')
             ),
@@ -2306,17 +2320,17 @@ def stock_receitas(request):
                 Q(nome__icontains=search_query) |
                 Q(codigo__icontains=search_query) |
                 Q(descricao__icontains=search_query) |
-                Q(produto__nome__icontains=search_query)
+                Q(item__nome__icontains=search_query)
             )
         
         if produto_id:
-            receitas = receitas.filter(produto_id=produto_id)
+            receitas = receitas.filter(item_id=produto_id)
         
         if status:
             receitas = receitas.filter(status=status)
 
         # Ordenação
-        receitas = receitas.order_by('produto__nome', 'nome')
+        receitas = receitas.order_by('item__nome', 'nome')
 
         # Paginação
         paginator = Paginator(receitas, 20)

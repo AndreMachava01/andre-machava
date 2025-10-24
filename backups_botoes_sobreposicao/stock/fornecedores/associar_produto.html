@@ -1,0 +1,182 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Associar Produto ao Fornecedor{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedores' %}">Fornecedores</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedor_detail' fornecedor.id %}">{{ fornecedor.nome }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stock:fornecedor_produtos' fornecedor.id %}">Produtos</a></li>
+            <li class="breadcrumb-item active">Associar Produto</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="modern-container">
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-link"></i>
+                Associar Produto
+            </h1>
+            <p class="hero-subtitle">
+                Associe um produto ao fornecedor {{ fornecedor.nome }}
+            </p>
+            <div class="hero-btns btn-responsive">
+                <a href="#"stock:fornecedor_produtos' fornecedor.id %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Produtos
+                </a>
+                <a href="#"stock:fornecedor_detail' fornecedor.id %}" class="btn-modern btn btn-secondary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-user"></i>
+                    Detalhes do Fornecedor
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        {% if produtos_disponiveis or materiais_disponiveis %}
+            <div class="form-container">
+                <form method="post"action="."method="post">{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="tipo_item" class="form-label">
+                            <i class="fas fa-tags"></i>
+                            Tipo de|default:0 items
+                        </label>
+                        <select name="tipo_item" id="tipo_item" class="form-control" required onchange="toggleItemSelectors()">
+                            <option value="">Selecione o tipo...</option>
+                            <option value="produto">Produto</option>
+                            <option value="material">Material</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="produto-group" style="display: none;">
+                        <label for="produto" class="form-label">
+                            <i class="fas fa-box"></i>
+                            Produto
+                        </label>
+                        <select name="produto" id="produto" class="form-control">
+                            <option value="">Selecione um produto...</option>
+                            {% for produto in produtos_disponiveis %}
+                                <option value="{{ produto.id }}">
+                                    {{ produto.nome }} ({{ produto.codigo }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="material-group" style="display: none;">
+                        <label for="material" class="form-label">
+                            <i class="fas fa-cogs"></i>
+                            Material
+                        </label>
+                        <select name="material" id="material" class="form-control">
+                            <option value="">Selecione um material...</option>
+                            {% for material in materiais_disponiveis %}
+                                <option value="{{ material.id }}">
+                                    {{ material.nome }} ({{ material.codigo }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preco_fornecedor" class="form-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            Preço do Fornecedor (MT)
+                        </label>
+                        <input type="number" 
+                               name="preco_fornecedor" 
+                               id="preco_fornecedor" 
+                               class="form-control" 
+                               placeholder="Ex: 150.00"
+                               step="0.01"
+                               min="0.01"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prazo_entrega" class="form-label">
+                            <i class="fas fa-clock"></i>
+                            Prazo de Entrega (dias)
+                        </label>
+                        <input type="number" 
+                               name="prazo_entrega" 
+                               id="prazo_entrega" 
+                               class="form-control" 
+                               placeholder="Ex: 7"
+                               min="1"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn-submit" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                        <i class="fas fa-link"></i>
+                        Associar Produto
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h3>Todos os itens já estão associados</h3>
+                <p>Este fornecedor já possui todos os produtos e materiais disponíveis associados.</p>
+                <a href="#"stock:fornecedor_produtos' fornecedor.id %}" class="btn-modern btn btn-primary-modern btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Produtos
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleItemSelectors() {
+    const tipoItem = document.getElementById('tipo_item').value;
+    const produtoGroup = document.getElementById('produto-group');
+    const materialGroup = document.getElementById('material-group');
+    const produtoSelect = document.getElementById('produto');
+    const materialSelect = document.getElementById('material');
+    
+    // Esconder ambos os grupos
+    produtoGroup.style.display = 'none';
+    materialGroup.style.display = 'none';
+    
+    // Limpar seleções
+    produtoSelect.value = '';
+    materialSelect.value = '';
+    
+    // Mostrar o grupo apropriado
+    if (tipoItem === 'produto') {
+        produtoGroup.style.display = 'block';
+        produtoSelect.required = true;
+        materialSelect.required = false;
+    } else if (tipoItem === 'material') {
+        materialGroup.style.display = 'block';
+        materialSelect.required = true;
+        produtoSelect.required = false;
+    } else {
+        produtoSelect.required = false;
+        materialSelect.required = false;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'base_list.html' %}
+
+<!-- FILTROS UNIFICADOS -->
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+{% load static %}
+
+{% block title %}Operações Logísticas{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.total }}</h3>
+                    <p class="stat-label">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.pendentes }}</h3>
+                    <p class="stat-label">Pendentes</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.em_andamento }}</h3>
+                    <p class="stat-label">Em Andamento</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.concluidas }}</h3>
+                    <p class="stat-label">Concluídas</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.urgentes }}</h3>
+                    <p class="stat-label">Urgentes</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.transferencias }}</h3>
+                    <p class="stat-label">Transferências</p>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number">{{ stats.coletas }}</h3>
+                    <p class="stat-label">Coletas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Operações -->
+    <div class="operacoes-list" style="background: #374151; border-radius: 15px; overflow: hidden;">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="modern-table" style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #1f2937;">
+                        <tr>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Tipo</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Operação</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Rota</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Status</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Prioridade</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Transporte</th>
+                            <th style="padding: 15px; text-align: left; color: #d1d5db; font-weight: 600;">Data</th>
+                            <th style="padding: 15px; text-align: center; color: #d1d5db; font-weight: 600;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notificacao in page_obj %}
+                        <tr style="border-bottom: 1px solid #4b5563;">
+                            <td style="padding: 15px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="{{ notificacao.get_tipo_operacao_icon }}" 
+                                       style="color: {% if notificacao.tipo_operacao == 'TRANSFERENCIA' %}#667eea{% else %}#10b981{% endif %}; font-size: 1.2rem;"></i>
+                                    <span style="font-weight: 600; color: {% if notificacao.tipo_operacao == 'TRANSFERENCIA' %}#667eea{% else %}#10b981{% endif %};">
+                                        {{ notificacao.get_tipo_operacao_display }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 600; color: #06b6d4;">{{ notificacao.codigo_operacao }}</div>
+                                <div style="font-size: 0.85rem; color: #9ca3af;">{{ notificacao.data_notificacao|date:"d/m/Y H:i" }}</div>
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 500; color: #d1d5db;">
+                                    {{ notificacao.origem_operacao }}
+                                    <i class="fas fa-arrow-right" style="margin: 0 8px; color: #6b7280;"></i>
+                                    {{ notificacao.destino_operacao }}
+                                </div>
+                                {% if notificacao.tipo_operacao == 'COLETA' %}
+                                    <div style="font-size: 0.8rem; color: #9ca3af;">Fornecedor → Empresa</div>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px;">
+                                <span class="badge badge-{{ notificacao.get_status_color }}" 
+                                      style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                    {{ notificacao.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="padding: 15px;">
+                                <span class="badge badge-{{ notificacao.get_prioridade_color }}" 
+                                      style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                    {{ notificacao.get_prioridade_display }}
+                                </span>
+                            </td>
+                            <td style="padding: 15px;">
+                                {% if notificacao.transporte_escolhido %}
+                                    <div style="font-weight: 500; color: #d1d5db;">{{ notificacao.transporte_escolhido.nome }}</div>
+                                    <div style="font-size: 0.8rem; color: #9ca3af;">{{ notificacao.get_tipo_transporte_display }}</div>
+                                {% else %}
+                                    <span style="color: #9ca3af; font-style: italic;">Não atribuído</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="font-size: 0.85rem; color: #d1d5db;">
+                                    Notificada: {{ notificacao.data_notificacao|date:"d/m H:i" }}
+                                </div>
+                                {% if notificacao.data_atribuicao %}
+                                    <div style="font-size: 0.8rem; color: #9ca3af;">
+                                        Atribuída: {{ notificacao.data_atribuicao|date:"d/m H:i" }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px; text-align: center;">
+                                <div class="action-btns -responsive" style="display: flex; gap: 8px; justify-content: center;">
+                                    <a href="#"stock:logistica:operacao_detail' notificacao.id %}" 
+                                       class="btn btn btn-info btn-sm btn-responsive -responsive" 
+                                       style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                       title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if notificacao.status == 'PENDENTE' %}
+                                        <a href="#"stock:logistica:operacao_atribuir' notificacao.id %}" 
+                                           class="btn btn btn-warning btn-sm btn-responsive -responsive" 
+                                           style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                           title="Atribuir Transporte">
+                                            <i class="fas fa-truck"></i>
+                                        </a>
+                                    {% elif notificacao.status == 'EM_ANDAMENTO' %}
+                                        <a href="#"stock:logistica:operacao_concluir' notificacao.id %}" 
+                                           class="btn btn btn-success btn-sm btn-responsive -responsive" 
+                                           style="padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem;"
+                                           title="Concluir">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination-container" style="padding: 20px; background: #1f2937; border-top: 1px solid #4b5563;">
+                    <div class="pagination" style="display: flex; justify-content: center; gap: 10px;">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if tipo_operacao %}&tipo_operacao={{ tipo_operacao }}{% endif %}" 
+                               style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <span style="padding: 8px 12px; background: #667eea; color: white; border-radius: 6px;">
+                            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if tipo_operacao %}&tipo_operacao={{ tipo_operacao }}{% endif %}" 
+                               style="padding: 8px 12px; background: #4b5563; color: white; text-decoration: none; border-radius: 6px;">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state" style="padding: 40px; text-align: center; color: #9ca3af;">
+                <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="color: #d1d5db; margin-bottom: 10px;">Nenhuma operação encontrada</h3>
+                <p>Não há operações logísticas pendentes no momento.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CSS removido - usando sistema unificado de filtros -->
+{% endblock %}
+

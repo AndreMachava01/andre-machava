@@ -1,0 +1,108 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Confirmar Coleta{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-hand-holding"></i>
+            Confirmar Coleta
+        </h1>
+        <p class="page-subtitle">
+            Operação #{{ notificacao.id }} - {{ notificacao.get_tipo_operacao_display }}
+        </p>
+    </div>
+
+    <!-- Informações da Operação -->
+    <div class="info-card">
+        <h3 class="info-card-title">
+            <i class="fas fa-info-circle"></i>
+            Informações da Operação
+        </h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">ID da Operação</div>
+                <div class="info-value">#{{ notificacao.id }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Tipo de Operação</div>
+                <div class="info-value">{{ notificacao.get_tipo_operacao_display }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status Atual</div>
+                <div class="info-value">
+                    <span class="status-badge status-atribuida">{{ notificacao.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Prioridade</div>
+                <div class="info-value">{{ notificacao.get_prioridade_display }}</div>
+            </div>
+            {% if notificacao.veiculo_interno %}
+            <div class="info-item">
+                <div class="info-label">Veículo Atribuído</div>
+                <div class="info-value">{{ notificacao.veiculo_interno.placa }} - {{ notificacao.veiculo_interno.modelo }}</div>
+            </div>
+            {% elif notificacao.transportadora_externa %}
+            <div class="info-item">
+                <div class="info-label">Veículo Atribuído</div>
+                <div class="info-value">{{ notificacao.transportadora_externa.nome }}</div>
+            </div>
+            {% endif %}
+            {% if notificacao.transportadora_externa %}
+            <div class="info-item">
+                <div class="info-label">Transportadora</div>
+                <div class="info-value">{{ notificacao.transportadora_externa.nome }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulário de Confirmação -->
+    <div class="info-card">
+        <h3 class="info-card-title">
+            <i class="fas fa-check-circle"></i>
+            Confirmar Coleta
+        </h3>
+        <p style="color: #cbd5e1; margin-bottom: 30px;">
+            Confirme que a mercadoria foi coletada com sucesso no local de origem.
+        </p>
+        
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="observacoes" class="form-label">
+                    <i class="fas fa-comment-alt"></i>
+                    Observações da Coleta
+                </label>
+                <textarea 
+                    name="observacoes" 
+                    id="observacoes" 
+                    class="form-control" 
+                    rows="4" 
+                    placeholder="Descreva qualquer observação sobre a coleta realizada..."
+                ></textarea>
+            </div>
+            
+            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-hand-holding"></i>
+                    Confirmar Coleta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

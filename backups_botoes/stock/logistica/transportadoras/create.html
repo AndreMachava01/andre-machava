@@ -1,0 +1,263 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Nova Transportadora Externa{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus"></i>
+                    Nova Transportadora Externa
+                </h1>
+                <p class="page-subtitle">
+                    Cadastre uma nova transportadora externa
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-list"></i>
+                    Lista de Transportadoras
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{{ message.tags|lower }}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Informação:</strong> Cadastrando transportadora externa
+        </div>
+
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <!-- Informações Básicas -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Informações Básicas</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}">
+                            <i class="fas fa-building"></i> Nome da Transportadora
+                        </label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}<ul class="errorlist">{% for error in form.nome.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.codigo.id_for_label }}">
+                            <i class="fas fa-tag"></i> Código
+                        </label>
+                        {{ form.codigo }}
+                        {% if form.codigo.errors %}<ul class="errorlist">{% for error in form.codigo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.tipo.id_for_label }}">
+                            <i class="fas fa-truck"></i> Tipo <span style="color: #ef4444;">*</span>
+                        </label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}<ul class="errorlist">{% for error in form.tipo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.categoria.id_for_label }}">
+                            <i class="fas fa-truck-pickup"></i> Categoria
+                        </label>
+                        {{ form.categoria }}
+                        {% if form.categoria.errors %}<ul class="errorlist">{% for error in form.categoria.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">
+                            <i class="fas fa-power-off"></i> Status
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<ul class="errorlist">{% for error in form.status.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.ativa }}
+                            <label class="form-check-label" for="{{ form.ativa.id_for_label }}">
+                                <i class="fas fa-toggle-on"></i> Transportadora Ativa
+                            </label>
+                        </div>
+                        {% if form.ativa.errors %}<ul class="errorlist">{% for error in form.ativa.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="form-card" id="contato-section">
+                    <div class="form-card-header">
+                        <i class="fas fa-phone"></i>
+                        <h3>Informações de Contato</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.nuit.id_for_label }}">
+                            <i class="fas fa-id-card"></i> NUIT
+                        </label>
+                        {{ form.nuit }}
+                        {% if form.nuit.errors %}<ul class="errorlist">{% for error in form.nuit.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.telefone.id_for_label }}">
+                            <i class="fas fa-phone"></i> Telefone
+                        </label>
+                        {{ form.telefone }}
+                        {% if form.telefone.errors %}<ul class="errorlist">{% for error in form.telefone.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<ul class="errorlist">{% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.website.id_for_label }}">
+                            <i class="fas fa-globe"></i> Website
+                        </label>
+                        {{ form.website }}
+                        {% if form.website.errors %}<ul class="errorlist">{% for error in form.website.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.endereco.id_for_label }}">
+                            <i class="fas fa-map-marker-alt"></i> Endereço
+                        </label>
+                        {{ form.endereco }}
+                        {% if form.endereco.errors %}<ul class="errorlist">{% for error in form.endereco.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.cidade.id_for_label }}">
+                            <i class="fas fa-city"></i> Cidade
+                        </label>
+                        {{ form.cidade }}
+                        {% if form.cidade.errors %}<ul class="errorlist">{% for error in form.cidade.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.provincia.id_for_label }}">
+                            <i class="fas fa-map"></i> Província
+                        </label>
+                        {{ form.provincia }}
+                        {% if form.provincia.errors %}<ul class="errorlist">{% for error in form.provincia.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Custos e Prazos -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Custos e Prazos</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.prazo_entrega_padrao.id_for_label }}">
+                            <i class="fas fa-calendar-day"></i> Prazo de Entrega Padrão
+                        </label>
+                        {{ form.prazo_entrega_padrao }}
+                        <small>dias</small>
+                        {% if form.prazo_entrega_padrao.errors %}<ul class="errorlist">{% for error in form.prazo_entrega_padrao.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.custo_por_kg.id_for_label }}">
+                            <i class="fas fa-money-bill-wave"></i> Custo por Kg
+                        </label>
+                        {{ form.custo_por_kg }}
+                        <small>MT/kg</small>
+                        {% if form.custo_por_kg.errors %}<ul class="errorlist">{% for error in form.custo_por_kg.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.custo_fixo.id_for_label }}">
+                            <i class="fas fa-hand-holding-usd"></i> Custo Fixo
+                        </label>
+                        {{ form.custo_fixo }}
+                        <small>MT</small>
+                        {% if form.custo_fixo.errors %}<ul class="errorlist">{% for error in form.custo_fixo.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <i class="fas fa-sticky-note"></i>
+                        <h3>Observações</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.observacoes.id_for_label }}">
+                            <i class="fas fa-comment"></i> Observações Adicionais
+                        </label>
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}<ul class="errorlist">{% for error in form.observacoes.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-btns-bottom -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i> Criar Transportadora
+                </button>
+                <a href="#"stock:logistica:transportadoras_list' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoInput = document.getElementById('id_tipo');
+
+    // Definir tipo como transportadora externa por padrão
+    if (tipoInput) {
+        tipoInput.value = 'TRANSPORTADORA_EXTERNA';
+        
+        // Mostrar/ocultar seções baseado no tipo
+        const viaturaSection = document.getElementById('viatura-section');
+        const motoristaSection = document.getElementById('motorista-section');
+        const contatoSection = document.getElementById('contato-section');
+        
+        // Mostrar seção de contato para transportadoras externas
+        if (contatoSection) contatoSection.style.display = 'block';
+        
+        // Ocultar seções de viatura e motorista para transportadoras externas
+        if (viaturaSection) viaturaSection.style.display = 'none';
+        if (motoristaSection) motoristaSection.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

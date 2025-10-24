@@ -1,0 +1,507 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+    {% if promocao %}Editar Promoção{% else %}Nova Promoção{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/">RH</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/rh/promocoes/">Promoções</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{% if promocao %}Editar{% else %}Nova{% endif %}</span>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-trophy"></i>
+                    {% if promocao %}Editar Promoção{% else %}Nova Promoção{% endif %}
+                </h1>
+                <p class="page-subtitle">
+                    {% if promocao %}
+                        Edite as informações da promoção
+                    {% else %}
+                        Crie uma nova promoção para funcionário
+                    {% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" id="promocaoForm"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações Básicas
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="funcionario" class="form-label">Funcionário <span class="required">*</span></label>
+                        <select name="funcionario" id="funcionario" class="form-select" required>
+                            <option value="">Selecione um funcionário</option>
+                            {% for funcionario in funcionarios %}
+                                <option value="{{ funcionario.id }}" 
+                                        {% if promocao and promocao.funcionario.id == funcionario.id %}selected{% endif %}>
+                                    {{ funcionario.nome_completo }} - {{ funcionario.cargo.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Funcionário que será promovido</div>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="tipo" class="form-label">Tipo <span class="required">*</span></label>
+                        <select name="tipo" id="tipo" class="form-select" required>
+                            <option value="">Selecione o tipo</option>
+                            {% for value, label in tipo_choices %}
+                                <option value="{{ value }}" {% if promocao and promocao.tipo == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Tipo de promoção</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Salários -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Informações Salariais
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="salario_anterior" class="form-label">Salário Anterior</label>
+                        <input type="number" id="salario_anterior" class="form-control" readonly>
+                        <div class="help-text">Preenchido automaticamente</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salario_novo" class="form-label">Salário Novo <span class="required">*</span></label>
+                        <input type="number" name="salario_novo" id="salario_novo" 
+                               class="form-control" step="0.01" min="0" required
+                               value="{% if promocao %}{{ promocao.salario_novo }}{% endif %}">
+                        <div class="help-text">Valor do novo salário em Meticais (MT)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="manter_salario" name="manter_salario" class="form-check-input">
+                            <label for="manter_salario" class="form-check-label">Manter salário atual</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview do Aumento -->
+                <div id="salaryPreview" class="salary-preview" style="display: none;">
+                    <h4>Resumo do Aumento</h4>
+                    <div class="salary-details">
+                        <div class="salary-item">
+                            <div class="label">Salário Anterior</div>
+                            <div class="value" id="prevSalary">0.00 MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Salário Novo</div>
+                            <div class="value" id="newSalary">0.00 MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Valor do Aumento</div>
+                            <div class="value" id="increaseValue">0.00 MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Percentual</div>
+                            <div class="value" id="increasePercent">0.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cargos (para promoções) -->
+            <div class="form-section" id="cargoSection" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-briefcase"></i>
+                    Informações de Cargo
+                </h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="cargo_anterior" class="form-label">Cargo Atual</label>
+                        <input type="text" id="cargo_anterior" class="form-control" readonly>
+                        <div class="help-text">Preenchido automaticamente</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cargo_novo" class="form-label">Novo Cargo</label>
+                        <select name="cargo_novo" id="cargo_novo" class="form-select">
+                            <option value="">Manter cargo atual</option>
+                            {% for cargo in cargos %}
+                                <option value="{{ cargo.id }}" {% if promocao and promocao.cargo_novo and promocao.cargo_novo.id == cargo.id %}selected{% endif %}>
+                                    {{ cargo.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Selecione o novo cargo (opcional)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Motivação -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-comment-alt"></i>
+                Motivação e Justificativa
+            </h2>
+            <div class="form-group">
+                <label for="motivo" class="form-label">Motivo <span class="required">*</span></label>
+                <textarea name="motivo" id="motivo" class="form-control" rows="3" required
+                          placeholder="Descreva o motivo da promoção/aumento...">{% if promocao %}{{ promocao.motivo }}{% endif %}</textarea>
+                <div class="help-text">Descrição breve do motivo da promoção/aumento</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="justificativa" class="form-label">Justificativa Detalhada</label>
+                <textarea name="justificativa" id="justificativa" class="form-control" rows="4"
+                          placeholder="Justificativa detalhada para a promoção/aumento...">{% if promocao %}{{ promocao.justificativa }}{% endif %}</textarea>
+                <div class="help-text">Justificativa detalhada com base em desempenho, resultados, etc.</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="observacoes" class="form-label">Observações</label>
+                <textarea name="observacoes" id="observacoes" class="form-control" rows="2"
+                          placeholder="Observações adicionais...">{% if promocao %}{{ promocao.observacoes }}{% endif %}</textarea>
+                <div class="help-text">Observações adicionais (opcional)</div>
+            </div>
+        </div>
+        
+        <!-- Ações -->
+        <div class="form-actions">
+            <a href="#"rh:promocoes' %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-save"></i>
+                {% if promocao %}Atualizar{% else %}Solicitar{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const funcionarioSelect = document.getElementById('funcionario');
+    const tipoSelect = document.getElementById('tipo');
+    const salarioAnteriorInput = document.getElementById('salario_anterior');
+    const cargoAnteriorInput = document.getElementById('cargo_anterior');
+    const salarioNovoInput = document.getElementById('salario_novo');
+    const manterSalarioCheckbox = document.getElementById('manter_salario');
+    const cargoSection = document.getElementById('cargoSection');
+    const salaryPreview = document.getElementById('salaryPreview');
+    
+    // Atualizar informações quando funcionário é selecionado
+    funcionarioSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const salario = selectedOption.getAttribute('data-salario');
+            const cargoNome = selectedOption.getAttribute('data-cargo');
+            salarioAnteriorInput.value = salario ? parseFloat(salario).toFixed(2) : '';
+            cargoAnteriorInput.value = cargoNome || '';
+            if (manterSalarioCheckbox.checked && salario) {
+                salarioNovoInput.value = parseFloat(salario).toFixed(2);
+            }
+            updateSalaryPreview();
+        } else {
+            salarioAnteriorInput.value = '';
+            cargoAnteriorInput.value = '';
+            salaryPreview.style.display = 'none';
+        }
+    });
+    
+    // Mostrar/ocultar seção de cargo para promoções
+    tipoSelect.addEventListener('change', function() {
+        if (this.value === 'PROMOCAO') {
+            cargoSection.style.display = 'block';
+        } else {
+            cargoSection.style.display = 'none';
+        }
+    });
+    
+    // Atualizar preview do salário
+    salarioNovoInput.addEventListener('input', updateSalaryPreview);
+
+    // Manter salário atual: sincroniza salário novo com o anterior e bloqueia edição
+    manterSalarioCheckbox.addEventListener('change', function() {
+        const salarioAnterior = parseFloat(salarioAnteriorInput.value) || 0;
+        if (this.checked) {
+            if (salarioAnterior > 0) {
+                salarioNovoInput.value = salarioAnterior.toFixed(2);
+                salarioNovoInput.readOnly = true;
+            }
+        } else {
+            salarioNovoInput.readOnly = false;
+        }
+        updateSalaryPreview();
+    });
+    
+    function updateSalaryPreview() {
+        const salarioAnterior = parseFloat(salarioAnteriorInput.value) || 0;
+        const salarioNovo = parseFloat(salarioNovoInput.value) || 0;
+        
+        if (salarioAnterior > 0 && salarioNovo > 0) {
+            const aumento = salarioNovo - salarioAnterior;
+            const percentual = salarioAnterior > 0 ? (aumento / salarioAnterior) * 100 : 0;
+            
+            document.getElementById("prevSalary").textContent = salarioAnterior || 0.toFixed(2) + ' MT';
+            document.getElementById("newSalary").textContent = salarioNovo || 0.toFixed(2) + ' MT';
+            document.getElementById("increaseValue").textContent = aumento || 0.toFixed(2) + ' MT';
+            document.getElementById("increasePercent").textContent = percentual || 0.toFixed(1) + '%';
+            
+            // Colorir baseado no tipo de mudança
+            const increaseValue = document.getElementById('increaseValue');
+            const increasePercent = document.getElementById('increasePercent');
+            
+            if (aumento > 0) {
+                increaseValue.className = 'value increase';
+                increasePercent.className = 'value increase';
+            } else if (aumento < 0) {
+                increaseValue.className = 'value decrease';
+                increasePercent.className = 'value decrease';
+            } else {
+                increaseValue.className = 'value';
+                increasePercent.className = 'value';
+            }
+            
+            salaryPreview.style.display = 'block';
+        } else {
+            salaryPreview.style.display = 'none';
+        }
+    }
+    
+    // Inicializar se já há dados
+    if (funcionarioSelect.value) {
+        funcionarioSelect.dispatchEvent(new Event('change'));
+    }
+    if (tipoSelect.value) {
+        tipoSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+
+<style>
+/* Estilos específicos para formulário de promoções */
+.form-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+}
+
+.form-section {
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.form-control, .form-select {
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-input);
+    color: var(--text-color);
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea.form-control {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.required {
+    color: var(--accent-danger);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-primary);
+}
+
+.form-check-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.salary-preview {
+    background: var(--surface-light);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.salary-preview h4 {
+    margin: 0 0 15px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.salary-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.salary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--surface-dark);
+    border-radius: 6px;
+}
+
+.salary-item .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.salary-item .value {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+    background: var(--surface-medium);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-light);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    
+    
+    
+    
+    
+}
+</style>
+
+{% endblock %}

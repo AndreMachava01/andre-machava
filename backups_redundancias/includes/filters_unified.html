@@ -1,0 +1,271 @@
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters('{{ entity_name }}');
+});
+
+function initializeFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Configurar layout das colunas baseado no número de filtros
+    const filterGroups = form.querySelectorAll('.filter-group');
+    const filterCount = filterGroups.length;
+    
+    console.log('Filtros encontrados:', filterCount); // Debug
+    
+    // Remover classes existentes
+    form.classList.remove('filters-1-col', 'filters-2-col', 'filters-3-col', 'filters-4-col', 'filters-5-col', 'filters-6-col');
+    
+    // Aplicar classe baseada no número de filtros
+    if (filterCount === 1) {
+        form.classList.add('filters-1-col');
+    } else if (filterCount === 2) {
+        form.classList.add('filters-2-col');
+    } else if (filterCount === 3) {
+        form.classList.add('filters-3-col');
+    } else if (filterCount === 4) {
+        form.classList.add('filters-4-col');
+    } else if (filterCount === 5) {
+        form.classList.add('filters-5-col');
+    } else if (filterCount >= 6) {
+        form.classList.add('filters-6-col');
+    }
+    
+    console.log('Classes aplicadas:', form.className); // Debug
+    
+    // Auto-submit em mudanças de select (exceto pesquisa)
+    const selects = form.querySelectorAll('select[data-filter-field]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Resetar página para 1 ao filtrar
+            const pageInput = document.getElementById('page-input-' + entityName);
+            if (pageInput) pageInput.value = '1';
+            form.submit();
+        });
+    });
+    
+    // Debounce para campo de pesquisa
+    const searchInput = form.querySelector('input[type="text"][data-filter-field]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const pageInput = document.getElementById('page-input-' + entityName);
+                if (pageInput) pageInput.value = '1';
+                form.submit();
+            }, 500); // 500ms de delay
+        });
+    }
+}
+
+function clearFilters(entityName) {
+    const form = document.getElementById('filters-form-' + entityName);
+    if (!form) return;
+    
+    // Limpar todos os campos
+    form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+    form.querySelectorAll('select').forEach(select => {
+        if (select.multiple) {
+            Array.from(select.options).forEach(option => option.selected = false);
+        } else {
+            select.selectedIndex = 0;
+        }
+    });
+    form.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+    
+    // Resetar página
+    document.getElementById('page-input-' + entityName).value = '1';
+    
+    // Submeter formulário
+    form.submit();
+}
+
+function toggleFilters(entityName) {
+    const filtersSection = document.querySelector('#filters-form-' + entityName).closest('.filters-section');
+    const toggleBtn = filtersSection.querySelector('.btn-toggle-filters');
+    const icon = toggleBtn.querySelector('i');
+    
+    if (filtersSection.classList.contains('filters-collapsed')) {
+        filtersSection.classList.remove('filters-collapsed');
+        icon.className = 'fas fa-chevron-up';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar Filtros';
+    } else {
+        filtersSection.classList.add('filters-collapsed');
+        icon.className = 'fas fa-chevron-down';
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Mostrar Filtros';
+    }
+}
+
+
+</script>
+
+
+
+{% comment %}
+SISTEMA UNIFICADO DE FILTROS DE BUSCA - LAYOUT HORIZONTAL PROFISSIONAL
+Template centralizado para todas as seções de filtros do sistema
+
+Uso:
+    {% include 'includes/filters_unified.html' with entity_name='produtos' %}
+
+Parâmetros:
+    - entity_name: Nome da entidade (obrigatório)
+    - filter_config: Configuração de filtros (opcional, será obtida automaticamente)
+    - custom_filters: Filtros customizados adicionais (opcional)
+    - show_title: Mostrar título da seção (padrão: true)
+    - compact_mode: Modo compacto (padrão: false)
+{% endcomment %}
+
+{% load static %}
+
+<div class="filters-section-professional {% if compact_mode %}filters-compact{% endif %}">
+    {% if show_title|default:true %}
+        <div class="filters-header">
+            <h3 class="filters-title">
+                <i class="fas fa-search"></i>
+                Filtros de Busca
+            </h3>
+            <button type="button" class="btn-toggle-filters btn btn-primary btn-responsive" id="btn-toggle-{{ entity_name }}" aria-label="Botão de filtros" title="Clique para executar ação" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                <i class="fas fa-search"></i>
+                Buscar
+            </button>
+            
+            <button type="button" class="btn btn-outline-secondary btn-toggle-filters" onclick=" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0">
+                <i class="fas fa-chevron-up"></i>
+                Ocultar Filtros
+            </button>
+        </div>
+    {% endif %}
+    
+    <div class="filters-container-professional">
+        <form method="get" class="filters-form-horizontal" id="filters-form-{{ entity_name }}"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            <div class="filters-row-professional">
+                <!-- Campo de Pesquisa Padrão -->
+                <div class="filter-group">
+                    <label for="search-{{ entity_name }}" class="filter-label">Pesquisar</label>
+                    <input type="text" 
+                           id="search-{{ entity_name }}" 
+                           name="q" 
+                           value="{{ search_query|default:'' }}"
+                           placeholder="{{ search_placeholder|default:'Digite para pesquisar...' }}"
+                           class="form-control"
+                           data-filter-field="search">
+                </div>
+                
+                <!-- Filtros Dinâmicos Baseados no Contexto -->
+                {% if entity_name == 'produtos' %}
+                    <!-- Filtros específicos para produtos -->
+                    {% if categorias %}
+                    <div class="filter-group">
+                        <label for="categoria-{{ entity_name }}" class="filter-label">Categoria</label>
+                        <select id="categoria-{{ entity_name }}" name="categoria" class="form-control" data-filter-field="categoria">
+                            <option value="">Todas as categorias</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ categoria.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if status_choices %}
+                    <div class="filter-group">
+                        <label for="status-{{ entity_name }}" class="filter-label">Status</label>
+                        <select id="status-{{ entity_name }}" name="status" class="form-control" data-filter-field="status">
+                            <option value="">Todos os status</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if tipos %}
+                    <div class="filter-group">
+                        <label for="tipo-{{ entity_name }}" class="filter-label">Tipo</label>
+                        <select id="tipo-{{ entity_name }}" name="tipo" class="form-control" data-filter-field="tipo">
+                            <option value="">Todos os tipos</option>
+                            {% for value, label in tipos %}
+                                <option value="{{ value }}" {% if tipo == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                {% elif entity_name == 'funcionarios' %}
+                    <!-- Filtros específicos para funcionários -->
+                    {% if departamentos %}
+                    <div class="filter-group">
+                        <label for="departamento-{{ entity_name }}" class="filter-label">Departamento</label>
+                        <select id="departamento-{{ entity_name }}" name="departamento" class="form-control" data-filter-field="departamento">
+                            <option value="">Todos os departamentos</option>
+                            {% for departamento in departamentos %}
+                                <option value="{{ departamento.id }}" {% if departamento_id == departamento.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ departamento.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if cargos %}
+                    <div class="filter-group">
+                        <label for="cargo-{{ entity_name }}" class="filter-label">Cargo</label>
+                        <select id="cargo-{{ entity_name }}" name="cargo" class="form-control" data-filter-field="cargo">
+                            <option value="">Todos os cargos</option>
+                            {% for cargo in cargos %}
+                                <option value="{{ cargo.id }}" {% if cargo_id == cargo.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ cargo.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                {% elif entity_name == 'inventario' %}
+                    <!-- Filtros específicos para inventário -->
+                    {% if status_inventario_choices %}
+                    <div class="filter-group">
+                        <label for="status-{{ entity_name }}" class="filter-label">Status</label>
+                        <select id="status-{{ entity_name }}" name="status" class="form-control" data-filter-field="status">
+                            <option value="">Todos os status</option>
+                            {% for value, label in status_inventario_choices %}
+                                <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <!-- Filtros genéricos para outras entidades -->
+                    {% if status_choices %}
+                    <div class="filter-group">
+                        <label for="status-{{ entity_name }}" class="filter-label">Status</label>
+                        <select id="status-{{ entity_name }}" name="status" class="form-control" data-filter-field="status">
+                            <option value="">Todos os status</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <!-- Campos ocultos para manter paginação -->
+            <input type="hidden" name="page" value="1" id="page-input-{{ entity_name }}">
+        </form>
+    </div>
+</div>
+

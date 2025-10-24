@@ -1,0 +1,184 @@
+{% extends "base_list.html" %}
+
+
+{% block title %}Movimentações de Stock{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="{% url "dashboard" %}">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:main" %}">Stock</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Movimentações</span>
+    </nav>
+    
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="Movimentações de Stock"
+    subtitle="Controle de entradas, saídas e ajustes de estoque"
+    icon="fas fa-exchange-alt"
+%}    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ movimentos_entrada|default:"0" }}</div>
+                <div class="stats-label">Entradas Este Mês</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ movimentos_saida|default:"0" }}</div>
+                <div class="stats-label">Saídas Este Mês</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ movimentos_ajuste|default:"0" }}</div>
+                <div class="stats-label">Ajustes Este Mês</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ total_movimentos|default:"0" }}</div>
+                <div class="stats-label">Total Movimentações</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-list"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    {% include 'includes/filters_unified.html' with entity_name='movimentos' %}
+
+    <!-- Movimentações List -->
+    {% if movimentos %}
+        <div class="table-container">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Item</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Sucursal</th>
+                        <th>Usuário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimento in movimentos %}
+                    <tr>
+                        <td>
+                            <div class="date-info">
+                                <span class="date">{{ movimento.data_movimento|date:"d/m/Y" }}</span>
+                                <span class="time">{{ movimento.data_movimento|time:"H:i" }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="product-info">
+                                <span class="movement-code">{{ movimento.codigo }}</span>
+                                <span class="product-name">{{ movimento.item_nome }}</span>
+                                <span class="product-code">{{ movimento.item_codigo }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ movimento.tipo_movimento.nome|lower }}">
+                                {{ movimento.tipo_movimento.nome }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="quantity">{{ movimento.quantidade }}</span>
+                        </td>
+                        <td>{{ movimento.sucursal.nome }}</td>
+                        <td>
+                            {% if movimento.usuario %}
+                                {{ movimento.usuario.get_full_name|default:movimento.usuario.username }}
+                            {% else %}
+                                Sistema
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-btns btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button">
+                                <a href="#" class="btn-action btn-view btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Ver detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if perms.empresa.change_movimentostock %}
+                                <a href="#" class="btn-action btn-edit btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if movimentos.has_other_pages %}
+        <div class="pagination-container">
+            <nav class="pagination-nav">
+                {% if movimentos.has_previous %}
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    Página {{ movimentos.number }} de {{ movimentos.paginator.num_pages }}
+                </span>
+
+                {% if movimentos.has_next %}
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="#" class="pagination-btn btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox empty-icon"></i>
+            <h4 class="empty-title">Nenhuma movimentação encontrada</h4>
+            <p class="empty-subtitle">Não há movimentações registradas no sistema.</p>
+            <a href="#" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-plus"></i>
+                Registrar Primeira Movimentação
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

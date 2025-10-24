@@ -1,0 +1,71 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Implementar Transferência{% endblock %}
+
+{% block header_title %}Implementar Transferência{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="implement-container">
+        <div class="info-icon">
+            <i class="fas fa-cogs"></i>
+        </div>
+        
+        <h3>Implementar Transferência</h3>
+        <p>Você está prestes a implementar esta transferência. Esta ação irá alterar os dados do funcionário no sistema.</p>
+        
+        <div class="transfer-info">
+            <h5>{{ transferencia.funcionario.nome_completo }}</h5>
+            <p><strong>De:</strong> {{ transferencia.sucursal_origem.nome }} - {{ transferencia.departamento_origem.nome }}</p>
+            <p><strong>Para:</strong> {{ transferencia.sucursal_destino.nome }} - {{ transferencia.departamento_destino.nome }}</p>
+            {% if transferencia.cargo_novo %}
+                <p><strong>Novo Cargo:</strong> {{ transferencia.cargo_novo.nome }}</p>
+            {% endif %}
+            <p><strong>Data Efetiva:</strong> {{ transferencia.data_efetiva|date:"d/m/Y" }}</p>
+        </div>
+        
+        <div class="changes-list">
+            <h6>Alterações que serão realizadas:</h6>
+            <ul>
+                <li>Sucursal: {{ transferencia.sucursal_origem.nome }} → {{ transferencia.sucursal_destino.nome }}</li>
+                <li>Departamento: {{ transferencia.departamento_origem.nome }} → {{ transferencia.departamento_destino.nome }}</li>
+                {% if transferencia.cargo_novo %}
+                    <li>Cargo: {{ transferencia.funcionario.cargo.nome }} → {{ transferencia.cargo_novo.nome }}</li>
+                {% else %}
+                    <li>Cargo: Mantido ({{ transferencia.funcionario.cargo.nome }})</li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <div class="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção:</strong> Esta ação irá alterar permanentemente os dados do funcionário no sistema. 
+            Após a implementação, a transferência poderá ser efetivada.
+        </div>
+        
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            <div class="btn-group btn-responsive btn-responsive" role="button">
+                <a href="#"rh:transferencia_detail' transferencia.id %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn btn-info" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-cogs"></i> Implementar Transferência
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Dashboard Dados Mestres{% endblock %}
 
@@ -26,29 +26,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-database"></i>
-                    Dashboard Dados Mestres
-                </h1>
-                <p class="page-subtitle">
-                    Gestão de Dados Fundamentais do Sistema Logístico
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:masterdata:regiao_create' %}" class="btn btn-success">
-                    <i class="fas fa-plus"></i>
-                    Nova Região
-                </a>
-                <a href="{% url 'stock:masterdata:zona_create' %}" class="btn btn-primary">
-                    <i class="fas fa-map-marker-alt"></i>
-                    Nova Zona
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Dashboard Dados Mestres"
+    subtitle="Gestão de Dados Fundamentais do Sistema Logístico"
+    icon="fas fa-database"
+%}    </div>
 
     <!-- Estatísticas Gerais -->
     <div class="stats-grid">
@@ -146,7 +129,7 @@
                         Regiões Ativas
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -176,8 +159,8 @@
                                             <span class="badge badge-info">{{ regiao.prioridade }}</span>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:masterdata:regiao_detail' regiao.id %}" class="btn btn-info btn-sm">
+                                            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                                <a href="#"stock:masterdata:regiao_detail' regiao.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </div>
@@ -206,7 +189,7 @@
                         Zonas de Entrega
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:masterdata:zonas_list' %}" class="btn btn-info btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -214,36 +197,7 @@
                 <div class="card-body">
                     {% if zonas_ativas %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nome</th>
-                                        <th>Região</th>
-                                        <th>Prazo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for zona in zonas_ativas %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ zona.codigo }}</span>
-                                        </td>
-                                        <td>{{ zona.nome }}</td>
-                                        <td>{{ zona.regiao.nome }}</td>
-                                        <td>{{ zona.prazo_entrega_dias }} dias</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:masterdata:zona_detail' zona.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -266,7 +220,7 @@
                         Hubs Logísticos
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:masterdata:hubs_list' %}" class="btn btn-success btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -274,50 +228,7 @@
                 <div class="card-body">
                     {% if hubs_ativos %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nome</th>
-                                        <th>Tipo</th>
-                                        <th>Cidade</th>
-                                        <th>Região</th>
-                                        <th>24h</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for hub in hubs_ativos %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ hub.codigo }}</span>
-                                        </td>
-                                        <td>{{ hub.nome }}</td>
-                                        <td>
-                                            <span class="badge badge-{% if hub.tipo == 'ORIGEM' %}primary{% elif hub.tipo == 'DESTINO' %}success{% elif hub.tipo == 'CONSOLIDACAO' %}info{% else %}warning{% endif %}">
-                                                {{ hub.get_tipo_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ hub.cidade }}</td>
-                                        <td>{{ hub.regiao.nome }}</td>
-                                        <td>
-                                            {% if hub.funcionamento_24h %}
-                                                <i class="fas fa-check text-success"></i>
-                                            {% else %}
-                                                <i class="fas fa-times text-muted"></i>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:masterdata:hub_detail' hub.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -340,7 +251,7 @@
                         Logs Recentes de Masterdata
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:masterdata:logs' %}" class="btn btn-primary btn-sm">
+                        <a href="#"stock:masterdata:logs' %}" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -348,36 +259,7 @@
                 <div class="card-body">
                     {% if logs_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Operação</th>
-                                        <th>Modelo</th>
-                                        <th>Usuário</th>
-                                        <th>Data</th>
-                                        <th>Detalhes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for log in logs_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-{% if log.tipo_operacao == 'CRIAR' %}success{% elif log.tipo_operacao == 'EDITAR' %}warning{% elif log.tipo_operacao == 'EXCLUIR' %}danger{% else %}info{% endif %}">
-                                                {{ log.get_tipo_operacao_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ log.modelo_afetado }}</td>
-                                        <td>{{ log.usuario.username if log.usuario else 'Sistema' }}</td>
-                                        <td>{{ log.data_operacao|date:"d/m/Y H:i" }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-info" onclick="showLogDetails({{ log.id }})">
-                                                <i class="fas fa-info-circle"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -403,37 +285,37 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"stock:masterdata:regioes_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-globe"></i><br>
                                 Regiões
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:zonas_list' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"stock:masterdata:zonas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-map-marked-alt"></i><br>
                                 Zonas
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:hubs_list' %}" class="btn btn-outline-success btn-block">
+                            <a href="#"stock:masterdata:hubs_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-warehouse"></i><br>
                                 Hubs
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:catalogo_dimensoes_list' %}" class="btn btn-outline-warning btn-block">
+                            <a href="#"stock:masterdata:catalogo_dimensoes_list' %}" class="btn btn-outline-warning btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-cube"></i><br>
                                 Dimensões
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:restricoes_list' %}" class="btn btn-outline-danger btn-block">
+                            <a href="#"stock:masterdata:restricoes_list' %}" class="btn btn-outline-danger btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-exclamation-triangle"></i><br>
                                 Restrições
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:masterdata:validar_restricoes' %}" class="btn btn-outline-secondary btn-block">
+                            <a href="#"stock:masterdata:validar_restricoes' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-check-circle"></i><br>
                                 Validar
                             </a>

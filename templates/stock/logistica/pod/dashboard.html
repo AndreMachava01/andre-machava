@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Dashboard POD & Documentos Logísticos{% endblock %}
 
@@ -26,29 +26,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-file-signature"></i>
-                    Dashboard POD & Documentos Logísticos
-                </h1>
-                <p class="page-subtitle">
-                    Gerenciamento de Provas de Entrega e Guias de Transporte
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:logistica:rastreamento_create' %}" class="btn btn-success">
-                    <i class="fas fa-truck"></i>
-                    Novo Rastreamento
-                </a>
-                <a href="{% url 'stock:pod:guia_create' %}" class="btn btn-primary">
-                    <i class="fas fa-file-alt"></i>
-                    Nova Guia
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Dashboard POD & Documentos Logísticos"
+    subtitle="Gerenciamento de Provas de Entrega e Guias de Transporte"
+    icon="fas fa-file-signature"
+%}    </div>
 
     <!-- Estatísticas Gerais -->
     <div class="stats-grid">
@@ -103,7 +86,7 @@
                         Provas Pendentes de Validação
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:pod:provas_list' %}?status=PENDENTE" class="btn btn-warning btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -131,11 +114,11 @@
                                         <td>{{ prova.nome_destinatario }}</td>
                                         <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-info btn-sm">
+                                            <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                                                <a href="#"stock:pod:prova_detail' prova.id %}" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn btn-success btn-sm">
+                                                <a href="#"stock:pod:validar_prova' prova.id %}" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                                     <i class="fas fa-check"></i>
                                                 </a>
                                             </div>
@@ -164,7 +147,7 @@
                         Provas Recentes (24h)
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -172,42 +155,7 @@
                 <div class="card-body">
                     {% if provas_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código POD</th>
-                                        <th>Tipo</th>
-                                        <th>Status</th>
-                                        <th>Validada</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for prova in provas_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ prova.codigo }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
-                                                {{ prova.get_tipo_entrega_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
-                                                {{ prova.status }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if prova.validada %}
-                                                <i class="fas fa-check text-success"></i>
-                                            {% else %}
-                                                <i class="fas fa-clock text-warning"></i>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -230,7 +178,7 @@
                         Guias Pendentes de Impressão
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:pod:guias_list' %}?impressa=false" class="btn btn-info btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -238,37 +186,7 @@
                 <div class="card-body">
                     {% if guias_pendentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Destinatário</th>
-                                        <th>Data Prevista</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for guia in guias_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ guia.codigo }}</span>
-                                        </td>
-                                        <td>{{ guia.nome_destinatario }}</td>
-                                        <td>{{ guia.data_prevista_entrega|date:"d/m/Y" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:guia_detail' guia.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:pod:imprimir_guia' guia.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-print"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -289,7 +207,7 @@
                         Etiquetas Pendentes de Impressão
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:pod:etiquetas_list' %}?impressa=false" class="btn btn-secondary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-secondary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -297,41 +215,7 @@
                 <div class="card-body">
                     {% if etiquetas_pendentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Tipo</th>
-                                        <th>Data</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etiqueta in etiquetas_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ etiqueta.codigo }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if etiqueta.tipo == 'RASTREAMENTO' %}primary{% elif etiqueta.tipo == 'ENVIO' %}info{% elif etiqueta.tipo == 'PRODUTO' %}success{% else %}secondary{% endif %}">
-                                                {{ etiqueta.get_tipo_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ etiqueta.data_criacao|date:"d/m/Y" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-print"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -357,25 +241,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-outline-success btn-block">
+                            <a href="#"stock:logistica:rastreamento_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-truck"></i><br>
                                 Rastreamentos
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-outline-warning btn-block">
+                            <a href="#"stock:pod:provas_list' %}" class="btn btn-outline-warning btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-file-signature"></i><br>
                                 Provas de Entrega
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"stock:pod:guias_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-file-alt"></i><br>
                                 Guias de Remessa
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:etiquetas_list' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"stock:pod:etiquetas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-tags"></i><br>
                                 Etiquetas
                             </a>

@@ -1,0 +1,206 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Receber Stock - {{ ordem_compra.codigo }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+    
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        margin-top: 8px;
+        font-weight: 400;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .help-section {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    .help-title {
+        color: #60a5fa;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .help-content {
+        color: #d1d5db;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="breadcrumb-modern">
+            <a href="{% url 'stock:main' %}">Stock</a>
+            <span class="separator">›</span>
+            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+            <span class="separator">›</span>
+            {% if ordem_compra.requisicao_origem %}
+                <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">{{ ordem_compra.requisicao_origem.codigo }}</a>
+                <span class="separator">›</span>
+            {% endif %}
+            <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">{{ ordem_compra.codigo }}</a>
+            <span class="separator">›</span>
+            <span class="current">Receber Stock</span>
+        </div>
+        <div class="page-title">
+            <h1>
+                <i class="fas fa-box-open"></i>
+                Receber Stock
+            </h1>
+            <p class="page-subtitle">{{ ordem_compra.codigo }} - {{ ordem_compra.fornecedor.nome }}</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Informações da Ordem -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Ordem
+                </h3>
+            </div>
+            <div class="card-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Código da Ordem</div>
+                        <div class="info-value">{{ ordem_compra.codigo }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Fornecedor</div>
+                        <div class="info-value">{{ ordem_compra.fornecedor.nome }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
+                            <span class="badge badge-{% if ordem_compra.status == 'APROVADA' %}success{% elif ordem_compra.status == 'RASCUNHO' %}warning{% else %}info{% endif %}">
+                                {{ ordem_compra.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Sucursal Destino</div>
+                        <div class="info-value">{{ ordem_compra.sucursal_destino.nome }}</div>
+                    </div>
+                    
+                    {% if ordem_compra.data_criacao %}
+                    <div class="info-item">
+                        <div class="info-label">Data de Criação</div>
+                        <div class="info-value">{{ ordem_compra.data_criacao|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ordem_compra.valor_total %}
+                    <div class="info-item">
+                        <div class="info-label">Valor|default:0 total</div>
+                        <div class="info-value">{{ ordem_compra.valor_total|floatformat:2 }} MT</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Recebimento -->
+        <div class="info-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Informações da Fatura
+                </h3>
+            </div>
+            <div class="card-content">
+                <form method="post" class="modern-form"action="."method="post">{% csrf_token %}
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="numero_fatura" class="form-label">
+                            <i class="fas fa-hashtag"></i>
+                            Número da Fatura *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="numero_fatura" 
+                            name="numero_fatura" 
+                            class="form-control-modern" 
+                            placeholder="Digite o número da fatura fornecida pelo fornecedor"
+                            required
+                            autofocus
+                        >
+                        <div class="form-help">
+                            <i class="fas fa-info-circle text-info"></i> 
+                            Insira o número da fatura conforme fornecido pelo fornecedor
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-modern btn-primary-modern" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                            <i class="fas fa-arrow-right"></i>
+                            Continuar
+                        </button>
+                        
+                        <a href="#"stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-modern btn btn-secondary-modern btn-responsive -responsive">
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Ajuda -->
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-lightbulb"></i>
+                Como funciona o recebimento?
+            </div>
+            <div class="help-content">
+                Após inserir o número da fatura, você será direcionado para uma tela onde poderá confirmar 
+                a quantidade de cada|default:0 items recebido e definir o estado em que se encontram (Bom, Danificado, 
+                Incompleto, Defeituoso). Depois de confirmar todos os itens, clique em "Finalizar" para 
+                que o stock seja adicionado ao sistema da empresa.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

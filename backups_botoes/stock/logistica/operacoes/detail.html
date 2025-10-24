@@ -1,0 +1,269 @@
+{% extends "base_admin.html" %}
+
+
+{% block title %}Detalhes da Operação Logística{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url "stock:logistica:main" %}">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="">
+            <i class="fas fa-tasks"></i>
+            Operações
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>{{ notificacao.codigo_operacao }}</span>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{{ notificacao.get_tipo_operacao_display }} - {{ notificacao.codigo_operacao }}"
+    subtitle="{% if notificacao.tipo_operacao == 'TRANSFERENCIA' %}
+                        Transferência de {{ notificacao.origem_operacao }} para {{ notificacao.destino_operacao }}
+                    {% else %}
+                        Coleta de {{ notificacao.origem_operacao }} para {{ notificacao.destino_operacao }}
+                    {% endif %}"
+    icon="{{ notificacao.get_tipo_operacao_icon }}"
+%}    </div>
+
+    <!-- Informações da Operação -->
+    <div class="info-card">
+        <h3><i class="fas fa-info-circle"></i> Informações da Operação</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Tipo de Operação</div>
+                <div class="info-value">
+                    <span class="badge badge-{{ notificacao.get_tipo_operacao_color }}">
+                        <i class="{{ notificacao.get_tipo_operacao_icon }}"></i>
+                        {{ notificacao.get_tipo_operacao_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Código</div>
+                <div class="info-value">{{ notificacao.codigo_operacao }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    <span class="badge badge-{{ notificacao.get_status_color }}">
+                        {{ notificacao.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Prioridade</div>
+                <div class="info-value">
+                    <span class="badge badge-{{ notificacao.get_prioridade_color }}">
+                        {{ notificacao.get_prioridade_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Origem</div>
+                <div class="info-value">{{ notificacao.origem_operacao }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Destino</div>
+                <div class="info-value">{{ notificacao.destino_operacao }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Valor|default:0 total</div>
+                <div class="info-value">{{ notificacao.valor_operacao|floatformat:2 }} MT</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Data da Notificação</div>
+                <div class="info-value">{{ notificacao.data_notificacao|date:"d/m/Y H:i" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linha do Tempo (Rastreamento) -->
+    <div class="info-card">
+        <h3><i class="fas fa-route"></i> Linha do Tempo</h3>
+        {% if eventos_rastreamento %}
+        <div class="info-grid" style="grid-template-columns: 1fr;">
+            {% for ev in eventos_rastreamento %}
+            <div class="info-item" style="display:flex; gap:12px; align-items:center; border-left-color:#8b5cf6;">
+                <span class="badge" style="background:#8b5cf6;">{{ ev.get_tipo_evento_display }}</span>
+                <div>
+                    <div class="info-label">{{ ev.data_evento|date:"d/m/Y H:i" }}</div>
+                    <div class="info-value" style="font-size:0.95rem;">{{ ev.descricao|default:"—" }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#9ca3af;">Sem eventos registados ainda.</p>
+        {% endif %}
+    </div>
+
+    <!-- Transporte Atribuído -->
+    {% if notificacao.transporte_escolhido %}
+    <div class="info-card">
+        <h3><i class="fas fa-truck"></i> Transporte Atribuído</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Tipo de Transporte</div>
+                <div class="info-value">
+                    {% if notificacao.tipo_transporte == 'VEICULO_INTERNO' %}
+                        <i class="fas fa-car"></i> Veículo Interno
+                    {% else %}
+                        <i class="fas fa-building"></i> Transportadora Externa
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Nome</div>
+                <div class="info-value">{{ notificacao.transporte_escolhido.nome }}</div>
+            </div>
+            {% if notificacao.tipo_transporte == 'VEICULO_INTERNO' %}
+            <div class="info-item">
+                <div class="info-label">Placa</div>
+                <div class="info-value">{{ notificacao.transporte_escolhido.placa }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Motorista</div>
+                <div class="info-value">{{ notificacao.transporte_escolhido.motorista_responsavel }}</div>
+            </div>
+            {% endif %}
+            {% if notificacao.data_atribuicao %}
+            <div class="info-item">
+                <div class="info-label">Data de Atribuição</div>
+                <div class="info-value">{{ notificacao.data_atribuicao|date:"d/m/Y H:i" }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Itens da Operação -->
+    <div class="info-card">
+        <h3><i class="fas fa-boxes"></i> Itens da Operação</h3>
+        <div class="table-responsive">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário</th>
+                        <th>Valor|default:0 total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for items in itens_operacao  %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">
+                                {% if items.item  %}
+                                    {{ item.item.nome }}
+                                {% elif items.produto  %}
+                                    {{ item.produto.nome }}
+                                {% else %}
+                                    {{ item.descricao|default:"Item não definido" }}
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.85rem; color: #9ca3af;">
+                                {% if items.item  %}
+                                    {{ item.item.codigo|default:"N/A" }}
+                                {% elif items.produto  %}
+                                    {{ item.produto.codigo|default:"N/A" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ item.quantidade|default:item.quantidade_solicitada }}</td>
+                        <td>{{ item.preco_unitario|floatformat:2 }} MT</td>
+                        <td>{{ item.preco_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">Nenhum|default:0 items encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Observações -->
+    {% if notificacao.observacoes %}
+    <div class="info-card">
+        <h3><i class="fas fa-sticky-note"></i> Observações</h3>
+        <div style="background: #374151; border-radius: 10px; padding: 20px; color: #e5e7eb;">
+            {{ notificacao.observacoes|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ações -->
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button">
+        {% if notificacao.status == 'PENDENTE' %}
+            <a href="#"stock:logistica:operacao_atribuir' notificacao.id %}" class="btn btn btn btn btn btn btn btn-warning btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-truck-loading"></i>
+                Atribuir Transporte
+            </a>
+        {% elif notificacao.status == 'ATRIBUIDA' %}
+            <a href="#"stock:logistica:operacao_confirmar_coleta' notificacao.id %}" class="btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-hand-holding"></i>
+                Confirmar Coleta
+            </a>
+        {% elif notificacao.status == 'COLETADA' %}
+            <a href="#"stock:logistica:operacao_iniciar_transporte' notificacao.id %}" class="btn btn btn btn btn btn btn btn-info btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-shipping-fast"></i>
+                Iniciar Transporte
+            </a>
+        {% elif notificacao.status == 'EM_TRANSITO' %}
+            <a href="#"stock:logistica:operacao_confirmar_entrega' notificacao.id %}" class="btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-box-open"></i>
+                Confirmar Entrega
+            </a>
+        {% elif notificacao.status == 'ENTREGUE' %}
+            <a href="#"stock:logistica:operacao_concluir' notificacao.id %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-check-circle"></i>
+                Concluir Operação
+            </a>
+        {% elif notificacao.status == 'CONCLUIDA' %}
+            <div class="btn btn btn btn btn btn btn btn-success btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" style="background: rgba(156, 163, 175, 0.2); color: #9ca3af; cursor: not-allowed;" role="button" role="button" role="button" role="button" role="button" role="button">
+                <i class="fas fa-check-circle"></i>
+                Operação Concluída
+            </div>
+        {% endif %}
+        
+        <!-- Botão para editar prioridade (apenas antes da coleta) -->
+        {% if notificacao.status in 'PENDENTE,ATRIBUIDA' %}
+            <a href="#"stock:logistica:operacao_editar_prioridade' notificacao.id %}" class="btn btn btn btn btn btn btn btn-info btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                <i class="fas fa-exclamation-triangle"></i>
+                Editar Prioridade
+            </a>
+        {% endif %}
+        
+        <a href="#"stock:logistica:operacoes_list' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-list"></i>
+            Voltar à Lista
+        </a>
+    </div>
+
+</div>
+{% endblock %}

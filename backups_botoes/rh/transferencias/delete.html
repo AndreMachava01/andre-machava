@@ -1,0 +1,51 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Excluir Transferência{% endblock %}
+
+{% block header_title %}Excluir Transferência{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="delete-container">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h3>Confirmar Exclusão</h3>
+        <p>Você tem certeza que deseja excluir esta transferência?</p>
+        
+        <div class="transfer-info">
+            <h5>{{ transferencia.funcionario.nome_completo }}</h5>
+            <p><strong>De:</strong> {{ transferencia.sucursal_origem.nome }} - {{ transferencia.departamento_origem.nome }}</p>
+            <p><strong>Para:</strong> {{ transferencia.sucursal_destino.nome }} - {{ transferencia.departamento_destino.nome }}</p>
+            {% if transferencia.cargo_novo %}
+                <p><strong>Novo Cargo:</strong> {{ transferencia.cargo_novo.nome }}</p>
+            {% endif %}
+            <p><strong>Status:</strong> {{ transferencia.get_status_display }}</p>
+            <p><strong>Data Solicitação:</strong> {{ transferencia.data_solicitacao|date:"d/m/Y" }}</p>
+        </div>
+        
+        <div class="alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Atenção:</strong> Esta ação não pode ser desfeita. 
+            Apenas transferências pendentes podem ser excluídas.
+        </div>
+        
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            <div class="btn-group btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+                <a href="#"rh:transferencias' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-trash"></i> Excluir Transferência
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

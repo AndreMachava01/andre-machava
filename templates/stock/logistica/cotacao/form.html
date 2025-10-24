@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 
 {% block title %}Cotação Interna{% endblock %}
 
@@ -25,25 +25,12 @@
     </nav>
     
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-calculator"></i>
-                    Cotação Interna
-                </h1>
-                <p class="page-subtitle">
-                    Calcular custos de transporte e logística
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="/stock/logistica/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar à Logística
-                </a>
-            </div>
-        </div>
-    </div>
+    {% load static %}
+{% include "includes/header.html" with
+    title="Cotação Interna"
+    subtitle="Calcular custos de transporte e logística"
+    icon="fas fa-calculator"
+%}    </div>
 
     <div class="card">
         <div class="card-body">
@@ -103,7 +90,7 @@
             </div>
 
             <div class="mt-4">
-                <button id="btnCotacao" class="btn btn-primary">Calcular Cotação</button>
+                <button id="btnCotacao" class="btn btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação"onclick="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" aria-label="Botão de ação" title="Clique para executar ação"" tabindex="0">Calcular Cotação</button>
             </div>
 
             <pre id="resultado" class="mt-4"></pre>
@@ -136,7 +123,7 @@ document.getElementById('btnCotacao').addEventListener('click', async () => {
         body: JSON.stringify(payload)
     });
     const json = await resp.json();
-    document.getElementById('resultado').textContent = JSON.stringify(json, null, 2);
+    document.getElementById("resultado").textContent = JSON || 0.stringify(json, null, 2);
 });
 </script>
 {% endblock %}

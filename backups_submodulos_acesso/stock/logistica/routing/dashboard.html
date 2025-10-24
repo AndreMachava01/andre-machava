@@ -1,0 +1,311 @@
+<script>
+
+
+// Gráfico de Prioridades
+var ctx = document.getElementById("prioridadeChart");
+var prioridadeChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for items in planejamentos_prioridade  %}'{{ item.prioridade }}',{% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for items in planejamentos_prioridade  %}{{ item.count }},{% endfor %}
+            ],
+            backgroundColor: [
+                {% for items in planejamentos_prioridade  %}
+                {% if items.prioridade == 'URGENTE'  %}'#e74c3c'{% elif items.prioridade == 'ALTA'  %}'#f39c12'{% elif items.prioridade == 'NORMAL'  %}'#3498db'{% else %}'#95a5a6'{% endif %},
+                {% endfor %}
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Gráfico de Status
+var ctx2 = document.getElementById("statusChart");
+var statusChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for items in rotas_status  %}'{{ item.status }}',{% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for items in rotas_status  %}{{ item.count }},{% endfor %}
+            ],
+            backgroundColor: [
+                {% for items in rotas_status  %}
+                {% if items.status == 'PLANEJADA'  %}'#3498db'{% elif items.status == 'EM_EXECUCAO'  %}'#f39c12'{% elif items.status == 'CONCLUIDA'  %}'#27ae60'{% else %}'#95a5a6'{% endif %},
+                {% endfor %}
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+</script>
+
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Roteirização{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Dashboard de Roteirização</h1>
+                <div>
+                    <a href="#"routing:otimizar_rotas' %}" class="btn btn btn-primary btn-responsive -responsive">
+                        <i class="fas fa-route"></i> Otimizar Rotas
+                    </a>
+                    <a href="#"routing:planejamento_create' %}" class="btn btn btn-success btn-responsive -responsive">
+                        <i class="fas fa-plus"></i> Novo Planejamento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Planejamentos Pendentes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.planejamentos_pendentes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Planejamentos Agendados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.planejamentos_agendados }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Rotas Planejadas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.rotas_planejadas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-route fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Rotas Executando
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.rotas_executando }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Planejamentos por Prioridade -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Planejamentos por Prioridade</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="prioridadeChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        {% for items in planejamentos_prioridade  %}
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-{% if items.prioridade == 'URGENTE'  %}danger{% elif items.prioridade == 'ALTA'  %}warning{% elif items.prioridade == 'NORMAL'  %}primary{% else %}secondary{% endif %}"></i>
+                            {{ item.prioridade }} ({{ item.count }})
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rotas por Status -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Rotas por Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        {% for items in rotas_status  %}
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-{% if items.status == 'PLANEJADA'  %}info{% elif items.status == 'EM_EXECUCAO'  %}warning{% elif items.status == 'CONCLUIDA'  %}success{% else %}secondary{% endif %}"></i>
+                            {{ item.status }} ({{ item.count }})
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planejamentos Próximos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Planejamentos Próximos (7 dias)</h6>
+                    <a href="#" class="btn btn-sm btn btn-primary btn-responsive -responsive">Ver Todos</a>
+                </div>
+                <div class="card-body">
+                    {% if proximos_7_dias %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Data</th>
+                                    <th>Endereço</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Contato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for planejamento in proximos_7_dias %}
+                                <tr>
+                                    <td>{{ planejamento.codigo }}</td>
+                                    <td>{{ planejamento.data_entrega_preferida|date:"d/m/Y" }}</td>
+                                    <td>{{ planejamento.endereco_completo|truncatechars:50 }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if planejamento.prioridade == 'URGENTE' %}danger{% elif planejamento.prioridade == 'ALTA' %}warning{% elif planejamento.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}">
+                                            {{ planejamento.prioridade }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if planejamento.status == 'PENDENTE' %}warning{% elif planejamento.status == 'AGENDADA' %}info{% elif planejamento.status == 'EM_ROTA' %}primary{% elif planejamento.status == 'ENTREGUE' %}success{% else %}secondary{% endif %}">
+                                            {{ planejamento.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ planejamento.contato_nome }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Nenhum planejamento para os próximos 7 dias</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Acesso Rápido</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="#"routing:zonas_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive">
+                                <i class="fas fa-map-marked-alt"></i><br>
+                                Zonas de Entrega
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"routing:planejamentos_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive">
+                                <i class="fas fa-calendar-plus"></i><br>
+                                Planejamentos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"routing:rotas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive">
+                                <i class="fas fa-route"></i><br>
+                                Rotas
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#"routing:configuracoes' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive">
+                                <i class="fas fa-cog"></i><br>
+                                Configurações
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+
+
+
+{% endblock %}

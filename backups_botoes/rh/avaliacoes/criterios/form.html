@@ -1,0 +1,144 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}
+    {% if criterio %}Editar Critério{% else %}Adicionar Critério{% endif %}
+{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Cabeçalho -->
+    <div class="header-section">
+        <a href="#" class="btn back-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </a>
+        <h1 class="header-title">
+            <i class="fas fa-{% if criterio %}edit{% else %}plus{% endif %}"></i>
+            {% if criterio %}Editar Critério{% else %}Adicionar Critério{% endif %}
+        </h1>
+    </div>
+
+    <!-- Formulário -->
+    <div class="form-section">
+        <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome">
+                    Nome do Critério <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       name="nome" 
+                       id="nome" 
+                       value="{% if criterio %}{{ criterio.nome }}{% endif %}"
+                       placeholder="Ex: Comunicação, Produtividade, Liderança..."
+                       required>
+                <div class="help-text">
+                    Nome descritivo do critério de avaliação
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" 
+                          id="descricao" 
+                          placeholder="Descreva o critério e como deve ser avaliado...">{% if criterio %}{{ criterio.descricao }}{% endif %}</textarea>
+                <div class="help-text">
+                    Descrição detalhada do critério (opcional)
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="peso">
+                    Peso <span class="required">*</span>
+                </label>
+                <input type="number" 
+                       name="peso" 
+                       id="peso" 
+                       value="{% if criterio %}{{ criterio.peso }}{% else %}1{% endif %}"
+                       min="1" 
+                       max="10" 
+                       step="1"
+                       required>
+                <div class="help-text">
+                    Peso do critério na avaliação (1-10)
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" 
+                           name="ativo" 
+                           id="ativo" 
+                           {% if not criterio or criterio.ativo %}checked{% endif %}>
+                    <label for="ativo">Critério ativo</label>
+                </div>
+                <div class="help-text">
+                    Critérios inativos não aparecem nas avaliações
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="#"rh:criterios' %}" class="btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-{% if criterio %}save{% else %}plus{% endif %}"></i>
+                    {% if criterio %}Atualizar Critério{% else %}Criar Critério{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus no primeiro campo
+    const firstInput = document.querySelector('input[type="text"]');
+    if (firstInput) {
+        firstInput.focus();
+    }
+    
+    // Validação do peso
+    const pesoInput = document.getElementById('peso');
+    if (pesoInput) {
+        pesoInput.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value < 1) {
+                this.value = 1;
+            } else if (value > 10) {
+                this.value = 10;
+            }
+        });
+    }
+    
+    // Validação do formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const nome = document.getElementById('nome').value.trim();
+        const peso = document.getElementById('peso').value;
+        
+        if (!nome) {
+            e.preventDefault();
+            alert('O nome do critério é obrigatório.');
+            document.getElementById('nome').focus();
+            return;
+        }
+        
+        if (!peso || peso < 1 || peso > 10) {
+            e.preventDefault();
+            alert('O peso deve ser um número entre 1 e 10.');
+            document.getElementById('peso').focus();
+            return;
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}
+    {% if tipo %}
+        Editar Tipo de Presença
+    {% else %}
+        Novo Tipo de Presença
+    {% endif %}
+{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Estilos específicos do módulo - apenas gradiente no header */
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="nav-top">
+        <div class="nav-title">
+            <a href="#" class="back-btn -responsive">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Tipos
+            </a>
+            <h1>
+                <i class="fas fa-cog" style="margin-right: 8px;"></i>
+                {% if tipo %}
+                    Editar Tipo de Presença
+                {% else %}
+                    Novo Tipo de Presença
+                {% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <div class="form-card">
+        {% if not tipo %}
+        <div class="info-box">
+            <h4><i class="fas fa-info-circle"></i> Informação</h4>
+            <p>Configure os tipos de presença que podem ser utilizados no sistema. Cada tipo pode ter uma cor específica e configurar se desconta do salário.</p>
+        </div>
+        {% endif %}
+
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome do Tipo *</label>
+                    <input type="text" id="nome" name="nome" value="{{ tipo.nome|default:'' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="codigo">Código *</label>
+                    <select id="codigo" name="codigo" required>
+                        {% for code, label in tipo_choices %}
+                        <option value="{{ code }}" {% if tipo and tipo.codigo == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cor">Cor *</label>
+                    <div class="color-group">
+                        <input type="color" id="cor" name="cor" value="{{ tipo.cor|default:'#28a745' }}" style="width: 50px; height: 40px; border: none; border-radius: 4px;">
+                        <div class="color-preview" id="color-preview" style="background-color: {{ tipo.cor|default:'#28a745' }};">
+                            {{ tipo.cor|default:'#28a745' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" placeholder="Descrição detalhada do tipo de presença">{{ tipo.descricao|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="desconta_salario" name="desconta_salario" {% if tipo.desconta_salario %}checked{% endif %}>
+                    <label for="desconta_salario">Desconta do salário</label>
+                </div>
+
+                {% if tipo %}
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ativo" name="ativo" {% if tipo.ativo %}checked{% endif %}>
+                    <label for="ativo">Tipo ativo</label>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive -responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-save"></i>
+                    Salvar
+                </button>
+                <a href="#"rh:tipos_presenca' %}" class="btn btn btn-secondary btn-responsive -responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const corInput = document.getElementById('cor');
+    const colorPreview = document.getElementById('color-preview');
+    
+    function updateColorPreview() {
+        colorPreview.style.backgroundColor = corInput.value;
+        colorPreview.textContent = corInput.value;
+    }
+    
+    corInput.addEventListener('input', updateColorPreview);
+    updateColorPreview();
+});
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}
@@ -6,15 +6,7 @@
 {% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -26,7 +18,7 @@
     {% endfor %}
   {% endif %}
 
-  <form method="post" class="card p-3">
+  <form method="post" class="card p-3"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
     {% csrf_token %}
 
     <!-- Identificação -->
@@ -41,10 +33,7 @@
           <label class="form-label">Código</label>
           {% if beneficio and beneficio.codigo %}
             <div class="form-control-plaintext"><strong>{{ beneficio.codigo }}</strong></div>
-            <input type="hidden" name="codigo" id="codigo" value="{{ beneficio.codigo }}">
-          {% else %}
-            <div class="form-control-plaintext" id="codigo-preview">Será gerado automaticamente</div>
-            <input type="hidden" name="codigo" id="codigo" value="">
+            <input type="hidden" name="codigo" id="codigo" value="{{ beneficio.codigo }}">input type="hidden" name="codigo" id="codigo-2" value="">
           {% endif %}
         </div>
         <div class="col-md-3">
@@ -163,8 +152,8 @@
     </div>
 
     <div class="d-flex justify-content-end gap-2">
-      <a href="{% url 'rh:beneficios_salariais' %}" class="btn btn-secondary">Cancelar</a>
-      <button type="submit" class="btn btn-primary">
+      <a href="#"rh:beneficios_salariais' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">Cancelar</a>
+      <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
         <i class="fas fa-save me-1"></i>{% if beneficio %}Atualizar Benefício{% else %}Adicionar Benefício{% endif %}
       </button>
     </div>

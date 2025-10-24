@@ -1,0 +1,328 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Concluir Operação{% endblock %}
+
+{% block extra_style %}
+<style>
+    .page-header,
+    .hero-section,
+    .dashboard-header,
+    .nav-top {
+        background: var(--purple-gradient);
+    }
+
+    .breadcrumb-modern {
+        background: #1f2937;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .breadcrumb-modern a {
+        color: #06b6d4;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .breadcrumb-modern a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-modern span {
+        color: #e5e7eb;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .breadcrumb-modern i {
+        color: #6b7280;
+    }
+
+    .breadcrumb-modern i.fas.fa-chevron-right {
+        font-size: 0.7rem;
+        margin: 0 5px;
+    }
+
+    .page-header {
+        background: var(--purple-gradient);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .page-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .confirmation-card {
+        background: #1f2937;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border: 1px solid #374151;
+        text-align: center;
+    }
+
+    .confirmation-card h3 {
+        color: #e5e7eb;
+        margin-bottom: 20px;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .confirmation-icon {
+        font-size: 4rem;
+        color: #10b981;
+        margin-bottom: 20px;
+    }
+
+    .confirmation-text {
+        color: #d1d5db;
+        font-size: 1.1rem;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .operation-info {
+        background: #374151;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .operation-info h4 {
+        color: #e5e7eb;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .info-item {
+        background: #1f2937;
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #06b6d4;
+    }
+
+    .info-label {
+        color: #9ca3af;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        color: #e5e7eb;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.4em 0.8em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.375rem;
+        color: #fff;
+    }
+
+    .badge-success { background-color: #10b981; }
+    .badge-primary { background-color: #6366f1; }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:logistica:main' %}">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:logistica:operacoes_list' %}">
+            <i class="fas fa-tasks"></i>
+            Operações
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Concluir Operação</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-check-double"></i>
+                    Concluir Operação
+                </h1>
+                <p class="page-subtitle">
+                    {{ notificacao.get_tipo_operacao_display }} - {{ notificacao.codigo_operacao }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmação -->
+    <div class="confirmation-card">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3><i class="fas fa-truck"></i> Confirmar Conclusão da Operação</h3>
+        <div class="confirmation-text">
+            Tem certeza que deseja marcar esta operação como concluída?<br>
+            Esta ação não pode ser desfeita.
+        </div>
+        
+        <!-- Informações da Operação -->
+        <div class="operation-info">
+            <h4><i class="fas fa-info-circle"></i> Detalhes da Operação</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Tipo</div>
+                    <div class="info-value">
+                        <span class="badge badge-primary">
+                            <i class="{{ notificacao.get_tipo_operacao_icon }}"></i>
+                            {{ notificacao.get_tipo_operacao_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Código</div>
+                    <div class="info-value">{{ notificacao.codigo_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Origem</div>
+                    <div class="info-value">{{ notificacao.origem_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Destino</div>
+                    <div class="info-value">{{ notificacao.destino_operacao }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Transporte</div>
+                    <div class="info-value">
+                        {% if notificacao.transporte_escolhido %}
+                            {{ notificacao.transporte_escolhido.nome }}
+                        {% else %}
+                            Não atribuído
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Valor</div>
+                    <div class="info-value">{{ notificacao.valor_operacao|floatformat:2 }} MT</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <form method="post"action="."method="post">{% csrf_token %}
+            {% csrf_token %}
+            <div class="action-btns btn-responsive">
+                <button type="submit" class="btn btn btn-success" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-check"></i>
+                    Sim, Concluir Operação
+                </button>
+                <a href="#"stock:logistica:operacao_detail' notificacao.id %}" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+

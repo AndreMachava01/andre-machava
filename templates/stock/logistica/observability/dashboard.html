@@ -1,5 +1,5 @@
-{% extends 'base_admin.html' %}
-{% load static %}
+{% extends "base_admin.html" %}
+
 
 {% block title %}Dashboard Observabilidade{% endblock %}
 
@@ -26,29 +26,12 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard Observabilidade
-                </h1>
-                <p class="page-subtitle">
-                    Monitoramento e Análise do Sistema Logístico
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'stock:observability:calcular_metricas' %}" class="btn btn-success">
-                    <i class="fas fa-calculator"></i>
-                    Calcular Métricas
-                </a>
-                <a href="{% url 'stock:observability:relatorios_list' %}" class="btn btn-primary">
-                    <i class="fas fa-file-alt"></i>
-                    Relatórios
-                </a>
-            </div>
-        </div>
-    </div>
+    
+{% include "includes/header.html" with
+    title="Dashboard Observabilidade"
+    subtitle="Monitoramento e Análise do Sistema Logístico"
+    icon="fas fa-chart-line"
+%}    </div>
 
     <!-- Estatísticas Gerais -->
     <div class="stats-grid">
@@ -57,7 +40,7 @@
                 <i class="fas fa-history"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.auditoria.total_registros }}</div>
+                <div class="stat-number">{{ stats.auditoria.total|default:0_registros }}</div>
                 <div class="stat-label">Auditorias</div>
             </div>
         </div>
@@ -67,7 +50,7 @@
                 <i class="fas fa-chart-bar"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.metricas.total_metricas }}</div>
+                <div class="stat-number">{{ stats.metricas.total|default:0_metricas }}</div>
                 <div class="stat-label">Métricas</div>
             </div>
         </div>
@@ -77,7 +60,7 @@
                 <i class="fas fa-file-alt"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.relatorios.total_relatorios }}</div>
+                <div class="stat-number">{{ stats.relatorios.total|default:0_relatorios }}</div>
                 <div class="stat-label">Relatórios</div>
             </div>
         </div>
@@ -87,7 +70,7 @@
                 <i class="fas fa-code"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.api_logs.total_logs }}</div>
+                <div class="stat-number">{{ stats.api_logs.total|default:0_logs }}</div>
                 <div class="stat-label">API Logs</div>
             </div>
         </div>
@@ -146,7 +129,7 @@
                         Auditorias Recentes
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:observability:auditoria_list' %}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-primary btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -206,7 +189,7 @@
                         Métricas Recentes
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:observability:metricas_list' %}" class="btn btn-info btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-info btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todas
                         </a>
                     </div>
@@ -214,28 +197,7 @@
                 <div class="card-body">
                     {% if metricas_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Métrica</th>
-                                        <th>Valor</th>
-                                        <th>Unidade</th>
-                                        <th>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for valor in metricas_recentes %}
-                                    <tr>
-                                        <td>{{ valor.metrica.nome }}</td>
-                                        <td>
-                                            <span class="badge badge-primary">{{ valor.valor|floatformat:2 }}</span>
-                                        </td>
-                                        <td>{{ valor.metrica.unidade_medida }}</td>
-                                        <td>{{ valor.data_referencia|date:"d/m/Y" }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -258,7 +220,7 @@
                         Execuções de Relatórios
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:observability:relatorios_list' %}" class="btn btn-success btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-success btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -266,30 +228,7 @@
                 <div class="card-body">
                     {% if execucoes_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Relatório</th>
-                                        <th>Usuário</th>
-                                        <th>Status</th>
-                                        <th>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for execucao in execucoes_recentes %}
-                                    <tr>
-                                        <td>{{ execucao.relatorio.nome }}</td>
-                                        <td>{{ execucao.usuario.username }}</td>
-                                        <td>
-                                            <span class="badge badge-{% if execucao.status == 'CONCLUIDO' %}success{% elif execucao.status == 'PROCESSANDO' %}warning{% elif execucao.status == 'ERRO' %}danger{% else %}secondary{% endif %}">
-                                                {{ execucao.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ execucao.data_inicio|date:"d/m/Y H:i" }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -310,7 +249,7 @@
                         Logs de API
                     </h3>
                     <div class="card-actions">
-                        <a href="{% url 'stock:observability:api_logs_list' %}" class="btn btn-warning btn-sm">
+                        <a href="#" class="btn btn btn btn btn btn btn btn btn-warning btn-sm btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                             Ver Todos
                         </a>
                     </div>
@@ -318,36 +257,7 @@
                 <div class="card-body">
                     {% if logs_api_recentes %}
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Método</th>
-                                        <th>Endpoint</th>
-                                        <th>Status</th>
-                                        <th>Tempo</th>
-                                        <th>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for log in logs_api_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-{% if log.metodo == 'GET' %}info{% elif log.metodo == 'POST' %}success{% elif log.metodo == 'PUT' %}warning{% elif log.metodo == 'DELETE' %}danger{% else %}secondary{% endif %}">
-                                                {{ log.metodo }}
-                                            </span>
-                                        </td>
-                                        <td>{{ log.endpoint|truncatechars:30 }}</td>
-                                        <td>
-                                            <span class="badge badge-{% if log.status_code < 300 %}success{% elif log.status_code < 400 %}info{% elif log.status_code < 500 %}warning{% else %}danger{% endif %}">
-                                                {{ log.status_code }}
-                                            </span>
-                                        </td>
-                                        <td>{{ log.tempo_resposta_ms }}ms</td>
-                                        <td>{{ log.data_requisicao|date:"d/m/Y H:i" }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -373,37 +283,37 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:observability:auditoria_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="#"stock:observability:auditoria_list' %}" class="btn btn-outline-primary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-history"></i><br>
                                 Auditoria
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:observability:metricas_list' %}" class="btn btn-outline-info btn-block">
+                            <a href="#"stock:observability:metricas_list' %}" class="btn btn-outline-info btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-chart-bar"></i><br>
                                 Métricas
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:observability:relatorios_list' %}" class="btn btn-outline-success btn-block">
+                            <a href="#"stock:observability:relatorios_list' %}" class="btn btn-outline-success btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-file-alt"></i><br>
                                 Relatórios
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:observability:api_logs_list' %}" class="btn btn-outline-warning btn-block">
+                            <a href="#"stock:observability:api_logs_list' %}" class="btn btn-outline-warning btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-code"></i><br>
                                 API Logs
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="{% url 'stock:observability:calcular_metricas' %}" class="btn btn-outline-secondary btn-block">
+                            <a href="#"stock:observability:calcular_metricas' %}" class="btn btn-outline-secondary btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-calculator"></i><br>
                                 Calcular
                             </a>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <a href="#" class="btn btn-outline-dark btn-block">
+                            <a href="#" class="btn btn-outline-dark btn-block btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                                 <i class="fas fa-cog"></i><br>
                                 Configurações
                             </a>

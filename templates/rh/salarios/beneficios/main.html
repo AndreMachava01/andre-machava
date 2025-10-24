@@ -1,83 +1,33 @@
-{% extends 'base_admin.html' %}
+{% extends "base_list.html" %}
+
+<!-- HEADER UNIFICADO -->
+{% include 'components/page_header.html' with title="Gestão de Benefícios" entity_name='default' %}
 {% load static %}
 
 {% block title %}Gestão de Benefícios{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
 <div class="beneficios-container">
-    <div class="header-section">
-        <h1 class="header-title">
-            <i class="fas fa-gift"></i>
-            Gestão de Benefícios
-        </h1>
-        
-        <div style="margin-top: 15px;">
-            <a href="{% url 'rh:salarios' %}" class="back-button">
-                <i class="fas fa-arrow-left"></i>
-                Voltar para Salários
-            </a>
-        </div>
+    
     </div>
 
-    <div class="action-buttons">
-        <a href="{% url 'rh:beneficio_salarial_add' %}" class="btn btn-primary">
+    <div class="action-btns -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" role="button" role="button" role="button" role="button" role="button" role="button">
+        <a href="#"rh:beneficio_salarial_add' %}" class="btn btn btn btn btn btn btn btn-primary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-plus"></i>
             Adicionar Benefício
         </a>
-        <a href="{% url 'rh:salarios' %}" class="btn btn-secondary">
+        <a href="#"rh:salarios' %}" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
             <i class="fas fa-money-bill-wave"></i>
             Salários
         </a>
     </div>
 
-    <div class="filters-section">
-        <form method="get" class="filters-grid">
-            <div class="filter-group">
-                <label for="tipo">Tipo</label>
-                <select name="tipo" id="tipo">
-                    <option value="">Todos os tipos</option>
-                    {% for codigo, nome in tipo_choices %}
-                    <option value="{{ codigo }}" {% if tipo == codigo %}selected{% endif %}>
-                        {{ nome }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="ativo">Status</label>
-                <select name="ativo" id="ativo">
-                    <option value="">Todos os status</option>
-                    <option value="1" {% if ativo == "1" %}selected{% endif %}>Ativo</option>
-                    <option value="0" {% if ativo == "0" %}selected{% endif %}>Inativo</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="search">Pesquisar</label>
-                <input type="text" name="search" id="search" value="{{ search }}" placeholder="Nome ou código...">
-            </div>
-            
-            <div class="filter-group">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Filtrar
-                </button>
-            </div>
-        </form>
-    </div>
+    <!-- Sistema Unificado de Filtros -->
+    {% include 'includes/filters_unified.html' with entity_name='default' %}
 
     <div class="table-container">
         {% if page_obj %}
@@ -142,10 +92,10 @@
                         </span>
                     </td>
                     <td class="actions">
-                        <a href="{% url 'rh:beneficio_salarial_edit' beneficio.id %}" class="action-button edit-button" title="Editar Benefício">
+                        <a href="#"rh:beneficio_salarial_edit' beneficio.id %}" class="action-btn edit-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Editar Benefício">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{% url 'rh:beneficio_salarial_delete' beneficio.id %}" class="action-button delete-button" title="Excluir Benefício">
+                        <a href="#"rh:beneficio_salarial_delete' beneficio.id %}" class="action-btn delete-btn -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Excluir Benefício">
                             <i class="fas fa-trash"></i>
                         </a>
                     </td>
@@ -193,3 +143,4 @@
     {% endif %}
 </div>
 {% endblock %}
+

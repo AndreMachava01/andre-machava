@@ -1,0 +1,126 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}Rastreamento de Entregas{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-shipping-fast"></i>
+                    Rastreamento de Entregas
+                </h1>
+                <p class="page-subtitle">
+                    Acompanhe o status das entregas e rastreamentos
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn btn btn-secondary btn-responsive btn-responsive">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à Logística
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-content">
+        
+{% include 'includes/filters_unified.html' with entity_name='default' %}
+
+        <!-- Tabela de rastreamentos -->
+        <div class="table-container">
+            {% if page_obj %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Destinatário</th>
+                        <th>Transportadora</th>
+                        <th>Status</th>
+                        <th>Data Criação</th>
+                        <th>Documento Origem</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rastreamento in page_obj %}
+                    <tr>
+                        <td>
+                            <strong>{{ rastreamento.codigo_rastreamento }}</strong>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ rastreamento.destinatario_nome }}</strong>
+                                {% if rastreamento.destinatario_telefone %}
+                                <br><small class="text-muted">{{ rastreamento.destinatario_telefone }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ rastreamento.transportadora.nome }}</td>
+                        <td>
+                            <span class="status-badge status-{{ rastreamento.status_atual|lower }}">
+                                {{ rastreamento.get_status_atual_display }}
+                            </span>
+                        </td>
+                        <td>{{ rastreamento.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if rastreamento.transferencia %}
+                                <span class="badge badge-info">Transferência</span>
+                                <br><small>{{ rastreamento.transferencia.codigo }}</small>
+                            {% elif rastreamento.ordem_compra %}
+                                <span class="badge badge-success">Ordem de Compra</span>
+                                <br><small>{{ rastreamento.ordem_compra.codigo }}</small>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="#" class="action-btn action-btn btn-primary btn-responsive btn-responsive">
+                                <i class="fas fa-eye"></i>
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if transportadora_id %}&transportadora={{ transportadora_id }}{% endif %}">&laquo; Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if transportadora_id %}&transportadora={{ transportadora_id }}{% endif %}">Anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if transportadora_id %}&transportadora={{ transportadora_id }}{% endif %}">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if transportadora_id %}&transportadora={{ transportadora_id }}{% endif %}">Última &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Nenhum rastreamento encontrado</h3>
+                <p>Não há rastreamentos que correspondam aos filtros aplicados.</p>
+                <!-- criação manual desativada -->
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

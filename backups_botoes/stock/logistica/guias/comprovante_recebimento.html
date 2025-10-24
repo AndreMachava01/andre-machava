@@ -1,0 +1,224 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Comprovante de Recebimento{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-check-circle"></i>
+            Comprovante de Recebimento
+        </h1>
+        <p class="page-subtitle">Confirmação oficial de recebimento de materiais</p>
+    </div>
+    
+    <div class="document-container">
+        <div class="document-header">
+            <h2 class="document-title">COMPROVANTE DE RECEBIMENTO</h2>
+            <p class="document-subtitle">Operação Logística #{{ notificacao.id }}</p>
+        </div>
+        
+        <div class="confirmation-section">
+            <h3 class="confirmation-title">
+                <i class="fas fa-check-circle"></i>
+                RECEBIMENTO CONFIRMADO
+            </h3>
+            <p class="confirmation-text">
+                Confirmamos o recebimento de todos os itens especificados nesta operação logística.
+            </p>
+        </div>
+        
+        <div class="document-info">
+            <div class="info-section">
+                <h3 class="info-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações da Operação
+                </h3>
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">#{{ notificacao.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value">{{ notificacao.get_tipo_operacao_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{{ notificacao.status|lower }}">{{ notificacao.get_status_display }}</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioridade:</span>
+                    <span class="info-value">{{ notificacao.get_prioridade_display }}</span>
+                </div>
+                {% if notificacao.data_entrega %}
+                <div class="info-item">
+                    <span class="info-label">Data Entrega:</span>
+                    <span class="info-value">{{ notificacao.data_entrega|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="info-section">
+                <h3 class="info-title">
+                    <i class="fas fa-truck"></i>
+                    Informações de Transporte
+                </h3>
+                {% if notificacao.tipo_transporte %}
+                <div class="info-item">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value">{{ notificacao.get_tipo_transporte_display }}</span>
+                </div>
+                {% endif %}
+                
+                {% if notificacao.veiculo_interno %}
+                <div class="info-item">
+                    <span class="info-label">Veículo:</span>
+                    <span class="info-value">{{ notificacao.veiculo_interno.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Motorista:</span>
+                    <span class="info-value">{{ notificacao.veiculo_interno.motorista_responsavel }}</span>
+                </div>
+                {% endif %}
+                
+                {% if notificacao.transportadora_externa %}
+                <div class="info-item">
+                    <span class="info-label">Transportadora:</span>
+                    <span class="info-value">{{ notificacao.transportadora_externa.nome }}</span>
+                </div>
+                {% endif %}
+                
+                {% if notificacao.entregue_por %}
+                <div class="info-item">
+                    <span class="info-label">Entregue por:</span>
+                    <span class="info-value">{{ notificacao.entregue_por.get_full_name }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if notificacao.tipo_operacao == 'TRANSFERENCIA' %}
+        <div class="info-section">
+            <h3 class="info-title">
+                <i class="fas fa-exchange-alt"></i>
+                Informações da Transferência
+            </h3>
+            <div class="info-item">
+                <span class="info-label">Origem:</span>
+                <span class="info-value">{{ notificacao.transferencia.sucursal_origem.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Destino:</span>
+                <span class="info-value">{{ notificacao.transferencia.sucursal_destino.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Código Transferência:</span>
+                <span class="info-value">{{ notificacao.transferencia.codigo }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="info-section">
+            <h3 class="info-title">
+                <i class="fas fa-shopping-cart"></i>
+                Informações da Coleta
+            </h3>
+            <div class="info-item">
+                <span class="info-label">Fornecedor:</span>
+                <span class="info-value">{{ notificacao.ordem_compra.fornecedor.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Destino:</span>
+                <span class="info-value">{{ notificacao.ordem_compra.sucursal_destino.nome }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Código Ordem:</span>
+                <span class="info-value">{{ notificacao.ordem_compra.codigo }}</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="items-section">
+            <h3 class="items-title">
+                <i class="fas fa-boxes"></i>
+                Itens Recebidos
+            </h3>
+            
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Código</th>
+                        <th>Quantidade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for items in itens_operacao  %}
+                    <tr>
+                        <td>
+                            <div class="item-name">{{ item.item.nome }}</div>
+                        </td>
+                        <td>
+                            <div class="item-code">{{ item.item.codigo }}</div>
+                        </td>
+                        <td>
+                            <div class="quantity">{{ item.quantidade_solicitada }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-concluida">Recebido</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">
+                            <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <br>Nenhum|default:0 items encontrado
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="signature-section">
+            <div class="signature-box">
+                <h4 class="signature-title">Entregue por</h4>
+                <div class="signature-line"></div>
+                <div class="signature-label">Nome e Assinatura</div>
+                {% if notificacao.entregue_por %}
+                <div style="margin-top: 10px; font-weight: 600; color: #374151;">
+                    {{ notificacao.entregue_por.get_full_name }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="signature-box">
+                <h4 class="signature-title">Recebido por</h4>
+                <div class="signature-line"></div>
+                <div class="signature-label">Nome e Assinatura</div>
+                {% if notificacao.recebido_por %}
+                <div style="margin-top: 10px; font-weight: 600; color: #374151;">
+                    {{ notificacao.recebido_por.get_full_name }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="document-footer">
+            <p><strong>Data de Impressão:</strong> {% now "d/m/Y H:i" %}</p>
+            <p>Este documento confirma o recebimento oficial dos materiais especificados</p>
+        </div>
+    </div>
+</div>
+
+        <button class="header-btn header-btn-primary" class="btn btn-primary btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação"" tabindex="0" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+            <i class="fas fa-print"></i> Imprimir Comprovante
+        </button>
+{% endblock %}

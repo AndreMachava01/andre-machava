@@ -1,18 +1,10 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
 {% load static %}
 
 {% block title %}Nova Requisição de Compra Externa{% endblock %}
 
 {% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+
 {% endblock %}
 
 {% block content %}
@@ -24,7 +16,7 @@
                 <i class="fas fa-shopping-cart me-2"></i>Nova Requisição de Compra Externa
             </h1>
             <div class="hero-actions">
-                <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn-modern btn-secondary-modern">
+                <a href="#" class="btn-modern btn btn btn btn btn btn btn btn-secondary-modern btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                     <i class="fas fa-arrow-left"></i> Voltar ao Stock Baixo
                 </a>
             </div>
@@ -44,7 +36,7 @@
         {% endif %}
 
         <div class="form-container">
-            <form method="post">
+            <form method="post" action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -65,9 +57,9 @@
                         <i class="fas fa-box"></i> Item
                     </label>
                     <select name="item_id" id="item_id" class="form-control" required>
-                        <option value="">Selecione o item</option>
-                        {% for item in itens %}
-                            <option value="{{ item.id }}" {% if item_pre_selecionado and item.id == item_pre_selecionado.id %}selected{% endif %}>{{ item.nome }} ({{ item.codigo }}) - {{ item.get_tipo_display }}</option>
+                        <option value="">Selecione o|default:0 items</option>
+                        {% for items in itens  %}
+                            <option value="{{ item.id }}" {% if items_pre_selecionado and|default:0 items.id == item_pre_selecionado.id  %}selected{% endif %}>{{ item.nome }} ({{ item.codigo }}) - {{ item.get_tipo_display }}</option>
                         {% endfor %}
                     </select>
                     <div class="form-help">Item que será solicitado para compra externa</div>
@@ -93,10 +85,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn-form btn-cancel">
+                    <a href="#"stock:requisicoes:verificar_stock_baixo' %}" class="btn-form btn-cancel btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn-form btn-submit">
+                    <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
                         <i class="fas fa-save"></i> Criar Requisição de Compra Externa
                     </button>
                 </div>
