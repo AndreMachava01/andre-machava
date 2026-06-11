@@ -1,0 +1,160 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Guia de carga consolidada — {{ viagem.codigo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern stock-no-print">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:logistica:main' %}">Logística</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Guia de carga consolidada</span>
+    </nav>
+
+    <div class="page-header stock-no-print">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-truck-loading" aria-hidden="true"></i>
+                    Guia de carga consolidada
+                </h1>
+                <p class="page-subtitle">{{ viagem.codigo }} — documento para motorista com múltiplos destinos</p>
+            </div>
+            <div class="header-actions">
+                {% url 'stock:logistica:main' as logistica_main_url %}
+                <a href="{{ logistica_main_url }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-doc-print">
+        <header class="stock-doc-print__header">
+            <div>
+                <h2 class="stock-doc-print__title">GUIA DE CARGA CONSOLIDADA</h2>
+                <p class="stock-doc-print__code">{{ viagem.codigo }}</p>
+            </div>
+            <div class="stock-doc-print__date">
+                <strong>Data:</strong> {{ data_geracao|date:"d/m/Y H:i" }}<br>
+                <strong>Status:</strong> {{ viagem.get_status_display }}<br>
+                <strong>Gerado por:</strong> {{ user.get_full_name|default:user.username }}
+            </div>
+        </header>
+
+        <div class="stock-report-kpi-grid stock-u-mb-24">
+            <div class="stock-report-kpi">
+                <div class="stock-report-kpi__label">Total de destinos</div>
+                <div class="stock-report-kpi__value">{{ destinos_itens|length }}</div>
+            </div>
+            <div class="stock-report-kpi stock-report-kpi--success">
+                <div class="stock-report-kpi__label">Total de operações</div>
+                <div class="stock-report-kpi__value">{{ viagem.get_total_operacoes }}</div>
+            </div>
+            <div class="stock-report-kpi stock-report-kpi--warning">
+                <div class="stock-report-kpi__label">Prioridade</div>
+                <div class="stock-report-kpi__value">Normal</div>
+            </div>
+        </div>
+
+        <div class="stock-doc-print__section-title">
+            <i class="fas fa-route" aria-hidden="true"></i> Informações de transporte
+        </div>
+        <table class="table table-striped stock-report-table stock-u-mb-24">
+            <tbody>
+                {% if viagem.veiculo_interno %}
+                <tr><td><strong>Veículo</strong></td><td>{{ viagem.veiculo_interno.nome }} — {{ viagem.veiculo_interno.placa }}</td></tr>
+                {% elif viagem.transportadora_externa %}
+                <tr><td><strong>Transportadora</strong></td><td>{{ viagem.transportadora_externa.nome }}</td></tr>
+                {% endif %}
+                {% if viagem.motorista %}
+                <tr>
+                    <td><strong>Motorista</strong></td>
+                    <td>{{ viagem.motorista }}{% if viagem.telefone_motorista %} — Tel: {{ viagem.telefone_motorista }}{% endif %}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        {% for destino_key, destino_data in destinos_itens.items %}
+        <div class="stock-doc-print__section-title">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            Destino {{ forloop.counter }}: {{ destino_data.destino.nome }}
+        </div>
+
+        {% if destino_data.destino.endereco_completo or destino_data.destino.telefone %}
+        <div class="stock-u-mb-16">
+            {% if destino_data.destino.endereco_completo %}
+            <p><strong>Endereço:</strong> {{ destino_data.destino.endereco_completo }}</p>
+            {% endif %}
+            {% if destino_data.destino.telefone %}
+            <p><strong>Telefone:</strong> {{ destino_data.destino.telefone }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if destino_data.itens %}
+        <table class="table table-striped stock-report-table stock-u-mb-24">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th class="text-center">Quantidade</th>
+                    <th>Unidade</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in destino_data.itens %}
+                <tr>
+                    <td><strong>{{ item.codigo|default:"-" }}</strong></td>
+                    <td>{{ item.nome|default:"Item não especificado" }}</td>
+                    <td class="text-center"><strong>{{ item.quantidade_solicitada|default:"0" }}</strong></td>
+                    <td>{{ item.unidade|default:"UN" }}</td>
+                    <td>{{ item.observacoes|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div class="stock-doc-print__signatures stock-u-mb-24">
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                <p>Motorista ({{ forloop.counter }})</p>
+                <small>Nome e assinatura</small>
+            </div>
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                <p>Receptor — {{ destino_data.destino.nome }}</p>
+                <small>Confirmação de recebimento</small>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if viagem.observacoes %}
+        <div class="stock-doc-print__section-title">
+            <i class="fas fa-sticky-note" aria-hidden="true"></i> Observações gerais
+        </div>
+        <div class="alert alert-info stock-u-mb-24">{{ viagem.observacoes }}</div>
+        {% endif %}
+
+        <footer class="stock-doc-print__footer">
+            <p>
+                <strong>Data:</strong> {{ data_geracao|date:"d/m/Y H:i" }} |
+                Viagem consolidada {{ viagem.codigo }} |
+                {{ destinos_itens|length }} destino(s). Cada receptor deve assinar confirmando o recebimento dos itens do respectivo destino.
+            </p>
+        </footer>
+    </div>
+</div>
+{% endblock %}

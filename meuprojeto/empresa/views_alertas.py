@@ -121,35 +121,58 @@ def alertas_marcar_todos_lidos(request):
 @login_required
 @require_stock_access
 def alertas_estatisticas(request):
-    """API para estatísticas de alertas"""
+    """Estatísticas de alertas (página HTML ou JSON para AJAX)."""
     try:
-        # Estatísticas gerais
+        from django.db.models.functions import TruncDate
+
         total_alertas = NotificacaoStock.objects.count()
         alertas_nao_lidos = NotificacaoStock.objects.filter(lida=False).count()
-        
-        # Alertas por tipo
-        alertas_por_tipo = list(NotificacaoStock.objects.values('tipo').annotate(
+        alertas_lidos = total_alertas - alertas_nao_lidos
+
+        tipo_labels = dict(NotificacaoStock.TIPOS_NOTIFICACAO)
+        alertas_por_tipo = []
+        for row in NotificacaoStock.objects.values('tipo').annotate(
             total=Count('id'),
-            nao_lidos=Count('id', filter=Q(lida=False))
-        ).order_by('tipo'))
-        
-        # Alertas por dia (últimos 30 dias)
+            nao_lidos=Count('id', filter=Q(lida=False)),
+        ).order_by('tipo'):
+            row = dict(row)
+            row['tipo_display'] = tipo_labels.get(row['tipo'], row['tipo'])
+            row['lidos'] = row['total'] - row['nao_lidos']
+            alertas_por_tipo.append(row)
+
         data_limite = timezone.now() - timedelta(days=30)
-        alertas_por_dia = list(NotificacaoStock.objects.filter(
-            data_criacao__gte=data_limite
-        ).extra(
-            select={'dia': 'DATE(data_criacao)'}
-        ).values('dia').annotate(
-            total=Count('id')
-        ).order_by('dia'))
-        
-        return JsonResponse({
+        alertas_por_dia = list(
+            NotificacaoStock.objects.filter(data_criacao__gte=data_limite)
+            .annotate(dia=TruncDate('data_criacao'))
+            .values('dia')
+            .annotate(total=Count('id'))
+            .order_by('dia')
+        )
+
+        payload = {
             'total_alertas': total_alertas,
             'alertas_nao_lidos': alertas_nao_lidos,
             'alertas_por_tipo': alertas_por_tipo,
             'alertas_por_dia': alertas_por_dia,
-        })
-        
+        }
+
+        wants_json = (
+            request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or 'application/json' in (request.headers.get('Accept') or '')
+        )
+        if wants_json:
+            return JsonResponse(payload)
+
+        context = {
+            **payload,
+            'alertas_lidos': alertas_lidos,
+            'data_limite': data_limite.date(),
+        }
+        return render(request, 'stock/alertas/estatisticas.html', context)
+
     except Exception as e:
         logger.error(f"Erro ao obter estatísticas de alertas: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'error': str(e)}, status=500)
+        messages.error(request, f'Erro ao carregar estatísticas: {e}')
+        return redirect('stock:alertas_gerenciar')

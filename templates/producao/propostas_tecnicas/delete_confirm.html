@@ -1,0 +1,150 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluir Proposta Técnica - {{ proposta.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #b45309; color: white; }
+        .warning-box { padding: 16px; border-radius: 8px; border: 1px solid #fecaca; background: #fee2e2; margin-bottom: 20px; }
+        .warning-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #991b1b; display: flex; align-items: center; gap: 8px; }
+        .warning-box p { margin: 4px 0; font-size: 13px; color: #7f1d1d; }
+        .info-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; margin-bottom: 20px; }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .info-box p { margin: 4px 0; font-size: 13px; color: #6b7280; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+        .info-item { padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+        .info-item strong { color: #6b7280; font-size: 13px; display: block; margin-bottom: 2px; }
+        .info-item span { color: #374151; font-size: 14px; }
+        .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-disponivel { background: #f3f4f6; color: #4b5563; }
+        .badge-em_andamento { background: #dbeafe; color: #1d4ed8; }
+        .badge-atrasada { background: #fee2e2; color: #b45309; }
+        .badge-concluida { background: #d1fae5; color: #059669; }
+        .badge-cancelada { background: #f3e8ff; color: #7c3aed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-trash"></i> Excluir Proposta Técnica</h1>
+        </div>
+
+        <div class="warning-box">
+            <h3><i class="fas fa-exclamation-triangle"></i> Atenção!</h3>
+            <p>Esta ação <strong>não pode ser desfeita</strong>. A proposta técnica será permanentemente excluída do sistema.</p>
+            <p>Todos os dados relacionados serão perdidos, incluindo escopo, observações e histórico de estágios.</p>
+        </div>
+
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Proposta a ser Excluída</h3>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Código</strong>
+                    <span>{{ proposta.codigo }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Título</strong>
+                    <span>{{ proposta.titulo }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Cliente</strong>
+                    <span>{{ proposta.cliente.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Responsável</strong>
+                    <span>{{ proposta.responsavel.get_full_name|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Status</strong>
+                    <span class="badge badge-{{ proposta.status|lower }}">{{ proposta.get_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Estágio</strong>
+                    <span>{{ proposta.get_estagio_atual_display }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Data Criação</strong>
+                    <span>{{ proposta.data_solicitacao|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Valor Levantamento</strong>
+                    <span>{% if proposta.valor_levantamento_previsto %}{{ proposta.valor_levantamento_previsto|floatformat:2 }} MT{% else %}-{% endif %}</span>
+                </div>
+            </div>
+
+            {% if proposta.orcamento_servico %}
+            <div class="warning-box" style="margin-top: 16px;">
+                <h3><i class="fas fa-link"></i> Orçamento Vinculado</h3>
+                <p>Esta proposta está vinculada ao orçamento <strong>{{ proposta.orcamento_servico.codigo }}</strong>.</p>
+                <p>A exclusão da proposta <strong>não afetará</strong> o orçamento existente.</p>
+            </div>
+            {% endif %}
+
+            {% if proposta.escopo %}
+            <div style="margin-top: 16px;">
+                <strong>Escopo:</strong>
+                <div style="margin-top: 8px; padding: 12px; background: #f9fafb; border-radius: 4px; font-size: 13px; color: #6b7280;">
+                    {{ proposta.escopo|truncatechars:200 }}
+                    {% if proposta.escopo|length > 200 %}...{% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                    <input type="checkbox" name="confirm" value="yes" required style="transform: scale(1.2);">
+                    <span>Confirmo que desejo excluir permanentemente esta proposta técnica</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'producao:proposta_tecnica_detail' proposta.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza absoluta que deseja excluir esta proposta? Esta ação é irreversível!')">
+                    <i class="fas fa-trash"></i> Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Validação adicional
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const checkbox = document.querySelector('input[name="confirm"]');
+            if (!checkbox.checked) {
+                e.preventDefault();
+                alert('Você deve confirmar a exclusão marcando a checkbox.');
+                return false;
+            }
+            
+            const confirmMessage = `ATENÇÃO: Você está prestes a excluir permanentemente a proposta:\n\n` +
+                `Código: {{ proposta.codigo }}\n` +
+                `Título: {{ proposta.titulo }}\n` +
+                `Cliente: {{ proposta.cliente.nome }}\n\n` +
+                `Esta ação NÃO PODERÁ SER DESFEITA!\n\n` +
+                `Deseja continuar?`;
+                
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

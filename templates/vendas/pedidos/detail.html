@@ -1,0 +1,172 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #10b981; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .section { margin-bottom: 24px; }
+        .section h2 { color: #374151; font-size: 16px; margin: 0 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+        .info-grid { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; font-size: 14px; }
+        .info-grid dt { color: #6b7280; margin: 0; }
+        .info-grid dd { margin: 0; color: #1f2937; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-agendada { background: #fef3c7; color: #92400e; }
+        .badge-em-andamento { background: #dbeafe; color: #1e40af; }
+        .badge-pausada { background: #e0e7ff; color: #3730a3; }
+        .badge-concluida { background: #d1fae5; color: #065f46; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #ecfdf5; color: #065f46; font-weight: 600; }
+        .footer-note { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; }
+        .footer-note a { color: #059669; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-invoice"></i> {{ ordem.codigo|formatar_codigo_ordem }}</h1>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% if not ordem.numero_impressao_fatura or ordem.numero_impressao_fatura == 0 %}
+                    <a href="{% url 'vendas:pedido_edit' ordem.id %}" class="btn" style="background: #10b981; color: white;"><i class="fas fa-edit"></i> Editar</a>
+                {% endif %}
+                {% if ordem.status == 'CONCLUIDA' %}
+                    <a href="{% url 'vendas:pedido_emitir_fatura' ordem.id %}" class="btn" style="background: #0ea5e9; color: white;"><i class="fas fa-file-invoice-dollar"></i> Emitir fatura</a>
+                    {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                        <a href="{% url 'vendas:pedido_emitir_garantia' ordem.id %}" class="btn" style="background: #10b981; color: white;" target="_blank"><i class="fas fa-shield-alt"></i> Emitir garantia</a>
+                    {% endif %}
+                {% endif %}
+                <a href="{% url 'vendas:pedidos' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar aos pedidos</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Informação geral</h2>
+            <dl class="info-grid">
+                <dt>Cliente</dt>
+                <dd>{% if ordem.cliente %}{{ ordem.cliente.nome }}{% elif ordem.nome_cliente_pagamento %}{{ ordem.nome_cliente_pagamento }} (CASH){% else %}—{% endif %}</dd>
+                <dt>Status</dt>
+                <dd>
+                    {% if ordem.status == 'AGENDADA' %}<span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'EM_ANDAMENTO' %}<span class="badge badge-em-andamento">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'PAUSADA' %}<span class="badge badge-pausada">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'CONCLUIDA' %}<span class="badge badge-concluida">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'CANCELADA' %}<span class="badge badge-cancelada">{{ ordem.get_status_display }}</span>
+                    {% else %}{{ ordem.get_status_display }}{% endif %}
+                </dd>
+                <dt>Data agendada</dt>
+                <dd>{{ ordem.data_agendada|date:"d/m/Y H:i" }}</dd>
+                <dt>Endereço</dt>
+                <dd>{{ ordem.endereco_servico|default:"—" }}</dd>
+                <dt>Cidade</dt>
+                <dd>{{ ordem.cidade_servico|default:"—" }}</dd>
+                <dt>Equipe</dt>
+                <dd>{{ ordem.equipe|default:"—" }}</dd>
+                <dt>Responsável</dt>
+                <dd>{% if ordem.responsavel %}{{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}{% else %}—{% endif %}</dd>
+                <dt>Valor total</dt>
+                <dd><strong>{{ ordem.valor_total|floatformat:2 }} MT</strong></dd>
+            </dl>
+        </div>
+
+        {% if ordem.servicos_orcamento.all %}
+        <div class="section">
+            <h2>Serviços</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Serviço</th>
+                        <th>Qtd</th>
+                        <th>Valor unit.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in ordem.servicos_orcamento.all %}
+                    <tr>
+                        <td>{{ s.servico.nome|default:"—" }}</td>
+                        <td>{{ s.quantidade }}</td>
+                        <td>{{ s.valor_unitario|floatformat:2 }} MT</td>
+                        <td>{{ s.valor_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% for item in s.itens.all %}
+                    <tr style="background: #f9fafb;">
+                        <td style="padding-left: 28px;"><i class="fas fa-cube" style="color: #9ca3af;"></i> {% if item.item %}{{ item.item.nome }}{% else %}—{% endif %}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>{{ item.valor_unitario|floatformat:2 }} MT</td>
+                        <td>{{ item.valor_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if ordem.transportes_orcamento.all %}
+        <div class="section">
+            <h2>Transportes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transportadora</th>
+                        <th>Valor logística</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in ordem.transportes_orcamento.all %}
+                    <tr>
+                        <td>{{ t.transportadora.nome|default:"—" }}</td>
+                        <td>{{ t.valor_frete|floatformat:2 }} MT</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if ordem.orcamento_origem and ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+        <div class="section">
+            <h2>Contrato</h2>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px;">Consultar ou reimprimir o contrato de prestação de serviços.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'vendas:preview_contrato' ordem.orcamento_origem.id %}" class="btn" style="background: #0ea5e9; color: white;" target="_blank"><i class="fas fa-eye"></i> Pré-visualizar</a>
+                <a href="{% url 'vendas:gerar_contrato' ordem.orcamento_origem.id %}" class="btn" style="background: #10b981; color: white;" target="_blank"><i class="fas fa-file-pdf"></i> Gerar PDF</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not ordem.numero_impressao_fatura or ordem.numero_impressao_fatura == 0 %}
+        <div class="section" style="margin-top: 24px;">
+            <h2>Alterar status</h2>
+            <form method="post" action="{% url 'vendas:pedido_alterar_status' ordem.id %}" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% csrf_token %}
+                {% if ordem.status == 'AGENDADA' or ordem.status == 'PAUSADA' %}
+                    <button type="submit" name="acao" value="iniciar" class="btn" style="background: #10b981; color: white;"><i class="fas fa-play"></i> Iniciar</button>
+                {% endif %}
+                {% if ordem.status == 'EM_ANDAMENTO' %}
+                    <button type="submit" name="acao" value="pausar" class="btn" style="background: #f59e0b; color: white;"><i class="fas fa-pause"></i> Pausar</button>
+                {% endif %}
+                {% if ordem.status == 'PAUSADA' %}
+                    <button type="submit" name="acao" value="retomar" class="btn" style="background: #10b981; color: white;"><i class="fas fa-play"></i> Retomar</button>
+                {% endif %}
+                {% if ordem.status != 'CONCLUIDA' and ordem.status != 'CANCELADA' %}
+                    <button type="submit" name="acao" value="concluir" class="btn" style="background: #059669; color: white;"><i class="fas fa-check"></i> Concluir</button>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

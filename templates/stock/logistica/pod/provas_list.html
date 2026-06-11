@@ -1,249 +1,252 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Provas de Entrega{% endblock %}
+{% block title %}Provas de entrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Provas de Entrega</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:pod:dashboard' as pod_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='POD e documentos' breadcrumb_section_url=pod_dashboard_url breadcrumb_current='Provas de entrega' %}
 
-    <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-file-signature"></i>
-                    Provas de Entrega
+                    <i class="fas fa-file-signature" aria-hidden="true"></i>
+                    Provas de entrega
                 </h1>
-                <p class="page-subtitle">
-                    Gerenciamento de Provas de Entrega (POD)
-                </p>
+                <p class="page-subtitle">Registo, validação e histórico de POD</p>
             </div>
             <div class="header-actions">
-                <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-success">
-                    <i class="fas fa-plus"></i>
-                    Nova POD
-                </a>
                 <a href="{% url 'stock:pod:dashboard' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar ao Dashboard
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard POD
+                </a>
+                <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova POD
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="get" class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="PENDENTE" {% if request.GET.status == 'PENDENTE' %}selected{% endif %}>Pendente</option>
-                            <option value="CONCLUIDA" {% if request.GET.status == 'CONCLUIDA' %}selected{% endif %}>Concluída</option>
-                            <option value="VALIDADA" {% if request.GET.status == 'VALIDADA' %}selected{% endif %}>Validada</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="tipo_entrega" class="form-label">Tipo de Entrega</label>
-                        <select name="tipo_entrega" id="tipo_entrega" class="form-control">
-                            <option value="">Todos</option>
-                            <option value="COMPLETA" {% if request.GET.tipo_entrega == 'COMPLETA' %}selected{% endif %}>Completa</option>
-                            <option value="PARCIAL" {% if request.GET.tipo_entrega == 'PARCIAL' %}selected{% endif %}>Parcial</option>
-                            <option value="RECUSADA" {% if request.GET.tipo_entrega == 'RECUSADA' %}selected{% endif %}>Recusada</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="data_inicio" class="form-label">Data Início</label>
-                        <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="data_fim" class="form-label">Data Fim</label>
-                        <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                            Filtrar
-                        </button>
-                        <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i>
-                            Limpar
-                        </a>
-                    </div>
-                </div>
-            </form>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.pendentes|default:"0" }}</div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.validadas|default:"0" }}</div>
+                <div class="stat-label">Validadas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.com_gps|default:"0" }}</div>
+                <div class="stat-label">Com GPS</div>
+            </div>
         </div>
     </div>
 
-    <!-- Lista de Provas -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-list"></i>
-                Lista de Provas de Entrega
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-provas">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-provas" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, rastreamento, destinatário...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-provas">Status</label>
+                <select id="filtro-status-provas" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo-provas">Tipo de entrega</label>
+                <select id="filtro-tipo-provas" name="tipo_entrega" class="form-select" title="Tipo de entrega">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_entrega_choices %}
+                    <option value="{{ value }}" {% if tipo_entrega == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-validada-provas">Validação</label>
+                <select id="filtro-validada-provas" name="validada" class="form-select" title="Estado de validação">
+                    <option value="">Todas</option>
+                    <option value="true" {% if validada == 'true' %}selected{% endif %}>Validadas</option>
+                    <option value="false" {% if validada == 'false' %}selected{% endif %}>Não validadas</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-provas">De</label>
+                <input type="date" id="filtro-data-inicio-provas" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-provas">Até</label>
+                <input type="date" id="filtro-data-fim-provas" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:pod:provas_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-file-signature" aria-hidden="true"></i>
+                Provas de entrega
             </h3>
-            <div class="card-actions">
-                <span class="badge badge-info">{{ page_obj|length }} provas encontradas</span>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
             </div>
         </div>
-        <div class="card-body">
-            {% if page_obj %}
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Código POD</th>
-                                <th>Rastreamento</th>
-                                <th>Destinatário</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                                <th>Data Entrega</th>
-                                <th>Validada</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for prova in page_obj %}
-                            <tr>
-                                <td>
-                                    <span class="badge badge-secondary">{{ prova.codigo }}</span>
-                                </td>
-                                <td>
-                                    {% if prova.rastreamento_entrega %}
-                                        <a href="{% url 'stock:logistica:rastreamento_detail' prova.rastreamento_entrega.id %}">
-                                            #{{ prova.rastreamento_entrega.id }}
-                                        </a>
-                                    {% else %}
-                                        <span class="text-muted">N/A</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ prova.nome_destinatario|truncatechars:30 }}</td>
-                                <td>
-                                    <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
-                                        {{ prova.get_tipo_entrega_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
-                                        {{ prova.status }}
-                                    </span>
-                                </td>
-                                <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
-                                <td>
-                                    {% if prova.validada %}
-                                        <i class="fas fa-check text-success"></i>
-                                    {% else %}
-                                        <i class="fas fa-clock text-warning"></i>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-info btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {% if not prova.validada %}
-                                            <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-check"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
 
-                <!-- Paginação -->
-                {% if is_paginated %}
-                    <nav class="pagination-nav">
-                        <div class="pagination-info">
-                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                        </div>
-                        <div class="pagination-buttons">
-                            {% if page_obj.has_previous %}
-                                <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Rastreamento</th>
+                        <th>Destinatário</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Entrega</th>
+                        <th class="text-center">Validada</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prova in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ prova.codigo }}</strong></td>
+                        <td>
+                            {% if prova.rastreamento_entrega %}
+                            <a href="{% url 'stock:logistica:rastreamento_detail' prova.rastreamento_entrega.id %}"
+                               class="cell-primary">
+                                {{ prova.rastreamento_entrega.codigo_rastreamento }}
+                            </a>
                             {% else %}
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-double-left"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-left"></i>
-                                </button>
+                            <span class="stock-text-placeholder">—</span>
                             {% endif %}
+                        </td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ prova.nome_destinatario }}</div>
+                            {% if prova.endereco_entrega %}
+                            <div class="cell-tertiary cell-tertiary--sm">{{ prova.endereco_entrega|truncatechars:40 }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' or prova.tipo_entrega == 'DEVOLVIDA' %}danger{% else %}secondary{% endif %}">
+                                {{ prova.get_tipo_entrega_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% elif prova.status == 'REJEITADA' or prova.status == 'CANCELADA' %}danger{% else %}secondary{% endif %}">
+                                {{ prova.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
+                        <td class="text-center">
+                            {% if prova.validada %}
+                            <i class="fas fa-check stock-text-success" aria-hidden="true" title="Validada"></i>
+                            {% else %}
+                            <i class="fas fa-clock stock-text-warning" aria-hidden="true" title="Pendente"></i>
+                            {% endif %}
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn-action primary"
+                                   title="Ver prova" aria-label="Ver prova {{ prova.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% if not prova.validada %}
+                                <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn-action secondary"
+                                   title="Validar prova" aria-label="Validar prova {{ prova.codigo }}">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                            {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.tipo_entrega %}&tipo_entrega={{ request.GET.tipo_entrega }}{% endif %}{% if request.GET.data_inicio %}&data_inicio={{ request.GET.data_inicio }}{% endif %}{% if request.GET.data_fim %}&data_fim={{ request.GET.data_fim }}{% endif %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            {% else %}
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-right"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fas fa-angle-double-right"></i>
-                                </button>
-                            {% endif %}
-                        </div>
-                    </nav>
-                {% endif %}
-            {% else %}
-                <div class="text-center text-muted py-5">
-                    <i class="fas fa-file-signature fa-4x mb-4"></i>
-                    <h4>Nenhuma prova encontrada</h4>
-                    <p>Não há provas de entrega que correspondam aos filtros selecionados.</p>
-                    <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-success">
-                        <i class="fas fa-plus"></i>
-                        Criar Nova POD
-                    </a>
-                </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo_entrega %}&tipo_entrega={{ tipo_entrega }}{% endif %}{% if validada %}&validada={{ validada }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if tipo_entrega %}&tipo_entrega={{ tipo_entrega }}{% endif %}{% if validada %}&validada={{ validada }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
             {% endif %}
         </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-file-signature" aria-hidden="true"></i>
+            <h3>Nenhuma prova encontrada</h3>
+            <p>Não há provas que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Nova POD
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

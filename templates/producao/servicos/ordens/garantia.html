@@ -1,0 +1,325 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garantia - {{ numero_garantia }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+                background: white;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                color: #1f2937 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                padding: 5px;
+            }
+            .header {
+                border-bottom: 2px solid #10b981 !important;
+            }
+        }
+        .print-actions {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-print {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-print:hover {
+            background: #059669;
+        }
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background: #4b5563;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 10px;
+            color: #1f2937;
+            font-size: 10px;
+            line-height: 1.3;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+        }
+        .header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .logo-empresa {
+            max-width: 120px;
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+        .empresa-info {
+            flex: 1;
+        }
+        .empresa-info h1 {
+            font-size: 18px;
+            color: #10b981;
+            margin-bottom: 2px;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+            color: #6b7280;
+            font-size: 9px;
+        }
+        .garantia-info {
+            text-align: right;
+        }
+        .garantia-info h2 {
+            font-size: 20px;
+            color: #10b981;
+            margin-bottom: 2px;
+        }
+        .garantia-info p {
+            margin: 1px 0;
+            color: #6b7280;
+            font-size: 9px;
+        }
+        .client-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 6px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .client-box {
+            flex: 1;
+        }
+        .client-box h3 {
+            font-size: 10px;
+            color: #374151;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .client-box p {
+            margin: 1px 0;
+            color: #1f2937;
+            font-size: 9px;
+        }
+        .servicos-list {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 10px;
+        }
+        .servicos-list h3 {
+            font-size: 12px;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .servicos-list ul {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+        .servicos-list li {
+            margin: 4px 0;
+        }
+        .garantia-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            border-radius: 6px;
+        }
+        .garantia-details h3 {
+            font-size: 14px;
+            color: #065f46;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .garantia-details p {
+            font-size: 10px;
+            color: #1f2937;
+            line-height: 1.5;
+            margin: 5px 0;
+        }
+        .garantia-details .highlight {
+            font-weight: 700;
+            color: #065f46;
+        }
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-actions no-print">
+        <button onclick="window.print()" class="btn-print">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        {% if return_to_vendas %}
+        <a href="{% url 'vendas:pedido_detail' ordem.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar ao pedido (Vendas)
+        </a>
+        {% else %}
+        <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-container">
+                    {% if dados_empresa and dados_empresa.logo %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}{{ dados_empresa.logo }}" alt="Logo da Empresa" class="logo-empresa">
+                    {% else %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}logos_empresas/LOGO_DA_CONCEPTION.jpg" alt="Logo da Empresa" class="logo-empresa">
+                    {% endif %}
+                </div>
+                <div class="empresa-info">
+                    {% if dados_empresa %}
+                    <h1>{{ dados_empresa.nome }}</h1>
+                    {% if dados_empresa.nuit %}<p><strong>NUIT:</strong> {{ dados_empresa.nuit }}</p>{% endif %}
+                    {% if dados_empresa.endereco %}<p>{{ dados_empresa.endereco }}</p>{% endif %}
+                    {% if dados_empresa.telefone %}<p><strong>Telefone:</strong> {{ dados_empresa.telefone }}</p>{% endif %}
+                    {% if dados_empresa.email %}<p><strong>Email:</strong> {{ dados_empresa.email }}</p>{% endif %}
+                    {% else %}
+                    <h1>Empresa</h1>
+                    {% endif %}
+                </div>
+                <div class="garantia-info">
+                    <h2 style="display: flex; align-items: center; gap: 10px;">
+                        CERTIFICADO DE GARANTIA
+                        <span style="font-size: 12px; color: #dc2626; font-weight: 700; text-transform: uppercase;">{{ tipo_documento }}</span>
+                    </h2>
+                    <p style="margin-top: 4px; margin-bottom: 2px; display: flex; align-items: baseline; gap: 6px;">
+                        <strong style="font-size: 10px; color: #6b7280;">Nº:</strong>
+                        <span style="font-size: 18px; font-weight: 700; color: #10b981; letter-spacing: 0.5px;">{{ numero_garantia }}</span>
+                    </p>
+                    <p style="margin-top: 4px;"><strong>Data de Emissão:</strong> {{ data_emissao|date:"d/m/Y" }} <strong>Hora:</strong> {{ hora_emissao|time:"H:i" }}</p>
+                    <p><strong>Ordem de Serviço:</strong> {{ ordem.codigo|formatar_codigo_ordem }}</p>
+                    {% if ordem.numero_fatura_fiscal %}
+                    <p><strong>Fatura:</strong> {{ ordem.numero_fatura_fiscal }}</p>
+                    {% endif %}
+                    {% if ordem.orcamento_origem %}
+                    <p><strong>Cotação:</strong> {{ ordem.orcamento_origem.codigo|formatar_codigo_ordem }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="client-info">
+            <div class="client-box">
+                <h3>Cliente</h3>
+                <p><strong>Nome:</strong> {{ cliente_nome }}</p>
+                {% if cliente_documento %}<p><strong>NUIT:</strong> {{ cliente_documento }}</p>{% endif %}
+                {% if cliente_endereco %}<p><strong>Endereço:</strong> {{ cliente_endereco }}</p>{% endif %}
+                {% if cliente_email %}<p><strong>Email:</strong> {{ cliente_email }}</p>{% endif %}
+            </div>
+            <div class="client-box" style="text-align: right;">
+                <h3>Informações do Serviço</h3>
+                {% if ordem.data_conclusao %}<p><strong>Data de Conclusão:</strong> {{ ordem.data_conclusao|date:"d/m/Y H:i" }}</p>{% endif %}
+                {% if ordem.endereco_servico %}<p><strong>Local de Execução:</strong> {{ ordem.endereco_servico }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="servicos-list">
+            <h3>Serviços Prestados:</h3>
+            <ul>
+                {% for servico in lista_servicos %}
+                <li>{{ servico }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="garantia-details">
+            <h3><i class="fas fa-shield-alt"></i> TERMOS DE GARANTIA</h3>
+            <p>Este certificado garante que os serviços prestados pela <span class="highlight">{{ dados_empresa.nome|default:"empresa" }}</span> estão cobertos por garantia contra defeitos decorrentes da execução.</p>
+            <p><strong>Período de Garantia:</strong> <span class="highlight">{{ validade_dias|default:90 }} dias</span></p>
+            <p><strong>Data de Início:</strong> <span class="highlight">{{ data_inicio_garantia|date:"d/m/Y" }}</span></p>
+            <p><strong>Data de Validade:</strong> <span class="highlight">{{ data_validade_garantia|date:"d/m/Y" }}</span></p>
+            <p style="margin-top: 10px;"><strong>Cobertura:</strong> Esta garantia cobre defeitos decorrentes da execução dos serviços, incluindo problemas de qualidade, falhas técnicas e não conformidades com as especificações acordadas.</p>
+            <p><strong>Exclusões:</strong> Esta garantia não cobre danos causados por uso inadequado, desgaste normal, modificações não autorizadas, ou causas externas não relacionadas à execução dos serviços.</p>
+            <p style="margin-top: 10px;"><strong>Para acionar a garantia:</strong> Entre em contato conosco através dos canais de atendimento informados acima, apresentando este certificado e descrevendo o problema identificado.</p>
+        </div>
+
+        <div class="footer">
+            <p>Este certificado de garantia foi gerado automaticamente pelo sistema em {{ data_emissao|date:"d/m/Y" }} às {{ hora_emissao|time:"H:i" }}.</p>
+            <p>Para questões relacionadas a esta garantia, entre em contato conosco.</p>
+        </div>
+    </div>
+</body>
+</html>
+

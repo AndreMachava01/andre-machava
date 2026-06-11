@@ -1,0 +1,49 @@
+{% comment %}
+Tabela Gantt partilhada: mesma estrutura para detalhe e impressão.
+Sempre data-left/data-style; o JS (detalhe e impressão) aplica as posições.
+gantt_inline_styles: True = impressão (colgroup + classes print); False = detalhe (classes od-*).
+{% endcomment %}
+{% if gantt_inline_styles %}<colgroup><col class="gantt-col-actividade"><col class="gantt-col-scale"></colgroup>{% endif %}
+<thead>
+    <tr>
+        <th class="gantt-th-label gantt-cell-actividade {% if not gantt_inline_styles %}od-gantt-th-label{% endif %}">Actividade</th>
+        <th class="gantt-th-scale gantt-scale {% if not gantt_inline_styles %}od-gantt-th-scale{% endif %}">
+            <div class="gantt-scale-inner {% if not gantt_inline_styles %}od-gantt-scale-inner{% endif %}">
+                {% for t in gantt_ticks %}
+                <span class="gantt-tick-label gantt-dyn-left od-gantt-tick gantt-tick-date" data-left="{{ t.pct }}">{{ t.date|date:"d/m" }}</span>
+                {% endfor %}
+                {% if gantt_hoje_pct is not None %}
+                <span class="gantt-hoje-line gantt-dyn-left od-gantt-hoje-line gantt-hoje" data-left="{{ gantt_hoje_pct }}" title="Hoje"></span>
+                <span class="gantt-hoje-label gantt-dyn-left od-gantt-hoje-label" data-left="{{ gantt_hoje_pct }}">Hoje</span>
+                {% endif %}
+            </div>
+        </th>
+    </tr>
+</thead>
+<tbody>
+    {% for g in cronograma_gantt %}
+    <tr class="{% if not gantt_inline_styles and forloop.counter|divisibleby:2 %}gantt-row-alt {% endif %}{% if g.em_atraso %}gantt-row-atraso{% endif %}">
+        <td class="gantt-cell-label gantt-cell-actividade{% if g.item.e_subactividade %} gantt-cell-sub gantt-label sub{% endif %} {% if not gantt_inline_styles %}od-gantt-cell-label{% endif %}">
+            {% if g.item.atividade.status == 'CONCLUIDA' %}{% if gantt_inline_styles %}&#10003; {% else %}<i class="fas fa-check-circle od-check-concluida" title="Concluída" aria-hidden="true"></i> {% endif %}{% endif %}{% if g.item.e_subactividade %}{% if gantt_inline_styles %}&rarr; {% else %}<i class="fas fa-level-up-alt fa-rotate-90 od-gantt-cell-icon"></i> {% endif %}{% endif %}{% if g.item.numero_display %}<strong>{{ g.item.numero_display }}</strong>. {% endif %}{{ g.item.atividade.nome }}{% if g.item.atividade.parcela %} <span class="gantt-parcela {% if not gantt_inline_styles %}od-parcela{% endif %}">→ Parcela {{ g.item.atividade.parcela.numero_ordem }} ({{ g.item.atividade.parcela.percentagem }}%)</span>{% endif %}
+            {% if g.planned_start or g.planned_end %}<div class="gantt-datas-previstas {% if not gantt_inline_styles %}od-gantt-datas-previstas{% endif %}">Previsto: {% if g.planned_start %}{{ g.planned_start|date:"d/m/Y" }}{% endif %}{% if g.planned_start and g.planned_end %} – {% endif %}{% if g.planned_end %}{{ g.planned_end|date:"d/m/Y" }}{% endif %}</div>{% endif %}
+        </td>
+        <td class="gantt-td-track gantt-td-scale {% if not gantt_inline_styles %}od-gantt-td-track{% endif %}">
+            <div class="gantt-track">
+                {% if gantt_hoje_pct is not None %}
+                <span class="gantt-track-hoje gantt-dyn-left od-gantt-track-hoje-inline gantt-hoje" data-left="{{ gantt_hoje_pct }}" title="Hoje (data actual)"></span>
+                {% endif %}
+                {% if g.style_planned %}
+                <div class="gantt-bar gantt-bar-p" data-style="{{ g.style_planned }}" title="Previsto: {{ g.planned_start|date:'d/m/Y' }} – {{ g.planned_end|date:'d/m/Y' }}"></div>
+                <span class="gantt-bar-label gantt-dyn-left gantt-bar-label-inicio gantt-bar-label-p {% if not gantt_inline_styles %}od-gantt-bar-label od-gantt-bar-label-p{% endif %}" data-left="{{ g.left_p }}">{% if g.planned_start %}{{ g.planned_start|date:"d/m" }}{% endif %}</span>
+                <span class="gantt-bar-label gantt-dyn-left gantt-bar-label-fim gantt-bar-label-p {% if not gantt_inline_styles %}od-gantt-bar-label od-gantt-bar-label-p{% endif %}" data-left="{{ g.left_p|add:g.width_p }}">{% if g.planned_end %}{{ g.planned_end|date:"d/m" }}{% endif %}</span>
+                {% endif %}
+                {% if g.style_actual %}
+                <div class="gantt-bar gantt-bar-a" data-style="{{ g.style_actual }}" title="Real: {{ g.actual_start|date:'d/m/Y' }} – {{ g.actual_end|date:'d/m/Y' }}"></div>
+                <span class="gantt-bar-label gantt-dyn-left gantt-bar-label-inicio gantt-bar-label-a {% if not gantt_inline_styles %}od-gantt-bar-label od-gantt-bar-label-a{% endif %}" data-left="{{ g.left_a }}">{% if g.actual_start %}{{ g.actual_start|date:"d/m" }}{% endif %}</span>
+                <span class="gantt-bar-label gantt-dyn-left gantt-bar-label-fim gantt-bar-label-a {% if not gantt_inline_styles %}od-gantt-bar-label od-gantt-bar-label-a{% endif %}" data-left="{{ g.left_a|add:g.width_a }}">{% if g.actual_end %}{{ g.actual_end|date:"d/m" }}{% endif %}</span>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>

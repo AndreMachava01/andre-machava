@@ -1,0 +1,147 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #3b82f6; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-view { background: #3b82f6; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; }
+        .btn-view:hover { background: #2563eb; }
+        .stats { margin-bottom: 20px; padding: 15px; background: #eff6ff; border-radius: 5px; border: 1px solid #3b82f6; }
+        .stats .total { font-size: 18px; font-weight: 600; color: #1e40af; }
+        .search-filters { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .filter-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-form input, .filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .filter-form input[type="date"] { min-width: 140px; }
+        .filter-form select { min-width: 200px; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #3b82f6; color: white; }
+        th { padding: 12px; text-align: left; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        tbody tr:hover { background: #f8fafc; }
+        .badge { padding: 4px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .badge-agendada { background: #fef3c7; color: #92400e; }
+        .badge-em-andamento { background: #dbeafe; color: #1e40af; }
+        .badge-pausada { background: #e0e7ff; color: #3730a3; }
+        .badge-concluida { background: #d1fae5; color: #065f46; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #6b7280; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; color: #d1d5db; }
+        .pagination { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 15px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 4px; text-decoration: none; color: #374151; font-size: 14px; }
+        .pagination a:hover { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+        .pagination .current { background: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-history"></i> {{ title }}</h1>
+                <p>Pedidos por cliente e período</p>
+            </div>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <select name="cliente">
+                    <option value="">Todos os clientes</option>
+                    {% for c in clientes %}
+                        <option value="{{ c.id }}" {% if cliente_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}" title="Data início">
+                <input type="date" name="data_fim" value="{{ data_fim }}" title="Data fim">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+                {% if cliente_id or data_inicio or data_fim %}
+                    <a href="{% url 'vendas:historico' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="stats">
+            <span class="total">Total no período: {{ total_periodo|floatformat:2 }} MT</span>
+            <span style="color: #6b7280; font-size: 13px;"> ({{ page_obj.paginator.count }} pedido{{ page_obj.paginator.count|pluralize }})</span>
+        </div>
+
+        <div style="overflow-x: auto;">
+            {% if pedidos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Código</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ordem in pedidos %}
+                    <tr>
+                        <td>{{ ordem.data_agendada|date:"d/m/Y" }}{% if ordem.data_conclusao %} <span style="color:#6b7280;">(concl. {{ ordem.data_conclusao|date:"d/m/Y" }})</span>{% endif %}</td>
+                        <td>{% if ordem.cliente %}{{ ordem.cliente.nome }}{% else %}{{ ordem.nome_cliente_pagamento|default:"—" }}{% endif %}</td>
+                        <td><strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></td>
+                        <td>{{ ordem.valor_total|floatformat:2 }} MT</td>
+                        <td>
+                            {% if ordem.status == 'AGENDADA' %}<span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'EM_ANDAMENTO' %}<span class="badge badge-em-andamento">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'PAUSADA' %}<span class="badge badge-pausada">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'CONCLUIDA' %}<span class="badge badge-concluida">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'CANCELADA' %}<span class="badge badge-cancelada">{{ ordem.get_status_display }}</span>
+                            {% else %}{{ ordem.get_status_display }}{% endif %}
+                        </td>
+                        <td><a href="{% url 'vendas:pedido_detail' ordem.id %}" class="btn-view"><i class="fas fa-eye"></i> Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">&laquo;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Anterior</a>
+                {% endif %}
+                <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">&raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <p><strong>Nenhum pedido no período</strong></p>
+                <p>{% if cliente_id or data_inicio or data_fim %}Ajuste o cliente ou as datas.{% else %}Não há pedidos de venda registados.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

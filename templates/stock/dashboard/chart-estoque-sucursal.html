@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Estoque por Sucursal - Sistema Conception</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .stat-card.success {
+            border-left-color: #28a745;
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.success .stat-number {
+            color: #28a745;
+        }
+        
+        .stat-card.warning .stat-number {
+            color: #ffc107;
+        }
+        
+        .stat-card.info .stat-number {
+            color: #17a2b8;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-description {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .sucursal-list {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .sucursal-list h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .sucursal-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sucursal-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .sucursal-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .sucursal-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .sucursal-stat {
+            text-align: center;
+        }
+        
+        .sucursal-stat .number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .sucursal-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .sucursal-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gráfico de Estoque por Sucursal</h1>
+            <p>Distribuição de produtos e materiais por sucursal</p>
+        </div>
+
+        <div class="actions">
+            <a href="/stock/dashboard/" class="btn btn-primary">Voltar ao Dashboard</a>
+            <a href="/stock/" class="btn btn-secondary">Voltar ao Stock</a>
+            <a href="/stock/stock/" class="btn btn-info">Ver Estoque</a>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Carregando dados do gráfico...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Erro ao carregar dados do gráfico. Tente novamente.</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-sucursais">0</div>
+                    <div class="stat-label">Total Sucursais</div>
+                    <div class="stat-description">Sucursais com estoque</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-number" id="total-produtos">0</div>
+                    <div class="stat-label">Total Produtos</div>
+                    <div class="stat-description">Produtos em estoque</div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-number" id="total-materiais">0</div>
+                    <div class="stat-label">Total Materiais</div>
+                    <div class="stat-description">Materiais em estoque</div>
+                </div>
+                
+                <div class="stat-card info">
+                    <div class="stat-number" id="total-itens">0</div>
+                    <div class="stat-label">Total Itens</div>
+                    <div class="stat-description">Todos os itens</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>📊 Produtos por Sucursal</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="produtosChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>🔧 Materiais por Sucursal</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="materiaisChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sucursal-list">
+                <h3>🏢 Detalhes por Sucursal</h3>
+                <div id="sucursal-details">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <div class="empty">
+                <p><strong>📈 Gráfico de Estoque por Sucursal</strong></p>
+                <p>Visualização da distribuição de produtos e materiais entre as sucursais.</p>
+                <p>Compare o estoque entre diferentes localizações.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let produtosChart = null;
+        let materiaisChart = null;
+        
+        // Carregar dados do gráfico
+        async function loadChartData() {
+            try {
+                const response = await fetch('/stock/dashboard/chart-estoque-sucursal/', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar loading e mostrar conteúdo
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Calcular estatísticas
+                const labels = data.labels || [];
+                const produtosData = data.datasets[0]?.data || [];
+                const materiaisData = data.datasets[1]?.data || [];
+                
+                const totalProdutos = produtosData.reduce((sum, val) => sum + val, 0);
+                const totalMateriais = materiaisData.reduce((sum, val) => sum + val, 0);
+                const totalItens = totalProdutos + totalMateriais;
+                
+                // Preencher estatísticas
+                document.getElementById('total-sucursais').textContent = labels.length;
+                document.getElementById('total-produtos').textContent = totalProdutos;
+                document.getElementById('total-materiais').textContent = totalMateriais;
+                document.getElementById('total-itens').textContent = totalItens;
+                
+                // Criar gráfico de produtos
+                if (produtosChart) {
+                    produtosChart.destroy();
+                }
+                
+                const produtosCtx = document.getElementById('produtosChart').getContext('2d');
+                produtosChart = new Chart(produtosCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Produtos',
+                            data: produtosData,
+                            backgroundColor: data.datasets[0]?.backgroundColor || [
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(139, 92, 246, 0.8)'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Distribuição de Produtos'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Criar gráfico de materiais
+                if (materiaisChart) {
+                    materiaisChart.destroy();
+                }
+                
+                const materiaisCtx = document.getElementById('materiaisChart').getContext('2d');
+                materiaisChart = new Chart(materiaisCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Materiais',
+                            data: materiaisData,
+                            backgroundColor: data.datasets[1]?.backgroundColor || [
+                                'rgba(59, 130, 246, 0.4)',
+                                'rgba(16, 185, 129, 0.4)',
+                                'rgba(245, 158, 11, 0.4)',
+                                'rgba(239, 68, 68, 0.4)',
+                                'rgba(139, 92, 246, 0.4)'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Distribuição de Materiais'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Preencher detalhes das sucursais
+                const sucursalDetails = document.getElementById('sucursal-details');
+                sucursalDetails.innerHTML = labels.map((label, index) => `
+                    <div class="sucursal-item">
+                        <div class="sucursal-name">${label}</div>
+                        <div class="sucursal-stats">
+                            <div class="sucursal-stat">
+                                <div class="number">${produtosData[index] || 0}</div>
+                                <div class="label">Produtos</div>
+                            </div>
+                            <div class="sucursal-stat">
+                                <div class="number">${materiaisData[index] || 0}</div>
+                                <div class="label">Materiais</div>
+                            </div>
+                            <div class="sucursal-stat">
+                                <div class="number">${(produtosData[index] || 0) + (materiaisData[index] || 0)}</div>
+                                <div class="label">Total</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do gráfico:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        
+        // Carregar dados quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadChartData);
+    </script>
+</body>
+</html>

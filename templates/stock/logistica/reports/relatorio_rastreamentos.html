@@ -1,0 +1,180 @@
+{% extends 'stock/includes/report_logistica_shell.html' %}
+
+{% block report_page_title %}Rastreamentos{% endblock %}
+{% block report_breadcrumb %}Rastreamentos{% endblock %}
+{% block report_icon %}fa-map-marked-alt{% endblock %}
+{% block report_heading %}Rastreamentos e entregas{% endblock %}
+{% block report_subtitle %}Período {{ data_inicio }} — {{ data_fim }}{% endblock %}
+{% block report_doc_title %}RELATÓRIO DE RASTREAMENTOS E ENTREGAS{% endblock %}
+{% block report_code_prefix %}RAST{% endblock %}
+{% block report_footer_note %}Relatório de rastreamentos e entregas — Conception{% endblock %}
+
+{% block report_meta %}
+<div class="stock-report-meta-grid">
+    <div class="stock-report-meta-item"><strong>Total:</strong> {{ dados.total_rastreamentos|default:0 }}</div>
+    <div class="stock-report-meta-item"><strong>Concluídas:</strong> {{ dados.entregas_concluidas|default:0 }}</div>
+    <div class="stock-report-meta-item"><strong>Taxa conclusão:</strong> {{ dados.taxa_conclusao|default:0 }}%</div>
+    <div class="stock-report-meta-item"><strong>SLA:</strong> {{ dados.sla_percentual|default:0 }}%</div>
+</div>
+{% endblock %}
+
+{% block report_content %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-chart-bar" aria-hidden="true"></i> Resumo</h3>
+<div class="stock-report-kpi-grid">
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Total rastreamentos</div>
+        <div class="stock-report-kpi__value">{{ dados.total_rastreamentos|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--success">
+        <div class="stock-report-kpi__label">Entregas concluídas</div>
+        <div class="stock-report-kpi__value">{{ dados.entregas_concluidas|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--warning">
+        <div class="stock-report-kpi__label">Em curso</div>
+        <div class="stock-report-kpi__value">{{ dados.em_curso|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi {% if dados.com_problema > 0 %}stock-report-kpi--danger{% else %}stock-report-kpi--success{% endif %}">
+        <div class="stock-report-kpi__label">Com problema</div>
+        <div class="stock-report-kpi__value">{{ dados.com_problema|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi {% if dados.taxa_conclusao >= 90 %}stock-report-kpi--success{% elif dados.taxa_conclusao >= 70 %}stock-report-kpi--warning{% else %}stock-report-kpi--danger{% endif %}">
+        <div class="stock-report-kpi__label">Taxa conclusão</div>
+        <div class="stock-report-kpi__value">{{ dados.taxa_conclusao|default:0 }}%</div>
+    </div>
+    <div class="stock-report-kpi {% if dados.sla_percentual >= 90 %}stock-report-kpi--success{% elif dados.sla_percentual >= 70 %}stock-report-kpi--warning{% else %}stock-report-kpi--danger{% endif %}">
+        <div class="stock-report-kpi__label">SLA (no prazo)</div>
+        <div class="stock-report-kpi__value">{{ dados.sla_percentual|default:0 }}%</div>
+    </div>
+</div>
+
+{% if dados.por_status %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Por status</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.por_status %}
+            <tr>
+                <td>
+                    <span class="badge {% if item.status_atual == 'ENTREGUE' %}badge-success{% elif item.status_atual == 'EM_TRANSITO' or item.status_atual == 'EM_DISTRIBUICAO' or item.status_atual == 'COLETADO' %}badge-warning{% elif item.status_atual == 'CANCELADO' or item.status_atual == 'PERDIDO' or item.status_atual == 'DEVOLVIDO' %}badge-danger{% else %}badge-info{% endif %}">
+                        {{ item.label }}
+                    </span>
+                </td>
+                <td class="text-center"><strong>{{ item.count|default:0 }}</strong></td>
+                <td class="text-center">
+                    {% if dados.total_rastreamentos > 0 %}{% widthratio item.count dados.total_rastreamentos 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.por_transportadora %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-truck" aria-hidden="true"></i> Por transportadora</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Transportadora</th>
+                <th class="text-center">Total</th>
+                <th class="text-center">Entregues</th>
+                <th class="text-center">Taxa</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.por_transportadora %}
+            <tr>
+                <td><strong>{{ item.transportadora__nome|default:"—" }}</strong></td>
+                <td class="text-center">{{ item.total|default:0 }}</td>
+                <td class="text-center"><span class="badge badge-success">{{ item.entregues|default:0 }}</span></td>
+                <td class="text-center">{% if item.total > 0 %}{% widthratio item.entregues item.total 100 %}%{% else %}0%{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.por_cidade %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Por cidade (top 10)</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Cidade</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.por_cidade %}
+            <tr>
+                <td><strong>{{ item.cidade_entrega|default:"—" }}</strong></td>
+                <td class="text-center">{{ item.total|default:0 }}</td>
+                <td class="text-center">
+                    {% if dados.total_rastreamentos > 0 %}{% widthratio item.total dados.total_rastreamentos 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.recentes %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-clock" aria-hidden="true"></i> Rastreamentos recentes</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Destinatário</th>
+                <th>Transporte</th>
+                <th>Cidade</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Criação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.recentes %}
+            <tr>
+                <td><strong>{{ item.codigo_rastreamento }}</strong></td>
+                <td>{{ item.destinatario_nome|default:"—" }}</td>
+                <td>
+                    {% if item.transportadora %}
+                    {{ item.transportadora.nome }}
+                    {% elif item.veiculo_interno %}
+                    {{ item.veiculo_interno.nome }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+                <td>{{ item.cidade_entrega|default:"—" }}</td>
+                <td class="text-center">
+                    <span class="badge {% if item.status_atual == 'ENTREGUE' %}badge-success{% elif item.status_atual == 'EM_TRANSITO' or item.status_atual == 'EM_DISTRIBUICAO' %}badge-warning{% elif item.status_atual == 'CANCELADO' or item.status_atual == 'PERDIDO' %}badge-danger{% else %}badge-info{% endif %}">
+                        {{ item.get_status_atual_display }}
+                    </span>
+                </td>
+                <td class="text-center">{{ item.data_criacao|date:"d/m/Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.total_rastreamentos == 0 %}
+<div class="stock-report-empty">
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
+    <p>Nenhum rastreamento encontrado para o período selecionado.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize l10n static %}
+    <title>Vendas - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row input[type="date"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        .charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+        .charts-row .chart-wrap { max-width: none; margin-bottom: 0; min-height: 220px; }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .module-card { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px; text-decoration: none; color: #333; display: block; transition: all 0.2s; }
+        .module-card:hover { background: #fef3c7; text-decoration: none; color: #333; }
+        .module-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #b45309; }
+        .module-card p { margin: 0; font-size: 13px; color: #666; }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } .charts-row .chart-wrap { margin-bottom: 24px; } .charts-row .chart-wrap:last-child { margin-bottom: 0; } }
+        @media (max-width: 768px) { .modules-grid { grid-template-columns: 1fr; } }
+        .msg-error { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .chart-canvas-wrap { position: relative; height: 200px; }
+    </style>
+    <script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-shopping-cart"></i> Vendas</h1>
+                <p>Sistema integrado de gestão de vendas, orçamentos e relacionamento com clientes</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" class="filter-form">
+                <label for="data_inicio">De:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+                <label for="data_fim">Até:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_pedidos|default:0|intcomma }}</div>
+                <div class="lbl">Pedidos (confirmados)</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ pedidos_pendentes|default:0|intcomma }}</div>
+                <div class="lbl">Pedidos pendentes</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ pedidos_aprovados|default:0|intcomma }}</div>
+                <div class="lbl">Pedidos aprovados</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_faturas|default:0|intcomma }}</div>
+                <div class="lbl">Faturas</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_orcamentos|default:0|intcomma }}</div>
+                <div class="lbl">Orçamentos</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ orcamentos_pendentes|default:0|intcomma }}</div>
+                <div class="lbl">Orçamentos pendentes</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_clientes|default:0|intcomma }}</div>
+                <div class="lbl">Clientes</div>
+            </div>
+        </div>
+
+        <div class="section charts-row">
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-bar"></i> Pedidos / Orçamentos / Faturas</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartVendasBar"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartVendasBar');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var pedidos = {{ total_pedidos|default:0 }};
+                        var orcamentos = {{ total_orcamentos|default:0 }};
+                        var faturas = {{ total_faturas|default:0 }};
+                        {% endlocalize %}
+                        var maxVal = Math.max(pedidos, orcamentos, faturas, 1);
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Pedidos', 'Orçamentos', 'Faturas'],
+                                datasets: [{
+                                    label: 'Quantidade',
+                                    data: [pedidos, orcamentos, faturas],
+                                    backgroundColor: 'rgba(180, 83, 9, 0.7)',
+                                    borderColor: '#b45309',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: { y: { beginAtZero: true, max: maxVal * 1.1 } },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Estado dos pedidos</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartEstado"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartEstado');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var pendentes = {{ pedidos_pendentes|default:0 }};
+                        var aprovados = {{ pedidos_aprovados|default:0 }};
+                        var faturados = {{ total_faturas|default:0 }};
+                        {% endlocalize %}
+                        if (pendentes + aprovados + faturados === 0) { pendentes = 1; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Pendentes', 'Aprovados', 'Faturados'],
+                                datasets: [{
+                                    data: [pendentes, aprovados, faturados],
+                                    backgroundColor: ['rgba(245, 158, 11, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(180, 83, 9, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Orçamentos e clientes</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartOrcClientes"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartOrcClientes');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var orc = {{ total_orcamentos|default:0 }};
+                        var clientes = {{ total_clientes|default:0 }};
+                        {% endlocalize %}
+                        if (orc + clientes === 0) { clientes = 1; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Orçamentos', 'Clientes'],
+                                datasets: [{
+                                    data: [orc, clientes],
+                                    backgroundColor: ['rgba(180, 83, 9, 0.8)', 'rgba(13, 148, 136, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-link"></i> Acesso rápido</h2>
+            <div class="modules-grid">
+                <a href="{% url 'vendas:pedidos' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-list"></i> Pedidos de Venda</h3>
+                    <p>Orçamentos confirmados — editar e alterar status até faturamento</p>
+                </a>
+                <a href="{% url 'vendas:faturamento' %}" class="module-card">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Faturamento</h3>
+                    <p>Pedidos faturados — emitir ou reimprimir faturas e garantias</p>
+                </a>
+                <a href="{% url 'vendas:contratos' %}" class="module-card">
+                    <h3><i class="fas fa-file-contract"></i> Contratos</h3>
+                    <p>Pré-visualizar e gerar PDF a partir dos orçamentos</p>
+                </a>
+                <a href="{% url 'vendas:dashboard' %}" class="module-card">
+                    <h3><i class="fas fa-chart-line"></i> Dashboard</h3>
+                    <p>Visão geral e métricas de vendas</p>
+                </a>
+                <a href="{% url 'vendas:orcamento_add' %}" class="module-card">
+                    <h3><i class="fas fa-file-alt"></i> Criar Orçamento</h3>
+                    <p>Criar novos orçamentos para clientes</p>
+                </a>
+                <a href="{% url 'vendas:orcamentos_list' %}" class="module-card">
+                    <h3><i class="fas fa-list"></i> Lista de Orçamentos</h3>
+                    <p>Orçamentos não confirmados (propostas em aberto)</p>
+                </a>
+                <a href="{% url 'vendas:orcamentos_pendentes' %}" class="module-card">
+                    <h3><i class="fas fa-clock"></i> Orçamentos Pendentes</h3>
+                    <p>Orçamentos aguardando confirmação</p>
+                </a>
+                <a href="{% url 'vendas:clientes_add' %}" class="module-card">
+                    <h3><i class="fas fa-user-plus"></i> Cadastrar Cliente</h3>
+                    <p>Adicionar novo cliente ao sistema</p>
+                </a>
+                <a href="{% url 'vendas:clientes_list' %}" class="module-card">
+                    <h3><i class="fas fa-list"></i> Lista de Clientes</h3>
+                    <p>Visualizar e gerenciar clientes</p>
+                </a>
+                <a href="{% url 'vendas:historico' %}" class="module-card">
+                    <h3><i class="fas fa-history"></i> Histórico de Vendas</h3>
+                    <p>Histórico de compras por cliente</p>
+                </a>
+                <a href="{% url 'vendas:relatorios' %}" class="module-card">
+                    <h3><i class="fas fa-file-chart-line"></i> Relatório de Vendas</h3>
+                    <p>Relatórios e análises de vendas</p>
+                </a>
+                <a href="{% url 'vendas:performance' %}" class="module-card">
+                    <h3><i class="fas fa-chart-pie"></i> Análise de Performance</h3>
+                    <p>Análise de performance de vendas</p>
+                </a>
+                <a href="{% url 'vendas:periodo' %}" class="module-card">
+                    <h3><i class="fas fa-calendar-alt"></i> Vendas por Período</h3>
+                    <p>Análise de vendas por período</p>
+                </a>
+                <a href="{% url 'financas:main' %}" class="module-card">
+                    <h3><i class="fas fa-coins"></i> Finanças</h3>
+                    <p>Receitas e despesas</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

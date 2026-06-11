@@ -1,0 +1,199 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Zonas de entrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:routing:dashboard' as routing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Roteirização' breadcrumb_section_url=routing_dashboard_url breadcrumb_current='Zonas de entrega' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-map" aria-hidden="true"></i>
+                    Zonas de entrega
+                </h1>
+                <p class="page-subtitle">Agrupamento geográfico para planeamento e rotas</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:routing:otimizar_rotas' %}" class="btn btn-outline">
+                    <i class="fas fa-route" aria-hidden="true"></i> Otimizar rotas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.ativas|default:"0" }}</div>
+                <div class="stat-label">Activas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-times-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.inativas|default:"0" }}</div>
+                <div class="stat-label">Inactivas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-zonas">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-zonas" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Nome, código, cidade, bairros...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-provincia-zonas">Província</label>
+                <select id="filtro-provincia-zonas" name="provincia" class="form-select" title="Filtrar por província">
+                    <option value="">Todas</option>
+                    {% for p in provincias %}
+                    <option value="{{ p }}" {% if provincia == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-ativo-zonas">Estado</label>
+                <select id="filtro-ativo-zonas" name="ativo" class="form-select" title="Filtrar por estado">
+                    <option value="">Todas</option>
+                    <option value="true" {% if ativo == 'true' %}selected{% endif %}>Activas</option>
+                    <option value="false" {% if ativo == 'false' %}selected{% endif %}>Inactivas</option>
+                </select>
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:routing:zonas_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                Zonas
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Localização</th>
+                        <th class="text-center">Prazo (dias)</th>
+                        <th class="text-center">Custo extra</th>
+                        <th class="text-center">Estado</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for zona in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ zona.codigo }}</strong></td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ zona.nome }}</div>
+                            {% if zona.bairros %}
+                            <div class="cell-tertiary cell-tertiary--sm">{{ zona.bairros|truncatechars:60 }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ zona.cidade }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ zona.provincia }}</div>
+                        </td>
+                        <td class="text-center">{{ zona.prazo_entrega_padrao|default:"—" }}</td>
+                        <td class="text-center">{{ zona.custo_adicional|floatformat:2 }} MT</td>
+                        <td class="text-center">
+                            {% if zona.ativo %}
+                            <span class="badge badge-success">Activa</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Inactiva</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:routing:zona_detail' zona.id %}" class="btn-action primary"
+                                   title="Ver zona" aria-label="Ver zona {{ zona.nome }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if provincia %}&provincia={{ provincia }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if provincia %}&provincia={{ provincia }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-map" aria-hidden="true"></i>
+            <h3>Nenhuma zona encontrada</h3>
+            <p>Não há zonas de entrega que correspondam aos filtros aplicados.</p>
+            <p class="cell-tertiary">As zonas podem ser criadas no painel de administração do sistema.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

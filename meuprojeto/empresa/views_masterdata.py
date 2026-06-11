@@ -2,6 +2,7 @@
 Views para gestão de dados mestres (masterdata) logísticos.
 """
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -16,7 +17,7 @@ import logging
 
 from .decorators import require_stock_access
 from .models_masterdata import (
-    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
+    Regiao, ZonaLogistica, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
@@ -36,21 +37,19 @@ def masterdata_dashboard(request):
     # Logs recentes
     logs_recentes = masterdata_service.obter_logs_masterdata(limite=10)
     
-    # Regiões ativas
-    regioes_ativas = Regiao.objects.filter(ativo=True).order_by('prioridade', 'nome')
-    
-    # Zonas de entrega ativas
-    zonas_ativas = ZonaEntrega.objects.filter(ativo=True).select_related('regiao').order_by('regiao', 'nome')
-    
-    # Hubs logísticos ativos
-    hubs_ativos = HubLogistico.objects.filter(ativo=True).select_related('regiao').order_by('tipo', 'nome')
-    
+    regioes_qs = Regiao.objects.filter(ativo=True).order_by('prioridade', 'nome')
+    zonas_qs = ZonaLogistica.objects.filter(ativo=True).select_related('regiao').order_by('regiao', 'nome')
+    hubs_qs = HubLogistico.objects.filter(ativo=True).select_related('regiao').order_by('tipo', 'nome')
+
     context = {
         'stats': stats,
-        'logs_recentes': logs_recentes,
-        'regioes_ativas': regioes_ativas,
-        'zonas_ativas': zonas_ativas,
-        'hubs_ativos': hubs_ativos,
+        'logs_recentes': logs_recentes[:8],
+        'regioes_ativas': regioes_qs[:6],
+        'zonas_ativas': zonas_qs[:6],
+        'hubs_ativos': hubs_qs[:6],
+        'total_regioes': regioes_qs.count(),
+        'total_zonas': zonas_qs.count(),
+        'total_hubs': hubs_qs.count(),
     }
     
     return render(request, 'stock/logistica/masterdata/dashboard.html', context)
@@ -134,7 +133,6 @@ def regiao_create(request):
     if request.method == 'POST':
         try:
             regiao = masterdata_service.criar_regiao(
-                codigo=request.POST.get('codigo'),
                 nome=request.POST.get('nome'),
                 provincia=request.POST.get('provincia'),
                 distrito=request.POST.get('distrito', ''),
@@ -144,7 +142,7 @@ def regiao_create(request):
                 usuario=request.user
             )
             
-            messages.success(request, 'Região criada com sucesso!')
+            messages.success(request, f'Região criada com sucesso! Código: {regiao.codigo}')
             return redirect('stock:masterdata:regiao_detail', regiao_id=regiao.id)
             
         except Exception as e:
@@ -167,7 +165,7 @@ def zonas_list(request):
     regiao = request.GET.get('regiao', '')
     ativo = request.GET.get('ativo', '')
     
-    zonas = ZonaEntrega.objects.select_related('regiao')
+    zonas = ZonaLogistica.objects.select_related('regiao')
     
     if search:
         zonas = zonas.filter(
@@ -206,7 +204,7 @@ def zonas_list(request):
 @require_stock_access
 def zona_detail(request, zona_id):
     """Detalhes de uma zona de entrega."""
-    zona = get_object_or_404(ZonaEntrega, id=zona_id)
+    zona = get_object_or_404(ZonaLogistica, id=zona_id)
     
     context = {
         'zona': zona,
@@ -230,7 +228,6 @@ def zona_create(request):
                     dias_funcionamento.append(i)
             
             zona = masterdata_service.criar_zona_entrega(
-                codigo=request.POST.get('codigo'),
                 nome=request.POST.get('nome'),
                 regiao_id=request.POST.get('regiao'),
                 prazo_entrega_dias=int(request.POST.get('prazo_entrega_dias', 1)),
@@ -243,7 +240,7 @@ def zona_create(request):
                 usuario=request.user
             )
             
-            messages.success(request, 'Zona de entrega criada com sucesso!')
+            messages.success(request, f'Zona criada com sucesso! Código: {zona.codigo}')
             return redirect('stock:masterdata:zona_detail', zona_id=zona.id)
             
         except Exception as e:
@@ -336,7 +333,6 @@ def hub_create(request):
     if request.method == 'POST':
         try:
             hub = masterdata_service.criar_hub_logistico(
-                codigo=request.POST.get('codigo'),
                 nome=request.POST.get('nome'),
                 endereco=request.POST.get('endereco'),
                 cidade=request.POST.get('cidade'),
@@ -355,7 +351,7 @@ def hub_create(request):
                 usuario=request.user
             )
             
-            messages.success(request, 'Hub logístico criado com sucesso!')
+            messages.success(request, f'Hub criado com sucesso! Código: {hub.codigo}')
             return redirect('stock:masterdata:hub_detail', hub_id=hub.id)
             
         except Exception as e:
@@ -442,7 +438,6 @@ def catalogo_dimensoes_create(request):
     if request.method == 'POST':
         try:
             dimensao = masterdata_service.criar_catalogo_dimensoes(
-                codigo=request.POST.get('codigo'),
                 nome=request.POST.get('nome'),
                 comprimento_cm=Decimal(request.POST.get('comprimento_cm')),
                 largura_cm=Decimal(request.POST.get('largura_cm')),
@@ -452,7 +447,7 @@ def catalogo_dimensoes_create(request):
                 usuario=request.user
             )
             
-            messages.success(request, 'Entrada do catálogo criada com sucesso!')
+            messages.success(request, f'Entrada criada com sucesso! Código: {dimensao.codigo}')
             return redirect('stock:masterdata:catalogo_dimensoes_detail', dimensao_id=dimensao.id)
             
         except Exception as e:
@@ -537,7 +532,6 @@ def restricao_create(request):
     if request.method == 'POST':
         try:
             restricao = masterdata_service.criar_restricao_logistica(
-                codigo=request.POST.get('codigo'),
                 nome=request.POST.get('nome'),
                 tipo=request.POST.get('tipo'),
                 valor_minimo=request.POST.get('valor_minimo') or None,
@@ -549,7 +543,7 @@ def restricao_create(request):
                 usuario=request.user
             )
             
-            messages.success(request, 'Restrição logística criada com sucesso!')
+            messages.success(request, f'Restrição criada com sucesso! Código: {restricao.codigo}')
             return redirect('stock:masterdata:restricao_detail', restricao_id=restricao.id)
             
         except Exception as e:
@@ -595,15 +589,19 @@ def validar_restricoes(request):
             return JsonResponse({'erro': str(e)}, status=400)
     
     # GET - mostrar formulário
-    from .models_stock import Transportadora, VeiculoInterno
-    
-    transportadoras = Transportadora.objects.filter(ativo=True)
-    veiculos_internos = VeiculoInterno.objects.filter(ativo=True)
-    zonas_entrega = ZonaEntrega.objects.filter(ativo=True)
+    from .models_stock import Transportadora
+    from .services.freight_service import (
+        queryset_transportadoras_externas,
+        queryset_viaturas_internas_catalogo,
+    )
+
+    transportadoras = queryset_transportadoras_externas()
+    viaturas_internas = queryset_viaturas_internas_catalogo()
+    zonas_entrega = ZonaLogistica.objects.filter(ativo=True)
     
     context = {
         'transportadoras': transportadoras,
-        'veiculos_internos': veiculos_internos,
+        'viaturas_internas': viaturas_internas,
         'zonas_entrega': zonas_entrega,
     }
     
@@ -656,7 +654,7 @@ def logs_masterdata(request):
     
     # Opções para filtros
     modelos_disponiveis = [
-        'Regiao', 'ZonaEntrega', 'HubLogistico', 
+        'Regiao', 'ZonaLogistica', 'HubLogistico', 
         'CatalogoDimensoes', 'RestricaoLogistica', 'PermissaoLogistica'
     ]
     
@@ -674,3 +672,267 @@ def logs_masterdata(request):
     }
     
     return render(request, 'stock/logistica/masterdata/logs.html', context)
+
+
+# =============================================================================
+# EDIÇÃO E EXCLUSÃO
+# =============================================================================
+
+def _dias_funcionamento_post(request):
+    return [i for i in range(7) if request.POST.get(f'dia_{i}')]
+
+
+@login_required
+@require_stock_access
+def regiao_edit(request, regiao_id):
+    regiao = get_object_or_404(Regiao, id=regiao_id)
+    masterdata_service = MasterdataService()
+    if request.method == 'POST':
+        try:
+            masterdata_service.atualizar_regiao(
+                regiao_id=regiao.id,
+                nome=request.POST.get('nome'),
+                provincia=request.POST.get('provincia'),
+                distrito=request.POST.get('distrito', ''),
+                latitude_centro=request.POST.get('latitude_centro') or None,
+                longitude_centro=request.POST.get('longitude_centro') or None,
+                prioridade=int(request.POST.get('prioridade', 1)),
+                ativo=request.POST.get('ativo') == 'on',
+                usuario=request.user,
+            )
+            messages.success(request, f'Região {regiao.codigo} actualizada.')
+            return redirect('stock:masterdata:regiao_detail', regiao_id=regiao.id)
+        except Exception as e:
+            logger.error(f"Erro ao editar região: {e}")
+            messages.error(request, str(e))
+    return render(request, 'stock/logistica/masterdata/regiao_form.html', {'regiao': regiao})
+
+
+@login_required
+@require_stock_access
+@require_http_methods(["GET", "POST"])
+def regiao_delete(request, regiao_id):
+    regiao = get_object_or_404(Regiao, id=regiao_id)
+    if request.method == 'POST':
+        if regiao.zonas.exists() or regiao.hubs.exists():
+            messages.error(request, 'Elimine ou reassigne as zonas e hubs antes de remover a região.')
+            return redirect('stock:masterdata:regiao_detail', regiao_id=regiao.id)
+        try:
+            MasterdataService().excluir_regiao(regiao.id, usuario=request.user)
+            messages.success(request, f'Região {regiao.codigo} eliminada.')
+            return redirect('stock:masterdata:regioes_list')
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect('stock:masterdata:regiao_detail', regiao_id=regiao.id)
+    zonas_bloqueio = regiao.zonas.order_by('nome')
+    hubs_bloqueio = regiao.hubs.order_by('nome')
+    tem_dependencias = zonas_bloqueio.exists() or hubs_bloqueio.exists()
+    return render(request, 'stock/logistica/masterdata/confirm_delete.html', {
+        'object': regiao,
+        'object_type': 'região',
+        'back_url': reverse('stock:masterdata:regiao_detail', kwargs={'regiao_id': regiao.id}),
+        'edit_url': reverse('stock:masterdata:regiao_edit', kwargs={'regiao_id': regiao.id}),
+        'extra_warning': tem_dependencias,
+        'extra_message': (
+            f'Esta região tem {zonas_bloqueio.count()} zona(s) e {hubs_bloqueio.count()} hub(s) '
+            'associados. Elimine ou reassigne as dependências abaixo antes de remover a região.'
+        ),
+        'zonas_bloqueio': zonas_bloqueio,
+        'hubs_bloqueio': hubs_bloqueio,
+    })
+
+
+@login_required
+@require_stock_access
+def zona_edit(request, zona_id):
+    zona = get_object_or_404(ZonaLogistica, id=zona_id)
+    masterdata_service = MasterdataService()
+    if request.method == 'POST':
+        try:
+            masterdata_service.atualizar_zona_entrega(
+                zona_id=zona.id,
+                nome=request.POST.get('nome'),
+                regiao_id=request.POST.get('regiao'),
+                prazo_entrega_dias=int(request.POST.get('prazo_entrega_dias', 1)),
+                custo_adicional=Decimal(request.POST.get('custo_adicional', '0.00')),
+                peso_maximo_kg=request.POST.get('peso_maximo_kg') or None,
+                volume_maximo_m3=request.POST.get('volume_maximo_m3') or None,
+                horario_inicio=request.POST.get('horario_inicio', '08:00'),
+                horario_fim=request.POST.get('horario_fim', '18:00'),
+                dias_funcionamento=_dias_funcionamento_post(request),
+                ativo=request.POST.get('ativo') == 'on',
+                usuario=request.user,
+            )
+            messages.success(request, f'Zona {zona.codigo} actualizada.')
+            return redirect('stock:masterdata:zona_detail', zona_id=zona.id)
+        except Exception as e:
+            logger.error(f"Erro ao editar zona: {e}")
+            messages.error(request, str(e))
+    return render(request, 'stock/logistica/masterdata/zona_form.html', {
+        'zona': zona,
+        'regioes': Regiao.objects.filter(ativo=True).order_by('nome'),
+    })
+
+
+@login_required
+@require_stock_access
+@require_http_methods(["GET", "POST"])
+def zona_delete(request, zona_id):
+    zona = get_object_or_404(ZonaLogistica, id=zona_id)
+    if request.method == 'POST':
+        MasterdataService().excluir_zona_entrega(zona.id, usuario=request.user)
+        messages.success(request, f'Zona {zona.codigo} eliminada.')
+        return redirect('stock:masterdata:zonas_list')
+    return render(request, 'stock/logistica/masterdata/confirm_delete.html', {
+        'object': zona,
+        'object_type': 'zona logística',
+        'back_url': reverse('stock:masterdata:zona_detail', kwargs={'zona_id': zona.id}),
+    })
+
+
+@login_required
+@require_stock_access
+def hub_edit(request, hub_id):
+    hub = get_object_or_404(HubLogistico, id=hub_id)
+    masterdata_service = MasterdataService()
+    if request.method == 'POST':
+        try:
+            masterdata_service.atualizar_hub_logistico(
+                hub_id=hub.id,
+                nome=request.POST.get('nome'),
+                endereco=request.POST.get('endereco'),
+                cidade=request.POST.get('cidade'),
+                regiao_id=request.POST.get('regiao'),
+                latitude=Decimal(request.POST.get('latitude')),
+                longitude=Decimal(request.POST.get('longitude')),
+                tipo=request.POST.get('tipo', 'DISTRIBUICAO'),
+                capacidade_maxima_m3=request.POST.get('capacidade_maxima_m3') or None,
+                capacidade_maxima_kg=request.POST.get('capacidade_maxima_kg') or None,
+                horario_inicio=request.POST.get('horario_inicio', '06:00'),
+                horario_fim=request.POST.get('horario_fim', '22:00'),
+                funcionamento_24h=request.POST.get('funcionamento_24h') == 'on',
+                telefone=request.POST.get('telefone', ''),
+                email=request.POST.get('email', ''),
+                responsavel=request.POST.get('responsavel', ''),
+                ativo=request.POST.get('ativo') == 'on',
+                usuario=request.user,
+            )
+            messages.success(request, f'Hub {hub.codigo} actualizado.')
+            return redirect('stock:masterdata:hub_detail', hub_id=hub.id)
+        except Exception as e:
+            logger.error(f"Erro ao editar hub: {e}")
+            messages.error(request, str(e))
+    return render(request, 'stock/logistica/masterdata/hub_form.html', {
+        'hub': hub,
+        'regioes': Regiao.objects.filter(ativo=True).order_by('nome'),
+        'tipo_choices': HubLogistico.TIPO_CHOICES,
+    })
+
+
+@login_required
+@require_stock_access
+@require_http_methods(["GET", "POST"])
+def hub_delete(request, hub_id):
+    hub = get_object_or_404(HubLogistico, id=hub_id)
+    if request.method == 'POST':
+        MasterdataService().excluir_hub_logistico(hub.id, usuario=request.user)
+        messages.success(request, f'Hub {hub.codigo} eliminado.')
+        return redirect('stock:masterdata:hubs_list')
+    return render(request, 'stock/logistica/masterdata/confirm_delete.html', {
+        'object': hub,
+        'object_type': 'hub logístico',
+        'back_url': reverse('stock:masterdata:hub_detail', kwargs={'hub_id': hub.id}),
+    })
+
+
+@login_required
+@require_stock_access
+def catalogo_dimensoes_edit(request, dimensao_id):
+    dimensao = get_object_or_404(CatalogoDimensoes, id=dimensao_id)
+    masterdata_service = MasterdataService()
+    if request.method == 'POST':
+        try:
+            masterdata_service.atualizar_catalogo_dimensoes(
+                dimensao_id=dimensao.id,
+                nome=request.POST.get('nome'),
+                comprimento_cm=Decimal(request.POST.get('comprimento_cm')),
+                largura_cm=Decimal(request.POST.get('largura_cm')),
+                altura_cm=Decimal(request.POST.get('altura_cm')),
+                peso_kg=Decimal(request.POST.get('peso_kg')),
+                categoria=request.POST.get('categoria', 'PACOTE_MEDIO'),
+                ativo=request.POST.get('ativo') == 'on',
+                usuario=request.user,
+            )
+            messages.success(request, f'Entrada {dimensao.codigo} actualizada.')
+            return redirect('stock:masterdata:catalogo_dimensoes_detail', dimensao_id=dimensao.id)
+        except Exception as e:
+            logger.error(f"Erro ao editar dimensão: {e}")
+            messages.error(request, str(e))
+    return render(request, 'stock/logistica/masterdata/catalogo_dimensoes_form.html', {
+        'dimensao': dimensao,
+        'categoria_choices': CatalogoDimensoes._meta.get_field('categoria').choices,
+    })
+
+
+@login_required
+@require_stock_access
+@require_http_methods(["GET", "POST"])
+def catalogo_dimensoes_delete(request, dimensao_id):
+    dimensao = get_object_or_404(CatalogoDimensoes, id=dimensao_id)
+    if request.method == 'POST':
+        MasterdataService().excluir_catalogo_dimensoes(dimensao.id, usuario=request.user)
+        messages.success(request, f'Entrada {dimensao.codigo} eliminada.')
+        return redirect('stock:masterdata:catalogo_dimensoes_list')
+    return render(request, 'stock/logistica/masterdata/confirm_delete.html', {
+        'object': dimensao,
+        'object_type': 'entrada do catálogo',
+        'back_url': reverse('stock:masterdata:catalogo_dimensoes_detail', kwargs={'dimensao_id': dimensao.id}),
+    })
+
+
+@login_required
+@require_stock_access
+def restricao_edit(request, restricao_id):
+    restricao = get_object_or_404(RestricaoLogistica, id=restricao_id)
+    masterdata_service = MasterdataService()
+    if request.method == 'POST':
+        try:
+            masterdata_service.atualizar_restricao_logistica(
+                restricao_id=restricao.id,
+                nome=request.POST.get('nome'),
+                tipo=request.POST.get('tipo'),
+                valor_minimo=request.POST.get('valor_minimo') or None,
+                valor_maximo=request.POST.get('valor_maximo') or None,
+                unidade_medida=request.POST.get('unidade_medida', ''),
+                aplicavel_veiculo_interno=request.POST.get('aplicavel_veiculo_interno') == 'on',
+                aplicavel_transportadora=request.POST.get('aplicavel_transportadora') == 'on',
+                acao_violacao=request.POST.get('acao_violacao', 'AVISAR'),
+                ativo=request.POST.get('ativo') == 'on',
+                usuario=request.user,
+            )
+            messages.success(request, f'Restrição {restricao.codigo} actualizada.')
+            return redirect('stock:masterdata:restricao_detail', restricao_id=restricao.id)
+        except Exception as e:
+            logger.error(f"Erro ao editar restrição: {e}")
+            messages.error(request, str(e))
+    return render(request, 'stock/logistica/masterdata/restricao_form.html', {
+        'restricao': restricao,
+        'tipo_choices': RestricaoLogistica.TIPO_CHOICES,
+        'acao_choices': RestricaoLogistica._meta.get_field('acao_violacao').choices,
+    })
+
+
+@login_required
+@require_stock_access
+@require_http_methods(["GET", "POST"])
+def restricao_delete(request, restricao_id):
+    restricao = get_object_or_404(RestricaoLogistica, id=restricao_id)
+    if request.method == 'POST':
+        MasterdataService().excluir_restricao_logistica(restricao.id, usuario=request.user)
+        messages.success(request, f'Restrição {restricao.codigo} eliminada.')
+        return redirect('stock:masterdata:restricoes_list')
+    return render(request, 'stock/logistica/masterdata/confirm_delete.html', {
+        'object': restricao,
+        'object_type': 'restrição logística',
+        'back_url': reverse('stock:masterdata:restricao_detail', kwargs={'restricao_id': restricao.id}),
+    })

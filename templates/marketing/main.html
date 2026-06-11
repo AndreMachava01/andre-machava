@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize l10n static %}
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row input[type="date"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .module-card { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px; text-decoration: none; color: #333; display: block; transition: all 0.2s; }
+        .module-card:hover { background: #fef3c7; text-decoration: none; color: #333; }
+        .module-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #b45309; }
+        .module-card p { margin: 0; font-size: 13px; color: #666; }
+        .module-card.disabled { opacity: 0.7; pointer-events: none; cursor: default; }
+        .msg-error { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .badge-pill { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #92400e; color: #fffbeb; margin-top: 6px; }
+        @media (max-width: 768px) { .modules-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-bullhorn"></i> {{ title }}</h1>
+                <p>Campanhas, redes sociais e divulgação</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" class="filter-form">
+                <label for="data_inicio">De:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+                <label for="data_fim">Até:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_campanhas|default:0|intcomma }}</div>
+                <div class="lbl">Total de campanhas</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ campanhas_ativas|default:0|intcomma }}</div>
+                <div class="lbl">Campanhas ativas</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_acoes|default:0|intcomma }}</div>
+                <div class="lbl">Ações no período</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-link"></i> Acesso rápido</h2>
+            <div class="modules-grid">
+                <a href="{% url 'marketing:campanha_list' %}" class="module-card">
+                    <h3><i class="fas fa-bullhorn"></i> Campanhas</h3>
+                    <p>Criar e gerir campanhas de marketing.</p>
+                </a>
+                <a href="{% url 'marketing:redes_sociais_list' %}" class="module-card">
+                    <h3><i class="fas fa-share-alt"></i> Redes sociais</h3>
+                    <p>Publicações e agendamento.</p>
+                </a>
+                <a href="{% url 'marketing:analise_metricas' %}" class="module-card">
+                    <h3><i class="fas fa-chart-line"></i> Análise e métricas</h3>
+                    <p>Indicadores e relatórios de desempenho.</p>
+                </a>
+                <a href="{% url 'marketing:publicidade_list' %}" class="module-card">
+                    <h3><i class="fas fa-ad"></i> Publicidade</h3>
+                    <p>Investimento em anúncios e divulgação.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

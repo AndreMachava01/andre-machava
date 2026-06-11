@@ -1,0 +1,146 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #f59e0b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #f59e0b; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .section { margin-bottom: 24px; }
+        .section h2 { color: #374151; font-size: 16px; margin: 0 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+        .info-grid { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; font-size: 14px; }
+        .info-grid dt { color: #6b7280; margin: 0; }
+        .info-grid dd { margin: 0; color: #1f2937; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fef3c7; color: #92400e; font-weight: 600; }
+        .acoes { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-invoice"></i> {{ orcamento.codigo }}</h1>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar aos orçamentos</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Informação geral</h2>
+            <dl class="info-grid">
+                <dt>Cliente</dt>
+                <dd>{% if orcamento.cliente %}{{ orcamento.cliente.nome }}{% elif orcamento.nome_cliente_pagamento %}{{ orcamento.nome_cliente_pagamento }}{% else %}—{% endif %}</dd>
+                <dt>Data</dt>
+                <dd>{{ orcamento.data_criacao|date:"d/m/Y H:i" }}</dd>
+                <dt>Data agendada</dt>
+                <dd>{{ orcamento.data_agendada|date:"d/m/Y H:i"|default:"—" }}</dd>
+                <dt>Endereço</dt>
+                <dd>{{ orcamento.endereco_servico|default:"—" }}</dd>
+                <dt>Cidade</dt>
+                <dd>{{ orcamento.cidade_servico|default:"—" }}</dd>
+                <dt>Responsável</dt>
+                <dd>{% if orcamento.responsavel %}{{ orcamento.responsavel.get_full_name|default:orcamento.responsavel.username }}{% else %}—{% endif %}</dd>
+                <dt>Valor total</dt>
+                <dd><strong>{{ orcamento.valor_total|floatformat:2 }} MT</strong></dd>
+            </dl>
+        </div>
+
+        {% if orcamento.servicos_orcamento.all %}
+        <div class="section">
+            <h2>Serviços</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Serviço</th>
+                        <th>Qtd</th>
+                        <th>Valor unit.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in orcamento.servicos_orcamento.all %}
+                    <tr>
+                        <td>{{ s.servico.nome|default:"—" }}</td>
+                        <td>{{ s.quantidade }}</td>
+                        <td>{{ s.valor_unitario|floatformat:2 }} MT</td>
+                        <td>{{ s.valor_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% for item in s.itens.all %}
+                    <tr style="background: #f9fafb;">
+                        <td style="padding-left: 28px;"><i class="fas fa-cube" style="color: #9ca3af;"></i> {% if item.item %}{{ item.item.nome }}{% else %}—{% endif %}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>{{ item.valor_unitario|floatformat:2 }} MT</td>
+                        <td>{{ item.valor_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if orcamento.transportes_orcamento.all %}
+        <div class="section">
+            <h2>Transportes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transportadora</th>
+                        <th>Valor logística</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in orcamento.transportes_orcamento.all %}
+                    <tr>
+                        <td>{{ t.transportadora.nome|default:"—" }}</td>
+                        <td>{{ t.valor_frete|floatformat:2 }} MT</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if orcamento.observacoes %}
+        <div class="section">
+            <h2>Observações</h2>
+            <p style="color: #374151; font-size: 14px;">{{ orcamento.observacoes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h2>Contrato</h2>
+            {% if pedido and pedido.numero_impressao_fatura and pedido.numero_impressao_fatura > 0 %}
+            <p style="color: #6b7280; font-size: 14px;">Este orçamento já foi faturado. O contrato pode ser consultado em <a href="{% url 'vendas:faturamento' %}">Faturamento</a> → <a href="{% url 'vendas:pedido_detail' pedido.id %}">Ver pedido {{ pedido.codigo }}</a>.</p>
+            {% else %}
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px;">Edite as cláusulas do contrato, pré-visualize ou gere o PDF para entregar ao cliente.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'vendas:editar_contrato' orcamento.id %}" class="btn" style="background: #8b5cf6; color: white;"><i class="fas fa-edit"></i> Editar contrato</a>
+                <a href="{% url 'vendas:preview_contrato' orcamento.id %}" class="btn" style="background: #0ea5e9; color: white;" target="_blank"><i class="fas fa-eye"></i> Pré-visualizar</a>
+                <a href="{% url 'vendas:gerar_contrato' orcamento.id %}" class="btn" style="background: #10b981; color: white;" target="_blank"><i class="fas fa-file-pdf"></i> Gerar PDF</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="acoes">
+            {% if pedido %}
+                <a href="{% url 'vendas:pedido_detail' pedido.id %}" class="btn" style="background: #10b981; color: white;"><i class="fas fa-eye"></i> Ver pedido</a>
+            {% else %}
+                <a href="{% url 'vendas:orcamento_edit' orcamento.id %}" class="btn" style="background: #8b5cf6; color: white;"><i class="fas fa-edit"></i> Editar orçamento</a>
+                <a href="{% url 'vendas:cotacao_confirmar' orcamento.id %}" class="btn" style="background: #10b981; color: white;"><i class="fas fa-check"></i> Converter em pedido</a>
+                <a href="{% url 'vendas:orcamento_delete' orcamento.id %}" class="btn" style="background: #ef4444; color: white;"><i class="fas fa-trash-alt"></i> Eliminar</a>
+            {% endif %}
+            <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+    </div>
+</body>
+</html>

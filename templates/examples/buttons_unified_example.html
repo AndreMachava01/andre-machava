@@ -1,0 +1,176 @@
+{% comment %}
+EXEMPLO DE USO DO SISTEMA UNIFICADO DE BOTÕES
+Este template demonstra como usar todos os tipos de botões do sistema
+{% endcomment %}
+
+{% load static %}
+{% load button_tags %}
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Unificado de Botões - Exemplo</title>
+    
+    <!-- CSS do Sistema -->
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}?v=20251023-3">
+    <link rel="stylesheet" href="{% static 'css/buttons-unified.css' %}?v=20251023-3">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        
+        <!-- 1. BOTÕES DE MÓDULOS PRINCIPAIS -->
+        <section class="mb-5">
+            <h2>1. Botões de Módulos Principais</h2>
+            <p>Botões para acesso aos módulos principais (RH, Stock, Logística)</p>
+            
+            {% module_buttons layout='cards' %}
+        </section>
+        
+        <!-- 2. BOTÕES DE SUBMÓDULOS -->
+        <section class="mb-5">
+            <h2>2. Botões de Submódulos</h2>
+            <p>Botões para acesso aos submódulos (Funcionários, Produtos, Materiais, etc.)</p>
+            
+            <h3>RH Submódulos:</h3>
+            {% submodule_buttons layout='grid' %}
+            
+            <h3>Stock Submódulos:</h3>
+            {% submodule_buttons layout='sidebar' %}
+        </section>
+        
+        <!-- 3. BOTÕES DE NAVEGAÇÃO -->
+        <section class="mb-5">
+            <h2>3. Botões de Navegação</h2>
+            <p>Botões para navegação (Voltar, Próximo, Anterior)</p>
+            
+            {% navigation_buttons position='top' %}
+            <div style="height: 200px; background: #f8f9fa; padding: 2rem; margin: 1rem 0;">
+                <p>Conteúdo da página...</p>
+            </div>
+            {% navigation_buttons position='bottom' %}
+        </section>
+        
+        <!-- 4. BOTÕES DE AÇÃO -->
+        <section class="mb-5">
+            <h2>4. Botões de Ação</h2>
+            <p>Botões para ações (Ver Detalhes, Editar, Apagar)</p>
+            
+            <h3>Layout Inline:</h3>
+            {% action_buttons layout='inline' %}
+            
+            <h3>Layout Toolbar:</h3>
+            {% action_buttons layout='toolbar' %}
+            
+            <h3>Layout Dropdown:</h3>
+            {% action_buttons layout='dropdown' %}
+        </section>
+        
+        <!-- 5. BOTÕES DE CONFIRMAÇÃO -->
+        <section class="mb-5">
+            <h2>5. Botões de Confirmação</h2>
+            <p>Botões para confirmação (Guardar, Cancelar, Confirmar)</p>
+            
+            <h3>Layout Centered:</h3>
+            {% confirmation_buttons layout='centered' %}
+            
+            <h3>Layout Justified:</h3>
+            {% confirmation_buttons layout='justified' %}
+        </section>
+        
+        <!-- 6. EXEMPLOS DE BOTÕES INDIVIDUAIS -->
+        <section class="mb-5">
+            <h2>6. Botões Individuais</h2>
+            <p>Exemplos de botões individuais usando o template tag</p>
+            
+            <div class="mb-3">
+                <h4>Botões de Módulo:</h4>
+                {% button_unified type='module' text='RH' icon='fas fa-users' url='/rh/' %}
+                {% button_unified type='module' text='Stock' icon='fas fa-boxes' url='/stock/' %}
+                {% button_unified type='module' text='Logística' icon='fas fa-truck' url='/stock/logistica/' %}
+            </div>
+            
+            <div class="mb-3">
+                <h4>Botões de Submódulo:</h4>
+                {% button_unified type='submodule' text='Funcionários' icon='fas fa-user' url='/rh/funcionarios/' %}
+                {% button_unified type='submodule' text='Produtos' icon='fas fa-box' url='/stock/produtos/' %}
+                {% button_unified type='submodule' text='Viaturas' icon='fas fa-car' url='/stock/logistica/viaturas/' %}
+            </div>
+            
+            <div class="mb-3">
+                <h4>Botões de Navegação:</h4>
+                {% button_unified type='navigation' text='Voltar' icon='fas fa-arrow-left' onclick='history.back()' %}
+                {% button_unified type='navigation' text='Início' icon='fas fa-home' url='/' %}
+                {% button_unified type='navigation' text='Próximo' icon='fas fa-arrow-right' onclick='history.forward()' %}
+            </div>
+            
+            <div class="mb-3">
+                <h4>Botões de Ação:</h4>
+                {% button_unified type='action' action='view' text='Ver Detalhes' icon='fas fa-eye' %}
+                {% button_unified type='action' action='edit' text='Editar' icon='fas fa-edit' %}
+                {% button_unified type='action' action='delete' text='Apagar' icon='fas fa-trash' %}
+            </div>
+            
+            <div class="mb-3">
+                <h4>Botões de Confirmação:</h4>
+                {% button_unified type='confirmation' action='save' text='Guardar' icon='fas fa-save' %}
+                {% button_unified type='confirmation' action='cancel' text='Cancelar' icon='fas fa-times' %}
+                {% button_unified type='confirmation' action='confirm' text='Confirmar' icon='fas fa-check' %}
+            </div>
+        </section>
+        
+        <!-- 7. DIFERENTES TAMANHOS -->
+        <section class="mb-5">
+            <h2>7. Diferentes Tamanhos</h2>
+            <p>Botões em diferentes tamanhos (xs, sm, md, lg, xl)</p>
+            
+            {% button_unified type='action' text='Extra Small' size='xs' %}
+            {% button_unified type='action' text='Small' size='sm' %}
+            {% button_unified type='action' text='Medium' size='md' %}
+            {% button_unified type='action' text='Large' size='lg' %}
+            {% button_unified type='action' text='Extra Large' size='xl' %}
+        </section>
+        
+        <!-- 8. ESTADOS DOS BOTÕES -->
+        <section class="mb-5">
+            <h2>8. Estados dos Botões</h2>
+            <p>Botões em diferentes estados (normal, disabled, loading)</p>
+            
+            {% button_unified type='action' text='Normal' %}
+            {% button_unified type='action' text='Desabilitado' disabled=True %}
+            {% button_unified type='action' text='Carregando' loading=True %}
+        </section>
+        
+        <!-- 9. GRUPOS DE BOTÕES -->
+        <section class="mb-5">
+            <h2>9. Grupos de Botões</h2>
+            <p>Grupos de botões usando o template de grupo</p>
+            
+            {% include 'components/button_group_unified.html' with buttons=action_buttons layout='horizontal' %}
+        </section>
+        
+        <!-- 10. CONFIGURAÇÃO JSON -->
+        <section class="mb-5">
+            <h2>10. Configuração do Sistema</h2>
+            <p>Configuração atual do sistema de botões:</p>
+            <pre id="config-display"></pre>
+        </section>
+        
+    </div>
+    
+    <script>
+        // Exibir configuração do sistema
+        const config = {% button_config %};
+        document.getElementById('config-display').textContent = JSON.stringify(config, null, 2);
+        
+        // Função para demonstração
+        function confirmDelete() {
+            if (confirm('Tem certeza que deseja apagar este item?')) {
+                alert('Item apagado com sucesso!');
+            }
+        }
+    </script>
+</body>
+</html>

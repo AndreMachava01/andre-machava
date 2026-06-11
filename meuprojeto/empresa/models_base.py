@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.conf import settings
 from django.db import models, transaction
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
@@ -138,6 +141,63 @@ class DadosEmpresa(models.Model):
         'Horas de Trabalho por Dia',
         default='08:00:00',
         help_text='Número de horas de trabalho por dia (formato HH:MM:SS)'
+    )
+    representante_legal = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='empresas_representadas',
+        verbose_name='Responsável pela Empresa',
+        help_text='Usuário responsável pela empresa (usado em contratos e documentos)',
+    )
+    cargo_representante = models.CharField(
+        'Cargo do Representante',
+        max_length=100,
+        blank=True,
+        default='Responsável',
+        help_text='Cargo do representante legal (ex: Diretor, Gerente, Responsável)',
+    )
+    logo = models.ImageField(
+        upload_to='logos_empresas/',
+        blank=True,
+        null=True,
+        help_text='Logotipo oficial utilizado em documentos e relatórios',
+    )
+    conta_bci = models.CharField(
+        'Conta BCI',
+        max_length=80,
+        blank=True,
+        default='',
+        help_text='IBAN ou número da conta bancária BCI',
+    )
+    conta_millennium_bim = models.CharField(
+        'Conta Millennium BIM',
+        max_length=80,
+        blank=True,
+        default='',
+        help_text='IBAN ou número da conta bancária Millennium BIM',
+    )
+    conta_mpesa = models.CharField(
+        'Conta M-Pesa',
+        max_length=50,
+        blank=True,
+        default='',
+        help_text='Número ou referência M-Pesa para pagamentos',
+    )
+    conta_emola = models.CharField(
+        'Conta e-Mola',
+        max_length=50,
+        blank=True,
+        default='',
+        help_text='Número ou referência e-Mola para pagamentos',
+    )
+    validade_cotacao = models.CharField(
+        'Validade da cotação',
+        max_length=120,
+        blank=True,
+        default='',
+        help_text='Texto exibido na cotação/orçamento (ex.: "30 dias")',
     )
 
     def __str__(self):
@@ -500,6 +560,38 @@ class Sucursal(models.Model):
         ordering = ['nome']
 
 
+class HorarioExpediente(models.Model):
+    """Horário de expediente por dia da semana (sucursal)."""
+
+    sucursal = models.ForeignKey(
+        Sucursal,
+        on_delete=models.CASCADE,
+        related_name='horarios_expediente',
+        help_text='Sucursal a que pertence este horário',
+    )
+    dia_semana = models.PositiveSmallIntegerField(
+        help_text='Dia da semana (0=Segunda, 1=Terça, ..., 6=Domingo)',
+    )
+    ativo = models.BooleanField(default=True, help_text='Indica se este horário está ativo')
+    hora_inicio = models.TimeField(help_text='Hora de início do expediente')
+    hora_fim = models.TimeField(help_text='Hora de fim do expediente')
+    duracao_almoco = models.DurationField(
+        default=timedelta(hours=1),
+        help_text='Duração da pausa para almoço',
+    )
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Horário de Expediente'
+        verbose_name_plural = 'Horários de Expediente'
+        ordering = ['sucursal', 'dia_semana']
+        unique_together = [('sucursal', 'dia_semana')]
+
+    def __str__(self):
+        return f'{self.sucursal.nome} — dia {self.dia_semana}'
+
+
 # Signal para capturar o valor original do codigo_empresa antes do salvamento
 @receiver(pre_save, sender=DadosEmpresa)
 def capturar_codigo_empresa_original(sender, instance, **kwargs):
@@ -566,3 +658,56 @@ def criar_sucursal_sede_automaticamente(sender, instance, created, **kwargs):
                 data_abertura=instance.data_constituicao,
                 ativa=True
             )
+
+
+class ConfiguracaoFiscal(models.Model):
+    """
+    Configuração fiscal usada por vendas/produção/finanças.
+    Mantida aqui por compatibilidade com imports legados das views.
+    """
+
+    nome = models.CharField(max_length=100, unique=True)
+    taxa_iva = models.DecimalField(max_digits=5, decimal_places=2, default=16)
+    taxa_irpc = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=32)
+    prazo_retencao_documentos_anos = models.PositiveSmallIntegerField(null=True, blank=True, default=10)
+    servico_levantamento = models.ForeignKey(
+        'Item', on_delete=models.SET_NULL, null=True, blank=True, related_name='+'
+    )
+    ativo = models.BooleanField(default=True)
+    padrao = models.BooleanField(default=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Configuração Fiscal'
+        verbose_name_plural = 'Configurações Fiscais'
+        ordering = ['-padrao', '-ativo', '-data_atualizacao']
+
+    @staticmethod
+    def _to_decimal_rate(value):
+        # Aceita 16 (percentual) ou 0.16 (decimal)
+        if value is None:
+            return 0
+        return (value / 100) if value > 1 else value
+
+    @classmethod
+    def get_taxa_iva_atual(cls):
+        cfg = cls.objects.filter(ativo=True, padrao=True).first() or cls.objects.filter(ativo=True).first()
+        if not cfg:
+            return 0.16
+        return cls._to_decimal_rate(cfg.taxa_iva)
+
+    @classmethod
+    def get_taxa_irpc_atual(cls):
+        cfg = cls.objects.filter(ativo=True, padrao=True).first() or cls.objects.filter(ativo=True).first()
+        if not cfg or cfg.taxa_irpc is None:
+            return 0.32
+        return cls._to_decimal_rate(cfg.taxa_irpc)
+
+
+# Contratos / pagamentos (definições em models_producao_servicos)
+from .models_producao_servicos import (  # noqa: E402, F401
+    ConfiguracaoContratoServico,
+    FormaPagamento,
+    PeriodoPagamento,
+)

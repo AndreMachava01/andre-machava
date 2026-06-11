@@ -1,0 +1,194 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Custos logísticos{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:cost_billing:dashboard' as cost_billing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Custos & faturamento' breadcrumb_section_url=cost_billing_dashboard_url breadcrumb_current='Custos logísticos' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-receipt" aria-hidden="true"></i>
+                    Custos logísticos
+                </h1>
+                <p class="page-subtitle">Registo, aprovação e rateio de despesas da operação</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:cost_billing:custo_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Novo custo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.pendentes|default:"0" }}</div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.aprovados|default:"0" }}</div>
+                <div class="stat-label">Aprovados</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-coins"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.valor_total|default:0|floatformat:0 }} MT</div>
+                <div class="stat-label">Valor total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros de busca</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-custos">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-custos" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, descrição, documento...">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-custos">Status</label>
+                <select id="filtro-status-custos" name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo-custos">Tipo</label>
+                <select id="filtro-tipo-custos" name="tipo_custo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for tipo in tipos_custo %}
+                    <option value="{{ tipo.id }}" {% if tipo_custo == tipo.id|stringformat:"s" %}selected{% endif %}>{{ tipo.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-centro-custos">Centro de custo</label>
+                <select id="filtro-centro-custos" name="centro_custo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for centro in centros_custo %}
+                    <option value="{{ centro.id }}" {% if centro_custo == centro.id|stringformat:"s" %}selected{% endif %}>{{ centro.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio-custos">De</label>
+                <input type="date" id="filtro-inicio-custos" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim-custos">Até</label>
+                <input type="date" id="filtro-fim-custos" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn-clear"><i class="fas fa-times" aria-hidden="true"></i> Limpar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-receipt" aria-hidden="true"></i> Custos</h3>
+            <span class="page-info">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Centro</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for custo in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ custo.codigo }}</strong></td>
+                        <td>{{ custo.descricao|truncatechars:40 }}</td>
+                        <td>{{ custo.tipo_custo.nome }}</td>
+                        <td>{{ custo.centro_custo.nome }}</td>
+                        <td>{{ custo.valor|floatformat:2 }} MT</td>
+                        <td>
+                            <span class="badge badge-{% if custo.status == 'APROVADO' %}success{% elif custo.status == 'PENDENTE' %}warning{% elif custo.status == 'REJEITADO' %}danger{% elif custo.status == 'RATEADO' %}info{% elif custo.status == 'FATURADO' %}primary{% else %}secondary{% endif %}">
+                                {{ custo.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ custo.data_custo|date:"d/m/Y" }}</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:cost_billing:custo_detail' custo.id %}" class="btn-action primary" title="Ver">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% if custo.status == 'PENDENTE' %}
+                                <a href="{% url 'stock:cost_billing:custo_approve' custo.id %}" class="btn-action secondary" title="Aprovar">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&status={{ status }}&tipo_custo={{ tipo_custo }}&centro_custo={{ centro_custo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search }}&status={{ status }}&tipo_custo={{ tipo_custo }}&centro_custo={{ centro_custo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-receipt" aria-hidden="true"></i>
+            <h3>Nenhum custo encontrado</h3>
+            <p>{% if has_filters %}Ajuste os filtros ou {% endif %}registe o primeiro custo logístico.</p>
+            <a href="{% url 'stock:cost_billing:custo_create' %}" class="btn btn-success">Novo custo</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

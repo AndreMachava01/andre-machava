@@ -1,0 +1,477 @@
+{% load humanize %}
+{% load math_filters %}
+{% load rh_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if ordem %}Editar{% else %}Nova{% endif %} Ordem de Serviço - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #b45309;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .required {
+            color: #ef4444;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            margin: 0;
+            color: #0369a1;
+            font-size: 13px;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-clipboard-check"></i>
+                {% if ordem %}Editar Ordem de Serviço{% else %}Nova Ordem de Serviço{% endif %}
+            </h1>
+            <a href="{% url 'producao:servicos_ordens' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fef3c7; color: #92400e;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46;">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-box">
+            <p>
+                <i class="fas fa-info-circle"></i>
+                <strong>Nota:</strong> Ordens de serviço são diferentes de ordens de produção. Serviços são prestados sob demanda, não têm estoque e requerem agendamento.
+            </p>
+        </div>
+
+        <form method="POST" action="{% if ordem %}{% url 'producao:servico_ordem_edit' ordem.id %}{% else %}{% url 'producao:servico_ordem_add' %}{% endif %}">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="servico">Serviço <span class="required">*</span></label>
+                    <select id="servico" name="servico" required>
+                        <option value="">Selecione um serviço</option>
+                        {% for servico_item in servicos %}
+                            <option value="{{ servico_item.id }}" 
+                                    data-preco="{{ servico_item.preco_venda|floatformat:2 }}" 
+                                    {% if ordem %}{% if ordem.servico_id == servico_item.id %}selected{% endif %}{% endif %}>
+                                {{ servico_item.nome }} - {{ servico_item.preco_venda|floatformat:2|intcomma }} MT
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cliente">Cliente <span class="required">*</span></label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="cliente" name="cliente" required style="flex: 1;">
+                            <option value="">Selecione um cliente</option>
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}" {% if ordem %}{% if ordem.cliente_id == cliente.id %}selected{% endif %}{% endif %}>
+                                    {{ cliente.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <a href="{% url 'producao:servicos_clientes' %}" class="btn btn-secondary" style="padding: 10px 15px; white-space: nowrap;" target="_blank">
+                            <i class="fas fa-plus"></i> Novo Cliente
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="data_agendada">Data Agendada <span class="required">*</span></label>
+                    <input type="date" id="data_agendada" name="data_agendada" required value="{% if ordem %}{{ ordem.data_agendada|date:'Y-m-d' }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="hora_agendada">Hora Agendada <span class="required">*</span></label>
+                    <input type="time" id="hora_agendada" name="hora_agendada" required value="{% if ordem %}{{ ordem.data_agendada|time:'H:i' }}{% else %}09:00{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco_servico">Endereço do Serviço <span class="required">*</span></label>
+                <textarea id="endereco_servico" name="endereco_servico" rows="2" required placeholder="Endereço completo onde o serviço será prestado">{% if ordem %}{{ ordem.endereco_servico }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cidade_servico">Cidade</label>
+                    <input type="text" id="cidade_servico" name="cidade_servico" value="{% if ordem %}{{ ordem.cidade_servico }}{% endif %}" placeholder="Cidade">
+                </div>
+
+                <div class="form-group">
+                    <label for="equipe">Equipe</label>
+                    <input type="text" id="equipe" name="equipe" value="{% if ordem %}{{ ordem.equipe }}{% endif %}" placeholder="Nome da equipe responsável">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavel">Responsável Técnico</label>
+                    <select id="responsavel" name="responsavel">
+                        <option value="">Sem responsável</option>
+                        {% for usuario in usuarios %}
+                            <option value="{{ usuario.id }}" {% if ordem %}{% if ordem.responsavel_id == usuario.id %}selected{% endif %}{% endif %}>
+                                {{ usuario.get_full_name|default:usuario.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="prioridade">Prioridade</label>
+                    <select id="prioridade" name="prioridade">
+                        {% for valor, label in prioridade_choices %}
+                            <option value="{{ valor }}" {% if ordem %}{% if ordem.prioridade == valor %}selected{% endif %}{% else %}{% if valor == 'NORMAL' %}selected{% endif %}{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {% if ordem %}
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    {% for valor, label in status_choices %}
+                        <option value="{{ valor }}" {% if ordem.status == valor %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantidade">Quantidade</label>
+                    <input type="number" id="quantidade" name="quantidade" step="0.01" min="0.01" value="{% if ordem %}{{ ordem.quantidade }}{% else %}1.00{% endif %}" placeholder="1.00">
+                    <small style="color: #6b7280; font-size: 12px;">Quantidade do serviço (horas, unidades, etc.)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="valor_unitario">Valor Unitário (MT)</label>
+                    <input type="number" id="valor_unitario" name="valor_unitario" step="0.01" min="0" value="{% if ordem %}{{ ordem.valor_unitario|floatformat:2 }}{% endif %}" placeholder="0.00">
+                    <small style="color: #6b7280; font-size: 12px;">Preenchido automaticamente com o preço do serviço. Pode ser alterado se necessário.</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="desconto_percentual">Desconto Percentual</label>
+                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                    <select id="desconto_percentual" name="desconto_percentual" required style="width: 120px;">
+                        {% if ordem %}
+                            {% with valor_bruto=ordem.quantidade|mul:ordem.valor_unitario %}
+                                {% if valor_bruto > 0 %}
+                                    {% with percentual_calculado=ordem.desconto|mul:100|div:valor_bruto|floatformat:0 %}
+                                        <option value="0" {% if percentual_calculado == "0" or ordem.desconto == 0 %}selected{% endif %}>0% - Sem desconto</option>
+                                        <option value="5" {% if percentual_calculado == "5" %}selected{% endif %}>5%</option>
+                                        <option value="10" {% if percentual_calculado == "10" %}selected{% endif %}>10%</option>
+                                        <option value="15" {% if percentual_calculado == "15" %}selected{% endif %}>15%</option>
+                                        <option value="20" {% if percentual_calculado == "20" %}selected{% endif %}>20%</option>
+                                        <option value="25" {% if percentual_calculado == "25" %}selected{% endif %}>25%</option>
+                                        <option value="30" {% if percentual_calculado == "30" %}selected{% endif %}>30%</option>
+                                    {% endwith %}
+                                {% else %}
+                                    <option value="0" {% if ordem.desconto == 0 %}selected{% else %}{% endif %}>0% - Sem desconto</option>
+                                    <option value="5" {% if ordem.desconto > 0 %}selected{% endif %}>5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="15">15%</option>
+                                    <option value="20">20%</option>
+                                    <option value="25">25%</option>
+                                    <option value="30">30%</option>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <option value="0" selected>0% - Sem desconto</option>
+                            <option value="5">5%</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="25">25%</option>
+                            <option value="30">30%</option>
+                        {% endif %}
+                    </select>
+                    <div style="display: flex; flex-direction: column; width: 180px;">
+                        <input type="text" id="desconto_valor_exibicao" readonly style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; background-color: #f9fafb; color: #374151; font-weight: 500;" placeholder="0,00 MT" value="{% if ordem and ordem.desconto %}{{ ordem.desconto|floatformat:2|intcomma }} MT{% endif %}">
+                        <small style="color: #6b7280; font-size: 12px; margin-top: 4px;">Valor do desconto calculado</small>
+                    </div>
+                </div>
+                <small style="color: #6b7280; font-size: 12px; margin-top: 8px; display: block;">Desconto percentual aplicado sobre o valor total do serviço (0% a 30%)</small>
+                <input type="hidden" id="desconto" name="desconto" value="{% if ordem %}{{ ordem.desconto|floatformat:2 }}{% else %}0.00{% endif %}">
+            </div>
+
+            <div class="form-group" style="background-color: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 20px;">
+                <label style="font-weight: 600; color: #111827; margin-bottom: 12px; display: block;">Resumo de Valores</label>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span style="color: #6b7280; font-size: 14px;">Valor Total (Quantidade × Valor Unitário):</span>
+                        <span id="valor_total_exibicao" style="font-weight: 600; color: #111827; font-size: 16px;">{% if ordem %}{{ ordem.quantidade|mul:ordem.valor_unitario|floatformat:2|intcomma }} MT{% else %}0,00 MT{% endif %}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span style="color: #6b7280; font-size: 14px;">Desconto:</span>
+                        <span id="desconto_exibicao_resumo" style="font-weight: 500; color: #dc2626; font-size: 14px;">{% if ordem and ordem.desconto %}{{ ordem.desconto|floatformat:2|intcomma }} MT{% else %}0,00 MT{% endif %}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; background-color: #ffffff; border-radius: 4px; padding-left: 12px; padding-right: 12px; margin-top: 4px;">
+                        <span style="font-weight: 600; color: #111827; font-size: 16px;">Valor Final:</span>
+                        <span id="valor_final_exibicao" style="font-weight: 700; color: #059669; font-size: 18px;">{% if ordem and ordem.valor_total %}{{ ordem.valor_total|floatformat:2|intcomma }} MT{% else %}0,00 MT{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="problema_relatado">Problema Relatado</label>
+                <textarea id="problema_relatado" name="problema_relatado" rows="3" placeholder="Descreva o problema ou necessidade relatada pelo cliente">{% if ordem %}{{ ordem.problema_relatado }}{% endif %}</textarea>
+            </div>
+
+            {% if ordem %}
+            <div class="form-group">
+                <label for="solucao_aplicada">Solução Aplicada</label>
+                <textarea id="solucao_aplicada" name="solucao_aplicada" rows="3" placeholder="Descreva a solução aplicada">{% if ordem %}{{ ordem.solucao_aplicada }}{% endif %}</textarea>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações adicionais sobre a ordem">{% if ordem %}{{ ordem.observacoes }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'producao:servicos_ordens' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if ordem %}Atualizar{% else %}Criar{% endif %} Ordem
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Preencher automaticamente o valor unitário quando um serviço for selecionado
+        document.getElementById('servico').addEventListener('change', function() {
+            const servicoSelect = this;
+            const valorUnitarioInput = document.getElementById('valor_unitario');
+            const selectedOption = servicoSelect.options[servicoSelect.selectedIndex];
+            
+            if (selectedOption.value && selectedOption.dataset.preco) {
+                const preco = parseFloat(selectedOption.dataset.preco);
+                if (!isNaN(preco) && preco > 0) {
+                    // Só preenche se o campo estiver vazio ou com valor zero
+                    if (!valorUnitarioInput.value || parseFloat(valorUnitarioInput.value) === 0) {
+                        valorUnitarioInput.value = preco.toFixed(2);
+                    }
+                }
+            }
+        });
+
+        // Calcular desconto percentual automaticamente
+        const descontoPercentualSelect = document.getElementById('desconto_percentual');
+        const descontoHiddenInput = document.getElementById('desconto');
+        const descontoValorExibicao = document.getElementById('desconto_valor_exibicao');
+        const quantidadeInput = document.getElementById('quantidade');
+        const valorUnitarioInput = document.getElementById('valor_unitario');
+        const valorTotalExibicao = document.getElementById('valor_total_exibicao');
+        const descontoExibicaoResumo = document.getElementById('desconto_exibicao_resumo');
+        const valorFinalExibicao = document.getElementById('valor_final_exibicao');
+        
+        function formatarMoeda(valor) {
+            // Formatar como moeda moçambicana (MT)
+            return parseFloat(valor).toLocaleString('pt-PT', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' MT';
+        }
+        
+        function calcularValores() {
+            const percentual = parseFloat(descontoPercentualSelect.value) || 0;
+            const quantidade = parseFloat(quantidadeInput.value) || 0;
+            const valorUnitario = parseFloat(valorUnitarioInput.value) || 0;
+            
+            if (quantidade > 0 && valorUnitario > 0) {
+                const valorTotal = quantidade * valorUnitario;
+                valorTotalExibicao.textContent = formatarMoeda(valorTotal);
+                
+                if (percentual > 0) {
+                    const descontoFixo = (valorTotal * percentual / 100).toFixed(2);
+                    descontoHiddenInput.value = descontoFixo;
+                    descontoValorExibicao.value = formatarMoeda(descontoFixo);
+                    descontoExibicaoResumo.textContent = formatarMoeda(descontoFixo);
+                    
+                    const valorFinal = valorTotal - parseFloat(descontoFixo);
+                    valorFinalExibicao.textContent = formatarMoeda(valorFinal);
+                } else {
+                    descontoHiddenInput.value = '0.00';
+                    descontoValorExibicao.value = formatarMoeda('0.00');
+                    descontoExibicaoResumo.textContent = formatarMoeda('0.00');
+                    valorFinalExibicao.textContent = formatarMoeda(valorTotal);
+                }
+            } else {
+                valorTotalExibicao.textContent = formatarMoeda('0.00');
+                descontoHiddenInput.value = '0.00';
+                descontoValorExibicao.value = formatarMoeda('0.00');
+                descontoExibicaoResumo.textContent = formatarMoeda('0.00');
+                valorFinalExibicao.textContent = formatarMoeda('0.00');
+            }
+        }
+        
+        // Usar calcularValores ao invés de calcularDesconto
+        const calcularDesconto = calcularValores;
+        
+        // Recalcular valores quando qualquer valor mudar
+        descontoPercentualSelect.addEventListener('change', calcularValores);
+        quantidadeInput.addEventListener('input', calcularValores);
+        valorUnitarioInput.addEventListener('input', calcularValores);
+        
+        // Inicializar ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            const servicoSelect = document.getElementById('servico');
+            const valorUnitarioInput = document.getElementById('valor_unitario');
+            const selectedOption = servicoSelect.options[servicoSelect.selectedIndex];
+            
+            if (selectedOption.value && selectedOption.dataset.preco) {
+                const preco = parseFloat(selectedOption.dataset.preco);
+                if (!isNaN(preco) && preco > 0) {
+                    // Se o campo estiver vazio, preencher com o preço do serviço
+                    if (!valorUnitarioInput.value || parseFloat(valorUnitarioInput.value) === 0) {
+                        valorUnitarioInput.value = preco.toFixed(2);
+                    }
+                }
+            }
+            
+            // Calcular e exibir valores iniciais
+            setTimeout(function() {
+                calcularValores();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

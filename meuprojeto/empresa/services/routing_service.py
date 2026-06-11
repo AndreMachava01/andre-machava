@@ -235,7 +235,7 @@ class RoutingService:
         """Obtém veículos internos disponíveis para uma data."""
         queryset = VeiculoInterno.objects.filter(
             status='ATIVO',
-            disponivel=True
+            ativo=True,
         )
         
         if veiculos_ids:

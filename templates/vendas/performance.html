@@ -1,0 +1,143 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #ec4899; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #ec4899; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #ec4899; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row label { font-size: 14px; color: #555; }
+        .filter-row input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fdf2f8; border-left: 4px solid #ec4899; }
+        .stat-box .num { font-size: 22px; font-weight: 700; color: #9d174d; }
+        .stat-box .lbl { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .section { margin-bottom: 28px; }
+        .section h2 { font-size: 18px; color: #ec4899; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fdf2f8; color: #9d174d; font-weight: 600; }
+        td.num { text-align: right; }
+        tbody tr:hover { background: #fdf2f8; }
+        .bar-cell { display: flex; align-items: center; gap: 10px; }
+        .bar-wrap { flex: 1; max-width: 120px; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .bar { height: 100%; background: #ec4899; border-radius: 4px; }
+        {% if messages %}
+        .msg { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        {% endif %}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-chart-pie"></i> {{ title }}</h1>
+                <p>Conversão orçamento → pedido, status e ticket médio</p>
+            </div>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label for="data_inicio">De:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+                <label for="data_fim">Até:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_orcamentos|default:0|intcomma }}</div>
+                <div class="lbl">Orçamentos no período</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_pedidos|default:0|intcomma }}</div>
+                <div class="lbl">Pedidos no período</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ orcamentos_convertidos|default:0|intcomma }}</div>
+                <div class="lbl">Orçamentos convertidos em pedido</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ taxa_conversao|floatformat:1 }}%</div>
+                <div class="lbl">Taxa de conversão</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_valor|floatformat:0 }} MT</div>
+                <div class="lbl">Valor total (pedidos)</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ticket_medio|floatformat:0 }} MT</div>
+                <div class="lbl">Ticket médio</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-tasks"></i> Pedidos por status</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th class="num">Quantidade</th>
+                        <th>Proporção</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in por_status %}
+                    <tr>
+                        <td>{{ s.label }}</td>
+                        <td class="num">{{ s.count|intcomma }}</td>
+                        <td class="bar-cell">
+                            <div class="bar-wrap">
+                                <div class="bar" style="width: {% if total_pedidos %}{% widthratio s.count total_pedidos 100 %}{% else %}0{% endif %}%;"></div>
+                            </div>
+                            <span>{% if total_pedidos %}{% widthratio s.count total_pedidos 100 %}%{% else %}0%{% endif %}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-file-invoice"></i> Concluídos e faturamento</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Indicador</th>
+                        <th class="num">Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pedidos concluídos com fatura emitida</td>
+                        <td class="num">{{ concluidos_com_fatura|default:0|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Pedidos concluídos sem fatura</td>
+                        <td class="num">{{ concluidos_sem_fatura|default:0|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

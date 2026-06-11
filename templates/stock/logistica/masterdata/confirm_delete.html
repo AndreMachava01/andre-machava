@@ -1,0 +1,106 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Eliminar {{ object.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar {{ object_type }}</h1>
+                <p class="page-subtitle">{{ object.codigo }} — {{ object.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ back_url }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirmation-card stock-confirmation-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Confirmar eliminação</h2>
+        </div>
+        <div class="card-body">
+            {% if extra_warning %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-ban" aria-hidden="true"></i>
+                {{ extra_message }}
+            </div>
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                Esta acção é permanente e não pode ser desfeita.
+            </div>
+            {% endif %}
+            <table class="table table-borderless table-sm stock-u-mb-16">
+                <tr><td><strong>Código</strong></td><td><code>{{ object.codigo }}</code></td></tr>
+                <tr><td><strong>Nome</strong></td><td>{{ object.nome }}</td></tr>
+            </table>
+
+            {% if zonas_bloqueio %}
+            <h3 class="form-label">Zonas associadas ({{ zonas_bloqueio|length }})</h3>
+            <div class="table-wrapper stock-u-mb-16">
+                <table class="table table-sm">
+                    <thead><tr><th>Código</th><th>Nome</th><th class="col-actions">Acções</th></tr></thead>
+                    <tbody>
+                        {% for z in zonas_bloqueio %}
+                        <tr>
+                            <td><code>{{ z.codigo }}</code></td>
+                            <td>{{ z.nome }}</td>
+                            <td class="col-actions">
+                                <a href="{% url 'stock:masterdata:zona_edit' z.id %}" class="btn-action secondary" title="Editar"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <a href="{% url 'stock:masterdata:zona_delete' z.id %}" class="btn-action danger" title="Eliminar"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if hubs_bloqueio %}
+            <h3 class="form-label">Hubs associados ({{ hubs_bloqueio|length }})</h3>
+            <div class="table-wrapper stock-u-mb-16">
+                <table class="table table-sm">
+                    <thead><tr><th>Código</th><th>Nome</th><th class="col-actions">Acções</th></tr></thead>
+                    <tbody>
+                        {% for h in hubs_bloqueio %}
+                        <tr>
+                            <td><code>{{ h.codigo }}</code></td>
+                            <td>{{ h.nome }}</td>
+                            <td class="col-actions">
+                                <a href="{% url 'stock:masterdata:hub_edit' h.id %}" class="btn-action secondary" title="Editar"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <a href="{% url 'stock:masterdata:hub_delete' h.id %}" class="btn-action danger" title="Eliminar"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if extra_warning and edit_url %}
+            <p class="form-hint">
+                Alternativa: <a href="{{ edit_url }}">desactivar a região</a> em vez de eliminar, se quiser mantê-la no histórico sem apagar as zonas.
+            </p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-actions-row is-split">
+                    <a href="{{ back_url }}" class="btn btn-secondary">Cancelar</a>
+                    {% if not extra_warning %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i> Confirmar eliminação
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if maquina %}Editar{% else %}Nova{% endif %} Máquina - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #f59e0b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .required { color: #ef4444; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #f59e0b; color: white; }
+        .btn-primary:hover { background: #d97706; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-tools"></i>
+                {% if maquina %}Editar{% else %}Nova{% endif %} Máquina
+            </h1>
+            <a href="{% url 'producao:maquinas' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if maquina %}
+        <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #92400e; font-size: 13px;">
+                <strong>Código:</strong> {{ maquina.codigo }} | 
+                <strong>Criado em:</strong> {{ maquina.data_criacao|date:"d/m/Y H:i" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome">Nome da Máquina <span class="required">*</span></label>
+                <input type="text" name="nome" id="nome" value="{% if maquina %}{{ maquina.nome }}{% endif %}" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tipo">Tipo <span class="required">*</span></label>
+                    <select name="tipo" id="tipo" required>
+                        {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if maquina and maquina.tipo == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status <span class="required">*</span></label>
+                    <select name="status" id="status" required>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if maquina and maquina.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" id="descricao" rows="3">{% if maquina %}{{ maquina.descricao }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="marca">Marca</label>
+                    <input type="text" name="marca" id="marca" value="{% if maquina %}{{ maquina.marca }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="modelo">Modelo</label>
+                    <input type="text" name="modelo" id="modelo" value="{% if maquina %}{{ maquina.modelo }}{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="numero_serie">Número de Série</label>
+                <input type="text" name="numero_serie" id="numero_serie" value="{% if maquina %}{{ maquina.numero_serie }}{% endif %}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="capacidade">Capacidade</label>
+                    <input type="number" name="capacidade" id="capacidade" step="0.01" min="0" value="{% if maquina and maquina.capacidade %}{{ maquina.capacidade }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="unidade_capacidade">Unidade de Capacidade</label>
+                    <select name="unidade_capacidade" id="unidade_capacidade">
+                        <option value="">Selecione...</option>
+                        {% for value, label in unidade_capacidade_choices %}
+                        <option value="{{ value }}" {% if maquina and maquina.unidade_capacidade == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sucursal">Sucursal <span class="required">*</span></label>
+                    <select name="sucursal" id="sucursal" required>
+                        <option value="">Selecione uma sucursal</option>
+                        {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if maquina and maquina.sucursal.id == sucursal.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="localizacao">Localização</label>
+                    <input type="text" name="localizacao" id="localizacao" value="{% if maquina %}{{ maquina.localizacao }}{% endif %}" placeholder="Ex: Setor A, Linha 1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="data_aquisicao">Data de Aquisição</label>
+                    <input type="date" name="data_aquisicao" id="data_aquisicao" value="{% if maquina and maquina.data_aquisicao %}{{ maquina.data_aquisicao|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="data_proxima_manutencao">Data Próxima Manutenção</label>
+                    <input type="date" name="data_proxima_manutencao" id="data_proxima_manutencao" value="{% if maquina and maquina.data_proxima_manutencao %}{{ maquina.data_proxima_manutencao|date:'Y-m-d' }}{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" rows="3">{% if maquina %}{{ maquina.observacoes }}{% endif %}</textarea>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                <a href="{% url 'producao:maquinas' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Máquina
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

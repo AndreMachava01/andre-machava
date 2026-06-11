@@ -1,0 +1,69 @@
+{% extends 'base_admin.html' %}
+{% load humanize static %}
+
+{% block title %}Eliminar receita{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:receitas' %}">Receitas</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Eliminar</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-trash"></i> Eliminar receita</h1>
+                <p class="page-subtitle">{{ receita.codigo }} — {{ receita.nome }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if ordens_count > 0 %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Não é possível eliminar.</strong>
+        A receita está associada a {{ ordens_count }} ordem{{ ordens_count|pluralize:"ns" }} de produção.
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        Esta acção é irreversível. Serão removidos todos os materiais da receita.
+    </div>
+    {% endif %}
+
+    <div class="detail-cards-grid">
+        <div class="card">
+            <div class="card-body">
+                <div class="info-row"><span class="info-label">Produto</span><span class="info-value">{{ receita.produto.nome|default:"—" }}</span></div>
+                <div class="info-row"><span class="info-label">Versão</span><span class="info-value">{{ receita.versao }}</span></div>
+                <div class="info-row"><span class="info-label">Itens</span><span class="info-value">{{ receita.itens.count }}</span></div>
+                <div class="info-row"><span class="info-label">Status</span><span class="info-value">{{ receita.get_status_display }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="form-actions stock-form-actions-mt">
+        {% csrf_token %}
+        <a href="{% url 'stock:receita_detail' receita.id %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary btn-danger-solid"
+                {% if ordens_count > 0 %}disabled{% endif %}
+                {% if ordens_count == 0 %}onclick="return confirm('Eliminar a receita «{{ receita.nome }}»?');"{% endif %}>
+            Confirmar eliminação
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma de Propostas Técnicas - Sistema Conception</title>
+{% load humanize l10n %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row select, .filter-row input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .help-text { font-size: 13px; color: #6b7280; margin-top: 8px; }
+        .gantt-box { margin-top: 20px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: visible; }
+        .gantt-box .gantt-header { padding: 12px 16px; background: #fffbeb; border-bottom: 1px solid #fcd34d; }
+        .gantt-box .gantt-header h2 { margin: 0; font-size: 16px; color: #b45309; }
+        .gantt-box .gantt-body { padding: 0; font-size: 13px; overflow-x: auto; }
+        .gantt-rows { display: flex; flex-direction: column; min-width: calc(280px + {{ gantt_scale_min_px }}px); }
+        .gantt-row { display: flex; align-items: stretch; border-bottom: 1px solid #f1f5f9; min-width: calc(280px + {{ gantt_scale_min_px }}px); }
+        .gantt-row-label { flex: 0 0 280px; padding: 10px 14px; background: #f8fafc; font-weight: 600; color: #475569; min-width: 0; }
+        .gantt-row-scale { flex: 0 0 {{ gantt_scale_min_px }}px; width: {{ gantt_scale_min_px }}px; position: relative; padding: 0; }
+        .gantt-row-scale--empty { padding: 0 16px; }
+        .gantt-scale-inner { position: relative; width: 100%; height: 36px; min-height: 36px; box-sizing: border-box; background: repeating-linear-gradient(90deg, transparent, transparent calc(25% - 2px), #cbd5e1 2px, #cbd5e1 25%); border-radius: 4px; overflow: visible; }
+        .gantt-tick { position: absolute; font-size: 11px; font-weight: 600; color: #475569; top: 6px; white-space: nowrap; background: #fff; padding: 2px 4px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,0.06); z-index: 2; transform: translateX(-50%); }
+        .gantt-tick-first { transform: translateX(0); }
+        .gantt-tick-last { transform: translateX(-100%); }
+        .gantt-hoje { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; z-index: 1; transform: translateX(-1px); }
+        .gantt-hoje-label { position: absolute; font-size: 10px; font-weight: 700; color: #dc2626; margin-left: 6px; top: 4px; z-index: 3; white-space: nowrap; background: #fff; padding: 2px 6px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(220,38,38,0.25); }
+        .gantt-track { position: relative; width: 100%; height: 40px; min-height: 40px; box-sizing: border-box; border-radius: 4px; background: repeating-linear-gradient(90deg, transparent, transparent calc(25% - 2px), #e2e8f0 2px, #e2e8f0 25%); overflow: visible; }
+        .gantt-track .gantt-bar { position: absolute; height: 18px; border-radius: 4px; top: 50%; transform: translateY(-50%); box-sizing: border-box; min-width: 24px; display: block; z-index: 3; text-decoration: none; }
+        .gantt-track .gantt-bar span { display: block; height: 100%; overflow: hidden; }
+        .gantt-bar-disponivel { background: #6b7280; border: 1px solid #4b5563; }
+        .gantt-bar-em_andamento { background: #3b82f6; border: 1px solid #1d4ed8; }
+        .gantt-bar-atrasada { background: #ef4444; border: 1px solid #dc2626; }
+        .gantt-bar-concluida { background: #10b981; border: 1px solid #059669; }
+        .gantt-bar-cancelada { background: #b45309; border: 1px solid #92400e; }
+        .gantt-legend { margin: 16px; padding: 10px 14px; background: #f8fafc; border-radius: 6px; font-size: 12px; color: #475569; display: flex; gap: 20px; flex-wrap: wrap; }
+        .gantt-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .gantt-legend .swatch { width: 16px; height: 10px; border-radius: 2px; }
+        .gantt-legend .swatch-disponivel { background: #6b7280; }
+        .gantt-legend .swatch-em_andamento { background: #3b82f6; }
+        .gantt-legend .swatch-atrasada { background: #ef4444; }
+        .gantt-legend .swatch-concluida { background: #10b981; }
+        .gantt-legend .swatch-cancelada { background: #b45309; }
+        .gantt-legend .swatch-hoje { width: 2px; height: 12px; background: #dc2626; display: inline-block; }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .empty-cronograma { padding: 40px 16px; text-align: center; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-chart-gantt"></i> Plano de trabalho – Propostas técnicas</h1>
+                <p>Cronograma físico por período previsto. Clique numa barra para abrir o detalhe.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'producao:propostas_tecnicas' %}" class="btn btn-primary"><i class="fas fa-list"></i> Lista de Propostas</a>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </div>
+
+        <p class="help-text">Propostas no período por <strong>data prevista de início e fim</strong>. Use os filtros e clique em Aplicar.</p>
+
+        <form method="get" class="filter-row">
+            <label for="data_inicio">De:</label>
+            <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}" aria-label="Data início">
+            <label for="data_fim">Até:</label>
+            <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}" aria-label="Data fim">
+            <label for="status">Status:</label>
+            <select name="status" id="status" aria-label="Filtrar por status">
+                <option value="">Todos</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if filtro_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <label for="estagio">Estágio:</label>
+            <select name="estagio" id="estagio" aria-label="Filtrar por estágio">
+                <option value="">Todos</option>
+                {% for value, label in estagio_choices %}
+                <option value="{{ value }}" {% if filtro_estagio == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <label for="cliente">Cliente:</label>
+            <input type="text" name="cliente" id="cliente" value="{{ filtro_cliente }}" placeholder="Buscar por cliente..." aria-label="Cliente">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+        </form>
+
+        <div class="gantt-box">
+            <div class="gantt-header">
+                <h2>{{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }}</h2>
+                <p>{{ cronograma_propostas|length }} proposta(s) no período</p>
+            </div>
+            <div class="gantt-body">
+                <div class="gantt-rows">
+                    <div class="gantt-row">
+                        <div class="gantt-row-label">Data</div>
+                        <div class="gantt-row-scale">
+                            <div class="gantt-scale-inner" {% if has_hoje_line %}data-hoje-pct="{{ gantt_hoje_pct }}"{% endif %}>
+                                {% for t in gantt_ticks %}
+                                <span class="gantt-tick gantt-tick-{% if forloop.first %}first{% elif forloop.last %}last{% else %}mid{% endif %}" data-pct="{{ t.pct }}">{{ t.date|date:"d/m" }}</span>
+                                {% endfor %}
+                                {% if has_hoje_line %}
+                                <span class="gantt-hoje gantt-hoje-line"></span>
+                                <span class="gantt-hoje-label">Hoje</span>
+                                {% endif %}
+            </div>
+            </div>
+        </div>
+                    {% for p in cronograma_propostas %}
+                    <div class="gantt-row">
+                        <div class="gantt-row-label">{{ p.label }}</div>
+                        <div class="gantt-row-scale">
+                            <div class="gantt-track" {% if has_hoje_line %}data-hoje-pct="{{ gantt_hoje_pct }}"{% endif %}>
+                                {% if has_hoje_line %}
+                                <span class="gantt-hoje gantt-hoje-line"></span>
+                                {% endif %}
+                                <a href="{{ p.url }}" class="gantt-bar gantt-bar-{{ p.status_slug }}" style="{{ p.style }}" title="{{ p.label }} · {{ p.data_inicio|date:'d/m/Y' }} – {{ p.data_fim|date:'d/m/Y' }}"><span aria-hidden="true">&nbsp;</span></a>
+            </div>
+        </div>
+    </div>
+                    {% empty %}
+                    <div class="gantt-row">
+                        <div class="gantt-row-label">—</div>
+                        <div class="gantt-row-scale gantt-row-scale--empty">
+                            <p class="empty-cronograma"><i class="fas fa-info-circle"></i> Nenhuma proposta no período com os filtros selecionados.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+            </div>
+                <div class="gantt-legend">
+                    <span><span class="swatch swatch-disponivel"></span> Disponível</span>
+                    <span><span class="swatch swatch-em_andamento"></span> Em andamento</span>
+                    <span><span class="swatch swatch-atrasada"></span> Atrasada</span>
+                    <span><span class="swatch swatch-concluida"></span> Concluída</span>
+                    <span><span class="swatch swatch-cancelada"></span> Cancelada</span>
+                    <span><span class="swatch swatch-hoje"></span> Hoje</span>
+            </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        function layoutGanttScale(){
+            document.querySelectorAll('.gantt-scale-inner').forEach(function(scale){
+                var w = scale.offsetWidth;
+                if (!w) return;
+                scale.querySelectorAll('.gantt-tick').forEach(function(el){
+                    var pct = parseFloat(el.getAttribute('data-pct'));
+                    if (!isNaN(pct)) el.style.left = (pct / 100 * w) + 'px';
+                });
+                var hojePct = scale.getAttribute('data-hoje-pct');
+                if (hojePct !== null && hojePct !== ''){
+                    var px = parseFloat(hojePct) / 100 * w;
+                    scale.querySelectorAll('.gantt-hoje-line, .gantt-hoje-label').forEach(function(el){ el.style.left = px + 'px'; });
+                }
+            });
+            document.querySelectorAll('.gantt-track[data-hoje-pct]').forEach(function(track){
+                var w = track.offsetWidth;
+                if (!w) return;
+                var px = parseFloat(track.getAttribute('data-hoje-pct')) / 100 * w;
+                track.querySelectorAll('.gantt-hoje-line').forEach(function(el){ el.style.left = px + 'px'; });
+            });
+        }
+        function runLayout(){ requestAnimationFrame(function(){ requestAnimationFrame(layoutGanttScale); }); }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runLayout); else runLayout();
+        window.addEventListener('resize', runLayout);
+    })();
+    </script>
+</body>
+</html>

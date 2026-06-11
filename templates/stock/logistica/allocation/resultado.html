@@ -1,0 +1,98 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Resultado Alocação{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current='Resultado' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                    Resultado da Alocação
+                </h1>
+                <p class="page-subtitle">{{ rastreamento.codigo_rastreamento }} — {{ rastreamento.destinatario_nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn btn-primary">
+                    <i class="fas fa-eye" aria-hidden="true"></i> Ver rastreamento
+                </a>
+                <a href="{% url 'stock:allocation:single' rastreamento.id %}" class="btn btn-secondary">
+                    <i class="fas fa-redo" aria-hidden="true"></i> Recalcular
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-star" aria-hidden="true"></i> Recomendação</h2>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--4">
+                <div class="info-item">
+                    <span class="info-label">Opção</span>
+                    <span class="info-value">
+                        {% if resultado.opcao_recomendada == 'VEICULO_INTERNO' %}
+                            <span class="badge badge-success">Veículo interno</span>
+                        {% else %}
+                            <span class="badge badge-info">Transportadora</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Custo estimado</span>
+                    <span class="info-value">{{ resultado.custo_estimado|floatformat:2 }} MT</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">SLA</span>
+                    <span class="info-value">{{ resultado.sla_estimado_dias }} dia(s)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Pontuação</span>
+                    <span class="info-value">{{ resultado.pontuacao|floatformat:2 }}</span>
+                </div>
+            </div>
+            <p class="text-muted stock-u-mt-16">{{ resultado.motivo }}</p>
+        </div>
+    </div>
+
+    {% if resultado.alternativas %}
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-list" aria-hidden="true"></i> Alternativas analisadas</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Nome</th>
+                        <th>Custo</th>
+                        <th>SLA</th>
+                        <th>Pontuação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alt in resultado.alternativas %}
+                    <tr>
+                        <td>{{ alt.tipo }}</td>
+                        <td>{{ alt.nome }}</td>
+                        <td>{{ alt.custo|floatformat:2 }} MT</td>
+                        <td>{{ alt.sla_dias }} dia(s)</td>
+                        <td>{{ alt.pontuacao|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

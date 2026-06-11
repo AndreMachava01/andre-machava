@@ -1,218 +1,158 @@
-{% extends 'base_admin.html' %}
-
-{% block title %}Gestão de Stock e Logística - Sistema de Gestão{% endblock %}
-
-{% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Gestão de Stock e Logística</span>
-    </nav>
-    
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-content">
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <title>Stock e Logística - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modulo-operacional.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
             <div>
-                <h1 class="page-title">
-                    <i class="fas fa-warehouse"></i>
-                    Gestão de Stock e Logística
-                </h1>
-                <p class="page-subtitle">
-                    Sistema integrado de gestão de inventário, transporte e distribuição
-                </p>
+                <h1><i class="fas fa-warehouse"></i> Stock e Logística</h1>
+                <p>Inventário, compras, transferências e transporte</p>
             </div>
             <div class="header-actions">
-                <a href="/stock/dashboard_executivo/" class="btn btn-primary">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard Executivo
-                </a>
+                <a href="{% url 'stock:dashboard_executivo' %}" class="btn btn-primary"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
             </div>
         </div>
-    </div>
-    
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-box"></i>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_produtos|default:"0" }}</div>
+                <div class="lbl">Produtos ativos</div>
             </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_produtos|default:"0" }}</h3>
-                <p class="stat-label">Produtos Ativos</p>
+            <div class="stat-box">
+                <div class="num">{{ total_materiais|default:"0" }}</div>
+                <div class="lbl">Materiais ativos</div>
             </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-cogs"></i>
+            <div class="stat-box">
+                <div class="num">{{ total_fornecedores|default:"0" }}</div>
+                <div class="lbl">Fornecedores</div>
             </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_materiais|default:"0" }}</h3>
-                <p class="stat-label">Materiais Ativos</p>
+            <div class="stat-box">
+                <div class="num">{{ total_movimentos|default:"0" }}</div>
+                <div class="lbl">Movimentos (30 dias)</div>
             </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-truck"></i>
+            <div class="stat-box">
+                <div class="num">{{ notificacoes_nao_lidas|default:"0" }}/{{ total_notificacoes|default:"0" }}</div>
+                <div class="lbl">Notificações (não lidas/total)</div>
             </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_fornecedores|default:"0" }}</h3>
-                <p class="stat-label">Fornecedores</p>
-            </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-exchange-alt"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_movimentos|default:"0" }}</h3>
-                <p class="stat-label">Movimentações</p>
+            <div class="stat-box">
+                <div class="num">{{ rastreamentos_em_transito|default:"0" }}</div>
+                <div class="lbl">Entregas em trânsito</div>
             </div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-bell"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_notificacoes|default:"0" }}</h3>
-                <p class="stat-label">Notificações</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <a href="/stock/produtos/" class="btn btn-primary">
-            <i class="fas fa-box"></i>
-            Produtos
-        </a>
-        <a href="/stock/materiais/" class="btn btn-secondary">
-            <i class="fas fa-cogs"></i>
-            Materiais
-        </a>
-        <a href="/stock/fornecedores/" class="btn btn-secondary">
-            <i class="fas fa-truck"></i>
-            Fornecedores
-        </a>
-        <a href="/stock/categorias/" class="btn btn-secondary">
-            <i class="fas fa-tags"></i>
-            Categorias
-        </a>
-        <a href="/stock/movimentos/" class="btn btn-secondary">
-            <i class="fas fa-exchange-alt"></i>
-            Movimentações
-        </a>
-        <a href="/stock/requisicoes/" class="btn btn-secondary">
-            <i class="fas fa-clipboard-check"></i>
-            Requisições
-        </a>
-        <a href="/stock/requisicoes/ordens-compra/" class="btn btn-secondary">
-            <i class="fas fa-file-invoice"></i>
-            Ordens de Compra
-        </a>
-        <a href="/stock/inventario/" class="btn btn-secondary">
-            <i class="fas fa-clipboard-list"></i>
-            Inventário
-        </a>
-        <a href="/stock/transferencias/" class="btn btn-secondary">
-            <i class="fas fa-exchange-alt"></i>
-            Transferências
-        </a>
-        <a href="/stock/notificacoes/" class="btn btn-secondary">
-            <i class="fas fa-bell"></i>
-            Notificações
-        </a>
-        <a href="/stock/alertas/" class="btn btn-secondary">
-            <i class="fas fa-exclamation-triangle"></i>
-            Alertas
-        </a>
-        <a href="/stock/relatorios/" class="btn btn-secondary">
-            <i class="fas fa-chart-bar"></i>
-            Relatórios
-        </a>
-        <a href="/stock/logistica/" class="btn btn-primary">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-    </div>
-    
-    <!-- Stock Status -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-chart-pie"></i>
-                Status do Stock e Logística
-            </h3>
-        </div>
-        <div class="card-body">
+
+        <div class="section">
+            <h2><i class="fas fa-exclamation-triangle"></i> Alertas</h2>
             <div class="row">
-                <!-- Stock -->
                 <div class="col-6">
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Produtos com Stock Baixo</div>
-                            <div class="alert-message">{{ produtos_baixo_estoque|default:"0" }} produtos precisam de reposição</div>
+                        <i class="fas fa-box"></i>
+                        <div>
+                            <div class="alert-title">Stock baixo — produtos</div>
+                            <div class="alert-message">{{ produtos_baixo_estoque|default:"0" }} precisam de reposição</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-cogs"></i>
+                        <div>
+                            <div class="alert-title">Stock baixo — materiais</div>
+                            <div class="alert-message">{{ materiais_baixo_estoque|default:"0" }} precisam de reposição</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="alert alert-primary">
+                        <i class="fas fa-shipping-fast"></i>
+                        <div>
+                            <div class="alert-title">Em trânsito</div>
+                            <div class="alert-message">{{ rastreamentos_em_transito|default:"0" }} entregas</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Materiais com Stock Baixo</div>
-                            <div class="alert-message">{{ materiais_baixo_estoque|default:"0" }} materiais precisam de reposição</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Logística -->
-            <div class="row" style="margin-top: 15px;">
-                <div class="col-6">
-                    <div class="alert alert-primary">
-                        <i class="fas fa-shipping-fast"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Entregas em Trânsito</div>
-                            <div class="alert-message">{{ rastreamentos_em_transito|default:"0" }} entregas em andamento</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="alert alert-warning">
                         <i class="fas fa-clock"></i>
-                        <div class="alert-content">
-                            <div class="alert-title">Entregas Pendentes</div>
-                            <div class="alert-message">{{ entregas_pendentes|default:"0" }} entregas aguardando (7 dias)</div>
+                        <div>
+                            <div class="alert-title">Pendentes (7 dias)</div>
+                            <div class="alert-message">{{ entregas_pendentes|default:"0" }} entregas</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<script>
-// Animate cards on load
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.stat-card, .card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-</script>
-{% endblock %}
+        <div class="section">
+            <h2><i class="fas fa-link"></i> Acesso rápido</h2>
+            <div class="modules-grid">
+                <a href="{% url 'stock:produtos' %}" class="module-card">
+                    <h3><i class="fas fa-box"></i> Produtos</h3>
+                    <p>Catálogo e stock por sucursal</p>
+                </a>
+                <a href="{% url 'stock:materiais' %}" class="module-card">
+                    <h3><i class="fas fa-cogs"></i> Materiais</h3>
+                    <p>Materiais e consumíveis</p>
+                </a>
+                <a href="{% url 'stock:fornecedores' %}" class="module-card">
+                    <h3><i class="fas fa-truck"></i> Fornecedores</h3>
+                    <p>Parceiros de compra</p>
+                </a>
+                <a href="{% url 'stock:categorias' %}" class="module-card">
+                    <h3><i class="fas fa-tags"></i> Categorias</h3>
+                    <p>Classificação de itens</p>
+                </a>
+                <a href="{% url 'stock:movimentos' %}" class="module-card">
+                    <h3><i class="fas fa-exchange-alt"></i> Movimentações</h3>
+                    <p>Entradas e saídas</p>
+                </a>
+                <a href="{% url 'stock:requisicoes:list' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-check"></i> Requisições</h3>
+                    <p>Pedidos internos</p>
+                </a>
+                <a href="{% url 'stock:requisicoes:ordens_compra_list' %}" class="module-card">
+                    <h3><i class="fas fa-file-invoice"></i> Ordens de compra</h3>
+                    <p>Compras a fornecedores</p>
+                </a>
+                <a href="{% url 'stock:inventario:list' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-list"></i> Inventário</h3>
+                    <p>Contagens e ajustes</p>
+                </a>
+                <a href="{% url 'stock:transferencias:list' %}" class="module-card">
+                    <h3><i class="fas fa-random"></i> Transferências</h3>
+                    <p>Entre sucursais</p>
+                </a>
+                <a href="{% url 'stock:notificacoes_list' %}" class="module-card">
+                    <h3><i class="fas fa-bell"></i> Notificações</h3>
+                    <p>Avisos do módulo</p>
+                </a>
+                <a href="{% url 'stock:alertas_gerenciar' %}" class="module-card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Alertas</h3>
+                    <p>Stock mínimo e regras</p>
+                </a>
+                <a href="{% url 'stock:relatorios' %}" class="module-card">
+                    <h3><i class="fas fa-chart-bar"></i> Relatórios</h3>
+                    <p>Exportação e análise</p>
+                </a>
+                <a href="{% url 'stock:logistica:main' %}" class="module-card">
+                    <h3><i class="fas fa-truck"></i> Logística</h3>
+                    <p>Transporte e entregas</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

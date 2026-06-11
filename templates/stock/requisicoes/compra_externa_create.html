@@ -3,29 +3,25 @@
 
 {% block title %}Nova Requisição de Compra Externa{% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="modern-container">
-    <!-- Header -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <i class="fas fa-shopping-cart me-2"></i>Nova Requisição de Compra Externa
-            </h1>
-            <div class="hero-actions">
-                <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn-modern btn-secondary-modern">
-                    <i class="fas fa-arrow-left"></i> Voltar ao Stock Baixo
+<div class="container stock-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}">Stock baixo</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Nova compra externa</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-shopping-cart" aria-hidden="true"></i> Nova compra externa</h1>
+                <p class="page-subtitle">Requisição de compra a fornecedor externo</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
                 </a>
             </div>
         </div>

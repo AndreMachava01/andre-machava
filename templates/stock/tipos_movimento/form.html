@@ -1,0 +1,74 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if tipo %}Editar{% else %}Novo{% endif %} tipo de movimento{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:tipos_movimento' %}">Tipos de movimento</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{% if tipo %}Editar{% else %}Novo{% endif %}</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-tags"></i> {% if tipo %}Editar{% else %}Novo{% endif %} tipo de movimento
+                </h1>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:tipos_movimento' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-section">
+                <h5><i class="fas fa-tags" aria-hidden="true"></i> Dados do tipo</h5>
+                <div class="form-grid form-grid--2">
+                    <div class="form-field form-field--full">
+                        <label class="form-label required-field" for="nome">Nome</label>
+                        <input type="text" name="nome" id="nome" class="form-control" value="{% if tipo %}{{ tipo.nome }}{% endif %}" required>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <label class="form-label" for="descricao">Descrição</label>
+                        <textarea name="descricao" id="descricao" class="form-control" rows="3">{% if tipo %}{{ tipo.descricao }}{% endif %}</textarea>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-check-label stock-form-check-inline">
+                            <input type="checkbox" name="aumenta_estoque" {% if tipo and tipo.aumenta_estoque %}checked{% endif %}>
+                            Aumenta stock (entrada)
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-check-label stock-form-check-inline">
+                            <input type="checkbox" name="ativo" {% if not tipo or tipo.ativo %}checked{% endif %}>
+                            Ativo
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:tipos_movimento' %}" class="btn btn-secondary">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save" aria-hidden="true"></i> {% if tipo %}Atualizar{% else %}Guardar{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

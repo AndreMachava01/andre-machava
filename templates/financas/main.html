@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize l10n static %}
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row input[type="date"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .stat-box.saldo .num { color: #0d9488; }
+        .stat-box.saldo.negativo .num { color: #dc2626; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .module-card { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px; text-decoration: none; color: #333; display: block; transition: all 0.2s; }
+        .module-card:hover { background: #fef3c7; text-decoration: none; color: #333; }
+        .module-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #b45309; }
+        .module-card p { margin: 0; font-size: 13px; color: #666; }
+        .charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+        .charts-row .chart-wrap { max-width: none; margin-bottom: 0; min-height: 220px; }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } .charts-row .chart-wrap { margin-bottom: 24px; } .charts-row .chart-wrap:last-child { margin-bottom: 0; } }
+        .msg-error { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .chart-canvas-wrap { position: relative; height: 200px; }
+        .link-inherit { color: inherit; text-decoration: none; }
+        .table-desdobramento { font-size: 11px; color: #6b7280; margin-top: 4px; }
+        .section-note { font-size: 12px; color: #6b7280; margin-top: 8px; }
+        .module-card.module-card-danger { border-left: 4px solid #dc2626; position: relative; }
+        .module-card.module-card-success { border-left: 4px solid #059669; position: relative; }
+        .module-card.module-card-info { border-left: 4px solid #2563eb; }
+        .module-card.module-card-teal { border-left: 4px solid #0d9488; }
+        .badge-pill { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-pill.badge-danger { background: #dc2626; color: white; }
+        .badge-pill.badge-success { background: #059669; color: white; }
+    </style>
+    <script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-coins"></i> {{ title }}</h1>
+                <p>Visão consolidada de receitas e despesas de todos os departamentos</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" class="filter-form">
+                <label for="data_inicio">De:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+                <label for="data_fim">Até:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_receitas|floatformat:2 }} MT</div>
+                <div class="lbl">Total Receitas (Prestação de Serviços + Logística)</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ total_despesas|floatformat:2 }} MT</div>
+                <div class="lbl">Total Despesas</div>
+            </div>
+            <div class="stat-box saldo {% if saldo < 0 %}negativo{% endif %}">
+                <div class="num">{{ saldo|floatformat:2 }} MT</div>
+                <div class="lbl">Saldo do período</div>
+            </div>
+        </div>
+
+        <div class="section charts-row">
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-bar"></i> Receitas vs Despesas</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartFinancas"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartFinancas');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var receitas = {{ chart_receitas|default:0 }};
+                        var despesas = {{ chart_despesas|default:0 }};
+                        {% endlocalize %}
+                        var maxVal = Math.max(receitas, despesas, 1);
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Receitas', 'Despesas'],
+                                datasets: [{
+                                    label: 'MT',
+                                    data: [receitas, despesas],
+                                    backgroundColor: ['rgba(180, 83, 9, 0.7)', 'rgba(107, 114, 128, 0.7)'],
+                                    borderColor: ['#b45309', '#6b7280'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, max: maxVal * 1.1 }
+                                },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Receitas por origem</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartReceitasOrigem"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartReceitasOrigem');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var vendas = {{ receitas_vendas|default:0 }};
+                        var logistica = {{ receitas_logistica|default:0 }};
+                        {% endlocalize %}
+                        if (vendas + logistica <= 0) { vendas = 1; logistica = 0; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Prestação de Serviços (OS)', 'Logística'],
+                                datasets: [{
+                                    data: [vendas, logistica],
+                                    backgroundColor: ['rgba(180, 83, 9, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Despesas por origem</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartDespesasOrigem"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartDespesasOrigem');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var compras = {{ despesas_compras|default:0 }};
+                        var rh = {{ despesas_rh|default:0 }};
+                        var logistica = {{ despesas_logistica|default:0 }};
+                        {% endlocalize %}
+                        if (compras + rh + logistica <= 0) { compras = 1; rh = 0; logistica = 0; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Compras', 'RH', 'Logística'],
+                                datasets: [{
+                                    data: [compras, rh, logistica],
+                                    backgroundColor: ['rgba(107, 114, 128, 0.8)', 'rgba(75, 85, 99, 0.8)', 'rgba(55, 65, 81, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-chart-pie"></i> Por origem</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Origem</th>
+                        <th class="num">Receitas (MT)</th>
+                        <th class="num">Despesas (MT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="{% url 'financas:receitas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Vendas" class="link-inherit">Prestação de Serviços (ordens de serviço OS)</a></td>
+                        <td class="num"><a href="{% url 'financas:receitas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Vendas">{{ receitas_vendas|floatformat:2 }}</a></td>
+                        <td class="num">—</td>
+                    </tr>
+                    <tr>
+                        <td><a href="{% url 'financas:receitas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Logística" class="link-inherit">Logística (faturamento / custos)</a></td>
+                        <td class="num"><a href="{% url 'financas:receitas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Logística">{{ receitas_logistica|floatformat:2 }}</a></td>
+                        <td class="num"><a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Logística">{{ despesas_logistica|floatformat:2 }}</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Compras" class="link-inherit">Compras</a></td>
+                        <td class="num">—</td>
+                        <td class="num"><a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=Compras">{{ despesas_compras|floatformat:2 }}</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=RH" class="link-inherit">RH (folha + tributações)</a>
+                            <div class="table-desdobramento">
+                                Desdobramento: Folha {{ despesas_rh_folha|floatformat:0 }} | Treinamentos {{ despesas_rh_treinamento|floatformat:0 }} | Empreitadas (trab. concluídos) {{ despesas_rh_empreitada|floatformat:0 }}
+                            </div>
+                        </td>
+                        <td class="num">—</td>
+                        <td class="num"><a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&origem=RH">{{ despesas_rh|floatformat:2 }}</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="section-note">
+                <em>Receitas</em> = valores contabilizados (lançamentos 71.01 e 72.01 no período).
+                <em>Compras</em> = soma dos valores das ordens de compra com data de criação no período (não depende dos lançamentos de recepção).
+                <em>RH</em> = Folha (total encargos, mês ref. no período) + Treinamentos concluídos no período + Empreitadas (trabalhos por tarefa concluídos). <strong>Não inclui</strong> parcelas à assinatura de empreitada (adiantamentos): essas entram em Contas a pagar e, ao confirmar, geram lançamentos 62.03+33. Se RH = 0, verifique o intervalo de datas e se existem folhas com status Calculada/Fechada/Paga.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-link"></i> Acesso rápido</h2>
+            <div class="modules-grid">
+                <a href="{% url 'financas:contas_pagar' %}" class="module-card module-card-danger">
+                    <h3><i class="fas fa-money-check-alt"></i> Contas a pagar</h3>
+                    <p>Pendentes de confirmação (empreitadas, etc.)</p>
+                    {% if contas_pagar_count|default:0 > 0 %}
+                    <span class="badge-pill badge-danger">{{ contas_pagar_count }} pendente(s) · {{ contas_pagar_total|floatformat:0 }} MT</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'financas:contas_receber' %}" class="module-card module-card-success">
+                    <h3><i class="fas fa-hand-holding-usd"></i> Contas a receber</h3>
+                    <p>Pendentes de confirmação (vendas, etc.)</p>
+                    {% if contas_receber_count|default:0 > 0 %}
+                    <span class="badge-pill badge-success">{{ contas_receber_count }} pendente(s) · {{ contas_receber_total|floatformat:0 }} MT</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'financas:tesouraria' %}" class="module-card module-card-info">
+                    <h3><i class="fas fa-university"></i> Tesouraria</h3>
+                    <p>Cobranças e pagamentos (26 / 22 / 32)</p>
+                </a>
+                <a href="{% url 'financas:cronograma' %}" class="module-card module-card-teal">
+                    <h3><i class="fas fa-chart-gantt"></i> Cronograma físico financeiro</h3>
+                    <p>Contas a receber e a pagar por data de vencimento</p>
+                </a>
+                <a href="{% url 'financas:receitas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-arrow-down"></i> Receitas</h3>
+                    <p>Listagem detalhada por origem</p>
+                </a>
+                <a href="{% url 'financas:despesas' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-arrow-up"></i> Despesas</h3>
+                    <p>Listagem detalhada por origem</p>
+                </a>
+                <a href="{% url 'financas:relatorio' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-file-alt"></i> Relatório</h3>
+                    <p>Resumo por período</p>
+                </a>
+                <a href="{% url 'financas:plano_contas' %}" class="module-card">
+                    <h3><i class="fas fa-list-alt"></i> Plano de Contas</h3>
+                    <p>Contas contabilísticas (conformidade)</p>
+                </a>
+                <a href="{% url 'financas:movimentos' %}" class="module-card">
+                    <h3><i class="fas fa-book"></i> Movimentos</h3>
+                    <p>Livro de lançamentos e rasto de auditoria</p>
+                </a>
+                <a href="{% url 'financas:balanco_dre' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-balance-scale"></i> Balanço e DRE</h3>
+                    <p>Demonstração de resultados e balanço por período</p>
+                </a>
+                <a href="{% url 'financas:razao' %}" class="module-card">
+                    <h3><i class="fas fa-book-open"></i> Livro razão</h3>
+                    <p>Lançamentos por conta</p>
+                </a>
+                <a href="{% url 'financas:importar_totais' %}" class="module-card">
+                    <h3><i class="fas fa-file-import"></i> Importar totais</h3>
+                    <p>Registar totais do período no livro</p>
+                </a>
+                <a href="{% url 'financas:iva' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-percent"></i> Relatório IVA</h3>
+                    <p>Base tributável e IVA por período</p>
+                </a>
+                <a href="{% url 'financas:numeracao' %}" class="module-card">
+                    <h3><i class="fas fa-sort-numeric-down"></i> Numeração</h3>
+                    <p>Controlo sequencial de facturas/recibos</p>
+                </a>
+                <a href="{% url 'financas:irpc' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}" class="module-card">
+                    <h3><i class="fas fa-calculator"></i> Relatório IRPC</h3>
+                    <p>Resultado e IRPC estimado por período</p>
+                </a>
+                <a href="{% url 'financas:retencao' %}" class="module-card">
+                    <h3><i class="fas fa-archive"></i> Retenção</h3>
+                    <p>Prazo de conservação de documentos e alertas</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

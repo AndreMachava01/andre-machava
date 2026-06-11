@@ -197,7 +197,7 @@ class WebhookService:
             
             # Atualizar para entregue
             rastreamento.status_atual = 'ENTREGUE'
-            rastreamento.data_entrega = data.get('delivery_date')
+            rastreamento.data_entrega_realizada = data.get('delivery_date')
             rastreamento.save()
             
             # Criar evento

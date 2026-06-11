@@ -1,0 +1,563 @@
+{% load rh_filters %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Recebimento - {{ ordem.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        
+        .header-info h1 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header-info .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .item-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .item-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .item-code {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .item-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .form-help {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .form-help i {
+            color: #8b5cf6;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .help-section {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .help-title {
+            color: #92400e;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-content {
+            color: #78350f;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .help-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .help-content li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <div class="header-info">
+                <h1>
+                    <i class="fas fa-check-circle" style="color: #8b5cf6;"></i>
+                    Confirmar Recebimento de Material
+                </h1>
+                <p class="subtitle">Ordem: {{ ordem.codigo }} - Requisição: {{ requisicao.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Informações da Ordem e Requisição -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                Informações
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Ordem de Produção</div>
+                    <div class="info-value">{{ ordem.codigo }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Código da Requisição</div>
+                    <div class="info-value">{{ requisicao.codigo }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Sucursal Origem</div>
+                    <div class="info-value">{{ requisicao.sucursal_origem.nome }}</div>
+                </div>
+                
+                {% if requisicao.data_aprovacao %}
+                <div class="info-item">
+                    <div class="info-label">Data de Aprovação</div>
+                    <div class="info-value">{{ requisicao.data_aprovacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i>
+                Confirmar Quantidades Recebidas
+            </div>
+            <form method="post" id="confirmForm">
+                {% csrf_token %}
+                
+                {% for item_info in itens_com_info %}
+                <div class="item-card">
+                    <div class="item-header">
+                        <div class="item-name">{{ item_info.item_requisicao.item.nome }}</div>
+                        <div class="item-code">{{ item_info.item_requisicao.item.codigo }}</div>
+                    </div>
+                    
+                    <div class="item-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Quantidade Solicitada</div>
+                            <div class="detail-value">{{ item_info.quantidade_solicitada }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Quantidade Atendida pelo Armazém</div>
+                            <div class="detail-value">
+                                <span class="badge {% if item_info.quantidade_atendida == 0 %}badge-danger{% elif item_info.quantidade_atendida < item_info.quantidade_solicitada %}badge-warning{% else %}badge-success{% endif %}">
+                                    {{ item_info.quantidade_atendida }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Stock Disponível</div>
+                            <div class="detail-value">
+                                <span class="badge {% if item_info.stock_disponivel >= item_info.quantidade_atendida %}badge-success{% elif item_info.stock_disponivel > 0 %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ item_info.stock_disponivel }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantidade_recebida_{{ item_info.item_requisicao.id }}" class="form-label">
+                            <i class="fas fa-boxes"></i>
+                            Quantidade Recebida <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="quantidade_recebida_{{ item_info.item_requisicao.id }}" 
+                            name="quantidade_recebida_{{ item_info.item_requisicao.id }}" 
+                            class="form-control" 
+                            min="0" 
+                            max="{{ item_info.quantidade_atendida }}"
+                            value="{{ item_info.quantidade_atendida }}"
+                            required
+                            data-atendida="{{ item_info.quantidade_atendida }}"
+                            data-stock="{{ item_info.stock_disponivel }}"
+                        >
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> 
+                            Confirme a quantidade que você recebeu do armazém (máximo: {{ item_info.quantidade_atendida }} atendida pelo armazém{% if item_info.stock_disponivel < item_info.quantidade_atendida %}, mas stock atual: {{ item_info.stock_disponivel }}{% endif %})
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-check-double"></i>
+                        Confirmar Recebimento
+                    </button>
+                    
+                    <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Ajuda -->
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-lightbulb"></i>
+                Instruções Importantes
+            </div>
+            <div class="help-content">
+                <ul>
+                    <li><strong>Quantidade Recebida:</strong> Confirme a quantidade que você realmente recebeu do armazém. Esta quantidade não pode ser maior que a quantidade atendida pelo armazém.</li>
+                    <li><strong>Stock Disponível:</strong> Se o armazém já entregou o material, você pode confirmar o recebimento mesmo que o stock atual seja menor (pode ter sido consumido por outra requisição). O sistema considera a quantidade entregue pelo armazém.</li>
+                    <li><strong>Confirmação:</strong> Após confirmar o recebimento, o sistema irá reduzir o stock e marcar a requisição como atendida.</li>
+                    <li><strong>Atenção:</strong> Esta ação é irreversível. Certifique-se de que as quantidades estão corretas antes de confirmar.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantidadeInputs = document.querySelectorAll('input[name^="quantidade_recebida_"]');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Validação em tempo real
+        quantidadeInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const atendida = parseInt(this.getAttribute('data-atendida'));
+                const stock = parseInt(this.getAttribute('data-stock'));
+                const currentValue = parseInt(this.value) || 0;
+                
+                // Limitar ao máximo atendido pelo armazém
+                if (currentValue > atendida) {
+                    this.value = atendida;
+                    alert(`A quantidade não pode ser maior que ${atendida} (atendida pelo armazém).`);
+                    return;
+                }
+                
+                if (currentValue < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+        
+        // Validação no submit
+        document.getElementById('confirmForm').addEventListener('submit', function(e) {
+            let hasError = false;
+            let totalRecebido = 0;
+            
+            quantidadeInputs.forEach(input => {
+                const atendida = parseInt(input.getAttribute('data-atendida'));
+                const stock = parseInt(input.getAttribute('data-stock'));
+                const value = parseInt(input.value) || 0;
+                
+                if (value > atendida) {
+                    e.preventDefault();
+                    alert(`A quantidade para ${input.closest('.item-card').querySelector('.item-name').textContent} não pode ser maior que ${atendida} (atendida pelo armazém).`);
+                    input.focus();
+                    hasError = true;
+                    return;
+                }
+                
+                // IMPORTANTE: Se o armazém já entregou, permitir receber até a quantidade entregue
+                // O stock pode ter sido consumido por outra requisição entre a entrega e o recebimento
+                // Mas se o armazém entregou, devemos permitir o recebimento
+                // A validação final será feita no servidor, que considerará a quantidade entregue
+                if (value > atendida) {
+                    e.preventDefault();
+                    alert(`A quantidade para ${input.closest('.item-card').querySelector('.item-name').textContent} não pode ser maior que ${atendida} (atendida pelo armazém).`);
+                    input.focus();
+                    hasError = true;
+                    return;
+                }
+                
+                if (value > 0) {
+                    totalRecebido++;
+                }
+            });
+            
+            if (!hasError && totalRecebido === 0) {
+                e.preventDefault();
+                alert('Por favor, confirme pelo menos uma quantidade recebida.');
+                return false;
+            }
+            
+            if (!hasError) {
+                return confirm('Tem certeza que deseja confirmar o recebimento? Esta ação irá reduzir o stock e não pode ser desfeita.');
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+

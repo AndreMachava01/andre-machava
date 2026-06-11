@@ -1,0 +1,405 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #10b981;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #ecfdf5;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #10b981;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-form input,
+        .filter-form select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .filter-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #10b981;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-agendada {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-em-andamento {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-pausada {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        .badge-concluida {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-view:hover {
+            background: #2563eb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #d1d5db;
+        }
+        .empty-state h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .pagination {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #374151;
+            font-size: 14px;
+        }
+        .pagination a:hover {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #059669;
+        }
+        .pagination .current {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-clipboard-list"></i> {{ title }}</h1>
+                <p>Orçamentos confirmados (pedidos). Os faturados estão em <a href="{% url 'vendas:faturamento' %}" style="color: #059669; font-weight: 500;">Faturamento</a>.</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Novo pedido (a partir de orçamento)</a>
+                <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_pedidos|default:0|intcomma }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ pedidos_agendados|default:0|intcomma }}</div>
+                <div class="stat-label">Agendados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ pedidos_em_andamento|default:0|intcomma }}</div>
+                <div class="stat-label">Em andamento</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ pedidos_concluidos|default:0|intcomma }}</div>
+                <div class="stat-label">Concluídos</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ pedidos_cancelados|default:0|intcomma }}</div>
+                <div class="stat-label">Cancelados</div>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <input type="text" name="q" placeholder="Buscar por código, cliente ou serviço..." value="{{ search_query }}">
+                <select name="status">
+                    <option value="">Todos os status</option>
+                    <option value="AGENDADA" {% if status_filter == 'AGENDADA' %}selected{% endif %}>Agendada</option>
+                    <option value="EM_ANDAMENTO" {% if status_filter == 'EM_ANDAMENTO' %}selected{% endif %}>Em andamento</option>
+                    <option value="PAUSADA" {% if status_filter == 'PAUSADA' %}selected{% endif %}>Pausada</option>
+                    <option value="CONCLUIDA" {% if status_filter == 'CONCLUIDA' %}selected{% endif %}>Concluída</option>
+                    <option value="CANCELADA" {% if status_filter == 'CANCELADA' %}selected{% endif %}>Cancelada</option>
+                </select>
+                <select name="servico">
+                    <option value="">Todos os serviços</option>
+                    {% for servico in servicos %}
+                        <option value="{{ servico.id }}" {% if servico_id == servico.id|stringformat:"s" %}selected{% endif %}>{{ servico.nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
+                {% if search_query or status_filter or servico_id %}
+                    <a href="{% url 'vendas:pedidos' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            {% if pedidos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Serviço</th>
+                        <th>Cliente</th>
+                        <th>Data agendada</th>
+                        <th>Equipe</th>
+                        <th>Status</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ordem in pedidos %}
+                    <tr>
+                        <td><strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></td>
+                        <td>
+                            {% if ordem.servicos_orcamento.all %}
+                                {% for servico_orc in ordem.servicos_orcamento.all|slice:":1" %}
+                                    {{ servico_orc.servico.nome }}{% if ordem.servicos_orcamento.count > 1 %} (+{{ ordem.servicos_orcamento.count|add:"-1" }} mais){% endif %}
+                                {% endfor %}
+                            {% elif ordem.servico %}
+                                {{ ordem.servico.nome }}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ordem.cliente %}
+                                {{ ordem.cliente.nome }}
+                            {% elif ordem.nome_cliente_pagamento %}
+                                {{ ordem.nome_cliente_pagamento }} (CASH)
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ordem.data_agendada|date:"d/m/Y H:i" }}</td>
+                        <td>{{ ordem.equipe|default:"-" }}</td>
+                        <td>
+                            {% if ordem.status == 'AGENDADA' %}
+                                <span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'EM_ANDAMENTO' %}
+                                <span class="badge badge-em-andamento">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'PAUSADA' %}
+                                <span class="badge badge-pausada">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'CONCLUIDA' %}
+                                <span class="badge badge-concluida">{{ ordem.get_status_display }}</span>
+                            {% elif ordem.status == 'CANCELADA' %}
+                                <span class="badge badge-cancelada">{{ ordem.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ordem.valor_total|floatformat:2 }} MT</td>
+                        <td>
+                            <a href="{% url 'vendas:pedido_detail' ordem.id %}" class="btn-view"><i class="fas fa-eye"></i> Ver</a>
+                            {% if not ordem.numero_impressao_fatura or ordem.numero_impressao_fatura == 0 %}
+                                <a href="{% url 'vendas:pedido_edit' ordem.id %}" class="btn-edit" style="background:#10b981;color:white;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:12px;"><i class="fas fa-edit"></i> Editar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}">&laquo;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}">Anterior</a>
+                {% endif %}
+                <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}">&raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>Nenhum pedido encontrado</h3>
+                <p>
+                    {% if search_query or status_filter or servico_id %}
+                        Tente ajustar os filtros de busca.
+                    {% else %}
+                        Os pedidos são ordens de serviço (código OS) geradas a partir de cotações aprovadas. Ainda não há pedidos no sistema.
+                    {% endif %}
+                </p>
+                <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-primary" style="margin-top: 15px;">
+                    <i class="fas fa-file-invoice"></i> Escolher orçamento para converter em pedido
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

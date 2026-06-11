@@ -1,0 +1,42 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{{ dimensao.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:catalogo_dimensoes_list' as catalogo_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Dimensões' breadcrumb_section_url=catalogo_list_url breadcrumb_current=dimensao.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-ruler-combined" aria-hidden="true"></i> {{ dimensao.nome }}</h1>
+                <p class="page-subtitle">{{ dimensao.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:catalogo_dimensoes_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                {% include 'stock/logistica/includes/_masterdata_detail_actions.html' with object=dimensao edit_url='stock:masterdata:catalogo_dimensoes_edit' delete_url='stock:masterdata:catalogo_dimensoes_delete' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Detalhes</h2>
+            <span class="badge badge-{% if dimensao.ativo %}success{% else %}secondary{% endif %}">{% if dimensao.ativo %}Activo{% else %}Inactivo{% endif %}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Categoria</span><span class="info-value">{{ dimensao.get_categoria_display }}</span></div>
+                <div class="info-item"><span class="info-label">Comprimento</span><span class="info-value">{{ dimensao.comprimento_cm }} cm</span></div>
+                <div class="info-item"><span class="info-label">Largura</span><span class="info-value">{{ dimensao.largura_cm }} cm</span></div>
+                <div class="info-item"><span class="info-label">Altura</span><span class="info-value">{{ dimensao.altura_cm }} cm</span></div>
+                <div class="info-item"><span class="info-label">Peso</span><span class="info-value">{{ dimensao.peso_kg }} kg</span></div>
+                <div class="info-item"><span class="info-label">Volume</span><span class="info-value">{{ dimensao.volume_m3 }} m³</span></div>
+            </div>
+            {% if dimensao.descricao %}<p class="text-muted stock-u-mt-16">{{ dimensao.descricao }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

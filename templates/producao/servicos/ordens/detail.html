@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize %}{% load codigo_filters %}{% load static %}
+    <title>{% if is_orcamento %}Detalhes do Orçamento{% else %}Detalhes da Ordem de Serviço{% endif %} - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'empresa/css/ordem-detail.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="{% if is_orcamento %}fas fa-file-invoice-dollar{% else %}fas fa-clipboard-check{% endif %}"></i>
+                {% if is_orcamento %}Orçamento{% else %}Ordem de Serviço{% endif %}: {{ ordem.codigo|formatar_codigo_ordem }}
+                {% if not is_orcamento and ordem.orcamento_origem %}
+                    <span class="od-header-cotacao">
+                        (Cotação: {{ ordem.orcamento_origem.codigo|formatar_codigo_ordem }})
+                    </span>
+                {% endif %}
+            </h1>
+            <div class="btn-group">
+                <a href="{% if is_orcamento %}{% url 'producao:servicos_orcamento' %}{% else %}{% url 'producao:servicos_ordens' %}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                {% if is_orcamento %}
+                <a href="{% url 'producao:servico_orcamento_imprimir' ordem.id %}" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Imprimir Cotação
+                </a>
+                <a href="{% url 'producao:preview_contrato_servico' ordem.id %}" class="btn od-btn-green" target="_blank">
+                    <i class="fas fa-eye"></i> Pré-visualizar Contrato
+                </a>
+                <a href="{% url 'producao:gerar_contrato_servico' ordem.id %}" class="btn btn-success">
+                    <i class="fas fa-file-contract"></i> Gerar Contrato PDF
+                </a>
+                {% if ordem_relacionada and ordem_relacionada.status == 'CONCLUIDA' %}
+                <a href="{% url 'producao:servico_ordem_emitir_fatura' ordem_relacionada.id %}" class="btn btn-info od-btn-blue">
+                    <i class="fas fa-file-invoice-dollar"></i> {% if ordem_relacionada.numero_impressao_fatura and ordem_relacionada.numero_impressao_fatura > 0 %}Reimprimir Fatura{% else %}Emitir Fatura{% endif %}
+                </a>
+                {% if ordem_relacionada.numero_fatura_fiscal and not ordem_relacionada.data_cobranca %}
+                <form method="post" action="{% url 'producao:servico_ordem_marcar_cobrada' ordem_relacionada.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn od-btn-teal" onclick="return confirm('Registar cobrança desta fatura?');">
+                        <i class="fas fa-money-check-alt"></i> Marcar fatura como paga
+                    </button>
+                </form>
+                {% elif ordem_relacionada.data_cobranca %}
+                <span class="od-badge-cobranca"><i class="fas fa-check"></i> Cobrança em {{ ordem_relacionada.data_cobranca|date:"d/m/Y" }}</span>
+                {% endif %}
+                {% if ordem_relacionada.numero_impressao_fatura and ordem_relacionada.numero_impressao_fatura > 0 %}
+                <a href="{% url 'producao:servico_ordem_emitir_garantia' ordem_relacionada.id %}" class="btn od-btn-green" target="_blank">
+                    <i class="fas fa-shield-alt"></i> {% if ordem_relacionada.numero_impressao_garantia and ordem_relacionada.numero_impressao_garantia > 0 %}Reimprimir Garantia{% else %}Emitir Garantia{% endif %}
+                </a>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                {% if pode_editar %}
+                <a href="{% if is_orcamento %}{% url 'producao:servico_orcamento_edit' ordem.id %}{% else %}{% url 'producao:servico_ordem_edit' ordem.id %}{% endif %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                {% elif ordem_relacionada %}
+                <a href="{% url 'producao:servico_ordem_detail' ordem_relacionada.id %}" class="btn btn-info od-btn-blue">
+                    <i class="fas fa-external-link-alt"></i> Ver Ordem de Serviço
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if not is_orcamento %}
+        <!-- Botões de Ação Rápida para Ordem de Serviço -->
+        {% if pode_editar %}
+        <div class="od-box-rapidas">
+            <h3><i class="fas fa-tasks"></i> Ações Rápidas</h3>
+            <div class="od-flex">
+                {% if ordem.status == 'AGENDADA' %}
+                <form method="post" action="{% url 'producao:servico_ordem_alterar_status' ordem.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="iniciar">
+                    <button type="submit" class="btn od-btn-iniciar">
+                        <i class="fas fa-play-circle"></i> Iniciar Serviço
+                    </button>
+                </form>
+                {% elif ordem.status == 'EM_ANDAMENTO' %}
+                <form method="post" action="{% url 'producao:servico_ordem_alterar_status' ordem.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="pausar">
+                    <button type="submit" class="btn od-btn-pausar">
+                        <i class="fas fa-pause-circle"></i> Pausar
+                    </button>
+                </form>
+                <form method="post" action="{% url 'producao:servico_ordem_alterar_status' ordem.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="concluir">
+                    <button type="submit" class="btn od-btn-concluir" onclick="return confirm('Tem certeza que deseja concluir esta ordem de serviço?');">
+                        <i class="fas fa-check-circle"></i> Concluir Serviço
+                    </button>
+                </form>
+                {% elif ordem.status == 'PAUSADA' %}
+                <form method="post" action="{% url 'producao:servico_ordem_alterar_status' ordem.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="retomar">
+                    <button type="submit" class="btn od-btn-iniciar">
+                        <i class="fas fa-play-circle"></i> Retomar Serviço
+                    </button>
+                </form>
+                {% elif ordem.status == 'CONCLUIDA' %}
+                <div class="od-badge-ordem-concluida">
+                    <i class="fas fa-check-circle"></i> <strong>Ordem Concluída</strong>
+                </div>
+                <a href="{% url 'producao:servico_ordem_emitir_fatura' ordem.id %}" class="btn od-btn-fatura" target="_blank">
+                    <i class="fas fa-file-invoice-dollar"></i> {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}Reimprimir Fatura{% else %}Emitir Fatura{% endif %}
+                </a>
+                {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                <div class="od-badge-faturas">
+                    <i class="fas fa-info-circle"></i> <strong>Faturas emitidas:</strong> {{ ordem.numero_impressao_fatura }} ({% if ordem.numero_impressao_fatura == 1 %}ORIGINAL{% else %}ORIGINAL + {{ ordem.numero_impressao_fatura|add:"-1" }} CÓPIA{{ ordem.numero_impressao_fatura|add:"-1"|pluralize }}{% endif %})
+                </div>
+                {% endif %}
+                {% if ordem.numero_fatura_fiscal and not ordem.data_cobranca %}
+                <form method="post" action="{% url 'producao:servico_ordem_marcar_cobrada' ordem.id %}" class="od-form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn od-btn-teal" onclick="return confirm('Registar cobrança desta fatura? Serão criados os lançamentos Caixa (26) e Clientes (22) em Finanças.');">
+                        <i class="fas fa-money-check-alt"></i> Marcar fatura como paga (contas a cobrar)
+                    </button>
+                </form>
+                {% elif ordem.data_cobranca %}
+                <span class="od-badge-cobranca-lg">
+                    <i class="fas fa-check"></i> Cobrança registada em {{ ordem.data_cobranca|date:"d/m/Y" }}
+                </span>
+                {% endif %}
+                {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                <a href="{% url 'producao:servico_ordem_emitir_garantia' ordem.id %}" class="btn od-btn-green" target="_blank">
+                    <i class="fas fa-shield-alt"></i> {% if ordem.numero_impressao_garantia and ordem.numero_impressao_garantia > 0 %}Reimprimir Garantia{% else %}Emitir Garantia{% endif %}
+                </a>
+                {% endif %}
+                {% if ordem.numero_impressao_garantia and ordem.numero_impressao_garantia > 0 %}
+                <div class="od-badge-garantias">
+                    <i class="fas fa-info-circle"></i> <strong>Garantias emitidas:</strong> {{ ordem.numero_impressao_garantia }} ({% if ordem.numero_impressao_garantia == 1 %}ORIGINAL{% else %}ORIGINAL + {{ ordem.numero_impressao_garantia|add:"-1" }} CÓPIA{{ ordem.numero_impressao_garantia|add:"-1"|pluralize }}{% endif %})
+                </div>
+                {% endif %}
+                {% elif ordem.status == 'CANCELADA' %}
+                <div class="od-badge-cancelada-box">
+                    <i class="fas fa-times-circle"></i> <strong>Ordem Cancelada</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Mensagem informando que a ordem não pode ser editada após emissão da fatura -->
+        <div class="od-box-info-amber">
+            <h3><i class="fas fa-info-circle"></i> Informação</h3>
+            <p>Esta ordem de serviço já teve fatura emitida e não pode ser editada ou ter seu status alterado.</p>
+            {% if ordem.status == 'CONCLUIDA' %}
+            <div class="od-mt-15">
+                <a href="{% url 'producao:servico_ordem_emitir_fatura' ordem.id %}" class="btn od-btn-fatura" target="_blank">
+                    <i class="fas fa-file-invoice-dollar"></i> Reimprimir Fatura
+                </a>
+                {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                <span class="od-ml-15">
+                    <strong>Faturas emitidas:</strong> {{ ordem.numero_impressao_fatura }} ({% if ordem.numero_impressao_fatura == 1 %}ORIGINAL{% else %}ORIGINAL + {{ ordem.numero_impressao_fatura|add:"-1" }} CÓPIA{{ ordem.numero_impressao_fatura|add:"-1"|pluralize }}{% endif %})
+                </span>
+                <a href="{% url 'producao:servico_ordem_emitir_garantia' ordem.id %}" class="btn od-btn-green od-ml-10" target="_blank">
+                    <i class="fas fa-shield-alt"></i> {% if ordem.numero_impressao_garantia and ordem.numero_impressao_garantia > 0 %}Reimprimir Garantia{% else %}Emitir Garantia{% endif %}
+                </a>
+                {% endif %}
+                {% if ordem.numero_impressao_garantia and ordem.numero_impressao_garantia > 0 %}
+                <span class="od-ml-15-green">
+                    <strong>Garantias emitidas:</strong> {{ ordem.numero_impressao_garantia }} ({% if ordem.numero_impressao_garantia == 1 %}ORIGINAL{% else %}ORIGINAL + {{ ordem.numero_impressao_garantia|add:"-1" }} CÓPIA{{ ordem.numero_impressao_garantia|add:"-1"|pluralize }}{% endif %})
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if not is_orcamento %}
+        <!-- Plano de execução: aviso se não tiver etapas -->
+        {% if not plano_tem_etapas and pode_editar %}
+        <div class="od-box-plano">
+            <h3><i class="fas fa-tasks"></i> Plano de execução obrigatório</h3>
+            <p>Defina as etapas (actividades e subactividades) da ordem de execução antes de avançar. Pode personalizar os nomes e definir o prazo previsto de conclusão para cada uma.</p>
+            <a href="{% url 'producao:servico_ordem_plano_execucao' ordem.id %}" class="btn btn-primary"><i class="fas fa-list-ol"></i> Definir plano de execução</a>
+        </div>
+        {% endif %}
+        <!-- Secção Plano de execução: etapas, botões por actividade, avanço e cronograma -->
+        {% if plano_tem_etapas %}
+        <div class="details-section od-details-plano">
+            <h2><i class="fas fa-tasks"></i> Plano de execução</h2>
+            <div class="od-plano-actions">
+                {% if plano_pode_ser_editado %}
+                <a href="{% url 'producao:servico_ordem_plano_execucao' ordem.id %}" class="btn btn-secondary od-btn-mb"><i class="fas fa-edit"></i> Editar etapas</a>
+                {% else %}
+                <span class="btn btn-secondary od-btn-locked" title="Plano bloqueado: há actividades iniciadas ou concluídas"><i class="fas fa-lock"></i> Editar etapas (bloqueado)</span>
+                {% endif %}
+                <a href="{% url 'producao:servico_ordem_plano_imprimir' ordem.id %}" class="btn btn-secondary od-btn-mb"><i class="fas fa-print"></i> Imprimir plano de trabalho</a>
+                <div class="od-avance-row">
+                    <span class="od-avance-text"><strong>Avanço:</strong> {{ progresso_etapas.concluidas }} / {{ progresso_etapas.total }} etapas ({{ progresso_etapas.percent }}%{% if progresso_etapas.por_parcelas %} ponderado por parcelas{% endif %})</span>
+                    <div class="od-avance-bar-wrap">
+                        <div class="plano-progress-fill" data-percent="{{ progresso_etapas.percent }}" role="presentation"></div>
+                    </div>
+                </div>
+            </div>
+            {% if cronograma_atrasos %}
+            <div class="od-box-atrasos">
+                <strong><i class="fas fa-exclamation-triangle"></i> Actividades em atraso / concluídas com atraso</strong>
+                <ul><li>
+                {% for atraso in cronograma_atrasos %}
+                {% if not forloop.first %}</li><li>{% endif %}{% if atraso.tipo == 'em_atraso' %}<strong>{{ atraso.atividade.nome }}</strong> — em atraso ({{ atraso.dias }} dia{{ atraso.dias|pluralize }}){% else %}{{ atraso.atividade.nome }} — concluída com {{ atraso.dias }} dia{{ atraso.dias|pluralize }} de atraso{% endif %}
+                {% endfor %}
+                </li></ul>
+            </div>
+            {% endif %}
+            {% if cronograma_gantt and gantt_min_date and gantt_max_date %}
+            <div class="details-section od-box-cronograma">
+                <div class="od-box-cronograma-header">
+                    <h3><i class="fas fa-chart-gantt"></i> Cronograma físico</h3>
+                    <p class="od-box-cronograma-sub">Previsto vs. real por actividade ({{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }}){% if data_referencia %} · Data de referência (hoje): {{ data_referencia|date:"d/m/Y" }}{% endif %}</p>
+                    {% if cronograma_todas_datas_iguais %}
+                    <div class="od-box-cronograma-alert">
+                        <strong>Possível dados errados:</strong> todas as etapas têm o mesmo &quot;Prazo previsto&quot; na base de dados, por isso as barras azuis ficam no mesmo sítio. Use <a href="{% url 'producao:servico_ordem_plano_execucao' ordem.id %}">Editar etapas</a> e defina um prazo diferente em cada etapa, depois guarde.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="od-box-cronograma-body">
+                    <div class="od-box-cronograma-inner">
+                        <table class="od-table-gantt">
+                            {% include "producao/servicos/ordens/_gantt_table_shared.html" with cronograma_gantt=cronograma_gantt gantt_ticks=gantt_ticks gantt_hoje_pct=gantt_hoje_pct gantt_inline_styles=False %}
+                        </table>
+                        <div class="od-gantt-legend">
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-gantt-legend-swatch-p"></span>Previsto</span>
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-gantt-legend-swatch-a"></span>Real (executado)</span>
+                            {% if gantt_hoje_pct is not None %}
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-gantt-legend-swatch-h"></span>Hoje</span>
+                            {% endif %}
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-gantt-legend-swatch-atraso"></span>Em atraso</span>
+                        </div>
+                        <p class="od-gantt-footer">A linha vertical vermelha é <strong>Hoje</strong> (data actual), não a data de início das actividades. A data de início de cada actividade é o início da barra verde (real). Para ver barras: defina o <strong>Prazo previsto</strong> em cada etapa (Editar etapas) e guarde; as barras azuis aparecem. Ao iniciar/concluir actividades, aparecem as verdes.</p>
+                        {% if request.GET.cronograma_debug %}
+                        <div class="od-gantt-debug">
+                            <strong>Dados usados pelo cronograma (base: AtividadeExecucao na BD)</strong>
+                            <p>Se <em>Prazo previsto</em> ou <em>left_p/width_p</em> forem iguais em todas as linhas, as barras azuis ficam no mesmo sítio. Corrija os prazos em «Editar etapas» e guarde.</p>
+                            <p><strong>Marcacao &quot;Hoje&quot;:</strong> <code>gantt_hoje_pct</code> = {% if gantt_hoje_pct is not None %}{{ gantt_hoje_pct }}% (linha vermelha nesta posição no eixo){% else %}não mostrado (data actual fora do intervalo [{{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }}]){% endif %}.</p>
+                            <table class="od-gantt-debug-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Actividade</th>
+                                        <th>Prazo previsto (BD)</th>
+                                        <th>Previsto left_p %</th>
+                                        <th>Previsto width_p %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for g in cronograma_gantt %}
+                                    <tr>
+                                        <td>{{ g.atividade_id|default:g.item.atividade.id }}</td>
+                                        <td>{{ g.item.atividade.nome }}</td>
+                                        <td>{% if g.planned_end %}{{ g.planned_end|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                                        <td>{{ g.left_p }}</td>
+                                        <td>{{ g.width_p }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                        <script>
+                            (function() {
+                                document.querySelectorAll('.gantt-dyn-left').forEach(function(el) {
+                                    var L = el.getAttribute('data-left');
+                                    if (L != null) {
+                                        var pct = parseFloat(L, 10);
+                                        if (!isNaN(pct)) {
+                                            pct = Math.max(0, Math.min(100, pct));
+                                            el.style.left = pct + '%';
+                                        }
+                                    }
+                                });
+                                document.querySelectorAll('[data-style]').forEach(function(el) {
+                                    var s = el.getAttribute('data-style');
+                                    if (s) el.style.cssText = s;
+                                });
+                            })();
+                        </script>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if recebimentos_parcelas_gantt and gantt_min_date and gantt_max_date and gantt_ticks %}
+            <div class="details-section od-box-cronograma od-box-recebimentos-parcelas">
+                <div class="od-box-cronograma-header">
+                    <h3><i class="fas fa-hand-holding-usd" style="color: #059669;"></i> Previsão de recebimentos das parcelas</h3>
+                    <p class="od-box-cronograma-sub">Dia previsto de recebimento por parcela (conclusão da etapa que libera a parcela) — mesma escala do cronograma ({{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }})</p>
+                </div>
+                <div class="od-box-cronograma-body">
+                    <div class="od-box-cronograma-inner">
+                        <table class="od-table-gantt od-table-recebimentos">
+                            <thead>
+                                <tr>
+                                    <th class="gantt-th-label od-gantt-th-label">Parcela</th>
+                                    <th class="gantt-th-scale gantt-scale od-gantt-th-scale">
+                                        <div class="gantt-scale-inner od-gantt-scale-inner od-receb-scale">
+                                            {% for t in gantt_ticks %}
+                                            <span class="gantt-tick-label gantt-dyn-left od-gantt-tick gantt-tick-date" data-left="{{ t.pct }}">{{ t.date|date:"d/m" }}</span>
+                                            {% endfor %}
+                                            {% if gantt_hoje_pct is not None %}
+                                            <span class="gantt-hoje-line gantt-dyn-left od-gantt-hoje-line gantt-hoje" data-left="{{ gantt_hoje_pct }}" title="Hoje"></span>
+                                            <span class="gantt-hoje-label gantt-dyn-left od-gantt-hoje-label" data-left="{{ gantt_hoje_pct }}">Hoje</span>
+                                            {% endif %}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recebimentos_parcelas_gantt %}
+                                <tr class="{% if r.em_atraso %}od-receb-row-atraso{% endif %}">
+                                    <td class="gantt-cell-label od-gantt-cell-label">
+                                        <strong>{{ r.label }}</strong>
+                                        {% if r.em_atraso %}<span class="od-receb-badge-atraso" title="Data prevista já passou e etapa ainda não concluída">Em atraso</span>{% endif %}
+                                    </td>
+                                    <td class="gantt-td-track od-gantt-td-track">
+                                        <div class="gantt-track od-receb-track">
+                                            {% if gantt_hoje_pct is not None %}
+                                            <span class="gantt-track-hoje gantt-dyn-left od-gantt-track-hoje-inline gantt-hoje" data-left="{{ gantt_hoje_pct }}" title="Hoje"></span>
+                                            {% endif %}
+                                            <span class="od-receb-ponto gantt-dyn-left {% if r.em_atraso %}od-receb-ponto-atraso{% endif %}" data-left="{{ r.left_pct }}" title="Recebimento previsto: {{ r.data_prevista|date:'d/m/Y' }}">
+                                                <span class="od-receb-ponto-label">{{ r.data_prevista|date:"d/m" }}</span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="od-gantt-legend">
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-receb-swatch-ok"></span>Previsto</span>
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-receb-swatch-atraso"></span>Em atraso</span>
+                            {% if gantt_hoje_pct is not None %}
+                            <span class="od-gantt-legend-item"><span class="od-gantt-legend-swatch od-gantt-legend-swatch-h"></span>Hoje</span>
+                            {% endif %}
+                        </div>
+                        <p class="od-gantt-footer">Cada <strong>ponto</strong> indica o dia previsto de recebimento da parcela (quando a etapa que a libera for concluída). A data aparece no ponto. Recebimentos em <strong>atraso</strong> são os que já passaram da data prevista e a etapa ainda não foi concluída.</p>
+                        <script>
+                            (function() {
+                                var box = document.querySelector('.od-box-recebimentos-parcelas');
+                                if (box) {
+                                    box.querySelectorAll('.gantt-dyn-left').forEach(function(el) {
+                                        var L = el.getAttribute('data-left');
+                                        if (L != null) {
+                                            var pct = parseFloat(L, 10);
+                                            if (!isNaN(pct)) { el.style.left = Math.max(0, Math.min(100, pct)) + '%'; }
+                                        }
+                                    });
+                                }
+                            })();
+                        </script>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <table class="od-table-plano">
+                <thead>
+                    <tr>
+                        <th>Actividade</th>
+                        <th>Data prevista início</th>
+                        <th>Prazo previsto</th>
+                        <th>Data início</th>
+                        <th>Data conclusão</th>
+                        <th>Estado</th>
+                        <th>Acções</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in atividades_flat %}
+                    <tr class="{% if item.e_subactividade %}plano-tr-subactividade{% endif %}">
+                        <td class="{% if item.e_subactividade %}plano-td-subactividade{% endif %}">
+                            {% if item.atividade.status == 'CONCLUIDA' %}<i class="fas fa-check-circle od-check-concluida" title="Concluída" aria-hidden="true"></i> {% endif %}{% if item.e_subactividade %}<i class="fas fa-level-up-alt fa-rotate-90 od-icon-amber"></i> {% endif %}<strong>{{ item.numero_display|default:"" }}</strong>{% if item.numero_display %}. {% endif %}{{ item.atividade.nome }}{% if item.atividade.parcela %} <span class="od-parcela">→ Parcela {{ item.atividade.parcela.numero_ordem }} ({{ item.atividade.parcela.percentagem }}%)</span>{% endif %}
+                        </td>
+                        <td>{% if item.atividade.data_prevista_inicio %}{{ item.atividade.data_prevista_inicio|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                        <td>
+                            {% if item.atividade.data_prevista_conclusao %}{{ item.atividade.data_prevista_conclusao|date:"d/m/Y" }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if item.atividade.data_inicio %}{{ item.atividade.data_inicio|date:"d/m/Y" }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if item.atividade.data_conclusao %}{{ item.atividade.data_conclusao|date:"d/m/Y" }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if item.atividade.status == 'AGENDADA' %}<span class="badge badge-agendada">Agendada</span>
+                            {% elif item.atividade.status == 'EM_ANDAMENTO' %}<span class="badge badge-em-andamento">Em andamento</span>
+                            {% elif item.atividade.status == 'PAUSADA' %}<span class="badge badge-pausada">Pausada</span>
+                            {% elif item.atividade.status == 'CONCLUIDA' %}<span class="badge badge-concluida">Concluída</span>
+                            {% else %}<span class="badge badge-agendada">{{ item.atividade.get_status_display }}</span>{% endif %}
+                        </td>
+                        <td class="od-td-actions">
+                            {% if pode_editar %}
+                            {% if item.atividade.pode_iniciar %}
+                            <a href="{% url 'producao:servico_atividade_confirmar_inicio' ordem.id item.atividade.id %}" class="btn od-btn-iniciar-sm"><i class="fas fa-play"></i> Iniciar</a>
+                            {% elif item.atividade.pode_retomar %}
+                            <form method="post" action="{% url 'producao:servico_atividade_alterar_status' ordem.id item.atividade.id %}" class="od-form-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="retomar">
+                                <button type="submit" class="btn od-btn-iniciar-sm"><i class="fas fa-play"></i> Retomar</button>
+                            </form>
+                            {% endif %}
+                            {% if item.atividade.pode_concluir %}
+                            <a href="{% url 'producao:servico_atividade_confirmar_conclusao' ordem.id item.atividade.id %}" class="btn od-btn-concluir-sm"><i class="fas fa-check"></i> Concluir</a>
+                            {% endif %}
+                            {% if item.atividade.pode_pausar %}
+                            <form method="post" action="{% url 'producao:servico_atividade_alterar_status' ordem.id item.atividade.id %}" class="od-form-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="pausar">
+                                <button type="submit" class="btn od-btn-pausar-sm"><i class="fas fa-pause"></i> Pausar</button>
+                            </form>
+                            {% endif %}
+                            {% if not item.atividade.pode_iniciar and not item.atividade.pode_retomar and not item.atividade.pode_concluir and not item.atividade.pode_pausar %}
+                            <span class="od-muted-dash">—</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="od-msg-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div class="od-msg-warning">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div class="od-msg-success">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Código</h3>
+                <p><strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></p>
+                {% if not is_orcamento and ordem.orcamento_origem %}
+                    <p class="od-info-card-cotacao">
+                        Cotação: <a href="{% url 'producao:servico_orcamento_detail' ordem.orcamento_origem.id %}" class="od-link-cotacao">{{ ordem.orcamento_origem.codigo|formatar_codigo_ordem }}</a>
+                    </p>
+                {% endif %}
+            </div>
+            {% if servicos_orcamento and servicos_orcamento|length > 0 %}
+            <div class="info-card">
+                <h3>Serviços</h3>
+                <p>{{ servicos_orcamento|length }} serviço{{ servicos_orcamento|length|pluralize }}</p>
+            </div>
+            {% else %}
+            <div class="info-card">
+                <h3>Serviço</h3>
+                <p>{% if ordem.servico %}{{ ordem.servico.nome }}{% else %}N/A{% endif %}</p>
+            </div>
+            {% endif %}
+            <div class="info-card">
+                <h3>Cliente</h3>
+                <p>
+                    {% if ordem.cliente %}
+                        {{ ordem.cliente.nome }}
+                    {% elif ordem.nome_cliente_pagamento %}
+                        {{ ordem.nome_cliente_pagamento }} (CASH)
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>Status</h3>
+                <p>
+                    {% if ordem.status == 'AGENDADA' %}
+                    <span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'EM_ANDAMENTO' %}
+                    <span class="badge badge-em-andamento">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'PAUSADA' %}
+                    <span class="badge badge-pausada">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'CONCLUIDA' %}
+                    <span class="badge badge-concluida">{{ ordem.get_status_display }}</span>
+                    {% elif ordem.status == 'CANCELADA' %}
+                    <span class="badge badge-cancelada">{{ ordem.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge badge-agendada">{{ ordem.get_status_display }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>Prioridade</h3>
+                <p>
+                    <span class="badge badge-{{ ordem.prioridade|lower }}">
+                        {{ ordem.get_prioridade_display }}
+                    </span>
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>Data Agendada</h3>
+                <p>{{ ordem.data_agendada|date:"d/m/Y H:i" }}</p>
+            </div>
+            {% if is_orcamento %}
+            <div class="info-card">
+                <h3>Valor Total</h3>
+                <p>
+                    {% if servicos_orcamento and servicos_orcamento|length > 0 %}
+                        {% if valor_final %}
+                            <strong>{{ valor_final|floatformat:2|intcomma }} MT</strong>
+                        {% else %}
+                            <span class="text-muted">A calcular</span>
+                        {% endif %}
+                    {% elif ordem.valor_total and ordem.valor_total >= 0 %}
+                        <strong>{{ ordem.valor_total|floatformat:2|intcomma }} MT</strong>
+                    {% else %}
+                        <span class="text-muted">0,00 MT</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+            {% if ordem.data_inicio %}
+            <div class="info-card">
+                <h3>Data de Início</h3>
+                <p>{{ ordem.data_inicio|date:"d/m/Y H:i" }}</p>
+            </div>
+            {% endif %}
+            {% if ordem.data_conclusao %}
+            <div class="info-card">
+                <h3>Data de Conclusão</h3>
+                <p>{{ ordem.data_conclusao|date:"d/m/Y H:i" }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="details-section">
+            <h2><i class="fas fa-map-marker-alt"></i> Localização</h2>
+            <div class="text-content">
+                <p><strong>Endereço:</strong> {{ ordem.endereco_servico }}</p>
+                {% if ordem.cidade_servico %}
+                <p><strong>Cidade:</strong> {{ ordem.cidade_servico }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if ordem.equipe or ordem.responsavel %}
+        <div class="details-section">
+            <h2><i class="fas fa-users"></i> Equipe e Responsáveis</h2>
+            <div class="info-grid">
+                {% if ordem.equipe %}
+                <div class="info-card">
+                    <h3>Equipe</h3>
+                    <p>{{ ordem.equipe }}</p>
+                </div>
+                {% endif %}
+                {% if ordem.responsavel %}
+                <div class="info-card">
+                    <h3>Responsável Técnico</h3>
+                    <p>{{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if servicos_orcamento and servicos_orcamento|length > 0 %}
+        <div class="details-section">
+            <h2><i class="fas fa-tools"></i> Serviços e produtos</h2>
+            <p class="od-servicos-intro">Os produtos e materiais aparecem agrupados sob o serviço a que pertencem.</p>
+            <table class="od-table-servicos">
+                <thead>
+                    <tr>
+                        <th>Serviço / Produto</th>
+                        <th class="text-right">Quantidade</th>
+                        {% if is_orcamento %}
+                        <th class="text-right">Valor unit.</th>
+                        <th class="text-right">Total</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+            {% for servico_orc in servicos_orcamento %}
+                {% if servico_orc and servico_orc.servico %}
+                        <tr class="tr-servico">
+                            <td class="td-servico-nome"><i class="fas fa-tools"></i>{{ servico_orc.nome_para_documento }}</td>
+                            <td class="td-servico-qty">{{ servico_orc.quantidade|floatformat:2 }}</td>
+                            {% if is_orcamento %}
+                            <td class="td-servico-qty">{{ servico_orc.valor_unitario|floatformat:2|intcomma }} MT</td>
+                            <td class="td-total">{% if servico_orc.valor_total_bruto %}{{ servico_orc.valor_total_bruto|floatformat:2|intcomma }}{% elif servico_orc.valor_total_calculado %}{{ servico_orc.valor_total_calculado|floatformat:2|intcomma }}{% else %}{{ servico_orc.valor_total|floatformat:2|intcomma }}{% endif %} MT</td>
+                            {% endif %}
+                        </tr>
+                {% for item in servico_orc.itens.all %}
+                        {% if item.item %}
+                        <tr>
+                            <td class="td-item"><span class="td-item-dash">—</span> {{ item.item.nome }}</td>
+                            <td class="td-item-right">{{ item.quantidade|floatformat:2 }}</td>
+                            {% if is_orcamento %}
+                            <td class="td-item-right">{{ item.valor_unitario|floatformat:2|intcomma }} MT</td>
+                            <td class="td-item-right">{% if item.valor_total_bruto %}{{ item.valor_total_bruto|floatformat:2|intcomma }}{% else %}{{ item.valor_total|floatformat:2|intcomma }}{% endif %} MT</td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                {% endfor %}
+                {% endif %}
+            {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if transportes %}
+        <div class="details-section">
+            <h2><i class="fas fa-truck"></i> Transporte</h2>
+            <table class="od-table-transporte">
+                <thead>
+                    <tr>
+                        <th>Transportadora</th>
+                        <th>Tipo</th>
+                        {% if is_orcamento %}
+                        <th class="text-right">Valor</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transporte in transportes %}
+                    <tr>
+                        <td>{{ transporte.transportadora.nome|default:"N/A" }}</td>
+                        <td>{{ transporte.get_tipo_transporte_display }}</td>
+                        {% if is_orcamento %}
+                        <td class="td-right">{{ transporte.valor_frete|floatformat:2|intcomma }} MT</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if is_orcamento %}
+        {% if servicos_orcamento and servicos_orcamento|length > 0 %}
+        <div class="details-section">
+            <h2><i class="fas fa-info-circle"></i> Resumo Financeiro</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Total Serviços</h3>
+                    <p><strong>{{ total_servicos|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% if total_itens > 0 %}
+                <div class="info-card">
+                    <h3>Total Produtos/Materiais</h3>
+                    <p><strong>{{ total_itens|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% endif %}
+                {% if total_transporte > 0 %}
+                <div class="info-card">
+                    <h3>Total Transporte</h3>
+                    <p><strong>{{ total_transporte|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% endif %}
+                {% if total_descontos and total_descontos > 0 %}
+                <div class="info-card">
+                    <h3>Total Descontos</h3>
+                    <p class="od-valor-negativo">- {{ total_descontos|floatformat:2|intcomma }} MT</p>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <h3>Subtotal</h3>
+                    <p><strong>{{ subtotal|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% if ordem.desconto and ordem.desconto > 0 %}
+                <div class="info-card">
+                    <h3>Desconto</h3>
+                    <p>- {{ ordem.desconto|floatformat:2|intcomma }} MT</p>
+                </div>
+                <div class="info-card">
+                    <h3>Subtotal após Desconto</h3>
+                    <p><strong>{{ valor_apos_desconto|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <h3>IVA ({{ taxa_iva|floatformat:0 }}%)</h3>
+                    <p><strong>{{ valor_iva|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                <div class="info-card od-info-card-valor-final">
+                    <h3>Valor Final</h3>
+                    <p><strong>{{ valor_final|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="details-section">
+            <h2><i class="fas fa-info-circle"></i> Informações Financeiras</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Quantidade</h3>
+                    <p>{{ ordem.quantidade|floatformat:2 }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Valor Unitário</h3>
+                    <p>
+                        {% if ordem.valor_unitario %}
+                            {{ ordem.valor_unitario|floatformat:2|intcomma }} MT
+                        {% elif ordem.servico %}
+                            {{ ordem.servico.preco_venda|floatformat:2|intcomma }} MT (do serviço)
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h3>Desconto</h3>
+                    <p>{{ ordem.desconto|floatformat:2|intcomma }} MT</p>
+                </div>
+                <div class="info-card">
+                    <h3>Valor Total</h3>
+                    <p>
+                        <strong>
+                            {% if ordem.valor_total and ordem.valor_total >= 0 %}
+                                {{ ordem.valor_total|floatformat:2|intcomma }} MT
+                            {% else %}
+                                <span class="text-muted">0,00 MT</span>
+                            {% endif %}
+                        </strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if ordem.problema_relatado %}
+        <div class="details-section">
+            <h2><i class="fas fa-exclamation-triangle"></i> Problema Relatado</h2>
+            <div class="text-content">
+                <p>{{ ordem.problema_relatado|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if ordem.solucao_aplicada %}
+        <div class="details-section">
+            <h2><i class="fas fa-check-circle"></i> Solução Aplicada</h2>
+            <div class="text-content">
+                <p>{{ ordem.solucao_aplicada|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if ordem.observacoes %}
+        <div class="details-section">
+            <h2><i class="fas fa-sticky-note"></i> Observações</h2>
+            <div class="text-content">
+                <p>{{ ordem.observacoes|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="details-section">
+            <h2><i class="fas fa-history"></i> Informações do Sistema</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Criado Por</h3>
+                    <p>
+                        {% if ordem.criado_por %}
+                            {{ ordem.criado_por.get_full_name|default:ordem.criado_por.username }}
+                        {% else %}
+                            Sistema
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h3>Data de Criação</h3>
+                    <p>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% if ordem.data_atualizacao %}
+                <div class="info-card">
+                    <h3>Última Atualização</h3>
+                    <p>{{ ordem.data_atualizacao|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.plano-progress-fill[data-percent]').forEach(function(el) {
+            var p = el.getAttribute('data-percent');
+            if (p != null && p !== '') {
+                var n = parseFloat(p, 10);
+                if (!isNaN(n)) el.style.width = Math.max(0, Math.min(100, n)) + '%';
+            }
+        });
+    </script>
+</body>
+</html>
+

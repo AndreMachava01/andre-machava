@@ -3,39 +3,32 @@
 
 {% block title %}Detalhes do Material{% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:materiais' %}">Materiais</a></li>
-            <li class="breadcrumb-item active">{{ material.nome }}</li>
-        </ol>
+<div class="container stock-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:materiais' %}">Materiais</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{{ material.nome }}</span>
     </nav>
 
-    <!-- Header -->
     <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2><i class="fas fa-cogs"></i> Detalhes do Material</h2>
-            <div class="btn-group">
-                <a href="{% url 'stock:materiais' %}" class="btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-cogs" aria-hidden="true"></i> Detalhes do Material</h1>
+                <p class="page-subtitle">{{ material.codigo }} — {{ material.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:materiais' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
                 </a>
-                <a href="{% url 'stock:material_edit' material.id %}" class="btn-primary">
-                    <i class="fas fa-edit"></i> Editar
+                <a href="{% url 'stock:material_edit' material.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit" aria-hidden="true"></i> Editar
                 </a>
             </div>
         </div>

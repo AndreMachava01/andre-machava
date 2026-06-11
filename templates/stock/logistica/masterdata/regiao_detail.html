@@ -1,0 +1,83 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Região {{ regiao.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:regioes_list' as regioes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Regiões' breadcrumb_section_url=regioes_list_url breadcrumb_current=regiao.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-globe" aria-hidden="true"></i> {{ regiao.nome }}</h1>
+                <p class="page-subtitle">{{ regiao.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                {% include 'stock/logistica/includes/_masterdata_detail_actions.html' with object=regiao edit_url='stock:masterdata:regiao_edit' delete_url='stock:masterdata:regiao_delete' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Detalhes</h2>
+            <span class="badge badge-{% if regiao.ativo %}success{% else %}secondary{% endif %}">{% if regiao.ativo %}Activa{% else %}Inactiva{% endif %}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Província</span><span class="info-value">{{ regiao.provincia }}</span></div>
+                <div class="info-item"><span class="info-label">Distrito</span><span class="info-value">{{ regiao.distrito|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">País</span><span class="info-value">{{ regiao.pais }}</span></div>
+                <div class="info-item"><span class="info-label">Prioridade</span><span class="info-value">{{ regiao.prioridade }}</span></div>
+                <div class="info-item"><span class="info-label">Latitude</span><span class="info-value">{{ regiao.latitude_centro|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Longitude</span><span class="info-value">{{ regiao.longitude_centro|default:"—" }}</span></div>
+            </div>
+            {% if regiao.descricao %}<p class="text-muted stock-u-mt-16">{{ regiao.descricao }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Zonas ({{ zonas.count }})</h3></div>
+            {% if zonas %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead><tr><th>Código</th><th>Nome</th><th>Prazo</th></tr></thead>
+                    <tbody>
+                        {% for z in zonas %}
+                        <tr>
+                            <td><a href="{% url 'stock:masterdata:zona_detail' z.id %}">{{ z.codigo }}</a></td>
+                            <td>{{ z.nome }}</td>
+                            <td>{{ z.prazo_entrega_dias }} dia(s)</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<div class="no-data"><p>Sem zonas nesta região.</p></div>{% endif %}
+        </div>
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Hubs ({{ hubs.count }})</h3></div>
+            {% if hubs %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th></tr></thead>
+                    <tbody>
+                        {% for h in hubs %}
+                        <tr>
+                            <td><a href="{% url 'stock:masterdata:hub_detail' h.id %}">{{ h.codigo }}</a></td>
+                            <td>{{ h.nome }}</td>
+                            <td>{{ h.get_tipo_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<div class="no-data"><p>Sem hubs nesta região.</p></div>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Ordem de Produção - Fase 1</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Criar Ordem de Produção - Fase 1</h1>
+        
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="padding: 10px; margin-bottom: 10px; border-radius: 3px; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b;{% elif message.tags == 'success' %}background: #d1fae5; color: #065f46;{% else %}background: #fef3c7; color: #92400e;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if receitas|length == 0 %}
+        <div style="padding: 20px; background: #fee2e2; color: #991b1b; border-radius: 3px; margin-bottom: 20px;">
+            <strong>⚠️ Atenção:</strong> Não há receitas ativas ou aprovadas cadastradas. 
+            <a href="{% url 'producao:receitas' %}" style="color: #991b1b; text-decoration: underline;">Criar receita</a>
+        </div>
+        {% endif %}
+        
+        {% if sucursais|length == 0 %}
+        <div style="padding: 20px; background: #fee2e2; color: #991b1b; border-radius: 3px; margin-bottom: 20px;">
+            <strong>⚠️ Atenção:</strong> Não há sucursais ativas cadastradas. É necessário ter pelo menos uma sucursal ativa.
+        </div>
+        {% endif %}
+        
+        {% if receitas|length > 0 and sucursais|length > 0 %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Receita *</label>
+                <select name="receita" required>
+                    <option value="">Selecione uma receita</option>
+                    {% for receita in receitas %}
+                    <option value="{{ receita.id }}">{{ receita.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantidade *</label>
+                <input type="number" name="quantidade" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>Prioridade</label>
+                <select name="prioridade">
+                    {% for value, label in prioridade_choices %}
+                    <option value="{{ value }}" {% if value == 'NORMAL' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sucursal *</label>
+                <select name="sucursal" required>
+                    <option value="">Selecione uma sucursal</option>
+                    {% for sucursal in sucursais %}
+                    <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Observações</label>
+                <textarea name="observacoes_criacao" rows="3" placeholder="Observações sobre a ordem de produção"></textarea>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Criar Ordem</button>
+                <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        {% else %}
+        <div style="padding: 20px; text-align: center; color: #666;">
+            <p>Preencha os requisitos acima para criar uma ordem de produção.</p>
+            <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

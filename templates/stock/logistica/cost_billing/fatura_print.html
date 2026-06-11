@@ -1,0 +1,208 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Impressão — {{ fatura.numero_fatura }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page stock-fatura-print-page">
+    {% url 'stock:cost_billing:fatura_detail' fatura.id as fatura_detail_url %}
+    {% url 'stock:cost_billing:faturas_list' as faturas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Faturas' breadcrumb_section_url=faturas_list_url breadcrumb_current=fatura.numero_fatura %}
+
+    <div class="page-header stock-no-print">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-print" aria-hidden="true"></i>
+                    Impressão da fatura
+                </h1>
+                <p class="page-subtitle">{{ fatura.numero_fatura }} — {{ fatura.cliente_nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ fatura_detail_url }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-doc-print stock-fatura-doc">
+        <header class="stock-doc-print__header">
+            <div>
+                <h2 class="stock-doc-print__title">FATURA DE FRETE</h2>
+                <p class="stock-doc-print__code">{{ fatura.serie_fatura }}-{{ fatura.numero_fatura }}</p>
+                {% if dados_empresa %}
+                <p class="stock-fatura-doc__empresa">{{ dados_empresa.nome }}</p>
+                <p class="stock-fatura-doc__empresa-meta">
+                    NUIT: {{ dados_empresa.nuit }}
+                    {% if dados_empresa.telefone %} · Tel: {{ dados_empresa.telefone }}{% endif %}
+                    {% if dados_empresa.email %} · {{ dados_empresa.email }}{% endif %}
+                </p>
+                <p class="stock-fatura-doc__empresa-meta">{{ dados_empresa.endereco }}, {{ dados_empresa.cidade }}</p>
+                {% endif %}
+            </div>
+            <div class="stock-doc-print__date">
+                <strong>Emissão:</strong> {{ fatura.data_emissao|date:"d/m/Y" }}<br>
+                <strong>Vencimento:</strong> {{ fatura.data_vencimento|date:"d/m/Y" }}<br>
+                <strong>Status:</strong> {{ fatura.get_status_display }}<br>
+                <strong>Moeda:</strong> {{ fatura.moeda|default:"MZN" }}
+            </div>
+        </header>
+
+        <section class="stock-fatura-doc__parties">
+            <div class="stock-fatura-doc__party">
+                <h3 class="stock-doc-print__section-title">Cliente</h3>
+                <p><strong>{{ fatura.cliente_nome }}</strong></p>
+                <p>Documento origem: {{ fatura.cliente_documento }}</p>
+                {% if fatura.cliente_email %}<p>E-mail: {{ fatura.cliente_email }}</p>{% endif %}
+                <p>{{ fatura.cliente_endereco }}</p>
+            </div>
+            <div class="stock-fatura-doc__party">
+                <h3 class="stock-doc-print__section-title">Período de referência</h3>
+                <p>{{ fatura.periodo_inicio|date:"d/m/Y" }} a {{ fatura.periodo_fim|date:"d/m/Y" }}</p>
+                {% if fatura.emitido_por %}
+                <p class="stock-fatura-doc__emitido">Emitido por: {{ fatura.emitido_por.get_full_name|default:fatura.emitido_por.username }}</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section>
+            <h3 class="stock-doc-print__section-title">Itens de faturamento</h3>
+            {% if itens %}
+            <table class="table stock-fatura-doc__table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Descrição</th>
+                        <th>Rastreamento</th>
+                        <th>Data</th>
+                        <th class="text-right">Qtd</th>
+                        <th class="text-right">Unitário (MT)</th>
+                        <th class="text-right">Total (MT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.descricao }}</td>
+                        <td>{% if item.rastreamento_entrega %}{{ item.rastreamento_entrega.codigo_rastreamento }}{% else %}—{% endif %}</td>
+                        <td>{{ item.data_servico|date:"d/m/Y" }}</td>
+                        <td class="text-right">{{ item.quantidade }}</td>
+                        <td class="text-right">{{ item.valor_unitario|floatformat:2 }}</td>
+                        <td class="text-right">{{ item.valor_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>Subtotal</strong></td>
+                        <td class="text-right"><strong>{{ fatura.valor_total|floatformat:2 }}</strong></td>
+                    </tr>
+                    {% if fatura.valor_desconto %}
+                    <tr>
+                        <td colspan="6" class="text-right">Desconto</td>
+                        <td class="text-right">− {{ fatura.valor_desconto|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="stock-fatura-doc__total-row">
+                        <td colspan="6" class="text-right"><strong>Total líquido</strong></td>
+                        <td class="text-right"><strong>{{ fatura.valor_liquido|floatformat:2 }} MT</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+            <p>Sem itens registados.</p>
+            {% endif %}
+        </section>
+
+        {% if fatura.observacoes %}
+        <section class="stock-u-mt-24">
+            <h3 class="stock-doc-print__section-title">Observações</h3>
+            <p>{{ fatura.observacoes|linebreaksbr }}</p>
+        </section>
+        {% endif %}
+
+        {% if fatura.instrucoes_pagamento %}
+        <section class="stock-u-mt-24">
+            <h3 class="stock-doc-print__section-title">Instruções de pagamento</h3>
+            <p>{{ fatura.instrucoes_pagamento|linebreaksbr }}</p>
+        </section>
+        {% endif %}
+
+        {% if fatura.data_pagamento %}
+        <p class="stock-fatura-doc__pago stock-u-mt-24">
+            <strong>Pago em:</strong> {{ fatura.data_pagamento|date:"d/m/Y" }}
+        </p>
+        {% endif %}
+
+        <div class="stock-doc-print__signatures">
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                Emitente
+            </div>
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                Cliente
+            </div>
+        </div>
+
+        <footer class="stock-doc-print__footer">
+            Documento gerado em {{ fatura.data_criacao|date:"d/m/Y H:i" }} · {{ fatura.numero_fatura }}
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_style %}
+<style>
+body.stock-module .stock-fatura-doc__empresa {
+    margin: 8px 0 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+}
+body.stock-module .stock-fatura-doc__empresa-meta {
+    margin: 2px 0 0;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+body.stock-module .stock-fatura-doc__parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+body.stock-module .stock-fatura-doc__party p {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    color: #374151;
+}
+body.stock-module .stock-fatura-doc__emitido {
+    margin-top: 12px !important;
+    font-size: 0.85rem !important;
+    color: #6b7280 !important;
+}
+body.stock-module .stock-fatura-doc__table tfoot td {
+    border-top: 2px solid #e5e7eb;
+    padding-top: 10px;
+}
+body.stock-module .stock-fatura-doc__total-row td {
+    font-size: 1.05rem;
+    color: #92400e;
+}
+body.stock-module .stock-fatura-doc__pago {
+    font-size: 0.9rem;
+    color: #059669;
+}
+@media print {
+    body.stock-module .stock-fatura-doc__parties {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+{% endblock %}

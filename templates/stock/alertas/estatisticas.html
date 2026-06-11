@@ -1,0 +1,146 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Estatísticas de alertas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:alertas_gerenciar' %}">Alertas</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Estatísticas</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                    Estatísticas de alertas
+                </h1>
+                <p class="page-subtitle">Análise dos alertas e notificações — últimos 30 dias (desde {{ data_limite|date:"d/m/Y" }})</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:alertas_gerenciar' %}" class="btn btn-secondary">
+                    <i class="fas fa-bell" aria-hidden="true"></i> Gerir alertas
+                </a>
+                <a href="{% url 'stock:notificacoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-list" aria-hidden="true"></i> Notificações
+                </a>
+                <a href="{% url 'stock:dashboard_executivo' %}" class="btn btn-primary">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ total_alertas }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ alertas_nao_lidos }}</div>
+            <div class="stat-label">Não lidos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ alertas_lidos }}</div>
+            <div class="stat-label">Lidos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ alertas_por_tipo|length }}</div>
+            <div class="stat-label">Tipos</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ alertas_por_dia|length }}</div>
+            <div class="stat-label">Dias com alertas</div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-tags" aria-hidden="true"></i>
+                Por tipo
+            </h3>
+        </div>
+        {% if alertas_por_tipo %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Não lidos</th>
+                        <th class="text-center">Lidos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in alertas_por_tipo %}
+                    <tr>
+                        <td><div class="cell-primary">{{ row.tipo_display }}</div></td>
+                        <td class="text-center">{{ row.total }}</td>
+                        <td class="text-center">
+                            {% if row.nao_lidos %}
+                            <span class="status-badge status-pendente">{{ row.nao_lidos }}</span>
+                            {% else %}
+                            0
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ row.lidos }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="stock-alert-mini-grid stock-u-mt-24">
+            {% for row in alertas_por_tipo %}
+            <div class="stock-alert-mini-card">
+                <span class="stock-alert-mini-card__label">{{ row.tipo_display }}</span>
+                <span class="stock-alert-mini-card__value">{{ row.total }}</span>
+                <span class="stock-alert-mini-card__meta">{{ row.nao_lidos }} não lidos</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p class="stock-u-empty-msg mb-0">Nenhum alerta registado por tipo.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="movements-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                Por dia (últimos 30 dias)
+            </h3>
+        </div>
+        {% if alertas_por_dia %}
+        <div class="stock-alert-mini-grid">
+            {% for row in alertas_por_dia %}
+            <div class="stock-alert-mini-card">
+                <span class="stock-alert-mini-card__label">{{ row.dia|date:"d/m/Y" }}</span>
+                <span class="stock-alert-mini-card__value">{{ row.total }}</span>
+                <span class="stock-alert-mini-card__meta">alertas</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p class="stock-u-empty-msg mb-0">Nenhum alerta nos últimos 30 dias.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

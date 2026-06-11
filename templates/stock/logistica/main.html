@@ -1,160 +1,127 @@
 {% extends 'base_admin.html' %}
+{% load static %}
 
-{% block title %}Logística - Sistema de Gestão{% endblock %}
+{% block title %}Logística{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Logística</span>
-    </nav>
-    
-    <!-- Page Header -->
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' %}
+
     <div class="page-header">
         <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-truck"></i>
+                    <i class="fas fa-truck" aria-hidden="true"></i>
                     Logística
                 </h1>
-                <p class="page-subtitle">
-                    Gestão de transporte, entregas e rastreamento
-                </p>
+                <p class="page-subtitle">Transporte, rastreamento e operações de entrega</p>
             </div>
             <div class="header-actions">
-                <a href="/stock/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar ao Stock
+                <a href="{% url 'stock:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-warehouse" aria-hidden="true"></i> Stock
+                </a>
+                <a href="{% url 'stock:logistica:dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i> Dashboard
                 </a>
             </div>
         </div>
     </div>
-    
-    <!-- Quick Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-shipping-fast"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ rastreamentos_em_transito|default:"0" }}</h3>
-                <p class="stat-label">Em Trânsito</p>
-            </div>
+
+    <div class="stats stock-stats-row stock-u-mb-24">
+        <div class="stat-box">
+            <div class="stat-number">{{ rastreamentos_em_transito|default:"0" }}</div>
+            <div class="stat-label">Em trânsito</div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ entregas_pendentes|default:"0" }}</h3>
-                <p class="stat-label">Pendentes</p>
-            </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ entregas_pendentes|default:"0" }}</div>
+            <div class="stat-label">Pendentes (7 dias)</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ transportadoras_ativas|default:"0" }}</div>
+            <div class="stat-label">Transportadoras ativas</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ entregas_concluidas|default:"0" }}</div>
+            <div class="stat-label">Entregas concluídas</div>
         </div>
     </div>
-    
-           <!-- Action Buttons -->
-           <div class="action-buttons">
-               <a href="/stock/logistica/operacoes/" class="btn btn-primary">
-                   <i class="fas fa-tasks"></i>
-                   Operações Logísticas
-               </a>
-               <a href="/stock/logistica/rastreamento/" class="btn btn-secondary">
-                   <i class="fas fa-search"></i>
-                   Rastreamentos
-               </a>
-               <a href="/stock/logistica/transportadoras/" class="btn btn-secondary">
-                   <i class="fas fa-building"></i>
-                   Transportadoras
-               </a>
-               <a href="/stock/logistica/cotacao/" class="btn btn-info">
-                   <i class="fas fa-calculator"></i>
-                   Cotação Interna
-               </a>
-               <a href="/stock/logistica/veiculos/" class="btn btn-secondary">
-                   <i class="fas fa-car"></i>
-                   Meios Circulantes
-               </a>
-               <a href="{% url 'stock:logistica:checklist_list' %}" class="btn btn-info">
-                   <i class="fas fa-clipboard-check"></i>
-                   Checklists de Viaturas
-               </a>
-               <!-- Botões de Roteirização e Exceções -->
-               <a href="{% url 'stock:routing:dashboard' %}" class="btn btn-warning">
-                   <i class="fas fa-route"></i>
-                   Roteirização
-               </a>
-               <a href="{% url 'stock:exceptions:dashboard' %}" class="btn btn-danger">
-                   <i class="fas fa-exclamation-triangle"></i>
-                   Exceções
-               </a>
-               <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-success">
-                   <i class="fas fa-robot"></i>
-                   Alocação Automática
-               </a>
-               <a href="{% url 'stock:pod:dashboard' %}" class="btn btn-info">
-                   <i class="fas fa-file-signature"></i>
-                   POD & Documentos
-               </a>
-               <a href="{% url 'stock:masterdata:dashboard' %}" class="btn btn-secondary">
-                   <i class="fas fa-database"></i>
-                   Dados Mestres
-               </a>
-               <a href="{% url 'stock:observability:dashboard' %}" class="btn btn-dark">
-                   <i class="fas fa-chart-line"></i>
-                   Observabilidade
-               </a>
-               <a href="{% url 'stock:scalability:dashboard' %}" class="btn btn-light">
-                   <i class="fas fa-expand-arrows-alt"></i>
-                   Escalabilidade
-               </a>
-               <a href="{% url 'stock:geolocation:dashboard' %}" class="btn btn-primary">
-                   <i class="fas fa-map-marker-alt"></i>
-                   Geolocalização
-               </a>
-               <a href="{% url 'stock:mobile:dashboard' %}" class="btn btn-info">
-                   <i class="fas fa-mobile-alt"></i>
-                   UX Mobile
-               </a>
-               <a href="{% url 'stock:reports:dashboard_executivo' %}" class="btn btn-success">
-                   <i class="fas fa-chart-bar"></i>
-                   Relatórios
-               </a>
-               <a href="{% url 'stock:notifications:dashboard' %}" class="btn btn-warning">
-                   <i class="fas fa-bell"></i>
-                   Notificações
-               </a>
-               <a href="{% url 'stock:integrations:dashboard' %}" class="btn btn-primary">
-                   <i class="fas fa-plug"></i>
-                   Integrações
-               </a>
-               <!-- criação manual de rastreamento desativada -->
-           </div>
-</div>
 
-<script>
-// Animate cards on load
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-</script>
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-link" aria-hidden="true"></i> Operações</h3>
+        </div>
+        <div class="modules-grid">
+            <a href="{% url 'stock:logistica:operacoes_list' %}" class="module-card">
+                <h3><i class="fas fa-tasks" aria-hidden="true"></i> Operações</h3>
+                <p>Fluxo de coleta e entrega</p>
+            </a>
+            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="module-card">
+                <h3><i class="fas fa-search" aria-hidden="true"></i> Rastreamentos</h3>
+                <p>Acompanhamento de envios</p>
+            </a>
+            <a href="{% url 'stock:logistica:transportadoras_list' %}" class="module-card">
+                <h3><i class="fas fa-building" aria-hidden="true"></i> Transportadoras</h3>
+                <p>Parceiros logísticos externos</p>
+            </a>
+            <a href="{% url 'stock:logistica:cotacao_form' %}" class="module-card">
+                <h3><i class="fas fa-calculator" aria-hidden="true"></i> Cotação interna</h3>
+                <p>Preços e simulações</p>
+            </a>
+            <a href="{% url 'stock:logistica:veiculos_list' %}" class="module-card">
+                <h3><i class="fas fa-car" aria-hidden="true"></i> Meios circulantes</h3>
+                <p>Viaturas e frota</p>
+            </a>
+            <a href="{% url 'stock:logistica:checklist_list' %}" class="module-card">
+                <h3><i class="fas fa-clipboard-check" aria-hidden="true"></i> Checklists</h3>
+                <p>Inspeção de viaturas</p>
+            </a>
+            <a href="{% url 'stock:relatorios' %}" class="module-card">
+                <h3><i class="fas fa-file-alt" aria-hidden="true"></i> Relatórios</h3>
+                <p>Stock e logística</p>
+            </a>
+            <a href="{% url 'stock:dashboard_executivo' %}" class="module-card">
+                <h3><i class="fas fa-chart-bar" aria-hidden="true"></i> Dashboard executivo</h3>
+                <p>Visão consolidada de stock</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="movements-section">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-cogs" aria-hidden="true"></i> Submódulos avançados</h3>
+        </div>
+        <div class="modules-grid">
+            <a href="{% url 'stock:pod:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-file-signature" aria-hidden="true"></i> POD</h3>
+                <p>Prova de entrega e guias</p>
+            </a>
+            <a href="{% url 'stock:routing:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-route" aria-hidden="true"></i> Routing</h3>
+                <p>Planeamento de rotas</p>
+            </a>
+            <a href="{% url 'stock:exceptions:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-exclamation-circle" aria-hidden="true"></i> Exceções</h3>
+                <p>Incidentes e desvios</p>
+            </a>
+            <a href="{% url 'stock:allocation:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-random" aria-hidden="true"></i> Alocação</h3>
+                <p>Distribuição de recursos</p>
+            </a>
+            <a href="{% url 'stock:cost_billing:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-coins" aria-hidden="true"></i> Custos e faturação</h3>
+                <p>Custos logísticos</p>
+            </a>
+            <a href="{% url 'stock:masterdata:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-database" aria-hidden="true"></i> Master data</h3>
+                <p>Dados de referência</p>
+            </a>
+            <a href="{% url 'stock:observability:dashboard' %}" class="module-card">
+                <h3><i class="fas fa-eye" aria-hidden="true"></i> Observabilidade</h3>
+                <p>Métricas e monitorização</p>
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}

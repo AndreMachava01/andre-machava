@@ -323,6 +323,12 @@ class Fornecedor(models.Model):
         ('SUSPENSO', 'Suspenso'),
     ]
 
+    codigo = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        help_text='Código único do fornecedor'
+    )
     nome = models.CharField(
         max_length=200,
         help_text='Nome ou razão social do fornecedor'
@@ -417,7 +423,28 @@ class Fornecedor(models.Model):
         ordering = ['nome']
 
     def __str__(self):
+        if self.codigo:
+            return f"{self.codigo} - {self.nome}"
         return self.nome
+
+    def gerar_codigo_automatico(self):
+        """Gera código automático para o fornecedor (FORN0001, FORN0002, …)."""
+        ultimo = (
+            Fornecedor.objects.filter(codigo__startswith='FORN')
+            .order_by('-codigo')
+            .values_list('codigo', flat=True)
+            .first()
+        )
+        if ultimo and len(ultimo) > 4 and ultimo[4:].isdigit():
+            proximo_numero = int(ultimo[4:]) + 1
+        else:
+            proximo_numero = Fornecedor.objects.count() + 1
+        return f"FORN{proximo_numero:04d}"
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            self.codigo = self.gerar_codigo_automatico()
+        super().save(*args, **kwargs)
 
 # MODELO PRODUTO REMOVIDO - DADOS MIGRADOS PARA MODELO ITEM UNIFICADO
 
@@ -675,6 +702,11 @@ class StockItem(models.Model):
 
     def __str__(self):
         return f"{self.item.nome} - {self.sucursal.nome} ({self.quantidade_atual})"
+
+    @property
+    def produto(self):
+        """Alias legado nos templates — o FK real é `item`."""
+        return self.item
 
     @property
     def quantidade_disponivel(self):
@@ -1514,6 +1546,16 @@ class OrdemCompra(models.Model):
     tipo = models.CharField(max_length=50, help_text='Tipo da ordem', default='COMPRA_EXTERNA')
     cotacao_aprovada = models.TextField(help_text='Cotação aprovada', default='')
     numero_fatura = models.CharField(max_length=50, help_text='Número da fatura', default='PENDENTE')
+    FORMA_PAGAMENTO_CHOICES = [
+        ('PRONTO_PAGAMENTO', 'Pronto Pagamento'),
+        ('CREDITO', 'A Crédito'),
+    ]
+    forma_pagamento = models.CharField(
+        max_length=20,
+        choices=FORMA_PAGAMENTO_CHOICES,
+        default='PRONTO_PAGAMENTO',
+        help_text='Forma de pagamento',
+    )
     data_cotacao = models.DateTimeField(null=True, blank=True, help_text='Data da cotação')
     data_fatura = models.DateField(null=True, blank=True, help_text='Data da fatura')
     
@@ -1532,42 +1574,14 @@ class OrdemCompra(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.codigo:
-            self.codigo = self.gerar_codigo()
+            from .services.codigo_sequencial import gerar_codigo_ano_mes
+            self.codigo = gerar_codigo_ano_mes(OrdemCompra, 'ORDCOMP')
         super().save(*args, **kwargs)
     
     def gerar_codigo(self):
-        """Gera código único para a ordem de compra"""
-        from django.db import transaction
-        import time
-        
-        with transaction.atomic():
-            # Buscar o último código existente que segue o padrão COMP####
-            ultima_ordem = OrdemCompra.objects.filter(
-                codigo__regex=r'^COMP\d{4}$'
-            ).order_by('-codigo').first()
-            
-            if ultima_ordem:
-                # Extrair número do último código
-                try:
-                    ultimo_numero = int(ultima_ordem.codigo[4:])
-                    proximo_numero = ultimo_numero + 1
-                except (ValueError, IndexError):
-                    proximo_numero = 1
-            else:
-                proximo_numero = 1
-            
-            # Verificar se o código já existe e incrementar se necessário
-            tentativas = 0
-            while tentativas < 100:  # Limite de tentativas
-                codigo_tentativa = f"COMP{proximo_numero:04d}"
-                if not OrdemCompra.objects.filter(codigo=codigo_tentativa).exists():
-                    return codigo_tentativa
-                proximo_numero += 1
-                tentativas += 1
-            
-            # Se chegou ao limite de tentativas, usar timestamp
-            timestamp = int(time.time())
-            return f"COMP{timestamp}"
+        """Gera código único para ordem de compra (ORDCOMP + YYYYMM + sequencial)."""
+        from .services.codigo_sequencial import gerar_codigo_ano_mes
+        return gerar_codigo_ano_mes(OrdemCompra, 'ORDCOMP')
     
     @property
     def valor_total(self):
@@ -1743,7 +1757,7 @@ class TransferenciaStock(models.Model):
     )
 
     def __str__(self):
-        return f"TRF-{self.codigo} - {self.sucursal_origem.nome} → {self.sucursal_destino.nome}"
+        return f"{self.codigo} - {self.sucursal_origem.nome} → {self.sucursal_destino.nome}"
 
     @property
     def valor_total(self):
@@ -1762,9 +1776,8 @@ class TransferenciaStock(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.codigo:
-            # Gerar código simples até corrigir método completo
-            import time
-            self.codigo = f"TRF{int(time.time())}"
+            from .services.codigo_sequencial import gerar_codigo_ano_mes
+            self.codigo = gerar_codigo_ano_mes(TransferenciaStock, 'TRF')
         super().save(*args, **kwargs)
 
     @property
@@ -1831,6 +1844,13 @@ class ItemTransferencia(models.Model):
     def quantidade_pendente(self):
         """Quantidade ainda pendente de recebimento"""
         return self.quantidade_solicitada - self.quantidade_recebida
+
+    @property
+    def quantidade(self):
+        """Alias legado (frete, relatórios, templates) — quantidade efectiva do item."""
+        if self.quantidade_recebida:
+            return self.quantidade_recebida
+        return self.quantidade_solicitada
 
     @property
     def totalmente_recebido(self):
@@ -1938,40 +1958,8 @@ class RequisicaoStock(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.codigo:
-            # Gerar código automático sequencial único
-            import time
-            from django.db import transaction
-            
-            with transaction.atomic():
-                # Buscar o último código existente
-                ultima_requisicao = RequisicaoStock.objects.filter(
-                    codigo__startswith='REQ'
-                ).order_by('-codigo').first()
-                
-                if ultima_requisicao:
-                    # Extrair número do último código
-                    try:
-                        ultimo_numero = int(ultima_requisicao.codigo[3:])
-                        proximo_numero = ultimo_numero + 1
-                    except (ValueError, IndexError):
-                        proximo_numero = 1
-                else:
-                    proximo_numero = 1
-                
-                # Verificar se o código já existe e incrementar se necessário
-                while True:
-                    codigo_tentativa = f"REQ{proximo_numero:04d}"
-                    if not RequisicaoStock.objects.filter(codigo=codigo_tentativa).exists():
-                        self.codigo = codigo_tentativa
-                        break
-                    proximo_numero += 1
-                    
-                    # Proteção contra loop infinito
-                    if proximo_numero > 9999:
-                        # Se chegou ao limite, usar timestamp
-                        self.codigo = f"REQ{int(time.time())}"
-                        break
-                        
+            from .services.codigo_sequencial import gerar_codigo_ano_mes
+            self.codigo = gerar_codigo_ano_mes(RequisicaoStock, 'REQ')
         super().save(*args, **kwargs)
 
     def promover_para_pendente(self):
@@ -2130,40 +2118,8 @@ class RequisicaoCompraExterna(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.codigo:
-            # Gerar código automático sequencial único
-            import time
-            from django.db import transaction
-            
-            with transaction.atomic():
-                # Buscar o último código existente
-                ultima_requisicao = RequisicaoCompraExterna.objects.filter(
-                    codigo__startswith='COMP'
-                ).order_by('-codigo').first()
-                
-                if ultima_requisicao:
-                    # Extrair número do último código
-                    try:
-                        ultimo_numero = int(ultima_requisicao.codigo[4:])
-                        proximo_numero = ultimo_numero + 1
-                    except (ValueError, IndexError):
-                        proximo_numero = 1
-                else:
-                    proximo_numero = 1
-                
-                # Verificar se o código já existe e incrementar se necessário
-                while True:
-                    codigo_tentativa = f"COMP{proximo_numero:04d}"
-                    if not RequisicaoCompraExterna.objects.filter(codigo=codigo_tentativa).exists():
-                        self.codigo = codigo_tentativa
-                        break
-                    proximo_numero += 1
-                    
-                    # Proteção contra loop infinito
-                    if proximo_numero > 9999:
-                        # Se chegou ao limite, usar timestamp
-                        self.codigo = f"COMP{int(time.time())}"
-                        break
-                        
+            from .services.codigo_sequencial import gerar_codigo_ano_mes
+            self.codigo = gerar_codigo_ano_mes(RequisicaoCompraExterna, 'RQCOMP')
         super().save(*args, **kwargs)
 
     def promover_para_pendente(self):
@@ -2664,6 +2620,10 @@ class Transportadora(models.Model):
         ('CORREIOS', 'Correios'),
         ('MOTORISTA', 'Motorista Próprio'),
         ('TERCEIRIZADA', 'Terceirizada'),
+        ('VIATURA_INTERNA_ENTREGA', 'Viatura Interna - Entregas'),
+        ('VIATURA_INTERNA_EXECUTIVO', 'Viatura Interna - Executivo'),
+        # Legado (migrações antigas); preferir ENTREGA ou EXECUTIVO em novos registos
+        ('VIATURA_INTERNA', 'Viatura Interna'),
     ]
     
     nome = models.CharField(
@@ -2728,11 +2688,35 @@ class Transportadora(models.Model):
         default=Decimal('0.00'),
         help_text='Custo por quilograma em MT'
     )
+    custo_por_km = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text='Custo por quilômetro em MT'
+    )
     custo_fixo = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal('0.00'),
         help_text='Custo fixo por entrega em MT'
+    )
+    volume_m3_franquia = models.DecimalField(
+        max_digits=8,
+        decimal_places=3,
+        default=Decimal('1.000'),
+        help_text='Volume em m³ incluído sem taxa percentual de suplemento',
+    )
+    peso_kg_franquia = models.DecimalField(
+        max_digits=10,
+        decimal_places=3,
+        default=Decimal('25.000'),
+        help_text='Peso em kg incluído sem taxa percentual de suplemento',
+    )
+    percentual_suplemento_carga = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text='Percentagem aplicada sobre o frete base se volume ou peso exceder a franquia',
     )
     cobertura_provincias = models.JSONField(
         default=list,
@@ -3003,6 +2987,34 @@ class RastreamentoEntrega(models.Model):
         blank=True,
         help_text='Custo do envio'
     )
+    distancia_km = models.DecimalField(
+        max_digits=10,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text='Distância calculada origem→destino em km'
+    )
+    comprimento_cm = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Comprimento do volume em cm'
+    )
+    largura_cm = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Largura do volume em cm'
+    )
+    altura_cm = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Altura do volume em cm'
+    )
     
     # Controle
     data_criacao = models.DateTimeField(
@@ -3050,14 +3062,9 @@ class RastreamentoEntrega(models.Model):
         super().save(*args, **kwargs)
     
     def gerar_codigo_rastreamento(self):
-        """Gera código único de rastreamento"""
-        import time
-        import random
-        
-        # Formato: TRANS + timestamp + random
-        timestamp = int(time.time())
-        random_num = random.randint(100, 999)
-        return f"TRANS{timestamp}{random_num}"
+        """Gera código único de rastreamento (RAST + YYYYMM + sequencial)."""
+        from .services.codigo_sequencial import gerar_codigo_rastreamento_entrega
+        return gerar_codigo_rastreamento_entrega()
     
     @property
     def documento_origem(self):
@@ -3175,21 +3182,31 @@ class EventoRastreamento(models.Model):
 
 
 class NotificacaoLogisticaUnificada(models.Model):
-    def clean(self):
-        # Exclusividade entre transportadora_externa e veiculo_interno
-        if not self.transportadora_externa and not self.veiculo_interno:
-            raise ValidationError('Selecione transportadora externa OU veículo interno.')
-        if self.transportadora_externa and self.veiculo_interno:
-            raise ValidationError('Selecione apenas um tipo de transporte.')
-
-    def save(self, *args, **kwargs):
-        # Atualizar data de atribuição quando transporte é escolhido
-        if not self.data_atribuicao and (self.veiculo_interno_id or self.transportadora_externa_id):
-            self.data_atribuicao = timezone.now()
-            if self.status == 'PENDENTE':
-                self.status = 'ATRIBUIDA'
-        super().save(*args, **kwargs)
     """Notificações logísticas unificadas para transferências e coletas"""
+
+    def clean(self):
+        # Exclusividade entre transportadora_externa e veiculo_interno (quando atribuído)
+        if self.veiculo_interno_id or self.transportadora_externa_id:
+            if self.transportadora_externa and self.veiculo_interno:
+                raise ValidationError('Selecione apenas um tipo de transporte.')
+
+    def _preencher_campos_texto_vazios(self):
+        """Garante strings vazias em colunas NOT NULL da BD."""
+        for field_name in (
+            'motorista_operacao',
+            'telefone_motorista_operacao',
+            'documento_receptor',
+            'nome_receptor',
+            'local_coleta',
+            'local_entrega',
+            'observacoes_coleta',
+            'observacoes_entrega',
+            'observacoes_conclusao',
+            'observacoes_transporte',
+            'observacoes',
+        ):
+            if getattr(self, field_name, None) is None:
+                setattr(self, field_name, '')
     
     TIPO_OPERACAO_CHOICES = [
         ('TRANSFERENCIA', 'Transferência Interna'),
@@ -3360,6 +3377,19 @@ class NotificacaoLogisticaUnificada(models.Model):
         blank=True,
         help_text='Observações sobre o transporte'
     )
+
+    motorista_operacao = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        help_text='Nome do motorista designado para esta operação específica'
+    )
+    telefone_motorista_operacao = models.CharField(
+        max_length=13,
+        blank=True,
+        default='',
+        help_text='Telefone do motorista designado para esta operação'
+    )
     
     # Campos de Confirmação de Entrega
     entregue_por = models.ForeignKey(
@@ -3419,6 +3449,25 @@ class NotificacaoLogisticaUnificada(models.Model):
         help_text='Comprovante de recebimento assinado'
     )
 
+    nome_receptor = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        help_text='Nome completo do receptor que assinou o documento'
+    )
+    documento_receptor = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        help_text='Número de documento (BI/Passaporte) do receptor'
+    )
+    assinatura_receptor = models.ImageField(
+        upload_to='assinaturas_receptor/%Y/%m/%d/',
+        null=True,
+        blank=True,
+        help_text='Assinatura do receptor para confirmação de recebimento'
+    )
+
     class Meta:
         verbose_name = 'Notificação Logística Unificada'
         verbose_name_plural = 'Notificações Logísticas Unificadas'
@@ -3437,10 +3486,12 @@ class NotificacaoLogisticaUnificada(models.Model):
             return f"Coleta {self.ordem_compra.codigo} - {self.get_status_display()}"
 
     def save(self, *args, **kwargs):
+        self._preencher_campos_texto_vazios()
         # Atualizar data de atribuição quando transporte é escolhido
         if not self.data_atribuicao and (self.veiculo_interno_id or self.transportadora_externa_id):
             self.data_atribuicao = timezone.now()
-            self.status = 'ATRIBUIDA'
+            if self.status == 'PENDENTE':
+                self.status = 'ATRIBUIDA'
         
         # Atualizar data de conclusão quando status muda para concluída
         if self.status == 'CONCLUIDA' and not self.data_conclusao:
@@ -3589,5 +3640,32 @@ class NotificacaoLogisticaUnificada(models.Model):
         return colors.get(self.tipo_operacao, 'secondary')
 
 
-
+# Produção e serviços (Vendas / Produção) — migrações 0155+
+from .models_producao_servicos import (  # noqa: E402, F401
+    AtividadeExecucao,
+    ClienteServico,
+    ConfiguracaoContratoEmpreitada,
+    ConfiguracaoContratoServico,
+    ContratoEmpreitada,
+    EquipeServico,
+    FormaPagamento,
+    EtapaOrdemConcluida,
+    EtapaProcesso,
+    ItemOrcamentoServico,
+    ItemRequisicaoProducao,
+    LinhaProducao,
+    Maquina,
+    OrdemProducao,
+    OrdemServico,
+    ParcelaPagamentoOrcamento,
+    PeriodoPagamento,
+    PrestadorServico,
+    ProcessoProducao,
+    PropostaTecnica,
+    RequisicaoProducao,
+    ServicoOrcamentoServico,
+    TaxaServicoCategoria,
+    TrabalhoEmpreitada,
+    TransporteOrcamentoServico,
+)
 

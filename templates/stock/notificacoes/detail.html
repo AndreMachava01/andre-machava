@@ -1,0 +1,82 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ notificacao.titulo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:notificacoes_list' %}">Notificações</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Detalhe</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-bell" aria-hidden="true"></i> {{ notificacao.titulo }}
+                </h1>
+                <p class="page-subtitle">
+                    {{ notificacao.get_tipo_display }} · {{ notificacao.data_criacao|date:"d/m/Y H:i" }}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:notificacoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                {% if notificacao.url %}
+                <a href="{{ notificacao.url }}" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt" aria-hidden="true"></i> Abrir link
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-cards-grid">
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Informações</h2></div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        {% if notificacao.lida %}
+                            <span class="status-badge status-recebida">Lida</span>
+                            {% if notificacao.data_leitura %}
+                                <span class="cell-muted"> em {{ notificacao.data_leitura|date:"d/m/Y H:i" }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="status-badge status-pendente">Nova</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tipo</span>
+                    <span class="info-value">{{ notificacao.get_tipo_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Prioridade</span>
+                    <span class="info-value">{{ notificacao.prioridade }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Criada em</span>
+                    <span class="info-value">{{ notificacao.data_criacao|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Mensagem</h2></div>
+            <div class="card-body">
+                <p>{{ notificacao.mensagem|linebreaksbr }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

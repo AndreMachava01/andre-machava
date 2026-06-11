@@ -1,0 +1,87 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; }
+        .filter-row input[type="date"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin: 0 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .total-row { font-weight: 700; background: #fffbeb; }
+        .link-cell a { color: #b45309; text-decoration: none; }
+        .link-cell a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-arrow-down"></i> {{ title }}</h1>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;">Prestação de Serviços (ordens OS) e Logística — valores contabilizados (recebimentos confirmados). Total igual ao do dashboard.</p>
+            </div>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>De:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                <label>Até:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+                <label>Origem:</label>
+                <select name="origem">
+                    <option value="">Todas</option>
+                    <option value="Vendas" {% if origem_filter == 'Vendas' %}selected{% endif %}>Prestação de Serviços (OS)</option>
+                    <option value="Logística" {% if origem_filter == 'Logística' %}selected{% endif %}>Logística</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Origem</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor (MT)</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in lista %}
+                <tr>
+                    <td>{{ r.data|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{% if r.origem == 'Vendas' %}Prestação de Serviços (OS){% else %}{{ r.origem }}{% endif %}</td>
+                    <td>{{ r.descricao }}</td>
+                    <td class="num">{{ r.valor|floatformat:2 }}</td>
+                    <td class="link-cell">{% if r.url %}<a href="{{ r.url }}">{{ r.url_label }}</a>{% else %}{{ r.url_label }}{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;padding:24px;color:#6b7280;">Nenhuma receita no período.</td></tr>
+                {% endfor %}
+                {% if lista %}
+                <tr class="total-row">
+                    <td colspan="3">Total</td>
+                    <td class="num">{{ total|floatformat:2 }}</td>
+                    <td class="link-cell">—</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

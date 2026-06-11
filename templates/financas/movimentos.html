@@ -1,0 +1,122 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .form-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+        .form-box h3 { margin: 0 0 12px 0; font-size: 16px; color: #92400e; }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+        .form-row label { min-width: 100px; }
+        .form-row input, .form-row select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .empty { text-align: center; padding: 24px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-book"></i> {{ title }}</h1>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'financas:movimentos' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&format=csv" class="btn btn-primary">Exportar CSV</a>
+                <a href="{% url 'financas:movimentos' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&format=xlsx" class="btn btn-primary">Exportar Excel</a>
+                <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding:10px;margin-bottom:12px;border-radius:6px;background:#fef3c7;color:#92400e;border-left:4px solid #b45309;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-box">
+            <h3>Novo lançamento manual</h3>
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="form-row">
+                    <label for="data">Data:</label>
+                    <input type="date" name="data" id="data" value="{{ data_fim }}" required>
+                    <label for="conta">Conta:</label>
+                    <select name="conta" id="conta" required>
+                        <option value="">-- Seleccionar --</option>
+                        {% for c in contas %}
+                        <option value="{{ c.id }}">{{ c.codigo }} - {{ c.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="valor">Valor (MT):</label>
+                    <input type="text" name="valor" id="valor" placeholder="0.00" required>
+                    <label for="documento_ref">Doc. ref:</label>
+                    <input type="text" name="documento_ref" id="documento_ref" placeholder="Opcional">
+                </div>
+                <div class="form-row">
+                    <label for="descricao">Descrição:</label>
+                    <input type="text" name="descricao" id="descricao" style="min-width:300px;" required>
+                </div>
+                <div class="form-row">
+                    <button type="submit" class="btn btn-primary">Registar lançamento</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>De:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                <label>Até:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+
+        <p style="margin-bottom:12px;"><strong>Total entradas (período):</strong> {{ total_entradas|floatformat:2 }} MT &nbsp;|&nbsp; <strong>Total saídas:</strong> {{ total_saidas|floatformat:2 }} MT</p>
+
+        {% if movimentos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Conta</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor (MT)</th>
+                    <th>Doc.</th>
+                    <th>Origem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movimentos %}
+                <tr>
+                    <td>{{ m.data|date:"d/m/Y" }}</td>
+                    <td>{{ m.conta.codigo }} - {{ m.conta.nome }}</td>
+                    <td>{{ m.descricao }}</td>
+                    <td class="num">{{ m.valor|floatformat:2 }}</td>
+                    <td>{{ m.documento_ref|default:"—" }}</td>
+                    <td>{{ m.get_origem_tipo_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">Nenhum movimento no período.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

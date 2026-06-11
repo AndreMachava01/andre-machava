@@ -1,0 +1,237 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluir Equipe - {{ equipe.nome }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #ef4444;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #ef4444;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+        }
+        .warning-box h3 {
+            color: #92400e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .warning-box p {
+            color: #78350f;
+            margin: 0;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 {
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .info-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        .membros-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .membro-badge {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-exclamation-triangle"></i>
+                Excluir Equipe
+            </h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; border-left: 4px solid #10b981;">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if ordens_uso > 0 %}
+        <div class="warning-box" style="background: #fee2e2; border-left-color: #ef4444;">
+            <h3 style="color: #991b1b;">
+                <i class="fas fa-ban"></i>
+                Não é possível excluir esta equipe
+            </h3>
+            <p style="color: #7f1d1d;">
+                Esta equipe está sendo usada em <strong>{{ ordens_uso }}</strong> ordem{{ ordens_uso|pluralize:"ns" }} de serviço. 
+                Para excluir a equipe, primeiro é necessário alterar ou cancelar todas as ordens de serviço relacionadas.
+            </p>
+        </div>
+        {% else %}
+        <div class="warning-box">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Atenção: Esta ação não pode ser desfeita
+            </h3>
+            <p>
+                Você está prestes a excluir permanentemente a equipe <strong>{{ equipe.nome }}</strong>. 
+                Esta ação não pode ser revertida.
+            </p>
+        </div>
+        {% endif %}
+
+        <div class="info-box">
+            <h3>Informações da Equipe</h3>
+            <div class="info-item">
+                <span class="info-label">Nome:</span>
+                <span class="info-value">{{ equipe.nome }}</span>
+            </div>
+            {% if equipe.lider %}
+            <div class="info-item">
+                <span class="info-label">Líder:</span>
+                <span class="info-value">{{ equipe.lider.nome_completo }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">Total de Membros:</span>
+                <span class="info-value">{{ equipe.total_membros }}</span>
+            </div>
+            {% if equipe.membros.all %}
+            <div class="info-item" style="flex-direction: column; align-items: flex-start;">
+                <span class="info-label" style="margin-bottom: 5px;">Membros:</span>
+                <div class="membros-list">
+                    {% for membro in equipe.membros.all %}
+                    <span class="membro-badge">{{ membro.nome_completo }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if equipe.descricao %}
+            <div class="info-item" style="flex-direction: column; align-items: flex-start;">
+                <span class="info-label" style="margin-bottom: 5px;">Descrição:</span>
+                <span class="info-value" style="font-weight: normal;">{{ equipe.descricao }}</span>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">Ordens de Serviço:</span>
+                <span class="info-value">{{ ordens_uso }}</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'producao:servicos_equipes' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+            {% if ordens_uso == 0 %}
+            <form method="POST" action="{% url 'producao:servico_equipe_delete' equipe.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir a equipe {{ equipe.nome }}? Esta ação não pode ser desfeita.');">
+                    <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

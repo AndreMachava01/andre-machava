@@ -1,0 +1,107 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Log API #{{ log.id }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:observability:api_logs_list' as api_logs_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Logs de API' breadcrumb_section_url=api_logs_list_url breadcrumb_current=log.id %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-code" aria-hidden="true"></i>
+                    {{ log.metodo }} {{ log.endpoint }}
+                </h1>
+                <p class="page-subtitle">HTTP {{ log.status_code }} · {{ log.tempo_resposta_ms }} ms · {{ log.data_requisicao|date:"d/m/Y H:i:s" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:api_logs_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Resumo</h2>
+            <span class="badge badge-{% if log.status_code < 300 %}success{% elif log.status_code < 400 %}info{% elif log.status_code < 500 %}warning{% else %}danger{% endif %}">
+                {{ log.status_code }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-label">UUID</span>
+                    <span class="info-value"><code>{{ log.uuid }}</code></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Utilizador</span>
+                    <span class="info-value">{% if log.usuario %}{{ log.usuario.username }}{% else %}—{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">IP</span>
+                    <span class="info-value">{{ log.ip_address }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tamanho request</span>
+                    <span class="info-value">{{ log.tamanho_request_bytes }} bytes</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tamanho response</span>
+                    <span class="info-value">{{ log.tamanho_response_bytes }} bytes</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tempo</span>
+                    <span class="info-value">{{ log.tempo_resposta_ms }} ms</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Query params</h3></div>
+            {% if log.query_params %}
+            <div class="card-body"><pre class="stock-code-block">{{ log.query_params }}</pre></div>
+            {% else %}
+            <div class="no-data"><p>Sem parâmetros.</p></div>
+            {% endif %}
+        </div>
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Headers (request)</h3></div>
+            {% if log.headers %}
+            <div class="card-body"><pre class="stock-code-block">{{ log.headers }}</pre></div>
+            {% else %}
+            <div class="no-data"><p>Sem headers.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid stock-u-mt-24">
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Body (request)</h3></div>
+            {% if log.body_request %}
+            <div class="card-body"><pre class="stock-code-block">{{ log.body_request }}</pre></div>
+            {% else %}
+            <div class="no-data"><p>Corpo vazio.</p></div>
+            {% endif %}
+        </div>
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Body (response)</h3></div>
+            {% if log.body_response %}
+            <div class="card-body"><pre class="stock-code-block">{{ log.body_response }}</pre></div>
+            {% else %}
+            <div class="no-data"><p>Corpo vazio.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if log.user_agent %}
+    <p class="text-muted stock-u-mt-16"><small>User-Agent: {{ log.user_agent }}</small></p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -11,11 +11,12 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from ..models_masterdata import (
-    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
+    Regiao, ZonaLogistica, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
 from ..models_stock import RastreamentoEntrega, Transportadora, VeiculoInterno
+from .codigo_sequencial import gerar_codigo_masterdata
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,10 @@ class MasterdataService:
                 ativo=True
             )
     
+    def _gerar_codigo(self, model_class, prefixo: str) -> str:
+        """Gera código sequencial para entidades masterdata."""
+        return gerar_codigo_masterdata(model_class, prefixo)
+
     def _log_operacao(self, 
                       tipo_operacao: str,
                       modelo_afetado: str,
@@ -70,9 +75,9 @@ class MasterdataService:
             logger.error(f"Erro ao registrar log de masterdata: {e}")
     
     def criar_regiao(self,
-                    codigo: str,
                     nome: str,
                     provincia: str,
+                    codigo: Optional[str] = None,
                     distrito: str = '',
                     latitude_centro: Optional[Decimal] = None,
                     longitude_centro: Optional[Decimal] = None,
@@ -95,6 +100,8 @@ class MasterdataService:
             Regiao criada
         """
         try:
+            if not codigo:
+                codigo = self._gerar_codigo(Regiao, 'REG')
             regiao = Regiao.objects.create(
                 codigo=codigo,
                 nome=nome,
@@ -128,9 +135,9 @@ class MasterdataService:
             raise
     
     def criar_zona_entrega(self,
-                          codigo: str,
                           nome: str,
                           regiao_id: int,
+                          codigo: Optional[str] = None,
                           prazo_entrega_dias: int = 1,
                           custo_adicional: Decimal = Decimal('0.00'),
                           peso_maximo_kg: Optional[Decimal] = None,
@@ -138,7 +145,7 @@ class MasterdataService:
                           horario_inicio: str = '08:00',
                           horario_fim: str = '18:00',
                           dias_funcionamento: List[int] = None,
-                          usuario: Optional[User] = None) -> ZonaEntrega:
+                          usuario: Optional[User] = None) -> ZonaLogistica:
         """
         Cria uma nova zona de entrega.
         
@@ -156,15 +163,18 @@ class MasterdataService:
             usuario: Usuário que criou
             
         Returns:
-            ZonaEntrega criada
+            ZonaLogistica criada
         """
         try:
             regiao = Regiao.objects.get(id=regiao_id)
             
             if dias_funcionamento is None:
                 dias_funcionamento = [0, 1, 2, 3, 4]  # Segunda a sexta
+
+            if not codigo:
+                codigo = self._gerar_codigo(ZonaLogistica, 'ZN')
             
-            zona = ZonaEntrega.objects.create(
+            zona = ZonaLogistica.objects.create(
                 codigo=codigo,
                 nome=nome,
                 regiao=regiao,
@@ -180,7 +190,7 @@ class MasterdataService:
             
             self._log_operacao(
                 tipo_operacao='CRIAR',
-                modelo_afetado='ZonaEntrega',
+                modelo_afetado='ZonaLogistica',
                 objeto_id=zona.id,
                 dados_novos={
                     'codigo': codigo,
@@ -200,7 +210,6 @@ class MasterdataService:
             raise
     
     def criar_hub_logistico(self,
-                           codigo: str,
                            nome: str,
                            endereco: str,
                            cidade: str,
@@ -216,6 +225,7 @@ class MasterdataService:
                            telefone: str = '',
                            email: str = '',
                            responsavel: str = '',
+                           codigo: Optional[str] = None,
                            usuario: Optional[User] = None) -> HubLogistico:
         """
         Cria um novo hub logístico.
@@ -244,6 +254,9 @@ class MasterdataService:
         """
         try:
             regiao = Regiao.objects.get(id=regiao_id)
+
+            if not codigo:
+                codigo = self._gerar_codigo(HubLogistico, 'HUB')
             
             hub = HubLogistico.objects.create(
                 codigo=codigo,
@@ -289,12 +302,12 @@ class MasterdataService:
             raise
     
     def criar_catalogo_dimensoes(self,
-                                codigo: str,
                                 nome: str,
                                 comprimento_cm: Decimal,
                                 largura_cm: Decimal,
                                 altura_cm: Decimal,
                                 peso_kg: Decimal,
+                                codigo: Optional[str] = None,
                                 categoria: str = 'PACOTE_MEDIO',
                                 usuario: Optional[User] = None) -> CatalogoDimensoes:
         """
@@ -314,6 +327,9 @@ class MasterdataService:
             CatalogoDimensoes criado
         """
         try:
+            if not codigo:
+                codigo = self._gerar_codigo(CatalogoDimensoes, 'DIM')
+
             dimensao = CatalogoDimensoes.objects.create(
                 codigo=codigo,
                 nome=nome,
@@ -350,9 +366,9 @@ class MasterdataService:
             raise
     
     def criar_restricao_logistica(self,
-                                 codigo: str,
                                  nome: str,
                                  tipo: str,
+                                 codigo: Optional[str] = None,
                                  valor_minimo: Optional[Decimal] = None,
                                  valor_maximo: Optional[Decimal] = None,
                                  unidade_medida: str = '',
@@ -379,6 +395,9 @@ class MasterdataService:
             RestricaoLogistica criada
         """
         try:
+            if not codigo:
+                codigo = self._gerar_codigo(RestricaoLogistica, 'RST')
+
             restricao = RestricaoLogistica.objects.create(
                 codigo=codigo,
                 nome=nome,
@@ -415,6 +434,20 @@ class MasterdataService:
             logger.error(f"Erro ao criar restrição logística: {e}")
             raise
     
+    @staticmethod
+    def _coerce_decimal(val) -> Optional[Decimal]:
+        if val is None or val == '':
+            return None
+        if isinstance(val, Decimal):
+            return val
+        return Decimal(str(val).replace(',', '.'))
+
+    @staticmethod
+    def _coerce_int(val) -> Optional[int]:
+        if val is None or val == '':
+            return None
+        return int(val)
+
     def validar_restricoes(self,
                           peso_kg: Optional[Decimal] = None,
                           volume_m3: Optional[Decimal] = None,
@@ -439,20 +472,63 @@ class MasterdataService:
             Dicionário com resultado da validação
         """
         try:
+            peso_kg = self._coerce_decimal(peso_kg)
+            volume_m3 = self._coerce_decimal(volume_m3)
+            valor_declarado = self._coerce_decimal(valor_declarado)
+            zona_entrega_id = self._coerce_int(zona_entrega_id)
+            transportadora_id = self._coerce_int(transportadora_id)
+            veiculo_interno_id = self._coerce_int(veiculo_interno_id)
+
             restricoes_violadas = []
             avisos = []
             bloqueios = []
+
+            def _registar_violacao(nome, tipo, atual, limite, unidade, bloquear=False):
+                violacao = {
+                    'restricao': nome,
+                    'tipo': tipo,
+                    'valor_atual': float(atual),
+                    'valor_limite': float(limite),
+                    'unidade': unidade,
+                    'mensagem': f'{atual} {unidade} excede o limite de {limite} {unidade}',
+                }
+                restricoes_violadas.append(violacao)
+                if bloquear:
+                    bloqueios.append(violacao)
+                else:
+                    avisos.append(violacao)
+
+            # Limites da zona de entrega (masterdata)
+            if zona_entrega_id:
+                try:
+                    zona = ZonaLogistica.objects.get(id=zona_entrega_id, ativo=True)
+                    if peso_kg is not None and zona.peso_maximo_kg and peso_kg > zona.peso_maximo_kg:
+                        _registar_violacao(
+                            f'Zona {zona.nome} — peso máximo',
+                            'PESO', peso_kg, zona.peso_maximo_kg, 'kg', bloquear=True,
+                        )
+                    if volume_m3 is not None and zona.volume_maximo_m3 and volume_m3 > zona.volume_maximo_m3:
+                        _registar_violacao(
+                            f'Zona {zona.nome} — volume máximo',
+                            'VOLUME', volume_m3, zona.volume_maximo_m3, 'm³', bloquear=True,
+                        )
+                except ZonaLogistica.DoesNotExist:
+                    pass
             
             # Obter restrições ativas
             restricoes = RestricaoLogistica.objects.filter(ativo=True)
             
             for restricao in restricoes:
                 # Verificar se restrição se aplica
-                aplicavel = False
-                if transportadora_id and restricao.aplicavel_transportadora:
+                # Sem meio de transporte seleccionado: avalia todas as restrições activas
+                if not transportadora_id and not veiculo_interno_id:
                     aplicavel = True
-                elif veiculo_interno_id and restricao.aplicavel_veiculo_interno:
-                    aplicavel = True
+                else:
+                    aplicavel = False
+                    if transportadora_id and restricao.aplicavel_transportadora:
+                        aplicavel = True
+                    if veiculo_interno_id and restricao.aplicavel_veiculo_interno:
+                        aplicavel = True
                 
                 if not aplicavel:
                     continue
@@ -538,9 +614,9 @@ class MasterdataService:
                     ).count()
                 },
                 'zonas_entrega': {
-                    'total': ZonaEntrega.objects.filter(ativo=True).count(),
+                    'total': ZonaLogistica.objects.filter(ativo=True).count(),
                     'por_regiao': dict(
-                        ZonaEntrega.objects.filter(ativo=True)
+                        ZonaLogistica.objects.filter(ativo=True)
                         .values('regiao__nome')
                         .annotate(count=Count('id'))
                         .values_list('regiao__nome', 'count')
@@ -633,6 +709,169 @@ class MasterdataService:
         except Exception as e:
             logger.error(f"Erro ao obter logs de masterdata: {e}")
             raise
+
+    # -------------------------------------------------------------------------
+    # Actualização e exclusão
+    # -------------------------------------------------------------------------
+
+    def atualizar_regiao(self, regiao_id: int, nome: str, provincia: str,
+                         distrito: str = '', latitude_centro=None, longitude_centro=None,
+                         prioridade: int = 1, ativo: bool = True,
+                         usuario: Optional[User] = None) -> Regiao:
+        regiao = Regiao.objects.get(id=regiao_id)
+        dados_anteriores = {'codigo': regiao.codigo, 'nome': regiao.nome, 'ativo': regiao.ativo}
+        regiao.nome = nome
+        regiao.provincia = provincia
+        regiao.distrito = distrito
+        regiao.latitude_centro = latitude_centro
+        regiao.longitude_centro = longitude_centro
+        regiao.prioridade = prioridade
+        regiao.ativo = ativo
+        regiao.save()
+        self._log_operacao('EDITAR', 'Regiao', regiao.id, dados_anteriores,
+                           {'nome': nome, 'provincia': provincia, 'ativo': ativo}, usuario)
+        return regiao
+
+    def excluir_regiao(self, regiao_id: int, usuario: Optional[User] = None) -> None:
+        regiao = Regiao.objects.get(id=regiao_id)
+        zonas = regiao.zonas.count()
+        hubs = regiao.hubs.count()
+        if zonas or hubs:
+            raise ValidationError(
+                f'Não é possível eliminar: a região tem {zonas} zona(s) e {hubs} hub(s) associados.'
+            )
+        dados = {'codigo': regiao.codigo, 'nome': regiao.nome}
+        obj_id = regiao.id
+        regiao.delete()
+        self._log_operacao('EXCLUIR', 'Regiao', obj_id, dados_anteriores=dados, usuario=usuario)
+
+    def atualizar_zona_entrega(self, zona_id: int, nome: str, regiao_id: int,
+                               prazo_entrega_dias: int = 1,
+                               custo_adicional: Decimal = Decimal('0.00'),
+                               peso_maximo_kg=None, volume_maximo_m3=None,
+                               horario_inicio: str = '08:00', horario_fim: str = '18:00',
+                               dias_funcionamento: Optional[List[int]] = None,
+                               ativo: bool = True, usuario: Optional[User] = None) -> ZonaLogistica:
+        zona = ZonaLogistica.objects.get(id=zona_id)
+        regiao = Regiao.objects.get(id=regiao_id)
+        dados_anteriores = {'codigo': zona.codigo, 'nome': zona.nome, 'ativo': zona.ativo}
+        if dias_funcionamento is None:
+            dias_funcionamento = zona.dias_funcionamento or []
+        zona.nome = nome
+        zona.regiao = regiao
+        zona.prazo_entrega_dias = prazo_entrega_dias
+        zona.custo_adicional = custo_adicional
+        zona.peso_maximo_kg = peso_maximo_kg
+        zona.volume_maximo_m3 = volume_maximo_m3
+        zona.horario_inicio = horario_inicio
+        zona.horario_fim = horario_fim
+        zona.dias_funcionamento = dias_funcionamento
+        zona.ativo = ativo
+        zona.save()
+        self._log_operacao('EDITAR', 'ZonaLogistica', zona.id, dados_anteriores,
+                           {'nome': nome, 'regiao': regiao.nome, 'ativo': ativo}, usuario)
+        return zona
+
+    def excluir_zona_entrega(self, zona_id: int, usuario: Optional[User] = None) -> None:
+        zona = ZonaLogistica.objects.get(id=zona_id)
+        dados = {'codigo': zona.codigo, 'nome': zona.nome}
+        obj_id = zona.id
+        zona.delete()
+        self._log_operacao('EXCLUIR', 'ZonaLogistica', obj_id, dados_anteriores=dados, usuario=usuario)
+
+    def atualizar_hub_logistico(self, hub_id: int, nome: str, endereco: str, cidade: str,
+                                regiao_id: int, latitude: Decimal, longitude: Decimal,
+                                tipo: str = 'DISTRIBUICAO', capacidade_maxima_m3=None,
+                                capacidade_maxima_kg=None, horario_inicio: str = '06:00',
+                                horario_fim: str = '22:00', funcionamento_24h: bool = False,
+                                telefone: str = '', email: str = '', responsavel: str = '',
+                                ativo: bool = True, usuario: Optional[User] = None) -> HubLogistico:
+        hub = HubLogistico.objects.get(id=hub_id)
+        regiao = Regiao.objects.get(id=regiao_id)
+        dados_anteriores = {'codigo': hub.codigo, 'nome': hub.nome, 'ativo': hub.ativo}
+        hub.nome = nome
+        hub.endereco = endereco
+        hub.cidade = cidade
+        hub.regiao = regiao
+        hub.latitude = latitude
+        hub.longitude = longitude
+        hub.tipo = tipo
+        hub.capacidade_maxima_m3 = capacidade_maxima_m3
+        hub.capacidade_maxima_kg = capacidade_maxima_kg
+        hub.horario_inicio = horario_inicio
+        hub.horario_fim = horario_fim
+        hub.funcionamento_24h = funcionamento_24h
+        hub.telefone = telefone
+        hub.email = email
+        hub.responsavel = responsavel
+        hub.ativo = ativo
+        hub.save()
+        self._log_operacao('EDITAR', 'HubLogistico', hub.id, dados_anteriores,
+                           {'nome': nome, 'cidade': cidade, 'ativo': ativo}, usuario)
+        return hub
+
+    def excluir_hub_logistico(self, hub_id: int, usuario: Optional[User] = None) -> None:
+        hub = HubLogistico.objects.get(id=hub_id)
+        dados = {'codigo': hub.codigo, 'nome': hub.nome}
+        obj_id = hub.id
+        hub.delete()
+        self._log_operacao('EXCLUIR', 'HubLogistico', obj_id, dados_anteriores=dados, usuario=usuario)
+
+    def atualizar_catalogo_dimensoes(self, dimensao_id: int, nome: str,
+                                     comprimento_cm: Decimal, largura_cm: Decimal,
+                                     altura_cm: Decimal, peso_kg: Decimal,
+                                     categoria: str = 'PACOTE_MEDIO', ativo: bool = True,
+                                     usuario: Optional[User] = None) -> CatalogoDimensoes:
+        dimensao = CatalogoDimensoes.objects.get(id=dimensao_id)
+        dados_anteriores = {'codigo': dimensao.codigo, 'nome': dimensao.nome, 'ativo': dimensao.ativo}
+        dimensao.nome = nome
+        dimensao.comprimento_cm = comprimento_cm
+        dimensao.largura_cm = largura_cm
+        dimensao.altura_cm = altura_cm
+        dimensao.peso_kg = peso_kg
+        dimensao.categoria = categoria
+        dimensao.ativo = ativo
+        dimensao.save()
+        self._log_operacao('EDITAR', 'CatalogoDimensoes', dimensao.id, dados_anteriores,
+                           {'nome': nome, 'categoria': categoria, 'ativo': ativo}, usuario)
+        return dimensao
+
+    def excluir_catalogo_dimensoes(self, dimensao_id: int, usuario: Optional[User] = None) -> None:
+        dimensao = CatalogoDimensoes.objects.get(id=dimensao_id)
+        dados = {'codigo': dimensao.codigo, 'nome': dimensao.nome}
+        obj_id = dimensao.id
+        dimensao.delete()
+        self._log_operacao('EXCLUIR', 'CatalogoDimensoes', obj_id, dados_anteriores=dados, usuario=usuario)
+
+    def atualizar_restricao_logistica(self, restricao_id: int, nome: str, tipo: str,
+                                      valor_minimo=None, valor_maximo=None,
+                                      unidade_medida: str = '',
+                                      aplicavel_veiculo_interno: bool = True,
+                                      aplicavel_transportadora: bool = True,
+                                      acao_violacao: str = 'AVISAR', ativo: bool = True,
+                                      usuario: Optional[User] = None) -> RestricaoLogistica:
+        restricao = RestricaoLogistica.objects.get(id=restricao_id)
+        dados_anteriores = {'codigo': restricao.codigo, 'nome': restricao.nome, 'ativo': restricao.ativo}
+        restricao.nome = nome
+        restricao.tipo = tipo
+        restricao.valor_minimo = valor_minimo
+        restricao.valor_maximo = valor_maximo
+        restricao.unidade_medida = unidade_medida
+        restricao.aplicavel_veiculo_interno = aplicavel_veiculo_interno
+        restricao.aplicavel_transportadora = aplicavel_transportadora
+        restricao.acao_violacao = acao_violacao
+        restricao.ativo = ativo
+        restricao.save()
+        self._log_operacao('EDITAR', 'RestricaoLogistica', restricao.id, dados_anteriores,
+                           {'nome': nome, 'tipo': tipo, 'ativo': ativo}, usuario)
+        return restricao
+
+    def excluir_restricao_logistica(self, restricao_id: int, usuario: Optional[User] = None) -> None:
+        restricao = RestricaoLogistica.objects.get(id=restricao_id)
+        dados = {'codigo': restricao.codigo, 'nome': restricao.nome}
+        obj_id = restricao.id
+        restricao.delete()
+        self._log_operacao('EXCLUIR', 'RestricaoLogistica', obj_id, dados_anteriores=dados, usuario=usuario)
 
 
 # Instância global do serviço

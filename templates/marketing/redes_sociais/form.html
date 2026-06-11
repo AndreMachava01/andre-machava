@@ -1,0 +1,90 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 640px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .actions { margin-top: 24px; display: flex; gap: 10px; }
+        .required-mark { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-share-alt"></i> {{ title }}</h1>
+            <a href="{% url 'marketing:redes_sociais_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="canal">Canal <span class="required-mark">*</span></label>
+                <input type="text" id="canal" name="canal" value="{{ publicacao.canal|default:'' }}" placeholder="Facebook, Instagram..." required>
+            </div>
+            <div class="form-group">
+                <label for="texto">Texto <span class="required-mark">*</span></label>
+                <textarea id="texto" name="texto" required>{{ publicacao.texto|default:'' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="campanha">Campanha</label>
+                <select id="campanha" name="campanha">
+                    <option value="">-- Nenhuma --</option>
+                    {% for c in campanhas %}
+                    <option value="{{ c.id }}" {% if publicacao.campanha_id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="data_agendada">Data/hora agendada</label>
+                <input type="datetime-local" id="data_agendada" name="data_agendada" value="{{ publicacao.data_agendada|date:'Y-m-d\TH:i'|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado">
+                    {% for cod, nome in estado_choices %}
+                    <option value="{{ cod }}" {% if publicacao.estado == cod %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="imagem_url">URL da imagem</label>
+                <input type="url" id="imagem_url" name="imagem_url" value="{{ publicacao.imagem_url|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="link_post">Link do post (após publicação)</label>
+                <input type="url" id="link_post" name="link_post" value="{{ publicacao.link_post|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="responsavel">Responsável</label>
+                <select id="responsavel" name="responsavel">
+                    <option value="">-- Nenhum --</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}" {% if publicacao.responsavel_id == u.id %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes">{{ publicacao.observacoes|default:'' }}</textarea>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{% url 'marketing:redes_sociais_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

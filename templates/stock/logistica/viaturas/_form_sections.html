@@ -1,0 +1,160 @@
+{% if form.non_field_errors %}
+<div class="alert alert-danger stock-u-mb-24" role="alert">
+    {% for error in form.non_field_errors %}
+    <p class="stock-u-mb-0">{{ error }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="form-section">
+    <h5><i class="fas fa-car" aria-hidden="true"></i> Identificação</h5>
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label for="{{ form.nome.id_for_label }}" class="form-label">Nome</label>
+            {{ form.nome }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.nome.errors only %}
+            <p class="form-text">Ex.: MAT-VAN-01</p>
+        </div>
+        <div class="form-field">
+            <label for="{{ form.codigo.id_for_label }}" class="form-label">Código</label>
+            {{ form.codigo }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.codigo.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.tipo.id_for_label }}" class="form-label required-field">Uso</label>
+            {{ form.tipo }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.tipo.errors only %}
+            <p class="form-text">Entregas ou executivo</p>
+        </div>
+        <div class="form-field">
+            <label for="{{ form.sucursal.id_for_label }}" class="form-label required-field">Sucursal</label>
+            {{ form.sucursal }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.sucursal.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.categoria_veiculo.id_for_label }}" class="form-label required-field">Categoria</label>
+            {{ form.categoria_veiculo }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.categoria_veiculo.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.placa.id_for_label }}" class="form-label required-field">Placa</label>
+            {{ form.placa }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.placa.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.marca.id_for_label }}" class="form-label required-field">Marca</label>
+            {{ form.marca }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.marca.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.modelo.id_for_label }}" class="form-label required-field">Modelo</label>
+            {{ form.modelo }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.modelo.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.ano_fabricacao.id_for_label }}" class="form-label required-field">Ano de fabricação</label>
+            {{ form.ano_fabricacao }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.ano_fabricacao.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.capacidade_kg.id_for_label }}" class="form-label">Capacidade (kg)</label>
+            {{ form.capacidade_kg }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.capacidade_kg.errors only %}
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5><i class="fas fa-user-tie" aria-hidden="true"></i> Motorista e estado</h5>
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label for="{{ form.motorista_responsavel.id_for_label }}" class="form-label required-field">Motorista responsável</label>
+            {{ form.motorista_responsavel }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.motorista_responsavel.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.telefone_motorista.id_for_label }}" class="form-label">Telefone</label>
+            {{ form.telefone_motorista }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.telefone_motorista.errors only %}
+            <p class="form-text">Actualizado ao seleccionar o motorista</p>
+        </div>
+        <div class="form-field">
+            <label for="{{ form.quilometragem_atual.id_for_label }}" class="form-label">Quilometragem actual</label>
+            {{ form.quilometragem_atual }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.quilometragem_atual.errors only %}
+            <p class="form-text">km</p>
+        </div>
+        <div class="form-field">
+            <label for="{{ form.proxima_revisao.id_for_label }}" class="form-label">Próxima revisão</label>
+            {{ form.proxima_revisao }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.proxima_revisao.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+            {{ form.status }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.status.errors only %}
+        </div>
+        <div class="form-field">
+            <span class="form-label">Disponibilidade</span>
+            <div class="form-check stock-form-check-inline">
+                {{ form.ativa }}
+                <label class="form-check-label" for="{{ form.ativa.id_for_label }}">Viatura activa</label>
+            </div>
+            {% include 'stock/includes/_field_errors.html' with errors=form.ativa.errors only %}
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5><i class="fas fa-coins" aria-hidden="true"></i> Tarifas e prazos</h5>
+    <p class="stock-form-intro">
+        Valores usados no cálculo de frete ao atribuir esta viatura a operações logísticas.
+    </p>
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label for="{{ form.prazo_entrega_padrao.id_for_label }}" class="form-label">Prazo padrão (dias)</label>
+            {{ form.prazo_entrega_padrao }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.prazo_entrega_padrao.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.custo_fixo.id_for_label }}" class="form-label">Custo fixo (MT)</label>
+            {{ form.custo_fixo }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.custo_fixo.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.custo_por_kg.id_for_label }}" class="form-label">Custo por kg (MT)</label>
+            {{ form.custo_por_kg }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.custo_por_kg.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.custo_por_km.id_for_label }}" class="form-label">Custo por km (MT)</label>
+            {{ form.custo_por_km }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.custo_por_km.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.volume_m3_franquia.id_for_label }}" class="form-label">Volume incluído (m³)</label>
+            {{ form.volume_m3_franquia }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.volume_m3_franquia.errors only %}
+        </div>
+        <div class="form-field">
+            <label for="{{ form.peso_kg_franquia.id_for_label }}" class="form-label">Peso incluído (kg)</label>
+            {{ form.peso_kg_franquia }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.peso_kg_franquia.errors only %}
+        </div>
+        <div class="form-field form-field--full">
+            <label for="{{ form.percentual_suplemento_carga.id_for_label }}" class="form-label">Suplemento %</label>
+            {{ form.percentual_suplemento_carga }}
+            {% include 'stock/includes/_field_errors.html' with errors=form.percentual_suplemento_carga.errors only %}
+            <p class="form-text">Percentagem sobre o frete base quando volume ou peso excedem a franquia</p>
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5><i class="fas fa-sticky-note" aria-hidden="true"></i> Observações</h5>
+    <div class="form-field form-field--full">
+        <label for="{{ form.observacoes.id_for_label }}" class="form-label">Notas</label>
+        {{ form.observacoes }}
+        {% include 'stock/includes/_field_errors.html' with errors=form.observacoes.errors only %}
+    </div>
+</div>

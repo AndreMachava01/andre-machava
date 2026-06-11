@@ -1,0 +1,353 @@
+{% load humanize %}
+{% load rh_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem {{ ordem.codigo }} - Fase 3: Acabamentos e Finalizações</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        h1 {
+            font-size: 24px;
+            color: #8b5cf6;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #8b5cf6;
+        }
+        .info-card h3 {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-card p {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .checklist-item {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .checklist-item.completed {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+        .checklist-item.pending {
+            background: #fff;
+            border-color: #f59e0b;
+        }
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .checklist-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .checklist-number {
+            background: #8b5cf6;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .checklist-item.completed .checklist-number {
+            background: #10b981;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        .status-pending {
+            background: #f59e0b;
+            color: white;
+        }
+        .checklist-content {
+            padding-top: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-check-circle"></i>
+                Ordem {{ ordem.codigo }} - Fase 3: Acabamentos e Finalizações
+            </h1>
+            <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Status</h3>
+                <p>{{ ordem.get_status_display }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Produto</h3>
+                <p>{{ ordem.produto.nome }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Quantidade</h3>
+                <p>{{ ordem.quantidade }} {{ ordem.produto.unidade_medida }}</p>
+            </div>
+            {% if ordem.receita %}
+            <div class="info-card">
+                <h3>Receita</h3>
+                <p>{{ ordem.receita.nome }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px;">
+            <!-- 1. Acabamentos -->
+            <div class="checklist-item {% if ordem.acabamentos_concluidos %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">1</span>
+                        <span>Acabamentos</span>
+                    </div>
+                    <div>
+                        {% if ordem.acabamentos_concluidos %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Concluídos
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.acabamentos_concluidos %}
+                        <p style="color: #065f46;">
+                            <i class="fas fa-check"></i> Acabamentos concluídos.
+                        </p>
+                    {% else %}
+                        <p style="color: #92400e; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Marque como concluído quando os acabamentos estiverem finalizados.
+                        </p>
+                        <form method="post" action="{% url 'producao:ordem_fase3_marcar_acabamentos' ordem.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Marcar Acabamentos como Concluídos
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 2. Retoques Finais -->
+            <div class="checklist-item {% if ordem.retoques_concluidos %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">2</span>
+                        <span>Retoques Finais</span>
+                    </div>
+                    <div>
+                        {% if ordem.retoques_concluidos %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Concluídos
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.retoques_concluidos %}
+                        <p style="color: #065f46;">
+                            <i class="fas fa-check"></i> Retoques finais concluídos.
+                        </p>
+                    {% else %}
+                        <p style="color: #92400e; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Marque como concluído quando os retoques finais estiverem finalizados.
+                        </p>
+                        <form method="post" action="{% url 'producao:ordem_fase3_marcar_retoques' ordem.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Marcar Retoques como Concluídos
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 3. Controle de Qualidade -->
+            <div class="checklist-item {% if ordem.controle_qualidade_aprovado %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">3</span>
+                        <span>Controle de Qualidade</span>
+                    </div>
+                    <div>
+                        {% if ordem.controle_qualidade_aprovado %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Aprovado
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.controle_qualidade_aprovado %}
+                        <p style="color: #065f46;">
+                            <i class="fas fa-check"></i> Controle de qualidade aprovado.
+                        </p>
+                        {% if ordem.observacoes_qualidade %}
+                        <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; border-left: 3px solid #10b981;">
+                            <strong>Observações:</strong>
+                            <p style="margin-top: 5px; color: #1f2937;">{{ ordem.observacoes_qualidade|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p style="color: #92400e; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Aprove a qualidade quando todos os processos estiverem concluídos.
+                        </p>
+                        <form method="post" action="{% url 'producao:ordem_fase3_aprovar_qualidade' ordem.id %}">
+                            {% csrf_token %}
+                            <textarea name="observacoes_qualidade" placeholder="Observações sobre a qualidade (opcional)" rows="3"></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle"></i> Aprovar Qualidade
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if ordem.pode_avancar_fase %}
+        <div class="alert alert-success" style="margin-top: 30px; padding: 25px; border-left: 5px solid #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <strong style="font-size: 18px; color: #065f46; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 24px;"></i> Todas as etapas concluídas!
+                    </strong>
+                    <p style="color: #065f46; margin-bottom: 15px;">
+                        A ordem está pronta para ser finalizada. Adicione observações finais (opcional) e finalize a ordem de produção.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <form method="post" action="{% url 'producao:ordem_fase3_finalizar' ordem.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <textarea name="observacoes_finalizacao" placeholder="Observações finais (opcional)" rows="2" style="width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-family: Arial, sans-serif; font-size: 14px;"></textarea>
+                        <button type="submit" class="btn btn-success" style="font-size: 14px; padding: 12px 24px; font-weight: 600;">
+                            <i class="fas fa-check-double"></i> Finalizar Ordem
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

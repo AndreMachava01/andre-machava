@@ -1,0 +1,219 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ proposta.codigo }} - {{ proposta.titulo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-info { background: #0ea5e9; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .info-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .info-box h3 { margin: 0 0 12px 0; font-size: 16px; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .info-box p { margin: 6px 0; font-size: 14px; }
+        .info-box strong { color: #6b7280; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-disponivel { background: #f3f4f6; color: #4b5563; }
+        .badge-em_andamento { background: #dbeafe; color: #1d4ed8; }
+        .badge-atrasada { background: #fee2e2; color: #dc2626; }
+        .badge-concluida { background: #d1fae5; color: #059669; }
+        .badge-cancelada { background: #f3e8ff; color: #7c3aed; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+        .progress-container { margin: 16px 0; }
+        .progress-label { font-size: 14px; color: #6b7280; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #b45309; transition: width 0.3s; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .description-box { padding: 16px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #b45309; }
+        .timeline { margin: 16px 0; }
+        .timeline-item { display: flex; gap: 12px; margin-bottom: 12px; }
+        .timeline-marker { width: 24px; height: 24px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; flex-shrink: 0; }
+        .timeline-item.completed .timeline-marker { background: #10b981; }
+        .timeline-item.current .timeline-marker { background: #b45309; }
+        .timeline-content { flex: 1; }
+        .timeline-content h4 { margin: 0 0 4px 0; font-size: 14px; }
+        .timeline-content p { margin: 0; font-size: 12px; color: #6b7280; }
+        .header-subtitle { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .alert-text { color: #dc2626; }
+        .orcamento-link { color: #8b5cf6; }
+        .progress-16-7 { width: 16.7%; }
+        .progress-33-3 { width: 33.3%; }
+        .progress-50 { width: 50%; }
+        .progress-66-7 { width: 66.7%; }
+        .progress-83-3 { width: 83.3%; }
+        .progress-100 { width: 100%; }
+        .progress-0 { width: 0%; }
+        .actions-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .dropdown-actions { position: relative; display: inline-block; }
+        .dropdown-actions .dropdown-toggle { padding: 8px 16px; border-radius: 6px; border: 1px solid #92400e; background: #fffbeb; color: #92400e; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .dropdown-actions .dropdown-toggle:hover { background: #fef3c7; }
+        .dropdown-actions .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; min-width: 200px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 50; padding: 6px 0; }
+        .dropdown-actions.open .dropdown-menu { display: block; }
+        .dropdown-actions .dropdown-menu a { display: block; padding: 10px 14px; color: #374151; text-decoration: none; font-size: 14px; }
+        .dropdown-actions .dropdown-menu a:hover { background: #f9fafb; color: #b45309; }
+        .dropdown-actions .dropdown-menu a i { width: 20px; margin-right: 8px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-clipboard-list"></i> {{ proposta.codigo }} - {{ proposta.titulo }}</h1>
+                <p class="header-subtitle">
+                    Cliente: {% if proposta.cliente %}{{ proposta.cliente.nome }}{% elif proposta.nome_cliente_personalizado %}{{ proposta.nome_cliente_personalizado }}{% else %}-{% endif %} • Criado em: {{ proposta.data_solicitacao|date:"d/m/Y" }}
+                </p>
+            </div>
+            <div class="actions-wrap">
+                <a href="{% url 'producao:proposta_tecnica_edit' proposta.id %}" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a>
+                <a href="{% url 'producao:propostas_tecnicas' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <div class="dropdown-actions" id="dropdown-acoes">
+                    <button type="button" class="dropdown-toggle" onclick="document.getElementById('dropdown-acoes').classList.toggle('open');" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i> Ações
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'producao:proposta_tecnica_mudar_estagio' proposta.id %}"><i class="fas fa-tasks"></i> Mudar estágio</a>
+                        {% if proposta.estagio_atual == 'APROVACAO' and not proposta.orcamento_servico %}
+                        <a href="{% url 'producao:proposta_tecnica_converter_orcamento' proposta.id %}"><i class="fas fa-exchange-alt"></i> Converter em orçamento</a>
+                        {% endif %}
+                        <a href="{% url 'producao:proposta_tecnica_recibo_levantamento' proposta.id %}"><i class="fas fa-file-pdf"></i> Recibo de levantamento</a>
+                        <a href="{% url 'producao:proposta_tecnica_delete' proposta.id %}" style="color:#dc2626;"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Principais -->
+        <div class="info-grid">
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Status</h3>
+                <p><strong>Status:</strong> <span class="badge badge-{{ proposta.status|lower }}">{{ proposta.get_status_display }}</span></p>
+                <p><strong>Estágio:</strong> {{ proposta.get_estagio_atual_display }}</p>
+                {% if proposta.esta_atrasada %}
+                <p class="alert-text"><strong><i class="fas fa-exclamation-triangle"></i> Proposta Atrasada</strong></p>
+                {% endif %}
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-calendar"></i> Período</h3>
+                <p><strong>Início Previsto:</strong> {{ proposta.data_inicio_prevista|date:"d/m/Y"|default:"-" }}</p>
+                <p><strong>Fim Previsto:</strong> {{ proposta.data_fim_prevista|date:"d/m/Y"|default:"-" }}</p>
+                <p><strong>Duração:</strong> {{ proposta.duracao_prevista_horas|default:"-" }} horas</p>
+                {% if proposta.data_conclusao %}
+                <p><strong>Conclusão:</strong> {{ proposta.data_conclusao|date:"d/m/Y" }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-users"></i> Responsáveis</h3>
+                <p><strong>Responsável:</strong> {{ proposta.responsavel.get_full_name|default:"-" }}</p>
+                <p><strong>Criado por:</strong> {{ proposta.criado_por.get_full_name|default:"-" }}</p>
+                <p><strong>Sucursal:</strong> {{ proposta.sucursal.nome|default:"-" }}</p>
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-money-bill-wave"></i> Valores</h3>
+                <p><strong>Levantamento:</strong> {% if proposta.valor_levantamento_previsto %}{{ proposta.valor_levantamento_previsto|floatformat:2 }} MT{% else %}-{% endif %}</p>
+                {% if proposta.orcamento_servico %}
+                <p><strong>Orçamento:</strong> <a href="{% url 'producao:servico_orcamento_detail' proposta.orcamento_servico.id %}" class="orcamento-link">{{ proposta.orcamento_servico.codigo }}</a></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progresso do Estágio -->
+        <div class="section">
+            <h2><i class="fas fa-tasks"></i> Progresso do Estágio</h2>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>{{ proposta.get_estagio_atual_display }}</span>
+                    <span>{{ proposta.get_estagio_atual_display }}</span>
+                </div>
+                <div class="progress-bar">
+                    {% if proposta.estagio_atual == 'LEVANTAMENTO' %}
+                        <div class="progress-fill progress-16-7"></div>
+                    {% elif proposta.estagio_atual == 'ANALISE_TECNICA' %}
+                        <div class="progress-fill progress-33-3"></div>
+                    {% elif proposta.estagio_atual == 'ELABORACAO_PROPOSTA' %}
+                        <div class="progress-fill progress-50"></div>
+                    {% elif proposta.estagio_atual == 'APRESENTACAO' %}
+                        <div class="progress-fill progress-66-7"></div>
+                    {% elif proposta.estagio_atual == 'APROVACAO' %}
+                        <div class="progress-fill progress-83-3"></div>
+                    {% elif proposta.estagio_atual == 'CONCLUIDA' %}
+                        <div class="progress-fill progress-100"></div>
+                    {% else %}
+                        <div class="progress-fill progress-0"></div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="timeline">
+                {% for value, label in estagio_choices %}
+                <div class="timeline-item {% if forloop.counter0 < estagio_midpoint %}completed{% elif value == proposta.estagio_atual %}current{% endif %}">
+                    <div class="timeline-marker">
+                        {% if forloop.counter0 < estagio_midpoint %}
+                        <i class="fas fa-check"></i>
+                        {% elif value == proposta.estagio_atual %}
+                        <i class="fas fa-play"></i>
+                        {% else %}
+                        {{ forloop.counter }}
+                        {% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <h4>{{ label }}</h4>
+                        {% if forloop.counter0 < estagio_midpoint %}
+                        <p>Concluído</p>
+                        {% elif value == proposta.estagio_atual %}
+                        <p>Em andamento</p>
+                        {% else %}
+                        <p>Pendente</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Escopo -->
+        {% if proposta.escopo %}
+        <div class="section">
+            <h2><i class="fas fa-file-alt"></i> Escopo da Proposta</h2>
+            <div class="description-box">
+                {{ proposta.escopo|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Observações -->
+        {% if proposta.observacoes %}
+        <div class="section">
+            <h2><i class="fas fa-sticky-note"></i> Observações</h2>
+            <div class="description-box">
+                {{ proposta.observacoes|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        <p style="margin-top: 24px; font-size: 13px; color: #6b7280;">
+            <a href="{% url 'producao:propostas_tecnicas_cronograma' %}" style="color: #b45309;"><i class="fas fa-calendar-alt"></i> Ver cronograma de propostas</a>
+        </p>
+    </div>
+    <script>
+        document.addEventListener('click', function(e) {
+            var d = document.getElementById('dropdown-acoes');
+            if (d && !d.contains(e.target)) d.classList.remove('open');
+        });
+    </script>
+</body>
+</html>

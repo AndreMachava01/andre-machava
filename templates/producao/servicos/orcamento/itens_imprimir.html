@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load humanize static %}
+{% load codigo_filters %}
+    <title>Lista de Materiais/Produtos - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        @media print {
+            @page { size: A4; margin: 1cm; }
+            .no-print { display: none !important; }
+            .section-resumo {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        body { font-family: Arial, sans-serif; background: white; padding: 10px; color: #1f2937; font-size: 11px; line-height: 1.35; }
+        * { box-sizing: border-box; }
+        .container { max-width: 210mm; margin: 0 auto; padding: 10px; }
+        .print-actions { position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 10px; }
+        .btn { border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: white; }
+        .btn-print { background: #10b981; }
+        .btn-print:hover { background: #059669; }
+        .btn-back { background: #6b7280; }
+        .btn-back:hover { background: #4b5563; }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; gap: 12px; }
+        .header-left h1 { margin: 0; font-size: 16px; color: #374151; }
+        .header-left p { margin: 2px 0 0 0; font-size: 10px; color: #6b7280; }
+        .header-right { text-align: right; }
+        .header-right .codigo { font-size: 12px; font-weight: 700; }
+        .meta { font-size: 10px; color: #6b7280; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        thead { background: #b45309; color: white; }
+        th { padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .3px; }
+        td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
+        .num { text-align: right; white-space: nowrap; }
+        .muted { color: #6b7280; }
+        .summary { margin-top: 10px; font-size: 10px; color: #6b7280; }
+        .summary.section-footnote { margin-top: 18px; padding-top: 12px; border-top: 1px dashed #d1d5db; }
+        .section-title { margin-top: 14px; font-size: 12px; color: #92400e; font-weight: 700; }
+        .w-check { width: 40px; text-align: center; }
+        .w-desc { width: 28%; word-break: break-word; vertical-align: top; }
+        .cell-desc { font-size: 7px; line-height: 1.3; color: #6b7280; }
+        .w-qtd-un { width: 16%; }
+        .w-preco-manuscrito { width: 18%; min-width: 88px; }
+        .text-center { text-align: center; }
+        .tree-servico-row td { background: #fffbeb; border-bottom: 1px solid #fcd34d; font-weight: 700; color: #92400e; padding: 10px 12px; }
+        .tree-servico-row .tree-servico-inner { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .tree-servico-row .tree-servico-inner i { color: #b45309; }
+        .tree-item-row td { background: #fff; }
+        .tree-item-row td:first-child { border-left: 3px solid #e5e7eb; padding-left: 12px; }
+        .tree-item-row .cell-item-nome { padding-left: 22px; }
+        .tree-empty td { padding-left: 48px; font-style: italic; }
+        .print-checkbox {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid #374151;
+            border-radius: 2px;
+            vertical-align: middle;
+            background: #fff;
+        }
+        .cell-preco-manuscrito {
+            min-height: 32px;
+            border: 1px dashed #9ca3af;
+            background: #fafafa;
+            vertical-align: middle;
+        }
+        .tree-table { margin-top: 8px; margin-bottom: 4px; }
+        .section-resumo {
+            margin-top: 32px;
+            padding: 20px 14px 4px 14px;
+            border-top: 4px solid #b45309;
+            background: #f8f6f3;
+            border-radius: 0 0 6px 6px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+        }
+        .section-resumo .section-title { margin-top: 0; padding-bottom: 2px; border-bottom: 1px solid #e7e0d9; }
+        .section-resumo .summary { margin-top: 6px; }
+        .section-resumo table { margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="print-actions no-print">
+        <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Imprimir</button>
+        <a href="{% url 'producao:servico_orcamento_imprimir' ordem.id %}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Voltar à cotação</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>LISTA DE MATERIAIS / PRODUTOS</h1>
+                <p>{{ dados_empresa.nome|default:"Empresa" }}</p>
+                <p class="muted">
+                    Cliente:
+                    {% if ordem.cliente %}{{ ordem.cliente.nome }}{% else %}{{ ordem.nome_cliente_pagamento|default:"Cliente não registado" }}{% endif %}
+                </p>
+            </div>
+            <div class="header-right">
+                <div class="codigo">{{ ordem.codigo|formatar_codigo_ordem }}</div>
+                <div class="meta">Gerado em {{ ordem.data_criacao|date:"d/m/Y" }} às {{ ordem.data_criacao|time:"H:i" }}</div>
+                <div class="meta">{{ total_linhas_detalhadas }} linha(s) cotada(s) | {{ total_itens_distintos }} item(ns) distinto(s)</div>
+            </div>
+        </div>
+
+        <div class="section-title">1) Por serviço cotado (origem)</div>
+        <p class="summary">Cada <strong>serviço cotado</strong> aparece como cabeçalho; os <strong>materiais e produtos</strong> ficam logo abaixo, em árvore. Marque à direita e anote o preço à mão quando for a loja ou compras.</p>
+
+        <table class="tree-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="w-desc">Descrição</th>
+                    <th class="num w-qtd-un">Quantidade</th>
+                    <th class="num w-preco-manuscrito">Preço (à mão)</th>
+                    <th class="w-check" aria-label="Marcar"></th>
+                </tr>
+            </thead>
+            {% for bloco in itens_por_servico %}
+            <tbody>
+                <tr class="tree-servico-row">
+                    <td colspan="5" class="tree-servico-cell">
+                        <div class="tree-servico-inner">
+                            <i class="fas fa-screwdriver-wrench" aria-hidden="true"></i>
+                            <span>Serviço cotado: {{ bloco.servico_nome }}</span>
+                        </div>
+                    </td>
+                </tr>
+                {% for it in bloco.itens %}
+                <tr class="tree-item-row">
+                    <td class="cell-item-nome">{{ it.nome }}</td>
+                    <td class="cell-desc muted">{% if it.descricao %}{{ it.descricao }}{% else %}—{% endif %}</td>
+                    <td class="num">{{ it.quantidade|floatformat:2 }}&nbsp;{{ it.unidade_medida|unidade_empirica }}</td>
+                    <td class="num cell-preco-manuscrito"></td>
+                    <td class="text-center"><span class="print-checkbox" title="Marcar"></span></td>
+                </tr>
+                {% empty %}
+                <tr class="tree-empty">
+                    <td colspan="5" class="muted">Nenhum material ou produto neste serviço.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% empty %}
+            <tbody>
+                <tr>
+                    <td colspan="5" class="muted text-center">Nenhum serviço cotado nem materiais/produtos associados a esta cotação.</td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+
+        <div class="section-resumo">
+            <div class="section-title">2) Resumo agrupado por item (totais)</div>
+            <p class="summary">Totais somando todos os serviços. Mesmo formato: descrição do catálogo, quantidade com unidade, preço à mão e marcação à direita.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="w-desc">Descrição</th>
+                        <th class="num w-qtd-un">Quantidade</th>
+                        <th class="num w-preco-manuscrito">Preço (à mão)</th>
+                        <th class="w-check" aria-label="Marcar"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for it in itens_agrupados %}
+                    <tr>
+                        <td>{{ it.nome }}</td>
+                        <td class="cell-desc muted">{% if it.descricao %}{{ it.descricao }}{% else %}—{% endif %}</td>
+                        <td class="num">{{ it.quantidade|floatformat:2 }}&nbsp;{{ it.unidade_medida|unidade_empirica }}</td>
+                        <td class="num cell-preco-manuscrito"></td>
+                        <td class="text-center"><span class="print-checkbox" title="Marcar"></span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="muted text-center">Nenhum material ou produto associado a esta cotação.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary section-footnote">
+            Nota: o resumo (secção 2) agrega quantidades por item em todos os serviços da cotação. A secção 1 mostra a <strong>origem</strong> por serviço cotado.
+        </div>
+    </div>
+</body>
+</html>

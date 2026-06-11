@@ -1,0 +1,779 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Serviços - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        .no-print {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .filters-section {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #b45309;
+            font-size: 10px;
+        }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .filter-item {
+            font-size: 9px;
+        }
+        .filter-label {
+            font-weight: 600;
+            color: #6b7280;
+        }
+        .filter-value {
+            color: #374151;
+        }
+        .print-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .logo-section img {
+            max-height: 35px;
+            width: auto;
+        }
+        .title-section {
+            flex: 1;
+            text-align: center;
+        }
+        .document-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #374151;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .document-subtitle {
+            font-size: 10px;
+            color: #6b7280;
+            margin: 3px 0 0 0;
+        }
+        .info-section {
+            text-align: right;
+            font-size: 9px;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #b45309;
+            margin: 12px 0 6px 0;
+            padding: 4px 0;
+            border-bottom: 2px solid #b45309;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .summary-card {
+            background: #fffbeb;
+            border: 1px solid #b45309;
+            border-radius: 5px;
+            padding: 8px;
+            text-align: center;
+        }
+        .summary-label {
+            font-size: 9px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .summary-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #b45309;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+        .data-table th {
+            background: #b45309;
+            color: white;
+            padding: 6px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #92400e;
+            font-size: 9px;
+        }
+        .data-table td {
+            padding: 5px;
+            border: 1px solid #e5e7eb;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .document-footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 9px;
+            color: #6b7280;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                box-shadow: none;
+                padding: 8mm;
+                max-width: 100%;
+                margin: 0;
+            }
+            .document-header {
+                padding-bottom: 5px;
+                margin-bottom: 6px;
+            }
+            .document-title {
+                font-size: 13px;
+            }
+            .document-subtitle {
+                font-size: 9px;
+                margin-top: 2px;
+            }
+            .info-section {
+                font-size: 8px;
+            }
+            .logo-section img {
+                max-height: 25px;
+            }
+            .section-title {
+                font-size: 10px;
+                margin: 8px 0 4px 0;
+                padding: 3px 0;
+            }
+            .summary-grid {
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+            .summary-card {
+                padding: 6px;
+            }
+            .summary-label {
+                font-size: 8px;
+            }
+            .summary-value {
+                font-size: 12px;
+            }
+            .data-table {
+                margin-bottom: 6px;
+            }
+            .data-table th {
+                padding: 4px;
+                font-size: 8px;
+            }
+            .data-table td {
+                padding: 4px;
+                font-size: 8px;
+                line-height: 1.2;
+            }
+            .document-footer {
+                margin-top: 10px;
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <div class="action-buttons">
+            <a href="{% url 'producao:servicos_relatorios' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar aos Relatórios
+            </a>
+            <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                <i class="fas fa-industry"></i> Produção
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="print-container">
+        <div class="document-header">
+            <div class="logo-section">
+                {% if dados_empresa and dados_empresa.logo %}
+                <img src="{{ dados_empresa.logo.url }}" alt="Logo">
+                {% else %}
+                <div style="font-size: 12px; font-weight: bold; color: #b45309;">CONCEPTION</div>
+                {% endif %}
+            </div>
+            <div class="title-section">
+                <h1 class="document-title">Relatório de Serviços</h1>
+                <p class="document-subtitle">Análise e Estatísticas de Ordens de Serviço</p>
+            </div>
+            <div class="info-section">
+                <div><strong>Data:</strong> {{ data_relatorio|date:"d/m/Y" }}</div>
+                <div><strong>Hora:</strong> {{ data_relatorio|date:"H:i" }}</div>
+                {% if dados_empresa and dados_empresa.nome %}
+                <div style="margin-top: 5px;"><strong>{{ dados_empresa.nome }}</strong></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filtros Aplicados -->
+        <div class="filters-section">
+            <strong>Filtros Aplicados:</strong>
+            <div class="filters-grid">
+                <div class="filter-item">
+                    <span class="filter-label">Período:</span>
+                    <span class="filter-value">
+                        {% if periodo == 'semana' %}Última Semana
+                        {% elif periodo == 'mes' %}Este Mês
+                        {% elif periodo == 'ano' %}Este Ano
+                        {% else %}Personalizado
+                        {% endif %}
+                    </span>
+                </div>
+                {% if data_inicio_periodo and data_fim_periodo %}
+                <div class="filter-item">
+                    <span class="filter-label">De:</span>
+                    <span class="filter-value">{{ data_inicio_periodo|date:"d/m/Y" }}</span>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Até:</span>
+                    <span class="filter-value">{{ data_fim_periodo|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Resumo Estatístico -->
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i> Resumo Estatístico
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Ordens</div>
+                <div class="summary-value">{{ total_ordens|intcomma }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Ordens Concluídas</div>
+                <div class="summary-value">{{ ordens_concluidas|intcomma }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Ordens em Andamento</div>
+                <div class="summary-value">{{ ordens_em_andamento|intcomma }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Ordens Agendadas</div>
+                <div class="summary-value">{{ ordens_agendadas|intcomma }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Ordens Canceladas</div>
+                <div class="summary-value">{{ ordens_canceladas|intcomma }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Faturado</div>
+                <div class="summary-value">{{ total_faturado|floatformat:2|intcomma }} MT</div>
+            </div>
+        </div>
+
+        <!-- Estatísticas Financeiras -->
+        <div class="section-title">
+            <i class="fas fa-dollar-sign"></i> Estatísticas Financeiras
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Faturado</div>
+                <div class="summary-value">{{ total_faturado|floatformat:2|intcomma }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total em Aberto</div>
+                <div class="summary-value">{{ total_em_aberto|floatformat:2|intcomma }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Período Selecionado</div>
+                <div class="summary-value">{{ total_periodo|floatformat:2|intcomma }} MT</div>
+                <div style="font-size: 8px; color: #6b7280; margin-top: 3px;">{{ quantidade_periodo }} ordem(ns)</div>
+            </div>
+        </div>
+
+        <!-- Ordens por Status -->
+        {% if estatisticas_status %}
+        <div class="section-title">
+            <i class="fas fa-list"></i> Ordens por Status
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in estatisticas_status %}
+                <tr>
+                    <td>
+                        {% for status_code, status_name in STATUS_CHOICES %}
+                            {% if status_code == stat.status %}
+                                {{ status_name }}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td class="text-center">{{ stat.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ stat.total|default:0|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Top 10 Clientes -->
+        {% if top_clientes %}
+        <div class="section-title">
+            <i class="fas fa-users"></i> Top 10 Clientes por Faturamento
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th class="text-center">Quantidade de Ordens</th>
+                    <th class="text-right">Total Faturado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in top_clientes %}
+                <tr>
+                    <td>{{ cliente.cliente__nome }}</td>
+                    <td class="text-center">{{ cliente.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ cliente.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Serviços Mais Utilizados -->
+        {% if servicos_mais_utilizados %}
+        <div class="section-title">
+            <i class="fas fa-tools"></i> Serviços Mais Utilizados
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Serviço</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servico in servicos_mais_utilizados %}
+                <tr>
+                    <td>{{ servico.servico__nome }}</td>
+                    <td class="text-center">{{ servico.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ servico.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Análise Temporal -->
+        {% if ordens_por_mes %}
+        <div class="section-title">
+            <i class="fas fa-calendar-alt"></i> Análise Temporal (Últimos Meses)
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mês</th>
+                    <th class="text-center">Quantidade de Ordens</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mes in ordens_por_mes %}
+                <tr>
+                    <td>{{ mes.mes|date:"F Y" }}</td>
+                    <td class="text-center">{{ mes.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ mes.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Métricas Adicionais -->
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i> Métricas Adicionais
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Média por Ordem</div>
+                <div class="summary-value">{{ media_valor_ordem|floatformat:2|intcomma }} MT</div>
+            </div>
+            {% if tempo_medio %}
+            <div class="summary-card">
+                <div class="summary-label">Tempo Médio de Conclusão</div>
+                <div class="summary-value">{{ tempo_medio|floatformat:1 }} dias</div>
+            </div>
+            {% endif %}
+            <div class="summary-card">
+                <div class="summary-label">Taxa de Conclusão</div>
+                <div class="summary-value">
+                    {% if total_ordens > 0 %}
+                        {% widthratio ordens_concluidas total_ordens 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas por Equipe -->
+        {% if estatisticas_equipe %}
+        <div class="section-title">
+            <i class="fas fa-users-cog"></i> Estatísticas por Equipe
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Equipe</th>
+                    <th class="text-center">Quantidade de Ordens</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipe in estatisticas_equipe %}
+                <tr>
+                    <td>{{ equipe.equipe }}</td>
+                    <td class="text-center">{{ equipe.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ equipe.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Estatísticas por Responsável -->
+        {% if estatisticas_responsavel %}
+        <div class="section-title">
+            <i class="fas fa-user-tie"></i> Top 10 Responsáveis por Performance
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Responsável</th>
+                    <th class="text-center">Quantidade de Ordens</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resp in estatisticas_responsavel %}
+                <tr>
+                    <td>{{ resp.responsavel__first_name }} {{ resp.responsavel__last_name|default:"" }} ({{ resp.responsavel__username }})</td>
+                    <td class="text-center">{{ resp.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ resp.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Performance Diária -->
+        {% if performance_diaria %}
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i> Performance Diária (Ordens Concluídas)
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th class="text-center">Quantidade de Ordens</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dia in performance_diaria %}
+                <tr>
+                    <td>{{ dia.data|date:"d/m/Y" }}</td>
+                    <td class="text-center">{{ dia.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ dia.total|floatformat:2|intcomma }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Tempo Médio por Status -->
+        {% if tempo_por_status %}
+        <div class="section-title">
+            <i class="fas fa-clock"></i> Tempo Médio de Processamento por Status
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th class="text-center">Quantidade Analisada</th>
+                    <th class="text-right">Tempo Médio (dias)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status_code, dados in tempo_por_status.items %}
+                <tr>
+                    <td>{{ dados.nome }}</td>
+                    <td class="text-center">{{ dados.quantidade|intcomma }}</td>
+                    <td class="text-right">{{ dados.tempo_medio|floatformat:1 }} dias</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Análise de Cancelamentos -->
+        {% if motivo_cancelamento_mais_comum %}
+        <div class="section-title">
+            <i class="fas fa-times-circle"></i> Motivos de Cancelamento Mais Comuns
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Motivo</th>
+                    <th class="text-center">Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for motivo in motivo_cancelamento_mais_comum %}
+                <tr>
+                    <td>{{ motivo.observacoes|truncatewords:20 }}</td>
+                    <td class="text-center">{{ motivo.quantidade|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Lista Completa e Detalhada de Ordens -->
+        {% if ordens_detalhadas %}
+        <div class="section-title">
+            <i class="fas fa-list-alt"></i> Lista Completa de Ordens do Período ({{ ordens_detalhadas.count }} ordem{{ ordens_detalhadas.count|pluralize:"ns" }})
+        </div>
+        {% for ordem in ordens_detalhadas %}
+        <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 5px; page-break-inside: avoid;">
+            <table class="data-table" style="margin-bottom: 10px;">
+                <thead>
+                    <tr>
+                        <th colspan="6" style="background: #b45309; color: white;">
+                            <strong>{{ ordem.codigo }}</strong> - 
+                            {% for status_code, status_name in STATUS_CHOICES %}
+                                {% if status_code == ordem.status %}
+                                    {{ status_name }}
+                                {% endif %}
+                            {% endfor %}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Cliente:</strong></td>
+                        <td>{{ ordem.cliente.nome|default:ordem.nome_cliente_pagamento|default:"N/A" }}</td>
+                        <td><strong>Data Criação:</strong></td>
+                        <td>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td><strong>Valor Total:</strong></td>
+                        <td class="text-right"><strong>{{ ordem.valor_total|default:0|floatformat:2|intcomma }} MT</strong></td>
+                    </tr>
+                    {% if ordem.data_agendada %}
+                    <tr>
+                        <td><strong>Data Agendada:</strong></td>
+                        <td>{{ ordem.data_agendada|date:"d/m/Y H:i" }}</td>
+                        {% if ordem.data_inicio %}
+                        <td><strong>Data Início:</strong></td>
+                        <td>{{ ordem.data_inicio|date:"d/m/Y H:i" }}</td>
+                        {% else %}
+                        <td colspan="2"></td>
+                        {% endif %}
+                        {% if ordem.data_conclusao %}
+                        <td><strong>Data Conclusão:</strong></td>
+                        <td>{{ ordem.data_conclusao|date:"d/m/Y H:i" }}</td>
+                        {% else %}
+                        <td colspan="2"></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if ordem.equipe %}
+                    <tr>
+                        <td><strong>Equipe:</strong></td>
+                        <td>{{ ordem.equipe }}</td>
+                        {% if ordem.responsavel %}
+                        <td><strong>Responsável:</strong></td>
+                        <td>{{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}</td>
+                        {% else %}
+                        <td colspan="2"></td>
+                        {% endif %}
+                        <td colspan="2"></td>
+                    </tr>
+                    {% elif ordem.responsavel %}
+                    <tr>
+                        <td colspan="2"></td>
+                        <td><strong>Responsável:</strong></td>
+                        <td>{{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            
+            <!-- Serviços da Ordem -->
+            {% if ordem.servicos_orcamento.all %}
+            <div style="margin-left: 10px; margin-top: 5px;">
+                <strong>Serviços:</strong>
+                <table class="data-table" style="margin-top: 5px; font-size: 8px;">
+                    <thead>
+                        <tr>
+                            <th>Serviço</th>
+                            <th class="text-center">Quantidade</th>
+                            <th class="text-right">Valor Unitário</th>
+                            <th class="text-right">Desconto</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for servico_orc in ordem.servicos_orcamento.all %}
+                        <tr>
+                            <td>{{ servico_orc.servico.nome }}</td>
+                            <td class="text-center">{{ servico_orc.quantidade|intcomma }}</td>
+                            <td class="text-right">{{ servico_orc.valor_unitario|floatformat:2|intcomma }} MT</td>
+                            <td class="text-right">{{ servico_orc.desconto|default:0|floatformat:2|intcomma }} MT</td>
+                            <td class="text-right"><strong>{{ servico_orc.valor_total|floatformat:2|intcomma }} MT</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            
+            <!-- Itens da Ordem -->
+            {% if ordem.servicos_orcamento.all %}
+            {% for servico_orc in ordem.servicos_orcamento.all %}
+            {% if servico_orc.itens.all %}
+            <div style="margin-left: 10px; margin-top: 5px;">
+                <strong>Itens do Serviço "{{ servico_orc.servico.nome }}":</strong>
+                <table class="data-table" style="margin-top: 5px; font-size: 8px;">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Quantidade</th>
+                            <th class="text-right">Valor Unitário</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in servico_orc.itens.all %}
+                        <tr>
+                            <td>{{ item.item.nome }}</td>
+                            <td class="text-center">{{ item.quantidade|intcomma }}</td>
+                            <td class="text-right">{{ item.valor_unitario|floatformat:2|intcomma }} MT</td>
+                            <td class="text-right">{{ item.valor_total|floatformat:2|intcomma }} MT</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="document-footer">
+            <p>Relatório gerado em {{ data_relatorio|date:"d/m/Y às H:i" }} pelo Sistema Conception</p>
+            {% if dados_empresa and dados_empresa.nome %}
+            <p>{{ dados_empresa.nome }}</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

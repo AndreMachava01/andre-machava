@@ -1,0 +1,403 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejamento de Capacidade - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            color: #8b5cf6;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table th {
+            background: #f5f3ff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-chart-pie"></i>
+                    Planejamento de Capacidade
+                </h1>
+                <p>Análise e planejamento de capacidade produtiva</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Estatísticas Gerais -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_maquinas|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Máquinas</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-number">{{ maquinas_disponiveis|default:0|intcomma }}</div>
+                <div class="stat-label">Máquinas Disponíveis</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-number">{{ maquinas_em_uso|default:0|intcomma }}</div>
+                <div class="stat-label">Máquinas em Uso</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-number">{{ total_linhas|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Linhas</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-number">{{ linhas_ativas|default:0|intcomma }}</div>
+                <div class="stat-label">Linhas Ativas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ ordens_em_producao|default:0|intcomma }}</div>
+                <div class="stat-label">Ordens em Produção</div>
+            </div>
+        </div>
+
+        <!-- Capacidade Total -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-tachometer-alt"></i> Capacidade Total
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div style="background: #f5f3ff; padding: 15px; border-radius: 5px; border: 1px solid #8b5cf6;">
+                    <h3 style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Capacidade Máquinas</h3>
+                    <p style="font-size: 24px; color: #1f2937; font-weight: 600; margin: 0;">
+                        {{ capacidade_total_maquinas|default:0|floatformat:2|intcomma }}
+                    </p>
+                </div>
+                <div style="background: #f5f3ff; padding: 15px; border-radius: 5px; border: 1px solid #8b5cf6;">
+                    <h3 style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Capacidade Linhas (un/h)</h3>
+                    <p style="font-size: 24px; color: #1f2937; font-weight: 600; margin: 0;">
+                        {{ capacidade_total_linhas|default:0|floatformat:2|intcomma }}
+                    </p>
+                </div>
+                <div style="background: #f5f3ff; padding: 15px; border-radius: 5px; border: 1px solid #8b5cf6;">
+                    <h3 style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Ordens Planejadas</h3>
+                    <p style="font-size: 24px; color: #1f2937; font-weight: 600; margin: 0;">
+                        {{ ordens_planejadas|default:0|intcomma }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capacidade por Sucursal -->
+        {% if capacidade_por_sucursal %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-building"></i> Capacidade por Sucursal
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Sucursal</th>
+                        <th>Máquinas</th>
+                        <th>Capacidade Máquinas</th>
+                        <th>Linhas</th>
+                        <th>Capacidade Linhas (un/h)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in capacidade_por_sucursal %}
+                    <tr>
+                        <td><strong>{{ item.sucursal.nome }}</strong></td>
+                        <td>{{ item.total_maquinas }}</td>
+                        <td>{{ item.capacidade_maquinas|default:0|floatformat:2|intcomma }}</td>
+                        <td>{{ item.total_linhas }}</td>
+                        <td>{{ item.capacidade_linhas|default:0|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Máquinas Recentes -->
+        {% if maquinas %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-tools"></i> Máquinas
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Capacidade</th>
+                        <th>Status</th>
+                        <th>Sucursal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for maquina in maquinas %}
+                    <tr>
+                        <td><strong>{{ maquina.codigo }}</strong></td>
+                        <td>{{ maquina.nome }}</td>
+                        <td>{{ maquina.get_tipo_display }}</td>
+                        <td>
+                            {% if maquina.capacidade %}
+                                {{ maquina.capacidade|floatformat:2|intcomma }} 
+                                {% if maquina.unidade_capacidade %}{{ maquina.get_unidade_capacidade_display }}{% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if maquina.status == 'DISPONIVEL' %}
+                                <span class="badge badge-success">Disponível</span>
+                            {% elif maquina.status == 'EM_USO' %}
+                                <span class="badge badge-warning">Em Uso</span>
+                            {% elif maquina.status == 'MANUTENCAO' %}
+                                <span class="badge badge-danger">Manutenção</span>
+                            {% else %}
+                                <span class="badge badge-info">{{ maquina.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ maquina.sucursal.nome }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="{% url 'producao:maquinas' %}" class="btn btn-secondary">
+                    <i class="fas fa-eye"></i> Ver Todas as Máquinas
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Linhas de Produção -->
+        {% if linhas %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-layer-group"></i> Linhas de Produção
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Capacidade Horária</th>
+                        <th>Status</th>
+                        <th>Sucursal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in linhas %}
+                    <tr>
+                        <td><strong>{{ linha.codigo }}</strong></td>
+                        <td>{{ linha.nome }}</td>
+                        <td>{{ linha.get_tipo_display }}</td>
+                        <td>
+                            {% if linha.capacidade_horaria %}
+                                {{ linha.capacidade_horaria|floatformat:2|intcomma }} un/h
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if linha.status == 'ATIVA' %}
+                                <span class="badge badge-success">Ativa</span>
+                            {% elif linha.status == 'MANUTENCAO' %}
+                                <span class="badge badge-danger">Manutenção</span>
+                            {% else %}
+                                <span class="badge badge-info">{{ linha.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ linha.sucursal.nome }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="{% url 'producao:linhas' %}" class="btn btn-secondary">
+                    <i class="fas fa-eye"></i> Ver Todas as Linhas
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

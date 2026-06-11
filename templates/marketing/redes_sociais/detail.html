@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 640px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+        .badge-publicada { background: #d1fae5; color: #047857; }
+        .badge-agendada { background: #dbeafe; color: #1e40af; }
+        .badge-rascunho { background: #e5e7eb; color: #4b5563; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .section { margin-bottom: 16px; }
+        .section h3 { font-size: 12px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; }
+        .section p { margin: 0; white-space: pre-wrap; }
+        .header-actions { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-share-alt"></i> {{ publicacao.canal }}</h1>
+            <div class="header-actions">
+                <a href="{% url 'marketing:redes_sociais_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'marketing:redes_sociais_edit' publicacao.pk %}" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a>
+            </div>
+        </div>
+        <p><span class="badge badge-{{ publicacao.estado|slugify }}">{{ publicacao.get_estado_display }}</span></p>
+        <div class="section">
+            <h3>Texto</h3>
+            <p>{{ publicacao.texto }}</p>
+        </div>
+        <div class="section">
+            <h3>Informações</h3>
+            <p>Campanha: {{ publicacao.campanha.nome|default:"-" }}</p>
+            <p>Data agendada: {{ publicacao.data_agendada|date:"d/m/Y H:i"|default:"-" }}</p>
+            <p>Data publicada: {{ publicacao.data_publicada|date:"d/m/Y H:i"|default:"-" }}</p>
+            <p>Responsável: {{ publicacao.responsavel.get_full_name|default:publicacao.responsavel.username|default:"-" }}</p>
+            {% if publicacao.link_post %}
+            <p><a href="{{ publicacao.link_post }}" target="_blank">Link do post</a></p>
+            {% endif %}
+        </div>
+        {% if publicacao.observacoes %}
+        <div class="section">
+            <h3>Observações</h3>
+            <p>{{ publicacao.observacoes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

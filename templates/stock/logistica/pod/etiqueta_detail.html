@@ -3,31 +3,12 @@
 
 {% block title %}Detalhes da Etiqueta - {{ etiqueta.codigo }}{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:etiquetas_list' %}">Etiquetas</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>{{ etiqueta.codigo }}</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:pod:etiquetas_list' as etiquetas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Etiquetas POD' breadcrumb_section_url=etiquetas_list_url breadcrumb_current=etiqueta.codigo %}
 
     <!-- Page Header -->
     <div class="page-header">

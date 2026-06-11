@@ -1,0 +1,54 @@
+{% comment %}
+BOTÕES DE AÇÃO
+Template específico para botões de ação (Ver Detalhes, Editar, Apagar, etc.)
+
+Parâmetros:
+- actions: lista de ações disponíveis
+- layout: layout dos botões (inline, dropdown, toolbar)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+{% if layout == 'dropdown' %}
+<div class="actions-dropdown{% if class %} {{ class }}{% endif %}">
+    <button class="btn btn-action -sm dropdown-toggle" type="button" data-bs-toggle="dropdown" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+        <i class="fas fa-ellipsis-v"></i> Ações
+    </button>
+    <ul class="dropdown-menu">
+        {% for action in actions %}
+            <li>
+                {% include 'components/button_unified.html' with 
+                    type='action' 
+                    action=action.action 
+                    size='sm' 
+                    text=action.text 
+                    icon=action.icon 
+                    url=action.url 
+                    onclick=action.onclick 
+                    class='dropdown-item' %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% elif layout == 'toolbar' %}
+<div class="actions-toolbar{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=actions layout='horizontal' %}
+</div>
+{% else %}
+<div class="actions-inline{% if class %} {{ class }}{% endif %}">
+    {% for action in actions %}
+        {% include 'components/button_unified.html' with 
+            type='action' 
+            action=action.action 
+            size='sm' 
+            text=action.text 
+            icon=action.icon 
+            url=action.url 
+            onclick=action.onclick 
+            class='btn-action-inline' %}
+    {% endfor %}
+</div>
+{% endif %}
+
+

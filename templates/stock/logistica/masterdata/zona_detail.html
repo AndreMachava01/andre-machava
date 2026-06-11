@@ -1,0 +1,42 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Zona {{ zona.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:zonas_list' as zonas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Zonas' breadcrumb_section_url=zonas_list_url breadcrumb_current=zona.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-map-marked-alt" aria-hidden="true"></i> {{ zona.nome }}</h1>
+                <p class="page-subtitle">{{ zona.codigo }} — {{ zona.regiao.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:zonas_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                {% include 'stock/logistica/includes/_masterdata_detail_actions.html' with object=zona edit_url='stock:masterdata:zona_edit' delete_url='stock:masterdata:zona_delete' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Detalhes</h2>
+            <span class="badge badge-{% if zona.ativo %}success{% else %}secondary{% endif %}">{% if zona.ativo %}Activa{% else %}Inactiva{% endif %}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Região</span><span class="info-value"><a href="{% url 'stock:masterdata:regiao_detail' zona.regiao.id %}">{{ zona.regiao.nome }}</a></span></div>
+                <div class="info-item"><span class="info-label">Prazo entrega</span><span class="info-value">{{ zona.prazo_entrega_dias }} dia(s)</span></div>
+                <div class="info-item"><span class="info-label">Custo adicional</span><span class="info-value">{{ zona.custo_adicional|floatformat:2 }} MT</span></div>
+                <div class="info-item"><span class="info-label">Peso máx.</span><span class="info-value">{{ zona.peso_maximo_kg|default:"—" }} kg</span></div>
+                <div class="info-item"><span class="info-label">Volume máx.</span><span class="info-value">{{ zona.volume_maximo_m3|default:"—" }} m³</span></div>
+                <div class="info-item"><span class="info-label">Horário</span><span class="info-value">{{ zona.horario_inicio }} – {{ zona.horario_fim }}</span></div>
+            </div>
+            {% if zona.descricao %}<p class="text-muted stock-u-mt-16">{{ zona.descricao }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

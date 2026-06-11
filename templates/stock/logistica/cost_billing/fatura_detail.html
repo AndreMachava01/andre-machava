@@ -1,0 +1,137 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Fatura {{ fatura.numero_fatura }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:cost_billing:faturas_list' as faturas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Faturas' breadcrumb_section_url=faturas_list_url breadcrumb_current=fatura.numero_fatura %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> {{ fatura.numero_fatura }}</h1>
+                <p class="page-subtitle">{{ fatura.cliente_nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                <a href="{% url 'stock:cost_billing:fatura_print' fatura.id %}" class="btn btn-outline" target="_blank" rel="noopener">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </a>
+                {% if fatura.status != 'PAGO' and fatura.status != 'CANCELADO' %}
+                <form method="post" action="{% url 'stock:cost_billing:fatura_recalcular' fatura.id %}" class="d-inline"
+                      onsubmit="return confirm('Recalcular os valores desta fatura com base no custo de envio actual dos rastreamentos?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i> Recalcular
+                    </button>
+                </form>
+                {% endif %}
+                {% if fatura.status == 'RASCUNHO' %}
+                <a href="{% url 'stock:cost_billing:fatura_send' fatura.id %}" class="btn btn-primary">
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar
+                </a>
+                {% elif fatura.status == 'ENVIADO' or fatura.status == 'VENCIDO' %}
+                {% if not pendente_financas or pendente_financas.estado == 'REJEITADO' %}
+                <form method="post" action="{% url 'stock:cost_billing:fatura_sync_financas' fatura.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline">
+                        <i class="fas fa-university" aria-hidden="true"></i> Registar em Finanças
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'stock:cost_billing:fatura_mark_paid' fatura.id %}" class="btn btn-success">
+                    <i class="fas fa-check" aria-hidden="true"></i> Marcar paga
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if pendente_financas %}
+    <div class="alert alert-{% if pendente_financas.estado == 'CONFIRMADO' %}success{% elif pendente_financas.estado == 'REJEITADO' %}danger{% else %}info{% endif %} stock-u-mb-24" role="status">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        <strong>Finanças:</strong> {{ pendente_financas.get_estado_display }}
+        — {{ pendente_financas.valor|floatformat:2 }} MT em Contas a receber.
+        {% if pendente_financas.estado == 'PENDENTE' %}
+        Confirme o recebimento em <a href="{% url 'financas:contas_receber' %}">Finanças → Contas a receber</a>.
+        {% endif %}
+    </div>
+    {% elif fatura.status == 'ENVIADO' or fatura.status == 'VENCIDO' %}
+    <div class="alert alert-warning stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        Esta fatura ainda não está em Contas a receber. Use <strong>Registar em Finanças</strong> para o departamento financeiro processar o recebimento.
+    </div>
+    {% endif %}
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Dados da fatura</h2>
+            <span class="badge badge-{% if fatura.status == 'PAGO' %}success{% elif fatura.status == 'VENCIDO' %}danger{% elif fatura.status == 'ENVIADO' %}warning{% else %}secondary{% endif %}">
+                {{ fatura.get_status_display }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Cliente</span><span class="info-value">{{ fatura.cliente_nome }}</span></div>
+                <div class="info-item"><span class="info-label">Documento origem</span><span class="info-value">{{ fatura.cliente_documento }}</span></div>
+                <div class="info-item"><span class="info-label">E-mail</span><span class="info-value">{{ fatura.cliente_email|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Período</span><span class="info-value">{{ fatura.periodo_inicio|date:"d/m/Y" }} — {{ fatura.periodo_fim|date:"d/m/Y" }}</span></div>
+                <div class="info-item"><span class="info-label">Emissão</span><span class="info-value">{{ fatura.data_emissao|date:"d/m/Y" }}</span></div>
+                <div class="info-item"><span class="info-label">Vencimento</span><span class="info-value">{{ fatura.data_vencimento|date:"d/m/Y" }}</span></div>
+                <div class="info-item"><span class="info-label">Valor total</span><span class="info-value">{{ fatura.valor_total|floatformat:2 }} MT</span></div>
+                <div class="info-item"><span class="info-label">Desconto</span><span class="info-value">{{ fatura.valor_desconto|floatformat:2 }} MT</span></div>
+                <div class="info-item"><span class="info-label">Valor líquido</span><span class="info-value"><strong>{{ fatura.valor_liquido|floatformat:2 }} MT</strong></span></div>
+                {% if fatura.data_pagamento %}
+                <div class="info-item"><span class="info-label">Pagamento</span><span class="info-value">{{ fatura.data_pagamento|date:"d/m/Y" }}</span></div>
+                {% endif %}
+            </div>
+            {% if fatura.cliente_endereco %}
+            <p class="text-muted stock-u-mt-16"><strong>Endereço:</strong> {{ fatura.cliente_endereco }}</p>
+            {% endif %}
+            {% if fatura.observacoes %}
+            <p class="text-muted stock-u-mt-16"><strong>Observações:</strong> {{ fatura.observacoes }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header"><h3 class="table-title"><i class="fas fa-list" aria-hidden="true"></i> Itens</h3></div>
+        {% if itens %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Rastreamento</th>
+                        <th>Data serviço</th>
+                        <th>Qtd</th>
+                        <th>Unitário</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens %}
+                    <tr>
+                        <td>{{ item.descricao }}</td>
+                        <td>
+                            {% if item.rastreamento_entrega %}
+                            <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_entrega.id %}">{{ item.rastreamento_entrega.codigo_rastreamento }}</a>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{{ item.data_servico|date:"d/m/Y" }}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>{{ item.valor_unitario|floatformat:2 }} MT</td>
+                        <td>{{ item.valor_total|floatformat:2 }} MT</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data"><p>Sem itens registados.</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

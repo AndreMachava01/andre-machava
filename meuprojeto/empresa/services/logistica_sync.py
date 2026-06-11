@@ -33,7 +33,10 @@ def sincronizar_rastreamento_com_notificacao(EventoRastreamento, notificacao, ra
                 logger.exception('Falha ao criar evento %s para rastreamento %s', tipo, getattr(rastreamento, 'id', None))
 
 
-def get_or_create_rastreamento_for_notificacao(RastreamentoEntrega, EventoRastreamento, notificacao, user):
+def get_or_create_rastreamento_for_notificacao(
+    RastreamentoEntrega, EventoRastreamento, notificacao, user,
+    distancia_km_manual=None, carga_params=None,
+):
     rastreamento = None
     if getattr(notificacao, 'transferencia_id', None):
         rastreamento = RastreamentoEntrega.objects.filter(transferencia_id=notificacao.transferencia_id).first()
@@ -74,6 +77,19 @@ def get_or_create_rastreamento_for_notificacao(RastreamentoEntrega, EventoRastre
         changed = True
     if changed:
         rastreamento.save()
+
+    try:
+        from .freight_service import aplicar_frete_rastreamento
+        frete = aplicar_frete_rastreamento(
+            rastreamento, notificacao, distancia_km_manual, carga_params=carga_params,
+        )
+        if frete is not None:
+            rastreamento.save(update_fields=[
+                'distancia_km', 'custo_envio', 'peso_total', 'valor_declarado',
+                'comprimento_cm', 'largura_cm', 'altura_cm',
+            ])
+    except Exception:
+        logger.exception('Falha ao calcular frete para rastreamento da notificacao %s', getattr(notificacao, 'id', None))
 
     try:
         sincronizar_rastreamento_com_notificacao(EventoRastreamento, notificacao, rastreamento, user)

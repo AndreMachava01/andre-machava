@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load humanize static %}
+{% load codigo_filters %}
+    <title>Cotacao - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+                background: white;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                color: #1f2937 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Garantir que cores sejam preservadas na impressão */
+            thead {
+                background: #b45309 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .servico-header {
+                background: #fffbeb !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .item-row {
+                background: #fafafa !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .total-row {
+                border-top: 2px solid #b45309 !important;
+            }
+            .header {
+                border-bottom: 2px solid #b45309 !important;
+            }
+            .totals-section {
+                background: #fffbeb !important;
+                border: 2px solid #b45309 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .totals-section .total-row td {
+                background: rgba(180, 83, 9, 0.12) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+        .print-actions {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-print {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-print:hover {
+            background: #059669;
+        }
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background: #4b5563;
+        }
+        .btn-gerar-contrato {
+            background-color: #4CAF50 !important;
+            margin-right: 10px;
+        }
+        .btn-gerar-contrato:hover {
+            background: #059669 !important;
+        }
+        .btn-voltar {
+            background-color: #6b7280 !important;
+        }
+        .btn-voltar:hover {
+            background: #4b5563 !important;
+        }
+        .btn-lista-itens {
+            background-color: #0d9488 !important;
+        }
+        .btn-lista-itens:hover {
+            background: #0f766e !important;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 10px;
+            color: #1f2937;
+            font-size: 10px;
+            line-height: 1.3;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .header-top {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+        .logo-empresa {
+            max-width: 120px;
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+        .empresa-nome {
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 5px;
+            color: #333;
+            text-align: center;
+        }
+        .empresa-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .empresa-info {
+            flex: 1;
+        }
+        .empresa-info h1 {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 2px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .empresa-info p {
+            font-size: 9px;
+            color: #6b7280;
+            margin: 1px 0;
+            line-height: 1.2;
+        }
+        .cotacao-info {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        
+        .processado-por {
+            font-size: 9px;
+            color: #6b7280;
+            text-align: left;
+            margin-top: 0;
+        }
+        
+        .processado-por .label {
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 1px;
+        }
+        
+        .processado-por .label-spaced {
+            margin-top: 2px;
+        }
+        .cotacao-info h2 {
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+        .cotacao-info .codigo {
+            font-size: 11px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        .cotacao-info .data {
+            font-size: 9px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        /* Estilos para itens da lista */
+        .item-row td {
+            padding: 2px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 8px;
+        }
+        
+        .item-row td:first-child {
+            padding-left: 20px;
+        }
+        
+        .servico-header td {
+            padding: 4px 8px;
+            font-size: 10px;
+        }
+        .servico-descricao-catalogo {
+            font-size: 8px;
+            color: #6b7280;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+        
+        /* Estilo para valor de desconto */
+        .desconto-valor {
+            color: #dc2626;
+        }
+        
+        .cliente-section, .processado-por-section {
+            display: flex;
+            flex-direction: column;
+            width: 48%;
+            padding: 0;
+            background: transparent;
+        }
+        
+        .processado-por-section {
+            align-items: flex-end;
+            text-align: right;
+        }
+        .section-title {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            margin: 0;
+            font-weight: 600;
+            font-family: Arial, sans-serif;
+            border: none;
+            padding: 0;
+        }
+        .section-content {
+            font-size: 9px;
+            color: #1f2937;
+            line-height: 1.2;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .section-content p {
+            margin: 0;
+            padding: 0;
+            line-height: 1.2;
+        }
+        .section-content strong {
+            display: block;
+            margin: 0;
+            padding: 0;
+            font-size: 10px;
+            color: #1f2937;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        thead {
+            background: #b45309;
+            color: white;
+        }
+        th {
+            padding: 5px 6px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        th:nth-child(1) { width: 40%; } /* Descrição */
+        th:nth-child(2) { width: 10%; } /* Qtd */
+        th:nth-child(3) { width: 15%; } /* Preço Unit. */
+        th:nth-child(4) { width: 15%; } /* Desconto */
+        th:nth-child(5) { width: 20%; } /* Valor Total */
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 9px;
+        }
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .servico-header {
+            background: #fffbeb;
+            font-weight: normal;
+            color: #374151;
+        }
+        .item-row {
+            background: #fafafa;
+        }
+        .totals-wrapper {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 16px;
+            align-items: start;
+        }
+        @media (max-width: 700px) {
+            .totals-wrapper { grid-template-columns: 1fr; }
+        }
+        .col-formas-pagamento-unificado {
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 9px;
+        }
+        .col-formas-pagamento-unificado h4 {
+            margin: 0 0 10px 0;
+            font-size: 10px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 6px;
+        }
+        .formas-pagamento-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+        }
+        .forma-item {
+            flex: 1;
+            min-width: 100px;
+        }
+        .forma-item strong {
+            display: block;
+            font-size: 9px;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .forma-item ul {
+            margin: 0;
+            padding-left: 14px;
+            color: #6b7280;
+        }
+        .forma-item li {
+            margin: 2px 0;
+        }
+        .text-muted { color: #9ca3af; }
+        .totals-section {
+            margin-top: 0;
+            padding: 12px 18px;
+            min-width: 200px;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #b45309;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(180, 83, 9, 0.15);
+        }
+        .validade-cotacao {
+            margin-top: 10px;
+            padding: 6px 0 0 0;
+            font-size: 9px;
+            color: #374151;
+            border-top: 1px solid rgba(180, 83, 9, 0.3);
+        }
+        .totals-section .validade-cotacao {
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .totals-table td {
+            padding: 3px 8px;
+            border: none;
+            font-size: 9px;
+        }
+        .totals-table td:first-child {
+            text-align: right;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .totals-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .total-row {
+            border-top: 2px solid #b45309;
+            font-size: 11px;
+            background: rgba(180, 83, 9, 0.12);
+        }
+        .total-row td {
+            padding-top: 8px;
+            padding-bottom: 8px;
+            font-size: 11px;
+            color: #1f2937;
+        }
+        .totals-table .total-row td:last-child {
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 8px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .observacoes {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 3px;
+            border-left: 3px solid #b45309;
+        }
+        .observacoes h3 {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .observacoes p {
+            font-size: 9px;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<!-- VERIFICAÇÃO: Início do body -->
+<body>
+    <div class="print-actions no-print">
+        <a href="{% url 'producao:servico_orcamento_itens_imprimir' ordem.id %}" class="btn-print btn-back btn-lista-itens">
+            <i class="fas fa-list"></i> Lista Materiais/Produtos
+        </a>
+        <a href="{% url 'producao:gerar_contrato_servico' ordem.id %}" class="btn-print btn-gerar-contrato">
+            <i class="fas fa-file-contract"></i> Gerar Contrato
+        </a>
+        <button onclick="window.print()" class="btn-print">
+            <i class="fas fa-print"></i> Imprimir Orçamento
+        </button>
+        <a href="{% url 'producao:servico_orcamento_detail' ordem.id %}" class="btn-print btn-voltar">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-container">
+                    {% if dados_empresa and dados_empresa.logo %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}{{ dados_empresa.logo }}" alt="Logo da Empresa" class="logo-empresa">
+                    {% else %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}logos_empresas/LOGO_DA_CONCEPTION.jpg" alt="Logo da Empresa" class="logo-empresa">
+                    {% endif %}
+                    <div class="empresa-nome">
+                        
+                    </div>
+                </div>
+                <div class="empresa-info">
+                    <h1>{{ dados_empresa.nome|default:"Empresa" }}</h1>
+                    <p>Rua Carlos Cardoso; Quarteirão 20 N. 192</p>
+                    <p>Maputo, Maputo</p>
+                    <p>NUIT: 401932089</p>
+                </div>
+                <div class="cotacao-info">
+                    <h2>COTAÇÃO DE SERVIÇOS</h2>
+                    <div class="codigo">Código: {{ ordem.codigo|formatar_codigo_ordem }}</div>
+                    <div class="data">Data: {{ ordem.data_criacao|date:"d/m/Y" }} Hora: {{ ordem.data_criacao|time:"H:i" }}</div>
+                    {% if ordem.data_agendada %}
+                    <div class="data">Agendado para: {{ ordem.data_agendada|date:"d/m/Y H:i" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="info-container">
+            <div class="cliente-section">
+                <div class="section-title">Cliente</div>
+                <div class="section-content">
+                        <div class="processado-por">
+                            <div class="label">Nome:</div>
+                            <div>{% if ordem.cliente %}{{ ordem.cliente.nome }}{% else %}{{ ordem.nome_cliente_pagamento|default:"Cliente não registado" }}{% endif %}</div>
+                            
+                            {% if ordem.cliente.nuit or ordem.nuit_cliente_pagamento %}
+                            <div class="label label-spaced">NUIT:</div>
+                            <div>{% if ordem.cliente %}{{ ordem.cliente.nuit }}{% else %}{{ ordem.nuit_cliente_pagamento|default:"-" }}{% endif %}</div>
+                            {% endif %}
+                            
+                            {% if ordem.cliente.telefone or ordem.contato_cliente_pagamento %}
+                            <div class="label label-spaced">Contato:</div>
+                            <div>{% if ordem.cliente %}{{ ordem.cliente.telefone }}{% else %}{{ ordem.contato_cliente_pagamento|default:"-" }}{% endif %}</div>
+                            {% endif %}
+                            
+                            {% if ordem.cliente.email %}
+                            <div class="label label-spaced">Email:</div>
+                            <div>{{ ordem.cliente.email }}</div>
+                            {% endif %}
+                            
+                            <div class="label label-spaced">Local de Entrega:</div>
+                            <div>{% if ordem.endereco_servico %}{{ ordem.endereco_servico }}{% else %}Localização da sucursal{% endif %}</div>
+                            
+                            {% if ordem.cidade_servico %}
+                            <div class="label label-spaced">Cidade:</div>
+                            <div>{{ ordem.cidade_servico }}</div>
+                            {% endif %}
+                            
+                            <div class="label label-spaced">Forma de Pagamento:</div>
+                            <div>{% if ordem.forma_pagamento == 'PRONTO_PAGAMENTO' %}CASH{% else %}{{ ordem.get_forma_pagamento_display|default:"-" }}{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="processado-por-section">
+                <div class="section-title">Processado Por</div>
+                <div class="section-content">
+                        <div class="processado-por">
+                            <div class="label">Nome:</div>
+                            <div>{{ processado_por_nome }}</div>
+                            {% if processado_por_email %}
+                            <div class="label label-spaced">Email:</div>
+                            <div>{{ processado_por_email }}</div>
+                            {% endif %}
+                            <div class="label label-spaced">Telefone:</div>
+                            <div>{% if processado_por_telefone %}{{ processado_por_telefone }}{% else %}—{% endif %}</div>
+                            {% if ordem.data_criacao %}
+                            <div class="label label-spaced">Data:</div>
+                            <div>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</div>
+                            {% endif %}
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th class="text-center">Qtd</th>
+                    <th class="text-right">Preço Unit.</th>
+                    <th class="text-right">Desconto</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servico_orc in servicos_orcamento %}
+                <tr class="servico-header">
+                    <td>
+                        <div>{{ forloop.counter }}. {{ servico_orc.nome_para_documento }}</div>
+                        {% if servico_orc.servico and servico_orc.servico.descricao %}
+                        <div class="servico-descricao-catalogo">{{ servico_orc.servico.descricao|linebreaksbr }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ servico_orc.quantidade|floatformat:2 }}{% if servico_orc.servico %} ({{ servico_orc.servico.unidade_medida|unidade_empirica }}){% else %} (un){% endif %}</td>
+                    <td class="text-right">
+                        {% if servico_orc.valor_unitario_bruto_com_itens %}
+                            {{ servico_orc.valor_unitario_bruto_com_itens|floatformat:2|intcomma }} MT
+                        {% elif servico_orc.valor_unitario_com_itens %}
+                            {{ servico_orc.valor_unitario_com_itens|floatformat:2|intcomma }} MT
+                        {% else %}
+                            {{ servico_orc.valor_unitario|floatformat:2|intcomma }} MT
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if servico_orc.desconto_aplicado and servico_orc.desconto_aplicado > 0 %}
+                            <span class="desconto-valor">- {{ servico_orc.desconto_aplicado|floatformat:2|intcomma }} MT</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if servico_orc.valor_total_com_itens %}
+                            {{ servico_orc.valor_total_com_itens|floatformat:2|intcomma }} MT
+                        {% else %}
+                            {{ servico_orc.valor_total|floatformat:2|intcomma }} MT
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if servico_orc.itens.all %}
+                    {% for item in servico_orc.itens.all %}
+                    <tr class="item-row">
+                        <td>
+                            <small>• {{ item.item.nome|default:"Item" }}</small>
+                        </td>
+                        <td class="text-center">{{ item.quantidade|floatformat:2 }}{% if item.item %} ({{ item.item.unidade_medida|unidade_empirica }}){% else %} (un){% endif %}</td>
+                        <td class="text-right">-</td>
+                        <td class="text-right">-</td>
+                        <td class="text-right">-</td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+                {% endfor %}
+                
+                {% if transportes %}
+                {% for transporte in transportes %}
+                <tr>
+                    <td><strong>Logística</strong></td>
+                    <td class="text-center">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right"><strong>{{ transporte.valor_frete|floatformat:2|intcomma }} MT</strong></td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="totals-wrapper">
+            <div class="col-formas-pagamento-unificado">
+                <h4>Formas de pagamento</h4>
+                <div class="formas-pagamento-grid">
+                    <div class="forma-item">
+                        <strong>Numerário</strong>
+                        <ul><li>Pagamento em dinheiro</li></ul>
+                    </div>
+                    <div class="forma-item">
+                        <strong>Carteiras móveis</strong>
+                        <ul>
+                            <li>M-Pesa{% if conta_mpesa %}: {{ conta_mpesa }}{% else %}: <span class="text-muted">—</span>{% endif %}</li>
+                            <li>e-Mola{% if conta_emola %}: {{ conta_emola }}{% else %}: <span class="text-muted">—</span>{% endif %}</li>
+                        </ul>
+                    </div>
+                    <div class="forma-item">
+                        <strong>Banco</strong>
+                        <ul>
+                            <li>Millennium BIM{% if conta_millennium_bim %}: {{ conta_millennium_bim }}{% else %}: <span class="text-muted">—</span>{% endif %}</li>
+                            <li>BCI{% if conta_bci %}: {{ conta_bci }}{% else %}: <span class="text-muted">—</span>{% endif %}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="totals-section">
+                <table class="totals-table">
+                    <tr>
+                        <td>Total Bruto:</td>
+                        <td>{{ total_bruto|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    {% if total_descontos_aplicados and total_descontos_aplicados > 0 %}
+                    <tr>
+                        <td>Total Descontos:</td>
+                        <td class="desconto-valor">-{{ total_descontos_aplicados|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td>{{ subtotal|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    {% if ordem.desconto and ordem.desconto > 0 %}
+                    <tr>
+                        <td>Desconto Global:</td>
+                        <td class="desconto-valor">-{{ ordem.desconto|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    <tr>
+                        <td>Subtotal após Desconto:</td>
+                        <td>{{ valor_apos_desconto|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>IVA ({{ taxa_iva|floatformat:0 }}%):</td>
+                        <td>{{ valor_iva|floatformat:2|intcomma }} MT</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td><strong>VALOR TOTAL:</strong></td>
+                        <td><strong>{{ valor_final|floatformat:2|intcomma }} MT</strong></td>
+                    </tr>
+                </table>
+                {% if validade_cotacao %}
+                <div class="validade-cotacao">
+                    <strong>Validade da cotação:</strong> {{ validade_cotacao }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if ordem.observacoes %}
+        <div class="observacoes">
+            <h3>Observações</h3>
+            <p>{{ ordem.observacoes|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Este documento foi gerado automaticamente pelo sistema em {{ ordem.data_criacao|date:"d/m/Y" }} às {{ ordem.data_criacao|date:"H:i" }}</p>
+            {% if ordem.responsavel %}
+            <p>Responsável: {{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

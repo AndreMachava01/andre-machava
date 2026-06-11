@@ -1,0 +1,240 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Nova devolução logística{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:exceptions:devolucoes_list' as devolucoes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Devoluções' breadcrumb_section_url=devolucoes_list_url breadcrumb_current='Nova devolução' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Nova devolução logística
+                </h1>
+                <p class="page-subtitle">Solicitar logística reversa de uma entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:exceptions:devolucoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="post" novalidate id="devolucao-form">
+            {% csrf_token %}
+
+            <div id="devolucao-resultado" class="stock-u-mb-24" hidden></div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-truck" aria-hidden="true"></i> Rastreamento original</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="rastreamento_id">Rastreamento *</label>
+                            <select id="rastreamento_id" name="rastreamento_id" class="form-select" required>
+                                <option value="">Selecione o rastreamento...</option>
+                                {% for r in rastreamentos %}
+                                <option value="{{ r.id }}"
+                                        {% if rastreamento_selecionado == r.id|stringformat:"s" %}selected{% endif %}
+                                        data-destinatario="{{ r.destinatario_nome|escapejs }}"
+                                        data-telefone="{{ r.destinatario_telefone|escapejs }}">
+                                    {{ r.codigo_rastreamento }} — {{ r.destinatario_nome }} ({{ r.get_status_atual_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Entregas concluídas ou já marcadas como devolvidas.</p>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="excecao_id">Exceção relacionada</label>
+                            <select id="excecao_id" name="excecao_id" class="form-select">
+                                <option value="">Nenhuma</option>
+                                {% for ex in excecoes %}
+                                <option value="{{ ex.id }}"
+                                        {% if excecao_selecionada == ex.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ ex.codigo }} — {{ ex.tipo_excecao.nome }} ({{ ex.get_status_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Motivo da devolução</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="motivo">Motivo *</label>
+                            <select id="motivo" name="motivo" class="form-select" required>
+                                <option value="">Selecione o motivo...</option>
+                                {% for value, label in motivo_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="descricao_motivo">Descrição do motivo *</label>
+                            <textarea id="descricao_motivo" name="descricao_motivo" class="form-control" rows="3" required
+                                      placeholder="Detalhe o motivo da devolução..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-user" aria-hidden="true"></i> Solicitante</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="solicitado_por">Nome do solicitante *</label>
+                            <input type="text" id="solicitado_por" name="solicitado_por" class="form-control" required
+                                   placeholder="Quem solicita a devolução">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="contato_solicitante">Contacto</label>
+                            <input type="text" id="contato_solicitante" name="contato_solicitante" class="form-control"
+                                   placeholder="Telefone ou e-mail">
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="instrucoes_coleta">Instruções de coleta</label>
+                            <textarea id="instrucoes_coleta" name="instrucoes_coleta" class="form-control" rows="2"
+                                      placeholder="Horário, acesso ao local, embalagem..."></textarea>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="observacoes">Observações</label>
+                            <textarea id="observacoes" name="observacoes" class="form-control" rows="2"
+                                      placeholder="Informação adicional para a equipa..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:exceptions:devolucoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-warning" id="btn-criar-devolucao">
+                    <i class="fas fa-save" aria-hidden="true"></i> Solicitar devolução
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    const form = document.getElementById('devolucao-form');
+    const resultado = document.getElementById('devolucao-resultado');
+    const btn = document.getElementById('btn-criar-devolucao');
+    const rastreamentoSelect = document.getElementById('rastreamento_id');
+    if (!form) return;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const aprovarUrl = '{% url "stock:exceptions:aprovar_devolucao" 0 %}'.replace('/0/', '/');
+    const listaUrl = '{% url "stock:exceptions:devolucoes_list" %}';
+
+    function showResult(html, type) {
+        resultado.hidden = false;
+        resultado.className = 'stock-u-mb-24 alert alert-' + (type || 'info');
+        resultado.innerHTML = html;
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function preencherSolicitante() {
+        const opt = rastreamentoSelect.options[rastreamentoSelect.selectedIndex];
+        const nome = document.getElementById('solicitado_por');
+        const contacto = document.getElementById('contato_solicitante');
+        if (!opt || !opt.value) return;
+        if (nome && !nome.value && opt.dataset.destinatario) nome.value = opt.dataset.destinatario;
+        if (contacto && !contacto.value && opt.dataset.telefone) contacto.value = opt.dataset.telefone;
+    }
+
+    rastreamentoSelect.addEventListener('change', preencherSolicitante);
+    if (rastreamentoSelect.value) preencherSolicitante();
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const rastreamentoId = rastreamentoSelect.value;
+        const motivo = document.getElementById('motivo').value;
+        const descricao = document.getElementById('descricao_motivo').value.trim();
+        const solicitadoPor = document.getElementById('solicitado_por').value.trim();
+
+        if (!rastreamentoId || !motivo || !descricao || !solicitadoPor) {
+            showResult('<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Preencha os campos obrigatórios.', 'warning');
+            return;
+        }
+
+        const payload = {
+            rastreamento_id: parseInt(rastreamentoId, 10),
+            motivo: motivo,
+            descricao_motivo: descricao,
+            solicitado_por: solicitadoPor,
+            contato_solicitante: document.getElementById('contato_solicitante').value.trim(),
+            observacoes: document.getElementById('observacoes').value.trim(),
+            instrucoes_coleta: document.getElementById('instrucoes_coleta').value.trim(),
+        };
+
+        const excecaoVal = document.getElementById('excecao_id').value;
+        if (excecaoVal) payload.excecao_id = parseInt(excecaoVal, 10);
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> A guardar...';
+        resultado.hidden = true;
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                showResult(
+                    '<i class="fas fa-check-circle" aria-hidden="true"></i> Devolução <strong>' +
+                    (data.codigo || '') + '</strong> criada com sucesso. ' +
+                    '<a href="' + aprovarUrl + data.devolucao_id + '/" class="btn btn-sm btn-warning stock-u-ml-8">Aprovar</a> ' +
+                    '<a href="' + listaUrl + '?status=SOLICITADA" class="btn btn-sm btn-secondary stock-u-ml-8">Ver lista</a>',
+                    'success'
+                );
+                form.reset();
+            } else {
+                showResult(
+                    '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> ' +
+                    (data.error || 'Não foi possível criar a devolução.'),
+                    'warning'
+                );
+            }
+        })
+        .catch(function () {
+            showResult('<i class="fas fa-times-circle" aria-hidden="true"></i> Erro de comunicação com o servidor.', 'danger');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save" aria-hidden="true"></i> Solicitar devolução';
+        });
+    });
+})();
+</script>
+{% endblock %}

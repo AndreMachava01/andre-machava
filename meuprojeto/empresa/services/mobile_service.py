@@ -15,7 +15,7 @@ from django.core.cache import cache
 
 from ..models_mobile import (
     SessaoMotorista, EventoMotorista, PODOffline,
-    RotaMotorista, ParadaRota, ConfiguracaoMobile, LogMobile
+    RotaMotorista, ParadaRotaMotorista, ConfiguracaoMobile, LogMobile
 )
 from ..models_stock import RastreamentoEntrega, VeiculoInterno
 from ..models_pod import ProvaEntrega

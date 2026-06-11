@@ -1,0 +1,106 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Logs masterdata{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:dashboard' as masterdata_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Dados mestres' breadcrumb_section_url=masterdata_dashboard_url breadcrumb_current='Logs' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-history" aria-hidden="true"></i> Logs de auditoria</h1>
+                <p class="page-subtitle">Alterações em dados mestres logísticos</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-modelo">Modelo</label>
+                <select id="filtro-modelo" name="modelo_afetado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for m in modelos_disponiveis %}
+                    <option value="{{ m }}" {% if modelo_afetado == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-usuario">Utilizador</label>
+                <select id="filtro-usuario" name="usuario_id" class="form-select">
+                    <option value="">Todos</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}" {% if usuario_id == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio">De</label>
+                <input type="date" id="filtro-inicio" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim">Até</label>
+                <input type="date" id="filtro-fim" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">Registos</h3>
+            <span class="page-info">{{ page_obj.paginator.count }} entrada(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Utilizador</th>
+                        <th>Modelo</th>
+                        <th>Operação</th>
+                        <th>Objecto ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <td>{{ log.data_operacao|date:"d/m/Y H:i" }}</td>
+                        <td>{{ log.usuario.username|default:"—" }}</td>
+                        <td>{{ log.modelo_afetado }}</td>
+                        <td>{{ log.get_tipo_operacao_display }}</td>
+                        <td>{{ log.objeto_id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&modelo_afetado={{ modelo_afetado }}&usuario_id={{ usuario_id }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>{% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&modelo_afetado={{ modelo_afetado }}&usuario_id={{ usuario_id }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>{% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-history" aria-hidden="true"></i>
+            <h3>Nenhum log encontrado</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

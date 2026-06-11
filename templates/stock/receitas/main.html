@@ -1,0 +1,134 @@
+{% extends 'base_admin.html' %}
+{% load static humanize %}
+
+{% block title %}Receitas - Stock{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Receitas</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-book"></i> Receitas</h1>
+                <p class="page-subtitle">Catálogo de receitas e fórmulas de produção</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Produção
+                </a>
+                <a href="{% url 'stock:receita_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova receita
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <form method="get" class="filters-row stock-search-filters">
+            <div class="filter-group">
+                <label class="filter-label" for="receita-q">Pesquisar</label>
+                <input type="text" id="receita-q" name="q" class="form-control"
+                       placeholder="Nome, código ou descrição..." value="{{ search_query }}">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="receita-produto">Produto</label>
+                <select id="receita-produto" name="produto" class="form-select" aria-label="Filtrar por produto">
+                    <option value="">Todos os produtos</option>
+                    {% for produto in produtos %}
+                    <option value="{{ produto.id }}" {% if produto_id == produto.id|stringformat:"s" %}selected{% endif %}>{{ produto.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="receita-status">Status</label>
+                <select id="receita-status" name="status" class="form-select" aria-label="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for status_val, status_label in status_choices %}
+                    <option value="{{ status_val }}" {% if status == status_val %}selected{% endif %}>{{ status_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                    {% if search_query or produto_id or status %}
+                    <a href="{% url 'stock:receitas' %}" class="btn-clear"><i class="fas fa-times" aria-hidden="true"></i> Limpar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <div class="table-wrapper stock-table-scroll">
+            {% if page_obj %}
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Produto</th>
+                        <th>Versão</th>
+                        <th>Rendimento</th>
+                        <th>Tempo</th>
+                        <th>Itens</th>
+                        <th>Status</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for receita in page_obj %}
+                    <tr>
+                        <td><strong>{{ receita.codigo }}</strong></td>
+                        <td>{{ receita.nome }}</td>
+                        <td>{{ receita.produto.nome|default:"N/A" }}</td>
+                        <td>{{ receita.versao }}</td>
+                        <td>{{ receita.rendimento }} {{ receita.unidade_rendimento }}</td>
+                        <td>{{ receita.tempo_producao_horas }}h</td>
+                        <td>{{ receita.itens.count }}</td>
+                        <td>{{ receita.get_status_display }}</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:receita_detail' receita.id %}" class="btn-action success" title="Ver" aria-label="Ver receita {{ receita.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page_obj.has_other_pages %}
+            <nav class="pagination-modern" aria-label="Paginação">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn" aria-label="Primeira">«</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn" aria-label="Anterior">‹</a>
+                {% endif %}
+                <span class="page-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn" aria-label="Seguinte">›</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}" class="page-btn" aria-label="Última">»</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="table-empty">
+                <p>Nenhuma receita encontrada.</p>
+                <a href="{% url 'stock:receita_add' %}" class="btn btn-primary">Criar primeira receita</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

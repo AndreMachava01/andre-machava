@@ -1,0 +1,479 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if linha %}Editar{% else %}Nova{% endif %} Linha de Produção - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .required { color: #ef4444; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #10b981; color: white; }
+        .btn-primary:hover { background: #059669; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-layer-group"></i>
+                {% if linha %}Editar{% else %}Nova{% endif %} Linha de Produção
+            </h1>
+            <a href="{% url 'producao:linhas' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if linha %}
+        <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #065f46; font-size: 13px;">
+                <strong>Código:</strong> {{ linha.codigo }} | 
+                <strong>Criado em:</strong> {{ linha.data_criacao|date:"d/m/Y H:i" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="post" id="linhaForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome">Nome da Linha <span class="required">*</span></label>
+                <input type="text" name="nome" id="nome" value="{% if linha %}{{ linha.nome }}{% endif %}" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tipo">Tipo <span class="required">*</span></label>
+                    <select name="tipo" id="tipo" required>
+                        {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if linha and linha.tipo == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status <span class="required">*</span></label>
+                    <select name="status" id="status" required>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if linha and linha.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" id="descricao" rows="3">{% if linha %}{{ linha.descricao }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sucursal">Sucursal <span class="required">*</span></label>
+                    <select name="sucursal" id="sucursal" required>
+                        <option value="">Selecione uma sucursal</option>
+                        {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}" {% if linha and linha.sucursal.id == sucursal.id %}selected{% endif %}>{{ sucursal.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="localizacao">Localização</label>
+                    <input type="text" name="localizacao" id="localizacao" value="{% if linha %}{{ linha.localizacao }}{% endif %}" placeholder="Ex: Setor A, Piso 2">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="capacidade_horaria">Capacidade Horária (unidades/hora)</label>
+                    <input type="number" name="capacidade_horaria" id="capacidade_horaria" step="0.01" min="0" value="{% if linha and linha.capacidade_horaria %}{{ linha.capacidade_horaria }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="responsavel">Responsável</label>
+                    <select name="responsavel" id="responsavel">
+                        <option value="">Sem responsável</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}" {% if linha and linha.responsavel and linha.responsavel.id == usuario.id %}selected{% endif %}>
+                            {{ usuario.get_full_name|default:usuario.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Máquinas Associadas</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label for="maquina-search" style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-search"></i> Pesquisar Máquinas
+                        </label>
+                        <input type="text" 
+                               id="maquina-search" 
+                               placeholder="Digite para pesquisar máquinas..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px;">
+                        <div id="maquinas-disponiveis" 
+                             style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;">
+                            {% for maquina in maquinas %}
+                            <div class="maquina-item" 
+                                 data-maquina-id="{{ maquina.id }}"
+                                 data-maquina-nome="{{ maquina.nome }}"
+                                 data-maquina-codigo="{{ maquina.codigo }}"
+                                 {% if linha and maquina in linha.maquinas.all %}style="display: none;"{% endif %}>
+                                <div style="padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;"
+                                     onmouseover="this.style.background='#ecfdf5'" 
+                                     onmouseout="this.style.background='white'"
+                                     onclick="adicionarMaquina({{ maquina.id }}, '{{ maquina.nome|escapejs }}', '{{ maquina.codigo|escapejs }}')">
+                                    <div style="font-weight: 600; color: #1f2937;">{{ maquina.nome }}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">{{ maquina.codigo }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-check-circle"></i> Máquinas Associadas
+                        </label>
+                        <div id="maquinas-associadas" 
+                             style="min-height: 100px; max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white; padding: 8px;">
+                            {% if linha and linha.maquinas.all %}
+                                {% for maquina in linha.maquinas.all %}
+                                <div class="maquina-associada" data-maquina-id="{{ maquina.id }}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 4px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1f2937; font-size: 14px;">{{ maquina.nome }}</div>
+                                        <div style="font-size: 11px; color: #6b7280;">{{ maquina.codigo }}</div>
+                                    </div>
+                                    <button type="button" 
+                                            onclick="removerMaquina({{ maquina.id }}, '{{ maquina.nome|escapejs }}', '{{ maquina.codigo|escapejs }}')"
+                                            style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                                            onmouseover="this.style.background='#dc2626'" 
+                                            onmouseout="this.style.background='#ef4444'">
+                                        <i class="fas fa-times"></i> Remover
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                                    <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                    Nenhuma máquina associada
+                                </div>
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="maquinas" id="maquinas-hidden" value="{% if linha %}{% for maquina in linha.maquinas.all %}{{ maquina.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Processos Associados</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label for="processo-search" style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-search"></i> Pesquisar Processos
+                        </label>
+                        <input type="text" 
+                               id="processo-search" 
+                               placeholder="Digite para pesquisar processos..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px;">
+                        <div id="processos-disponiveis" 
+                             style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;">
+                            {% for processo in processos %}
+                            <div class="processo-item" 
+                                 data-processo-id="{{ processo.id }}"
+                                 data-processo-nome="{{ processo.nome }}"
+                                 data-processo-codigo="{{ processo.codigo }}"
+                                 {% if linha and processo in linha.processos.all %}style="display: none;"{% endif %}>
+                                <div style="padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;"
+                                     onmouseover="this.style.background='#ecfdf5'" 
+                                     onmouseout="this.style.background='white'"
+                                     onclick="adicionarProcesso({{ processo.id }}, '{{ processo.nome|escapejs }}', '{{ processo.codigo|escapejs }}')">
+                                    <div style="font-weight: 600; color: #1f2937;">{{ processo.nome }}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">{{ processo.codigo }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-check-circle"></i> Processos Associados
+                        </label>
+                        <div id="processos-associados" 
+                             style="min-height: 100px; max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white; padding: 8px;">
+                            {% if linha and linha.processos.all %}
+                                {% for processo in linha.processos.all %}
+                                <div class="processo-associado" data-processo-id="{{ processo.id }}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 4px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1f2937; font-size: 14px;">{{ processo.nome }}</div>
+                                        <div style="font-size: 11px; color: #6b7280;">{{ processo.codigo }}</div>
+                                    </div>
+                                    <button type="button" 
+                                            onclick="removerProcesso({{ processo.id }}, '{{ processo.nome|escapejs }}', '{{ processo.codigo|escapejs }}')"
+                                            style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                                            onmouseover="this.style.background='#dc2626'" 
+                                            onmouseout="this.style.background='#ef4444'">
+                                        <i class="fas fa-times"></i> Remover
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                                    <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                    Nenhum processo associado
+                                </div>
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="processos" id="processos-hidden" value="{% if linha %}{% for processo in linha.processos.all %}{{ processo.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" rows="3">{% if linha %}{{ linha.observacoes }}{% endif %}</textarea>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                <a href="{% url 'producao:linhas' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Linha
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Gerenciamento de máquinas associadas
+        let maquinasAssociadas = new Set();
+        let processosAssociados = new Set();
+        
+        // Inicializar máquinas já associadas
+        {% if linha %}
+            {% for maquina in linha.maquinas.all %}
+            maquinasAssociadas.add({{ maquina.id }});
+            {% endfor %}
+            {% for processo in linha.processos.all %}
+            processosAssociados.add({{ processo.id }});
+            {% endfor %}
+        {% endif %}
+        
+        // Funções para máquinas
+        function adicionarMaquina(id, nome, codigo) {
+            if (maquinasAssociadas.has(id)) return;
+            maquinasAssociadas.add(id);
+            const container = document.getElementById('maquinas-associadas');
+            const emptyMsg = container.querySelector('div[style*="text-align: center"]');
+            if (emptyMsg) emptyMsg.remove();
+            const div = document.createElement('div');
+            div.className = 'maquina-associada';
+            div.setAttribute('data-maquina-id', id);
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 4px;';
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight: 600; color: #1f2937; font-size: 14px;">${nome}</div>
+                    <div style="font-size: 11px; color: #6b7280;">${codigo}</div>
+                </div>
+                <button type="button" onclick="removerMaquina(${id}, '${nome.replace(/'/g, "\\'")}', '${codigo.replace(/'/g, "\\'")}')"
+                        style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                        onmouseover="this.style.background='#dc2626'" 
+                        onmouseout="this.style.background='#ef4444'">
+                    <i class="fas fa-times"></i> Remover
+                </button>
+            `;
+            container.appendChild(div);
+            const itemDisponivel = document.querySelector(`.maquina-item[data-maquina-id="${id}"]`);
+            if (itemDisponivel) itemDisponivel.style.display = 'none';
+            atualizarMaquinasHidden();
+        }
+        
+        function removerMaquina(id, nome, codigo) {
+            maquinasAssociadas.delete(id);
+            const itemAssociado = document.querySelector(`.maquina-associada[data-maquina-id="${id}"]`);
+            if (itemAssociado) itemAssociado.remove();
+            const itemDisponivel = document.querySelector(`.maquina-item[data-maquina-id="${id}"]`);
+            if (itemDisponivel) itemDisponivel.style.display = 'block';
+            const container = document.getElementById('maquinas-associadas');
+            if (maquinasAssociadas.size === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                        Nenhuma máquina associada
+                    </div>
+                `;
+            }
+            atualizarMaquinasHidden();
+        }
+        
+        function atualizarMaquinasHidden() {
+            document.getElementById('maquinas-hidden').value = Array.from(maquinasAssociadas).join(',');
+        }
+        
+        // Funções para processos
+        function adicionarProcesso(id, nome, codigo) {
+            if (processosAssociados.has(id)) return;
+            processosAssociados.add(id);
+            const container = document.getElementById('processos-associados');
+            const emptyMsg = container.querySelector('div[style*="text-align: center"]');
+            if (emptyMsg) emptyMsg.remove();
+            const div = document.createElement('div');
+            div.className = 'processo-associado';
+            div.setAttribute('data-processo-id', id);
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 4px;';
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight: 600; color: #1f2937; font-size: 14px;">${nome}</div>
+                    <div style="font-size: 11px; color: #6b7280;">${codigo}</div>
+                </div>
+                <button type="button" onclick="removerProcesso(${id}, '${nome.replace(/'/g, "\\'")}', '${codigo.replace(/'/g, "\\'")}')"
+                        style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                        onmouseover="this.style.background='#dc2626'" 
+                        onmouseout="this.style.background='#ef4444'">
+                    <i class="fas fa-times"></i> Remover
+                </button>
+            `;
+            container.appendChild(div);
+            const itemDisponivel = document.querySelector(`.processo-item[data-processo-id="${id}"]`);
+            if (itemDisponivel) itemDisponivel.style.display = 'none';
+            atualizarProcessosHidden();
+        }
+        
+        function removerProcesso(id, nome, codigo) {
+            processosAssociados.delete(id);
+            const itemAssociado = document.querySelector(`.processo-associado[data-processo-id="${id}"]`);
+            if (itemAssociado) itemAssociado.remove();
+            const itemDisponivel = document.querySelector(`.processo-item[data-processo-id="${id}"]`);
+            if (itemDisponivel) itemDisponivel.style.display = 'block';
+            const container = document.getElementById('processos-associados');
+            if (processosAssociados.size === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                        Nenhum processo associado
+                    </div>
+                `;
+            }
+            atualizarProcessosHidden();
+        }
+        
+        function atualizarProcessosHidden() {
+            document.getElementById('processos-hidden').value = Array.from(processosAssociados).join(',');
+        }
+        
+        // Pesquisa de máquinas
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchMaquina = document.getElementById('maquina-search');
+            if (searchMaquina) {
+                searchMaquina.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    const items = document.querySelectorAll('.maquina-item');
+                    items.forEach(item => {
+                        const nome = item.getAttribute('data-maquina-nome').toLowerCase();
+                        const codigo = item.getAttribute('data-maquina-codigo').toLowerCase();
+                        const maquinaId = parseInt(item.getAttribute('data-maquina-id'));
+                        if (!maquinasAssociadas.has(maquinaId) && (nome.includes(query) || codigo.includes(query))) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Pesquisa de processos
+            const searchProcesso = document.getElementById('processo-search');
+            if (searchProcesso) {
+                searchProcesso.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    const items = document.querySelectorAll('.processo-item');
+                    items.forEach(item => {
+                        const nome = item.getAttribute('data-processo-nome').toLowerCase();
+                        const codigo = item.getAttribute('data-processo-codigo').toLowerCase();
+                        const processoId = parseInt(item.getAttribute('data-processo-id'));
+                        if (!processosAssociados.has(processoId) && (nome.includes(query) || codigo.includes(query))) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

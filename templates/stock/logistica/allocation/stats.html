@@ -1,0 +1,140 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Estatísticas de Alocação{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current='Estatísticas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                    Estatísticas de Alocação
+                </h1>
+                <p class="page-subtitle">Análise detalhada por período e recurso</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Período</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio">De</label>
+                <input type="date" id="filtro-inicio" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim">Até</label>
+                <input type="date" id="filtro-fim" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Filtrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.alocados_veiculo_interno }}</div>
+                <div class="stat-label">Veículos internos</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.alocados_transportadora }}</div>
+                <div class="stat-label">Transportadoras</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.nao_alocados }}</div>
+                <div class="stat-label">Não alocados</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.custo_medio_transportadora|floatformat:0 }} MT</div>
+                <div class="stat-label">Custo médio transportadora</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="table-container stock-u-mb-24">
+                <div class="table-header">
+                    <h3 class="table-title"><i class="fas fa-shipping-fast" aria-hidden="true"></i> Por transportadora</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Transportadora</th>
+                                <th>Total</th>
+                                <th>Custo médio</th>
+                                <th>SLA médio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transportadoras_stats %}
+                            <tr>
+                                <td>{{ t.nome }}</td>
+                                <td>{{ t.total_rastreamentos }}</td>
+                                <td>{{ t.custo_medio|floatformat:2 }} MT</td>
+                                <td>{{ t.sla_medio|floatformat:1 }} dias</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">Sem dados</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title"><i class="fas fa-truck" aria-hidden="true"></i> Por veículo interno</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Total</th>
+                                <th>Custo médio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in veiculos_stats %}
+                            <tr>
+                                <td>{{ v.placa }}</td>
+                                <td>{{ v.total_rastreamentos }}</td>
+                                <td>{{ v.custo_medio|floatformat:2 }} MT</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-muted text-center">Sem dados</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

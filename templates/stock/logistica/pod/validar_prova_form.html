@@ -3,33 +3,12 @@
 
 {% block title %}Validar POD - {{ prova.codigo }}{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:provas_list' %}">Provas de Entrega</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:prova_detail' prova.id %}">{{ prova.codigo }}</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Validar POD</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:pod:prova_detail' prova.id as prova_detail_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section=prova.codigo breadcrumb_section_url=prova_detail_url breadcrumb_current='Validar POD' %}
 
     <!-- Page Header -->
     <div class="page-header">

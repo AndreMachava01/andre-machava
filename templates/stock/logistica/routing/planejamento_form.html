@@ -1,0 +1,193 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Novo planejamento de entrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:routing:planejamentos_list' as planejamentos_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Planejamentos' breadcrumb_section_url=planejamentos_url breadcrumb_current='Novo planejamento' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Novo planejamento de entrega
+                </h1>
+                <p class="page-subtitle">Agendar entrega com janela horária e prioridade</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="post" novalidate id="planejamento-form">
+            {% csrf_token %}
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-truck" aria-hidden="true"></i> Rastreamento</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="rastreamento_id">Rastreamento *</label>
+                            <select id="rastreamento_id" name="rastreamento_id" class="form-select" required>
+                                <option value="">Selecione um rastreamento...</option>
+                                {% for r in rastreamentos %}
+                                <option value="{{ r.id }}"
+                                        {% if form_data.rastreamento_id == r.id|stringformat:"s" or rastreamento_selecionado == r.id|stringformat:"s" %}selected{% endif %}
+                                        data-endereco="{{ r.endereco_entrega|escapejs }}"
+                                        data-cidade="{{ r.cidade_entrega|escapejs }}"
+                                        data-provincia="{{ r.provincia_entrega|escapejs }}"
+                                        data-contato="{{ r.destinatario_nome|escapejs }}"
+                                        data-telefone="{{ r.destinatario_telefone|escapejs }}">
+                                    {{ r.codigo_rastreamento }} — {{ r.destinatario_nome }} ({{ r.get_status_atual_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Apenas rastreamentos em curso sem planejamento existente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Destino</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="endereco">Endereço completo *</label>
+                            <textarea id="endereco" name="endereco" class="form-control" rows="2" required>{{ form_data.endereco }}</textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="cidade">Cidade *</label>
+                            <input type="text" id="cidade" name="cidade" class="form-control" required
+                                   value="{{ form_data.cidade }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="provincia">Província *</label>
+                            <input type="text" id="provincia" name="provincia" class="form-control" required
+                                   value="{{ form_data.provincia }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Janela de entrega</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="data_entrega">Data preferida *</label>
+                            <input type="date" id="data_entrega" name="data_entrega" class="form-control" required
+                                   value="{{ form_data.data_entrega|default:data_padrao|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="prioridade">Prioridade</label>
+                            <select id="prioridade" name="prioridade" class="form-select">
+                                {% for value, label in prioridade_choices %}
+                                <option value="{{ value }}"
+                                        {% if form_data.prioridade == value or not form_data.prioridade and value == 'NORMAL' %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="janela_inicio">Início da janela *</label>
+                            <input type="time" id="janela_inicio" name="janela_inicio" class="form-control" required
+                                   value="{{ form_data.janela_inicio|default:'08:00' }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="janela_fim">Fim da janela *</label>
+                            <input type="time" id="janela_fim" name="janela_fim" class="form-control" required
+                                   value="{{ form_data.janela_fim|default:'18:00' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-user" aria-hidden="true"></i> Contacto</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="contato_nome">Nome *</label>
+                            <input type="text" id="contato_nome" name="contato_nome" class="form-control" required
+                                   value="{{ form_data.contato_nome }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="contato_telefone">Telefone *</label>
+                            <input type="text" id="contato_telefone" name="contato_telefone" class="form-control" required
+                                   value="{{ form_data.contato_telefone }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="contato_email">E-mail</label>
+                            <input type="email" id="contato_email" name="contato_email" class="form-control"
+                                   value="{{ form_data.contato_email }}">
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="observacoes">Observações</label>
+                            <textarea id="observacoes" name="observacoes" class="form-control" rows="3">{{ form_data.observacoes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save" aria-hidden="true"></i> Criar planejamento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    const select = document.getElementById('rastreamento_id');
+    if (!select) return;
+
+    function preencherDoRastreamento() {
+        const opt = select.options[select.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        const map = {
+            endereco: opt.dataset.endereco || '',
+            cidade: opt.dataset.cidade || '',
+            provincia: opt.dataset.provincia || '',
+            contato_nome: opt.dataset.contato || '',
+            contato_telefone: opt.dataset.telefone || '',
+        };
+
+        Object.entries(map).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el && !el.value) el.value = value;
+        });
+    }
+
+    select.addEventListener('change', preencherDoRastreamento);
+    if (select.value) preencherDoRastreamento();
+})();
+</script>
+{% endblock %}

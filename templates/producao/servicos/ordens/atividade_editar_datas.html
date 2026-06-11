@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definir datas – {{ atividade.nome }} – {{ ordem.codigo }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 24px; max-width: 480px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        h1 { font-size: 18px; color: #374151; margin-bottom: 8px; }
+        .meta { color: #6b7280; font-size: 13px; margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        input[type="date"] { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        .help { font-size: 12px; color: #6b7280; margin-top: 4px; margin-bottom: 16px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-secondary { background: #6b7280; color: white; margin-left: 8px; }
+        .actions { margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Definir datas da actividade</h1>
+        <p class="meta">{{ ordem.codigo }} — {{ atividade.nome }}</p>
+        <p class="help">Pode definir ou corrigir manualmente a data de início e de conclusão (útil quando não registou no momento exacto).</p>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <label for="data_inicio">Data de início</label>
+            <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio_value }}">
+            <p class="help">Deixe vazio se a actividade ainda não começou.</p>
+
+            <label for="data_conclusao">Data de conclusão</label>
+            <input type="date" name="data_conclusao" id="data_conclusao" value="{{ data_conclusao_value }}">
+            <p class="help">Deixe vazio se a actividade ainda não foi concluída.</p>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Guardar datas</button>
+                <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

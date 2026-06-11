@@ -1,0 +1,470 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receitas de Produção - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            color: #8b5cf6;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #8b5cf6;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-form input,
+        .filter-form select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        table thead {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-ativa {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-inativa {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .badge-teste {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-aprovada {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-rejeitada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-view:hover {
+            background: #2563eb;
+        }
+        
+        .btn-edit {
+            background: #10b981;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-edit:hover {
+            background: #059669;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+        
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .pagination .current {
+            background: #8b5cf6;
+            color: white;
+            border-color: #8b5cf6;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-book"></i>
+                    Receitas de Produção
+                </h1>
+                <p>Catálogo de receitas e fórmulas de produção</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+                <a href="{% url 'stock:receita_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Receita
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; border-left: 4px solid #10b981;">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_receitas|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Receitas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ receitas_ativas|default:0|intcomma }}</div>
+                <div class="stat-label">Receitas Ativas</div>
+            </div>
+        </div>
+
+        <!-- Filtros de Busca -->
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Buscar por nome, código ou descrição..." 
+                       value="{{ search_query }}">
+                
+                <select name="produto">
+                    <option value="">Todos os Produtos</option>
+                    {% for produto in produtos %}
+                        <option value="{{ produto.id }}" {% if produto_id == produto.id|stringformat:"s" %}selected{% endif %}>
+                            {{ produto.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <select name="status">
+                    <option value="">Todos os Status</option>
+                    {% for status_val, status_label in status_choices %}
+                        <option value="{{ status_val }}" {% if status == status_val %}selected{% endif %}>
+                            {{ status_label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                
+                {% if search_query or produto_id or status %}
+                <a href="{% url 'producao:receitas' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Tabela de Receitas -->
+        <div class="table-wrapper">
+            {% if receitas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Produto</th>
+                        <th>Versão</th>
+                        <th>Rendimento</th>
+                        <th>Tempo Produção</th>
+                        <th>Itens</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for receita in receitas %}
+                    <tr>
+                        <td><strong>{{ receita.codigo }}</strong></td>
+                        <td>{{ receita.nome }}</td>
+                        <td>{{ receita.produto.nome|default:"N/A" }}</td>
+                        <td>{{ receita.versao }}</td>
+                        <td>{{ receita.rendimento }} {{ receita.unidade_rendimento }}</td>
+                        <td>{{ receita.tempo_producao_horas }}h</td>
+                        <td>{{ receita.itens.count }} item{{ receita.itens.count|pluralize }}</td>
+                        <td>
+                            <span class="badge badge-{{ receita.status|lower }}">
+                                {{ receita.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="{% url 'stock:receita_detail' receita.id %}" class="btn-view">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                                <a href="{% url 'stock:receita_edit' receita.id %}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="{% url 'stock:receita_delete' receita.id %}" class="btn-delete" onclick="return confirm('Tem certeza que deseja excluir a receita \"{{ receita.nome }}\"?');">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}">« Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}">‹ Anterior</a>
+                {% endif %}
+                
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Próxima ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if produto_id %}&produto={{ produto_id }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Última »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>Nenhuma receita encontrada</h3>
+                <p>{% if search_query or produto_id or status %}Tente ajustar os filtros de busca.{% else %}Comece criando sua primeira receita de produção.{% endif %}</p>
+                {% if not search_query and not produto_id and not status %}
+                <a href="{% url 'stock:receita_add' %}" class="btn btn-primary" style="margin-top: 15px;">
+                    <i class="fas fa-plus"></i> Criar Primeira Receita
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

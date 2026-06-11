@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load humanize static %}
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b45309;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            border: 1px solid #e5e7eb;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #b45309;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-group select[multiple] {
+            min-height: 150px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #b45309;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-ativo {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-inativo {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .membros-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .membro-badge {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .message {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        .message-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .message-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .mb-15 {
+            margin-bottom: 15px;
+        }
+        .hint-text {
+            color: #6b7280;
+            margin-top: 5px;
+            display: block;
+        }
+        .muted-text {
+            color: #9ca3af;
+        }
+        .membros-count {
+            color: #6b7280;
+        }
+        .actions-inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-xs {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .empty-note {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-users"></i>
+                    {{ title }}
+                </h1>
+                <p>{{ description }}</p>
+            </div>
+            <div>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                <i class="fas fa-check-circle"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ equipes|length }}</div>
+                <div class="stat-label">Total de Equipes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ equipes_ativas|default:0 }}</div>
+                <div class="stat-label">Equipes Ativas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ funcionarios_ativos|length }}</div>
+                <div class="stat-label">Funcionários Disponíveis</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-plus-circle"></i> Nova Equipe</h3>
+            <form method="POST" action="{% url 'producao:servicos_equipes' %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nome">Nome da Equipe *</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lider">Líder</label>
+                        <select id="lider" name="lider">
+                            <option value="">Selecione um líder</option>
+                            {% for funcionario in funcionarios_ativos %}
+                            <option value="{{ funcionario.id }}">{{ funcionario.nome_completo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group mb-15">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" placeholder="Descrição da equipe e suas responsabilidades"></textarea>
+                </div>
+                <div class="form-group mb-15">
+                    <label for="membros">Membros</label>
+                    <select id="membros" name="membros" multiple>
+                        {% for funcionario in funcionarios_ativos %}
+                        <option value="{{ funcionario.id }}">{{ funcionario.nome_completo }} - {{ funcionario.cargo.nome|default:"Sem cargo" }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="hint-text">Mantenha Ctrl (ou Cmd no Mac) pressionado para selecionar múltiplos membros</small>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="ativo" name="ativo" checked>
+                    <label for="ativo">Equipe ativa</label>
+                </div>
+                <button type="submit" class="btn btn-primary mb-15">
+                    <i class="fas fa-save"></i> Criar Equipe
+                </button>
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Líder</th>
+                        <th>Membros</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if equipes %}
+                        {% for equipe in equipes %}
+                        <tr>
+                            <td><strong>{{ equipe.nome }}</strong></td>
+                            <td>
+                                {% if equipe.lider %}
+                                    {{ equipe.lider.nome_completo }}
+                                {% else %}
+                                    <span class="muted-text">Sem líder</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="membros-list">
+                                    {% for membro in equipe.membros.all %}
+                                    <span class="membro-badge">{{ membro.nome_completo }}</span>
+                                    {% empty %}
+                                    <span class="muted-text">Nenhum membro</span>
+                                    {% endfor %}
+                                </div>
+                                <small class="membros-count">({{ equipe.total_membros }} membro{{ equipe.total_membros|pluralize }})</small>
+                            </td>
+                            <td>
+                                {% if equipe.descricao %}
+                                    {{ equipe.descricao|truncatewords:10 }}
+                                {% else %}
+                                    <span class="muted-text">Sem descrição</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if equipe.ativo %}
+                                    <span class="badge badge-ativo">Ativa</span>
+                                {% else %}
+                                    <span class="badge badge-inativo">Inativa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="actions-inline">
+                                    <a href="{% url 'producao:servico_equipe_edit' equipe.id %}" class="btn btn-success btn-xs">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <a href="{% url 'producao:servico_equipe_delete' equipe.id %}" class="btn btn-danger btn-xs">
+                                        <i class="fas fa-trash-alt"></i> Excluir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>Nenhuma equipe cadastrada ainda.</p>
+                                <p class="empty-note">Use o formulário acima para criar sua primeira equipe.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

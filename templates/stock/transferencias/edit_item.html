@@ -1,0 +1,125 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Editar item — {{ transferencia.codigo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:transferencias:list' %}">Transferências</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:transferencias:detail' transferencia.id %}">{{ transferencia.codigo }}</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Editar item</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-edit" aria-hidden="true"></i>
+                    Editar item
+                </h1>
+                <p class="page-subtitle">{{ transferencia.codigo }} — {{ transferencia.sucursal_origem.nome }} → {{ transferencia.sucursal_destino.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:transferencias:detail' transferencia.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-cards-grid stock-u-mb-24">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-box" aria-hidden="true"></i> Item</h2>
+            </div>
+            <div class="card-body">
+                {% if item_transferencia.item %}
+                <div class="info-row">
+                    <span class="info-label">Nome</span>
+                    <span class="info-value">{{ item_transferencia.item.nome }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Código</span>
+                    <span class="info-value"><span class="cell-code">{{ item_transferencia.item.codigo }}</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tipo</span>
+                    <span class="info-value">{{ item_transferencia.item.get_tipo_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Estoque disponível</span>
+                    <span class="info-value"><strong>{{ estoque_disponivel }}</strong> unidades</span>
+                </div>
+                {% else %}
+                <p class="stock-u-empty-msg mb-0">Item não definido.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Transferência</h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Código</span>
+                    <span class="info-value">{{ transferencia.codigo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Origem</span>
+                    <span class="info-value">{{ transferencia.sucursal_origem.nome }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Destino</span>
+                    <span class="info-value">{{ transferencia.sucursal_destino.nome }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-pen" aria-hidden="true"></i> Quantidade e observações</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group stock-u-mb-24">
+                    <label for="quantidade" class="form-label">
+                        Quantidade <span class="required">*</span>
+                    </label>
+                    <input type="number" class="form-control" id="quantidade" name="quantidade"
+                           value="{{ item_transferencia.quantidade_solicitada }}"
+                           min="1" max="{{ estoque_disponivel }}" required
+                           aria-describedby="quantidade-help">
+                    <div id="quantidade-help" class="form-text">Máximo: {{ estoque_disponivel }} unidades na origem</div>
+                </div>
+
+                <div class="form-group stock-u-mb-24">
+                    <label for="observacoes" class="form-label">Observações</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
+                              placeholder="Observações sobre este item (opcional)">{{ item_transferencia.observacoes }}</textarea>
+                </div>
+
+                <div class="stock-form-actions-row">
+                    <a href="{% url 'stock:transferencias:detail' transferencia.id %}" class="btn btn-secondary">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" aria-hidden="true"></i> Guardar alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

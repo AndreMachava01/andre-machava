@@ -300,8 +300,8 @@ class RotaMotorista(models.Model):
         return f"{self.codigo} - {self.nome_rota}"
 
 
-class ParadaRota(models.Model):
-    """Paradas individuais em uma rota."""
+class ParadaRotaMotorista(models.Model):
+    """Paradas individuais na rota do motorista (app mobile)."""
     
     STATUS_CHOICES = [
         ('PENDENTE', 'Pendente'),

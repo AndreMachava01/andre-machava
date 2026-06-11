@@ -51,8 +51,8 @@ class Regiao(models.Model):
         return f"{self.codigo} - {self.nome}"
 
 
-class ZonaEntrega(models.Model):
-    """Zonas de entrega para otimização logística."""
+class ZonaLogistica(models.Model):
+    """Zonas de entrega (dados mestres) — distinto de models_routing.ZonaEntrega."""
     
     codigo = models.CharField(max_length=20, unique=True)
     nome = models.CharField(max_length=100)
@@ -99,6 +99,7 @@ class ZonaEntrega(models.Model):
     data_atualizacao = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = 'empresa_zonaentregamasterdata'
         verbose_name = "Zona de Entrega"
         verbose_name_plural = "Zonas de Entrega"
         ordering = ['regiao', 'nome']

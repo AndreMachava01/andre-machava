@@ -3,281 +3,12 @@
 
 {% block title %}Detalhes da Operação Logística{% endblock %}
 
-{% block extra_style %}
-<style>
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-
-    .breadcrumb-modern {
-        background: #1f2937;
-        border-radius: 10px;
-        padding: 15px 20px;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .breadcrumb-modern a {
-        color: #06b6d4;
-        text-decoration: none;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .breadcrumb-modern a:hover {
-        text-decoration: underline;
-    }
-
-    .breadcrumb-modern span {
-        color: #e5e7eb;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .breadcrumb-modern i {
-        color: #6b7280;
-    }
-
-    .breadcrumb-modern i.fas.fa-chevron-right {
-        font-size: 0.7rem;
-        margin: 0 5px;
-    }
-
-    .page-header {
-        background: var(--purple-gradient);
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 30px;
-        color: white;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-
-    .page-header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-subtitle {
-        font-size: 1.1rem;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .header-actions .btn {
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .header-actions .btn:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-2px);
-    }
-
-    .info-card {
-        background: #1f2937;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        border: 1px solid #374151;
-    }
-
-    .info-card h3 {
-        color: #e5e7eb;
-        margin-bottom: 20px;
-        font-size: 1.3rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .info-item {
-        background: #374151;
-        border-radius: 10px;
-        padding: 15px;
-        border-left: 4px solid #06b6d4;
-    }
-
-    .info-label {
-        color: #9ca3af;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 5px;
-    }
-
-    .info-value {
-        color: #e5e7eb;
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 0.4em 0.8em;
-        font-size: 0.75em;
-        font-weight: 700;
-        line-height: 1;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: baseline;
-        border-radius: 0.375rem;
-        color: #fff;
-    }
-
-    .badge-warning { background-color: #f59e0b; }
-    .badge-info { background-color: #06b6d4; }
-    .badge-success { background-color: #10b981; }
-    .badge-danger { background-color: #ef4444; }
-    .badge-primary { background-color: #6366f1; }
-    .badge-secondary { background-color: #6b7280; }
-
-    .table-responsive {
-        background: #1f2937;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        overflow-x: auto;
-        border: 1px solid #374151;
-    }
-
-    .table-modern {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        color: #e5e7eb;
-    }
-
-    .table-modern th, .table-modern td {
-        padding: 15px 20px;
-        text-align: left;
-        border-bottom: 1px solid #374151;
-    }
-
-    .table-modern th {
-        background-color: #374151;
-        font-weight: 700;
-        color: #9ca3af;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-    }
-
-    .table-modern tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .table-modern tbody tr:hover {
-        background-color: #2d3748;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 12px 24px;
-        border-radius: 10px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: var(--blue-gradient);
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #6b7280;
-        color: white;
-    }
-
-    .btn-warning {
-        background: #f59e0b;
-        color: white;
-    }
-
-    .btn-success {
-        background: #10b981;
-        color: white;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        opacity: 0.9;
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:logistica:main' %}">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:logistica:operacoes_list' %}">
-            <i class="fas fa-tasks"></i>
-            Operações
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>{{ notificacao.codigo_operacao }}</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:logistica:operacoes_list' as operacoes_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Operações' breadcrumb_section_url=operacoes_url breadcrumb_current=notificacao.codigo_operacao %}
 
     <!-- Page Header -->
     <div class="page-header">
@@ -366,19 +97,19 @@
     <div class="info-card">
         <h3><i class="fas fa-route"></i> Linha do Tempo</h3>
         {% if eventos_rastreamento %}
-        <div class="info-grid" style="grid-template-columns: 1fr;">
+        <div class="info-grid stock-info-grid--stack">
             {% for ev in eventos_rastreamento %}
-            <div class="info-item" style="display:flex; gap:12px; align-items:center; border-left-color:#8b5cf6;">
-                <span class="badge" style="background:#8b5cf6;">{{ ev.get_tipo_evento_display }}</span>
+            <div class="info-item stock-logistica-event">
+                <span class="badge stock-logistica-event__badge">{{ ev.get_tipo_evento_display }}</span>
                 <div>
                     <div class="info-label">{{ ev.data_evento|date:"d/m/Y H:i" }}</div>
-                    <div class="info-value" style="font-size:0.95rem;">{{ ev.descricao|default:"—" }}</div>
+                    <div class="info-value stock-logistica-event__desc">{{ ev.descricao|default:"—" }}</div>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p style="color:#9ca3af;">Sem eventos registados ainda.</p>
+        <p class="stock-text-muted-sub">Sem eventos registados ainda.</p>
         {% endif %}
     </div>
 
@@ -438,7 +169,7 @@
                     {% for item in itens_operacao %}
                     <tr>
                         <td>
-                            <div style="font-weight: 600;">
+                            <div class="cell-primary cell-primary--strong">
                                 {% if item.item %}
                                     {{ item.item.nome }}
                                 {% elif item.produto %}
@@ -447,7 +178,7 @@
                                     {{ item.descricao|default:"Item não definido" }}
                                 {% endif %}
                             </div>
-                            <div style="font-size: 0.85rem; color: #9ca3af;">
+                            <div class="cell-tertiary cell-tertiary--sm">
                                 {% if item.item %}
                                     {{ item.item.codigo|default:"N/A" }}
                                 {% elif item.produto %}
@@ -457,7 +188,7 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td>{{ item.quantidade|default:item.quantidade_solicitada }}</td>
+                        <td>{{ item.quantidade_solicitada }}</td>
                         <td>{{ item.preco_unitario|floatformat:2 }} MT</td>
                         <td>{{ item.preco_total|floatformat:2 }} MT</td>
                     </tr>
@@ -475,41 +206,59 @@
     {% if notificacao.observacoes %}
     <div class="info-card">
         <h3><i class="fas fa-sticky-note"></i> Observações</h3>
-        <div style="background: #374151; border-radius: 10px; padding: 20px; color: #e5e7eb;">
+        <div class="stock-observacoes-box">
             {{ notificacao.observacoes|linebreaks }}
         </div>
     </div>
     {% endif %}
 
     <!-- Ações -->
-    <div class="action-buttons">
+    <div class="header-actions stock-u-mt-24">
         {% if notificacao.status == 'PENDENTE' %}
             <a href="{% url 'stock:logistica:operacao_atribuir' notificacao.id %}" class="btn btn-warning">
                 <i class="fas fa-truck-loading"></i>
                 Atribuir Transporte
             </a>
         {% elif notificacao.status == 'ATRIBUIDA' %}
+            <a href="{% url 'stock:logistica:operacao_atribuir' notificacao.id %}" class="btn btn-warning">
+                <i class="fas fa-exchange-alt"></i>
+                Alterar Transporte
+            </a>
             <a href="{% url 'stock:logistica:operacao_confirmar_coleta' notificacao.id %}" class="btn btn-success">
                 <i class="fas fa-hand-holding"></i>
                 Confirmar Coleta
             </a>
         {% elif notificacao.status == 'COLETADA' %}
+            <a href="{% url 'stock:logistica:operacao_guia_transporte' notificacao.id %}" class="btn btn-primary" target="_blank" rel="noopener">
+                <i class="fas fa-print"></i>
+                Guia de transporte
+            </a>
             <a href="{% url 'stock:logistica:operacao_iniciar_transporte' notificacao.id %}" class="btn btn-info">
                 <i class="fas fa-shipping-fast"></i>
                 Iniciar Transporte
             </a>
         {% elif notificacao.status == 'EM_TRANSITO' %}
+            <a href="{% url 'stock:logistica:operacao_guia_transporte' notificacao.id %}" class="btn btn-secondary" target="_blank" rel="noopener">
+                <i class="fas fa-print"></i>
+                Guia de transporte
+            </a>
             <a href="{% url 'stock:logistica:operacao_confirmar_entrega' notificacao.id %}" class="btn btn-primary">
                 <i class="fas fa-box-open"></i>
                 Confirmar Entrega
             </a>
-        {% elif notificacao.status == 'ENTREGUE' %}
+        {% elif notificacao.status in 'ENTREGUE,CONCLUIDA' %}
+            <a href="{% url 'stock:logistica:operacao_guia_transporte' notificacao.id %}" class="btn btn-secondary" target="_blank" rel="noopener">
+                <i class="fas fa-print"></i>
+                Guia de transporte
+            </a>
+        {% endif %}
+        {% if notificacao.status == 'ENTREGUE' %}
             <a href="{% url 'stock:logistica:operacao_concluir' notificacao.id %}" class="btn btn-secondary">
                 <i class="fas fa-check-circle"></i>
                 Concluir Operação
             </a>
         {% elif notificacao.status == 'CONCLUIDA' %}
-            <div class="btn btn-success" style="background: rgba(156, 163, 175, 0.2); color: #9ca3af; cursor: not-allowed;">
+            <div class="btn btn-success stock-status-done">
                 <i class="fas fa-check-circle"></i>
                 Operação Concluída
             </div>

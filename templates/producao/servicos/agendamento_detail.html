@@ -1,0 +1,344 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Agendamento - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b45309;
+        }
+        h1 {
+            font-size: 24px;
+            color: #b45309;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-primary:hover { background: #92400e; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3); }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #b45309;
+        }
+        .info-card h3 {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-card p {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-agendada { background: #fef3c7; color: #92400e; }
+        .badge-em-andamento { background: #dbeafe; color: #1e40af; }
+        .badge-pausada { background: #e5e7eb; color: #374151; }
+        .badge-concluida { background: #d1fae5; color: #065f46; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .badge-baixa { background: #e5e7eb; color: #374151; }
+        .badge-normal { background: #dbeafe; color: #1e40af; }
+        .badge-alta { background: #fef3c7; color: #92400e; }
+        .badge-urgente { background: #fee2e2; color: #991b1b; }
+        .details-section {
+            margin-top: 25px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .details-section h2 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #b45309;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .text-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            color: #374151;
+            line-height: 1.6;
+        }
+        .text-content p {
+            margin: 0;
+        }
+        .text-muted {
+            color: #6b7280;
+            font-style: italic;
+        }
+        .servico-item {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #b45309;
+        }
+        .servico-item h3 {
+            color: #b45309;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                Agendamento: {{ ordem.codigo|formatar_codigo_ordem }}
+            </h1>
+            <div class="btn-group">
+                <a href="{% url 'producao:servicos_agendamento' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                {% if is_orcamento %}
+                <a href="{% url 'producao:servico_orcamento_detail' ordem.id %}" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> Ver Orçamento Completo
+                </a>
+                {% else %}
+                <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> Ver Ordem Completa
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informações Principais -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-calendar"></i> Data e Hora Agendada</h3>
+                <p><strong>{{ ordem.data_agendada|date:"d/m/Y" }}</strong></p>
+                <p style="color: #6b7280; font-size: 14px;">{{ ordem.data_agendada|time:"H:i" }}</p>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-user"></i> Cliente</h3>
+                <p>
+                    {% if ordem.cliente %}
+                        {{ ordem.cliente.nome }}
+                    {% else %}
+                        {{ ordem.nome_cliente_pagamento|default:"N/A" }}
+                    {% endif %}
+                </p>
+                {% if ordem.cliente and ordem.cliente.telefone %}
+                <p style="color: #6b7280; font-size: 14px; margin-top: 5px;">
+                    <i class="fas fa-phone"></i> {{ ordem.cliente.telefone }}
+                </p>
+                {% elif ordem.telefone_cliente_pagamento %}
+                <p style="color: #6b7280; font-size: 14px; margin-top: 5px;">
+                    <i class="fas fa-phone"></i> {{ ordem.telefone_cliente_pagamento }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-map-marker-alt"></i> Local de Execução</h3>
+                <p>{{ ordem.endereco_servico|default:"N/A" }}</p>
+                {% if ordem.cidade_servico %}
+                <p style="color: #6b7280; font-size: 14px; margin-top: 5px;">{{ ordem.cidade_servico }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-user-tie"></i> Responsável</h3>
+                <p>
+                    {% if ordem.responsavel %}
+                        {{ ordem.responsavel.get_full_name|default:ordem.responsavel.username }}
+                    {% else %}
+                        <span class="text-muted">Não atribuído</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Status</h3>
+                <p>
+                    <span class="badge badge-{{ ordem.status|lower|slugify }}">
+                        {{ ordem.get_status_display }}
+                    </span>
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Prioridade</h3>
+                <p>
+                    <span class="badge badge-{{ ordem.prioridade|lower }}">
+                        {{ ordem.get_prioridade_display }}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Serviços Agendados -->
+        <div class="details-section">
+            <h2><i class="fas fa-tools"></i> Serviços Agendados</h2>
+            {% if ordem.servicos_orcamento.all %}
+                {% for servico_orc in ordem.servicos_orcamento.all %}
+                <div class="servico-item">
+                    <h3>
+                        <i class="fas fa-tools"></i> 
+                        {% if servico_orc.nome_documento %}
+                            {{ servico_orc.nome_documento }}
+                        {% else %}
+                            {{ servico_orc.servico.nome|default:"Serviço não especificado" }}
+                        {% endif %}
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3>Quantidade</h3>
+                            <p>{{ servico_orc.quantidade|floatformat:2 }}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Valor Unitário</h3>
+                            <p>{{ servico_orc.valor_unitario|floatformat:2|intcomma }} MT</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Total do Serviço</h3>
+                            <p><strong>{{ servico_orc.valor_total|floatformat:2|intcomma }} MT</strong></p>
+                        </div>
+                    </div>
+                    
+                    {% if servico_orc.itens.all %}
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                        <h4 style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">Produtos/Materiais:</h4>
+                        {% for item in servico_orc.itens.all %}
+                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 5px;">
+                            <strong>{{ item.item.nome|default:"Item" }}</strong> - 
+                            Qtd: {{ item.quantidade|floatformat:2 }} | 
+                            Unit: {{ item.valor_unitario|floatformat:2|intcomma }} MT | 
+                            Total: {{ item.valor_total|floatformat:2|intcomma }} MT
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <p class="text-muted">Nenhum serviço cadastrado.</p>
+            {% endif %}
+        </div>
+
+        <!-- Resumo Financeiro -->
+        <div class="details-section">
+            <h2><i class="fas fa-calculator"></i> Resumo Financeiro</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Total Serviços</h3>
+                    <p><strong>{{ total_servicos|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% if total_itens > 0 %}
+                <div class="info-card">
+                    <h3>Total Produtos/Materiais</h3>
+                    <p><strong>{{ total_itens|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% endif %}
+                {% if total_transporte > 0 %}
+                <div class="info-card">
+                    <h3>Total Transporte</h3>
+                    <p><strong>{{ total_transporte|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <h3>Subtotal</h3>
+                    <p><strong>{{ subtotal|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                <div class="info-card">
+                    <h3>IVA ({{ taxa_iva|floatformat:0 }}%)</h3>
+                    <p><strong>{{ valor_iva|floatformat:2|intcomma }} MT</strong></p>
+                </div>
+                <div class="info-card" style="border-left-color: #10b981; background: #ecfdf5;">
+                    <h3>Valor Total</h3>
+                    <p style="color: #10b981; font-size: 22px; font-weight: 700;">{{ valor_final|floatformat:2|intcomma }} MT</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Adicionais -->
+        {% if ordem.equipe or ordem.observacoes %}
+        <div class="details-section">
+            <h2><i class="fas fa-info-circle"></i> Informações Adicionais</h2>
+            {% if ordem.equipe %}
+            <div class="info-card" style="margin-bottom: 15px;">
+                <h3><i class="fas fa-users"></i> Equipe</h3>
+                <p>{{ ordem.equipe }}</p>
+            </div>
+            {% endif %}
+            {% if ordem.observacoes %}
+            <div class="text-content">
+                <h3 style="margin-bottom: 10px; color: #374151;">Observações</h3>
+                <p>{{ ordem.observacoes|linebreaks }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

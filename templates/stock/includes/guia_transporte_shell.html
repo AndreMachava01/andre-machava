@@ -1,0 +1,70 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{# Shell de documento imprimível — mesmo padrão visual dos relatórios de stock #}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block title %}{% block guia_page_title %}Guia de transporte{% endblock %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern stock-no-print" aria-label="Navegação">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:logistica:main' %}">Logística</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}">{{ notificacao.codigo_operacao|default:notificacao.id }}</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{% block guia_breadcrumb %}Guia de transporte{% endblock %}</span>
+    </nav>
+
+    <div class="page-header stock-no-print">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas {% block guia_icon %}fa-file-alt{% endblock %}" aria-hidden="true"></i>
+                    {% block guia_heading %}Guia de transporte{% endblock %}
+                </h1>
+                <p class="page-subtitle">{% block guia_subtitle %}{{ notificacao.codigo_operacao|default:notificacao.id }} — {{ notificacao.get_tipo_operacao_display }}{% endblock %}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:operacao_detail' notificacao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Operação
+                </a>
+                <a href="{% url 'stock:logistica:operacoes_list' %}" class="btn btn-outline">
+                    <i class="fas fa-list" aria-hidden="true"></i> Operações
+                </a>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-doc-print stock-guia-transporte">
+        <header class="stock-doc-print__header stock-guia-transporte__header">
+            <div>
+                <h2 class="stock-doc-print__title">{% block guia_doc_title %}GUIA DE TRANSPORTE{% endblock %}</h2>
+                <p class="stock-doc-print__code">{% block guia_doc_code %}{{ notificacao.codigo_operacao|default:notificacao.id }}{% endblock %}</p>
+            </div>
+            <div class="stock-doc-print__date stock-guia-transporte__meta-head">
+                <span><strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}</span>
+                <span><strong>Status:</strong> {{ notificacao.get_status_display }}</span>
+                <span><strong>Por:</strong> {{ user.get_full_name|default:user.username }}</span>
+            </div>
+        </header>
+
+        {% block guia_meta %}{% endblock %}
+
+        {% block guia_content %}{% endblock %}
+
+        {% block guia_signatures %}{% endblock %}
+
+        <footer class="stock-doc-print__footer stock-guia-transporte__footer">
+            {% block guia_footer_note %}Gerado em {{ data_relatorio|date:"d/m/Y H:i" }} — Guia de transporte · Conception{% endblock %}
+        </footer>
+    </div>
+</div>
+{% endblock %}

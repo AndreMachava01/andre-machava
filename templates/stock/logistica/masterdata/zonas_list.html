@@ -1,0 +1,120 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Zonas logísticas{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:dashboard' as masterdata_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Dados mestres' breadcrumb_section_url=masterdata_dashboard_url breadcrumb_current='Zonas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-map-marked-alt" aria-hidden="true"></i> Zonas logísticas</h1>
+                <p class="page-subtitle">Zonas de entrega e cobertura</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+                <a href="{% url 'stock:masterdata:zona_create' %}" class="btn btn-success"><i class="fas fa-plus" aria-hidden="true"></i> Nova zona</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search">Pesquisar</label>
+                <input type="text" id="filtro-search" name="search" value="{{ search }}" class="form-control" placeholder="Código ou nome">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-regiao">Região</label>
+                <select id="filtro-regiao" name="regiao" class="form-select">
+                    <option value="">Todas</option>
+                    {% for r in regioes %}
+                    <option value="{{ r.id }}" {% if regiao == r.id|stringformat:"s" %}selected{% endif %}>{{ r.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-ativo">Estado</label>
+                <select id="filtro-ativo" name="ativo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true" {% if ativo == 'true' %}selected{% endif %}>Activas</option>
+                    <option value="false" {% if ativo == 'false' %}selected{% endif %}>Inactivas</option>
+                </select>
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">Zonas</h3>
+            <span class="page-info">{{ page_obj.paginator.count }} registo(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Região</th>
+                        <th>Prazo (dias)</th>
+                        <th>Custo adicional</th>
+                        <th>Estado</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for zona in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ zona.codigo }}</strong></td>
+                        <td>{{ zona.nome }}</td>
+                        <td>{{ zona.regiao.nome }}</td>
+                        <td>{{ zona.prazo_entrega_dias }}</td>
+                        <td>{{ zona.custo_adicional|floatformat:2 }} MT</td>
+                        <td>
+                            <span class="badge badge-{% if zona.ativo %}success{% else %}secondary{% endif %}">
+                                {% if zona.ativo %}Activa{% else %}Inactiva{% endif %}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:masterdata:zona_detail' zona.id %}" class="btn-action primary" title="Ver" aria-label="Ver {{ zona.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                <a href="{% url 'stock:masterdata:zona_edit' zona.id %}" class="btn-action secondary" title="Editar" aria-label="Editar {{ zona.codigo }}">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&regiao={{ regiao }}&ativo={{ ativo }}">Anterior</a>{% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&search={{ search }}&regiao={{ regiao }}&ativo={{ ativo }}">Seguinte</a>{% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+            <h3>Nenhuma zona encontrada</h3>
+            <a href="{% url 'stock:masterdata:zona_create' %}" class="btn btn-success">Nova zona</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

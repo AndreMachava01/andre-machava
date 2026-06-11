@@ -70,7 +70,7 @@ def transferencias_list(request):
         'status': status,
         'sucursal_selecionada': int(sucursal_id) if sucursal_id else None,
     }
-    return render(request, 'stock/transferencias/list.html', context)
+    return render(request, 'stock/transferencias/main.html', context)
 
 
 @login_required
@@ -414,7 +414,7 @@ def transferencia_receber(request, id):
     if request.method == 'POST':
         # Processar recebimento
         itens_recebidos = []
-        for item in transferencia.itens.all():
+        for item in transferencia.itens.select_related('item').all():
             quantidade_recebida = request.POST.get(f'quantidade_recebida_{item.id}')
             if quantidade_recebida:
                 try:
@@ -462,9 +462,12 @@ def transferencia_receber(request, id):
         
         return redirect('stock:transferencias:detail', id=id)
     
+    itens = transferencia.itens.select_related('item').all()
     context = {
         'transferencia': transferencia,
-        'itens': transferencia.itens.select_related('item').all(),
+        'itens': itens,
+        'total_solicitada': sum(i.quantidade_solicitada for i in itens),
+        'total_pendente': sum(i.quantidade_pendente for i in itens),
     }
     return render(request, 'stock/transferencias/receber.html', context)
 
@@ -587,7 +590,7 @@ def guia_transferencia(request, id):
     itens_transferencia_list = []
     valor_total = 0
     
-    for item in transferencia.itens.all():
+    for item in transferencia.itens.select_related('item').all():
         preco = item.item.preco_custo if item.item else 0
         quantidade = item.quantidade_solicitada
         valor_item = quantidade * preco
@@ -635,7 +638,7 @@ def nota_recebimento(request, id):
     itens_transferencia_list = []
     valor_total = 0
     
-    for item in transferencia.itens.all():
+    for item in transferencia.itens.select_related('item').all():
         preco = item.item.preco_custo if item.item else 0
         quantidade = item.quantidade_recebida or item.quantidade_solicitada
         valor_item = quantidade * preco

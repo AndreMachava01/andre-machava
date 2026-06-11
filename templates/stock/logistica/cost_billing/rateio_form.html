@@ -1,0 +1,103 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Rateio — {{ custo.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:cost_billing:custo_detail' custo.id as custo_detail_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Rateio manual' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-divide" aria-hidden="true"></i> Rateio manual</h1>
+                <p class="page-subtitle">{{ custo.codigo }} — valor total {{ custo.valor|floatformat:2 }} MT</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ custo_detail_url }}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="form-container" id="rateio-form">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Distribuição por centro de custo</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Incluir</th>
+                                <th>Centro de custo</th>
+                                <th>Valor (MT)</th>
+                                <th>Percentual (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for centro in centros_custo %}
+                            <tr>
+                                <td>
+                                    <label class="sr-only" for="rateio-check-{{ centro.id }}">Incluir {{ centro.nome }}</label>
+                                    <input type="checkbox" id="rateio-check-{{ centro.id }}" class="form-check-input rateio-check"
+                                           data-centro="{{ centro.id }}" aria-label="Incluir {{ centro.nome }}">
+                                    <input type="hidden" name="centro_custo_{{ centro.id }}" value="" class="centro-hidden" data-centro="{{ centro.id }}">
+                                </td>
+                                <td>{{ centro.codigo }} — {{ centro.nome }}</td>
+                                <td>
+                                    <label class="sr-only" for="rateio-valor-{{ centro.id }}">Valor para {{ centro.nome }}</label>
+                                    <input type="number" id="rateio-valor-{{ centro.id }}" name="valor_{{ centro.id }}" class="form-control rateio-valor"
+                                           data-centro="{{ centro.id }}" step="0.01" min="0" disabled
+                                           aria-label="Valor em MT para {{ centro.nome }}">
+                                </td>
+                                <td>
+                                    <label class="sr-only" for="rateio-pct-{{ centro.id }}">Percentual para {{ centro.nome }}</label>
+                                    <input type="number" id="rateio-pct-{{ centro.id }}" name="percentual_{{ centro.id }}" class="form-control rateio-percentual"
+                                           data-centro="{{ centro.id }}" step="0.01" min="0" max="100" disabled
+                                           aria-label="Percentual para {{ centro.nome }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Guardar rateio</button>
+            <a href="{{ custo_detail_url }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const total = {{ custo.valor }};
+    document.querySelectorAll('.rateio-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            const id = cb.dataset.centro;
+            const hidden = document.querySelector('.centro-hidden[data-centro="' + id + '"]');
+            const valor = document.querySelector('.rateio-valor[data-centro="' + id + '"]');
+            const pct = document.querySelector('.rateio-percentual[data-centro="' + id + '"]');
+            const on = cb.checked;
+            hidden.value = on ? id : '';
+            valor.disabled = !on;
+            pct.disabled = !on;
+            if (!on) { valor.value = ''; pct.value = ''; }
+        });
+    });
+    document.querySelectorAll('.rateio-percentual').forEach(function (input) {
+        input.addEventListener('input', function () {
+            const id = input.dataset.centro;
+            const valor = document.querySelector('.rateio-valor[data-centro="' + id + '"]');
+            if (input.value) {
+                valor.value = (total * parseFloat(input.value) / 100).toFixed(2);
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

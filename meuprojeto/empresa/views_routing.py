@@ -31,44 +31,49 @@ logger = logging.getLogger(__name__)
 @require_stock_access
 def zonas_entrega_list(request):
     """Lista de zonas de entrega."""
-    search = request.GET.get('search', '')
-    provincia = request.GET.get('provincia', '')
-    ativo = request.GET.get('ativo', '')
-    
+    search = request.GET.get('search', '').strip()
+    provincia = request.GET.get('provincia', '').strip()
+    ativo = request.GET.get('ativo', '').strip()
+
     zonas = ZonaEntrega.objects.all()
-    
+
     if search:
         zonas = zonas.filter(
-            Q(nome__icontains=search) |
-            Q(codigo__icontains=search) |
-            Q(cidade__icontains=search) |
-            Q(bairros__icontains=search)
+            Q(nome__icontains=search)
+            | Q(codigo__icontains=search)
+            | Q(cidade__icontains=search)
+            | Q(bairros__icontains=search),
         )
-    
+
     if provincia:
         zonas = zonas.filter(provincia__iexact=provincia)
-    
-    if ativo:
-        zonas = zonas.filter(ativo=ativo == 'true')
-    
+
+    if ativo in ('true', 'false'):
+        zonas = zonas.filter(ativo=(ativo == 'true'))
+
     zonas = zonas.order_by('provincia', 'cidade', 'nome')
-    
-    # Paginação
-    paginator = Paginator(zonas, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    provincias = ZonaEntrega.objects.values_list('provincia', flat=True).distinct().order_by('provincia')
-    
+
+    stats = {
+        'total': zonas.count(),
+        'ativas': zonas.filter(ativo=True).count(),
+        'inativas': zonas.filter(ativo=False).count(),
+    }
+
+    page_obj = Paginator(zonas, 20).get_page(request.GET.get('page'))
+    provincias = ZonaEntrega.objects.values_list(
+        'provincia', flat=True,
+    ).distinct().order_by('provincia')
+
     context = {
         'page_obj': page_obj,
+        'stats': stats,
         'search': search,
         'provincia': provincia,
         'ativo': ativo,
         'provincias': provincias,
+        'has_filters': bool(search or provincia or ativo),
     }
-    
+
     return render(request, 'stock/logistica/routing/zonas_list.html', context)
 
 
@@ -107,59 +112,96 @@ def zona_entrega_detail(request, zona_id):
 @require_stock_access
 def planejamentos_list(request):
     """Lista de planejamentos de entrega."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    prioridade = request.GET.get('prioridade', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    prioridade = request.GET.get('prioridade', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     planejamentos = PlanejamentoEntrega.objects.select_related(
-        'zona_entrega', 'rota_atribuida', 'rastreamento_entrega'
+        'zona_entrega', 'rota_atribuida', 'rastreamento_entrega',
     )
-    
+
     if search:
         planejamentos = planejamentos.filter(
-            Q(codigo__icontains=search) |
-            Q(endereco_completo__icontains=search) |
-            Q(cidade__icontains=search) |
-            Q(contato_nome__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(endereco_completo__icontains=search)
+            | Q(cidade__icontains=search)
+            | Q(contato_nome__icontains=search),
         )
-    
+
     if status:
         planejamentos = planejamentos.filter(status=status)
-    
+
     if prioridade:
         planejamentos = planejamentos.filter(prioridade=prioridade)
-    
+
     if data_inicio:
         planejamentos = planejamentos.filter(data_entrega_preferida__gte=data_inicio)
-    
+
     if data_fim:
         planejamentos = planejamentos.filter(data_entrega_preferida__lte=data_fim)
-    
+
     planejamentos = planejamentos.order_by('-data_entrega_preferida', 'prioridade', 'janela_inicio')
-    
-    # Paginação
-    paginator = Paginator(planejamentos, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = PlanejamentoEntrega.STATUS_CHOICES
-    prioridade_choices = PlanejamentoEntrega.PRIORIDADE_CHOICES
-    
+
+    stats = {
+        'total': planejamentos.count(),
+        'pendentes': planejamentos.filter(status='PENDENTE').count(),
+        'agendadas': planejamentos.filter(status='AGENDADA').count(),
+        'em_rota': planejamentos.filter(status='EM_ROTA').count(),
+    }
+
+    page_obj = Paginator(planejamentos, 20).get_page(request.GET.get('page'))
+
     context = {
         'page_obj': page_obj,
+        'stats': stats,
         'search': search,
         'status': status,
         'prioridade': prioridade,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
-        'prioridade_choices': prioridade_choices,
+        'status_choices': PlanejamentoEntrega.STATUS_CHOICES,
+        'prioridade_choices': PlanejamentoEntrega.PRIORIDADE_CHOICES,
+        'has_filters': bool(
+            search or status or prioridade or data_inicio or data_fim,
+        ),
     }
-    
+
     return render(request, 'stock/logistica/routing/planejamentos_list.html', context)
+
+
+def _criar_planejamento_entrega_from_payload(data):
+    """Valida payload e cria planejamento via RoutingService."""
+    rastreamento_id = data.get('rastreamento_id')
+    if not rastreamento_id:
+        raise ValueError('Rastreamento é obrigatório.')
+
+    rastreamento = get_object_or_404(RastreamentoEntrega, id=rastreamento_id)
+    if PlanejamentoEntrega.objects.filter(rastreamento_entrega_id=rastreamento_id).exists():
+        raise ValueError('Este rastreamento já possui um planejamento associado.')
+
+    data_entrega = data.get('data_entrega')
+    janela_inicio = data.get('janela_inicio')
+    janela_fim = data.get('janela_fim')
+    if not data_entrega or not janela_inicio or not janela_fim:
+        raise ValueError('Data e janela de entrega são obrigatórias.')
+
+    routing_service = RoutingService()
+    return routing_service.criar_planejamento_entrega(
+        rastreamento=rastreamento,
+        endereco=data.get('endereco', ''),
+        cidade=data.get('cidade', ''),
+        provincia=data.get('provincia', ''),
+        data_entrega=datetime.strptime(data_entrega, '%Y-%m-%d').date(),
+        janela_inicio=datetime.strptime(janela_inicio, '%H:%M').time(),
+        janela_fim=datetime.strptime(janela_fim, '%H:%M').time(),
+        prioridade=data.get('prioridade', 'NORMAL'),
+        observacoes=data.get('observacoes', ''),
+        contato_nome=data.get('contato_nome', ''),
+        contato_telefone=data.get('contato_telefone', ''),
+        contato_email=data.get('contato_email', ''),
+    )
 
 
 @login_required
@@ -167,53 +209,69 @@ def planejamentos_list(request):
 def planejamento_create(request):
     """Criar novo planejamento de entrega."""
     if request.method == 'POST':
+        wants_json = 'application/json' in (request.content_type or '')
         try:
-            data = json.loads(request.body)
-            
-            # Validar dados obrigatórios
-            rastreamento_id = data.get('rastreamento_id')
-            if not rastreamento_id:
-                return JsonResponse({'success': False, 'error': 'Rastreamento é obrigatório'})
-            
-            rastreamento = get_object_or_404(RastreamentoEntrega, id=rastreamento_id)
-            
-            # Criar planejamento
-            routing_service = RoutingService()
-            planejamento = routing_service.criar_planejamento_entrega(
-                rastreamento=rastreamento,
-                endereco=data.get('endereco', ''),
-                cidade=data.get('cidade', ''),
-                provincia=data.get('provincia', ''),
-                data_entrega=datetime.strptime(data.get('data_entrega'), '%Y-%m-%d').date(),
-                janela_inicio=datetime.strptime(data.get('janela_inicio'), '%H:%M').time(),
-                janela_fim=datetime.strptime(data.get('janela_fim'), '%H:%M').time(),
-                prioridade=data.get('prioridade', 'NORMAL'),
-                observacoes=data.get('observacoes', ''),
-                contato_nome=data.get('contato_nome', ''),
-                contato_telefone=data.get('contato_telefone', ''),
-                contato_email=data.get('contato_email', '')
+            if wants_json:
+                data = json.loads(request.body)
+            else:
+                data = {
+                    'rastreamento_id': request.POST.get('rastreamento_id'),
+                    'endereco': request.POST.get('endereco', '').strip(),
+                    'cidade': request.POST.get('cidade', '').strip(),
+                    'provincia': request.POST.get('provincia', '').strip(),
+                    'data_entrega': request.POST.get('data_entrega', '').strip(),
+                    'janela_inicio': request.POST.get('janela_inicio', '').strip(),
+                    'janela_fim': request.POST.get('janela_fim', '').strip(),
+                    'prioridade': request.POST.get('prioridade', 'NORMAL'),
+                    'observacoes': request.POST.get('observacoes', '').strip(),
+                    'contato_nome': request.POST.get('contato_nome', '').strip(),
+                    'contato_telefone': request.POST.get('contato_telefone', '').strip(),
+                    'contato_email': request.POST.get('contato_email', '').strip(),
+                }
+
+            planejamento = _criar_planejamento_entrega_from_payload(data)
+
+            if wants_json:
+                return JsonResponse({
+                    'success': True,
+                    'planejamento_id': planejamento.id,
+                    'codigo': planejamento.codigo,
+                })
+
+            messages.success(
+                request,
+                f'Planejamento {planejamento.codigo} criado com sucesso.',
             )
-            
-            return JsonResponse({
-                'success': True,
-                'planejamento_id': planejamento.id,
-                'codigo': planejamento.codigo
-            })
-            
+            return redirect('stock:routing:planejamentos_list')
+
+        except (ValueError, json.JSONDecodeError) as e:
+            logger.warning('Validação ao criar planejamento: %s', e)
+            if wants_json:
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, str(e))
         except Exception as e:
-            logger.error(f"Erro ao criar planejamento: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
-    
-    # GET - mostrar formulário
+            logger.error('Erro ao criar planejamento: %s', e)
+            if wants_json:
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Não foi possível criar o planejamento: {e}')
+
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['PENDENTE', 'COLETADO']
-    ).select_related('transportadora', 'veiculo_interno')
-    
+        status_atual__in=['PREPARANDO', 'COLETADO', 'EM_TRANSITO', 'EM_DISTRIBUICAO'],
+    ).filter(
+        planejamento__isnull=True,
+    ).select_related('transportadora', 'veiculo_interno').order_by('-data_criacao')
+
+    data_padrao = (timezone.now() + timedelta(days=1)).date()
+    rastreamento_id = request.GET.get('rastreamento', '').strip()
+
     context = {
         'rastreamentos': rastreamentos,
         'prioridade_choices': PlanejamentoEntrega.PRIORIDADE_CHOICES,
+        'data_padrao': data_padrao,
+        'rastreamento_selecionado': rastreamento_id,
+        'form_data': request.POST if request.method == 'POST' else {},
     }
-    
+
     return render(request, 'stock/logistica/routing/planejamento_form.html', context)
 
 
@@ -225,50 +283,51 @@ def planejamento_create(request):
 @require_stock_access
 def rotas_list(request):
     """Lista de rotas."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     rotas = Rota.objects.select_related(
-        'zona_origem', 'veiculo_interno', 'motorista'
+        'zona_origem', 'veiculo_interno', 'motorista',
     ).prefetch_related('paradas', 'zonas_destino')
-    
+
     if search:
         rotas = rotas.filter(
-            Q(codigo__icontains=search) |
-            Q(nome__icontains=search) |
-            Q(descricao__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(nome__icontains=search)
+            | Q(descricao__icontains=search),
         )
-    
+
     if status:
         rotas = rotas.filter(status=status)
-    
+
     if data_inicio:
         rotas = rotas.filter(data_planejada__gte=data_inicio)
-    
+
     if data_fim:
         rotas = rotas.filter(data_planejada__lte=data_fim)
-    
+
     rotas = rotas.order_by('-data_planejada', 'hora_inicio_prevista')
-    
-    # Paginação
-    paginator = Paginator(rotas, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = Rota.STATUS_CHOICES
-    
+
+    stats = {
+        'total': rotas.count(),
+        'planejadas': rotas.filter(status='PLANEJADA').count(),
+        'em_execucao': rotas.filter(status='EM_EXECUCAO').count(),
+        'concluidas': rotas.filter(status='CONCLUIDA').count(),
+    }
+
     context = {
-        'page_obj': page_obj,
+        'page_obj': Paginator(rotas, 20).get_page(request.GET.get('page')),
+        'stats': stats,
         'search': search,
         'status': status,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
+        'status_choices': Rota.STATUS_CHOICES,
+        'has_filters': bool(search or status or data_inicio or data_fim),
     }
-    
+
     return render(request, 'stock/logistica/routing/rotas_list.html', context)
 
 
@@ -345,19 +404,24 @@ def otimizar_rotas(request):
             logger.error(f"Erro ao otimizar rotas: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
     
-    # GET - mostrar formulário de otimização
-    veiculos = VeiculoInterno.objects.filter(status='ATIVO', disponivel=True)
-    zonas = ZonaEntrega.objects.filter(ativo=True)
-    
-    # Data padrão: amanhã
+    veiculos = VeiculoInterno.objects.filter(status='ATIVO', ativo=True).order_by('nome')
+    zonas = ZonaEntrega.objects.filter(ativo=True).order_by('provincia', 'cidade', 'nome')
     data_padrao = (timezone.now() + timedelta(days=1)).date()
-    
+
     context = {
         'veiculos': veiculos,
         'zonas': zonas,
         'data_padrao': data_padrao,
+        'stats': {
+            'veiculos_disponiveis': veiculos.count(),
+            'zonas_ativas': zonas.count(),
+            'planejamentos_pendentes': PlanejamentoEntrega.objects.filter(
+                status='PENDENTE',
+                data_entrega_preferida=data_padrao,
+            ).count(),
+        },
     }
-    
+
     return render(request, 'stock/logistica/routing/otimizar_rotas.html', context)
 
 
@@ -373,7 +437,7 @@ def dashboard_roteirizacao(request):
         'planejamentos_agendados': PlanejamentoEntrega.objects.filter(status='AGENDADA').count(),
         'rotas_planejadas': Rota.objects.filter(status='PLANEJADA').count(),
         'rotas_executando': Rota.objects.filter(status='EM_EXECUCAO').count(),
-        'veiculos_disponiveis': VeiculoInterno.objects.filter(status='ATIVO', disponivel=True).count(),
+        'veiculos_disponiveis': VeiculoInterno.objects.filter(status='ATIVO', ativo=True).count(),
         'zonas_ativas': ZonaEntrega.objects.filter(ativo=True).count(),
     }
     

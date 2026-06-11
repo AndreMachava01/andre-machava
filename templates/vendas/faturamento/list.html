@@ -1,0 +1,222 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #ec4899; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-left h1 { color: #ec4899; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header-left p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+        .btn-primary { background: #ec4899; color: white; }
+        .btn-primary:hover { background: #db2777; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-success { background: #10b981; color: white; padding: 6px 12px; font-size: 12px; }
+        .btn-success:hover { background: #059669; }
+        .btn-info { background: #0ea5e9; color: white; padding: 6px 12px; font-size: 12px; }
+        .btn-info:hover { background: #0284c7; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: #fdf2f8; padding: 15px; border-radius: 5px; text-align: center; border: 1px solid #ec4899; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #ec4899; margin-bottom: 5px; }
+        .stat-label { color: #666; font-size: 12px; font-weight: 500; }
+        .search-filters { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .filter-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-form input, .filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .filter-form input[type="text"], .filter-form input[type="date"] { min-width: 150px; }
+        .filter-form select { min-width: 160px; }
+        .table-wrapper { overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table thead { background: #ec4899; color: white; }
+        table thead th { padding: 12px; text-align: left; font-weight: 600; }
+        table tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; }
+        table tbody tr:hover { background: #fdf2f8; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-com-fatura { background: #d1fae5; color: #065f46; }
+        .badge-sem-fatura { background: #fef3c7; color: #92400e; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #6b7280; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; color: #d1d5db; }
+        .pagination { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 15px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 4px; text-decoration: none; color: #374151; font-size: 14px; }
+        .pagination a:hover { background: #fdf2f8; border-color: #ec4899; color: #db2777; }
+        .pagination .current { background: #ec4899; color: white; border-color: #ec4899; }
+        .footer-note { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; }
+        .footer-note a { color: #db2777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-file-invoice-dollar"></i> {{ title }}</h1>
+                <p>Pedidos faturados — emissão e consulta de faturas</p>
+            </div>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_ordens|default:0|intcomma }}</div>
+                <div class="stat-label">Ordens concluídas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ ordens_com_fatura|default:0|intcomma }}</div>
+                <div class="stat-label">Com fatura emitida</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ ordens_sem_fatura|default:0|intcomma }}</div>
+                <div class="stat-label">Sem fatura</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_faturado|floatformat:2|default:"0.00" }} MT</div>
+                <div class="stat-label">Total (filtro)</div>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <form method="get" action="{% url 'vendas:faturamento' %}" class="filter-form">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Código, cliente, endereço...">
+                <select name="cliente">
+                    <option value="">Todos os clientes</option>
+                    {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}" {% if cliente_id == cliente.id|stringformat:"s" %}selected{% endif %}>{{ cliente.nome }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}" placeholder="Data início">
+                <input type="date" name="data_fim" value="{{ data_fim }}" placeholder="Data fim">
+                <select name="tem_fatura">
+                    <option value="">Todas</option>
+                    <option value="sim" {% if tem_fatura == 'sim' %}selected{% endif %}>Com fatura</option>
+                    <option value="nao" {% if tem_fatura == 'nao' %}selected{% endif %}>Sem fatura</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+                {% if search_query or cliente_id or data_inicio or data_fim or tem_fatura %}
+                    <a href="{% url 'vendas:faturamento' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Data conclusão</th>
+                        <th>Valor total</th>
+                        <th>Fatura</th>
+                        <th>Impressões</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if ordens %}
+                        {% for ordem in ordens %}
+                        <tr>
+                            <td><strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></td>
+                            <td>
+                                {% if ordem.cliente %}
+                                    {{ ordem.cliente.nome }}
+                                {% else %}
+                                    <span style="color: #9ca3af;">{{ ordem.nome_cliente_pagamento|default:"—" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ordem.data_conclusao %}
+                                    {{ ordem.data_conclusao|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span style="color: #9ca3af;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ordem.valor_total %}
+                                    <strong>{{ ordem.valor_total|floatformat:2 }} MT</strong>
+                                {% else %}
+                                    <span style="color: #9ca3af;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                                    <span class="badge badge-com-fatura"><i class="fas fa-check-circle"></i> Emitida</span>
+                                {% else %}
+                                    <span class="badge badge-sem-fatura"><i class="fas fa-times-circle"></i> Não emitida</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                                    {% if ordem.numero_impressao_fatura == 1 %}
+                                        <span style="color: #065f46; font-weight: 600;">Original</span>
+                                    {% else %}
+                                        Original + {{ ordem.numero_impressao_fatura|add:"-1" }} cópia{{ ordem.numero_impressao_fatura|add:"-1"|pluralize }}
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: #9ca3af;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <a href="{% url 'vendas:pedido_detail' ordem.id %}" class="btn-info"><i class="fas fa-eye"></i> Ver pedido</a>
+                                    <a href="{% url 'vendas:pedido_emitir_fatura' ordem.id %}" class="btn-success">
+                                        {% if ordem.numero_impressao_fatura and ordem.numero_impressao_fatura > 0 %}
+                                            <i class="fas fa-print"></i> Reimprimir
+                                        {% else %}
+                                            <i class="fas fa-file-invoice-dollar"></i> Emitir fatura
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <p><strong>Nenhuma ordem concluída encontrada</strong></p>
+                                <p style="font-size: 13px;">
+                                    {% if search_query or cliente_id or data_inicio or data_fim or tem_fatura %}
+                                        Tente ajustar os filtros.
+                                    {% else %}
+                                        Só aparecem aqui ordens com status «Concluída». Use a lista de Pedidos de Venda, abra o pedido e clique em «Concluir» para depois emitir a fatura aqui.
+                                    {% endif %}
+                                </p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if tem_fatura %}&tem_fatura={{ tem_fatura }}{% endif %}">&laquo;</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if tem_fatura %}&tem_fatura={{ tem_fatura }}{% endif %}">Anterior</a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if tem_fatura %}&tem_fatura={{ tem_fatura }}{% endif %}">Próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}{% if tem_fatura %}&tem_fatura={{ tem_fatura }}{% endif %}">&raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="footer-note">
+            A emissão e reimpressão de faturas é feita aqui em Vendas. Use «Ver pedido» para consultar o detalhe.
+        </div>
+    </div>
+</body>
+</html>

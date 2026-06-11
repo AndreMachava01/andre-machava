@@ -1,0 +1,116 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Catálogo de dimensões{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:dashboard' as masterdata_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Dados mestres' breadcrumb_section_url=masterdata_dashboard_url breadcrumb_current='Dimensões' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-ruler-combined" aria-hidden="true"></i> Catálogo de dimensões</h1>
+                <p class="page-subtitle">Dimensões padrão para produtos e volumes</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+                <a href="{% url 'stock:masterdata:catalogo_dimensoes_create' %}" class="btn btn-success"><i class="fas fa-plus" aria-hidden="true"></i> Nova entrada</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search">Pesquisar</label>
+                <input type="text" id="filtro-search" name="search" value="{{ search }}" class="form-control" placeholder="Código ou nome">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-categoria">Categoria</label>
+                <select id="filtro-categoria" name="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for val, label in categoria_choices %}
+                    <option value="{{ val }}" {% if categoria == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-ativo">Estado</label>
+                <select id="filtro-ativo" name="ativo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true" {% if ativo == 'true' %}selected{% endif %}>Activos</option>
+                    <option value="false" {% if ativo == 'false' %}selected{% endif %}>Inactivos</option>
+                </select>
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">Entradas</h3>
+            <span class="page-info">{{ page_obj.paginator.count }} registo(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Dimensões (cm)</th>
+                        <th>Peso</th>
+                        <th>Volume</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ item.codigo }}</strong></td>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.get_categoria_display }}</td>
+                        <td>{{ item.comprimento_cm }} × {{ item.largura_cm }} × {{ item.altura_cm }}</td>
+                        <td>{{ item.peso_kg }} kg</td>
+                        <td>{{ item.volume_m3 }} m³</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:masterdata:catalogo_dimensoes_detail' item.id %}" class="btn-action primary" title="Ver" aria-label="Ver {{ item.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                <a href="{% url 'stock:masterdata:catalogo_dimensoes_edit' item.id %}" class="btn-action secondary" title="Editar" aria-label="Editar {{ item.codigo }}">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&categoria={{ categoria }}&ativo={{ ativo }}">Anterior</a>{% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&search={{ search }}&categoria={{ categoria }}&ativo={{ ativo }}">Seguinte</a>{% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-ruler-combined" aria-hidden="true"></i>
+            <h3>Nenhuma entrada encontrada</h3>
+            <a href="{% url 'stock:masterdata:catalogo_dimensoes_create' %}" class="btn btn-success">Nova entrada</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

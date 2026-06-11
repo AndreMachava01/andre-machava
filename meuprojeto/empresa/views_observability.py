@@ -33,24 +33,21 @@ def observability_dashboard(request):
     observability_service = ObservabilityService()
     stats = observability_service.obter_estatisticas_observabilidade()
     
-    # Auditorias recentes
-    auditorias_recentes = AuditoriaTransicao.objects.select_related('usuario').order_by('-data_operacao')[:10]
-    
-    # Métricas recentes
-    metricas_recentes = ValorMetrica.objects.select_related('metrica').order_by('-data_referencia')[:10]
-    
-    # Execuções de relatórios recentes
-    execucoes_recentes = ExecucaoRelatorio.objects.select_related('relatorio', 'usuario').order_by('-data_inicio')[:10]
-    
-    # Logs de API recentes
-    logs_api_recentes = APILog.objects.select_related('usuario').order_by('-data_requisicao')[:10]
-    
+    auditorias_recentes = AuditoriaTransicao.objects.select_related('usuario').order_by('-data_operacao')[:8]
+    metricas_recentes = ValorMetrica.objects.select_related('metrica').order_by('-data_referencia')[:8]
+    execucoes_recentes = ExecucaoRelatorio.objects.select_related('relatorio', 'usuario').order_by('-data_inicio')[:8]
+    logs_api_recentes = APILog.objects.select_related('usuario').order_by('-data_requisicao')[:8]
+
     context = {
         'stats': stats,
         'auditorias_recentes': auditorias_recentes,
         'metricas_recentes': metricas_recentes,
         'execucoes_recentes': execucoes_recentes,
         'logs_api_recentes': logs_api_recentes,
+        'total_auditorias': stats['auditoria']['total_registros'],
+        'total_metricas_valores': stats['metricas']['total_valores'],
+        'total_execucoes': ExecucaoRelatorio.objects.count(),
+        'total_api_logs': stats['api_logs']['total_logs'],
     }
     
     return render(request, 'stock/logistica/observability/dashboard.html', context)
@@ -112,7 +109,7 @@ def auditoria_list(request):
     modelos_disponiveis = [
         'RastreamentoEntrega', 'Transportadora', 'VeiculoInterno',
         'CustoLogistico', 'FaturamentoFrete', 'ProvaEntrega',
-        'Regiao', 'ZonaEntrega', 'HubLogistico'
+        'Regiao', 'ZonaLogistica', 'HubLogistico'
     ]
     
     from django.contrib.auth.models import User
@@ -175,24 +172,39 @@ def metricas_list(request):
     if ativo:
         metricas = metricas.filter(ativo=ativo == 'true')
     
-    metricas = metricas.order_by('tipo_metrica', 'nome')
-    
-    # Paginação
+    metricas = metricas.annotate(
+        num_valores=Count('valores', distinct=True),
+    ).order_by('tipo_metrica', 'nome')
+
     paginator = Paginator(metricas, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    tipo_metrica_choices = MetricaLogistica.TIPO_METRICA_CHOICES
-    
+
+    hoje = timezone.now().date()
+    ultimos_30_dias = hoje - timedelta(days=30)
+    stats = {
+        'total': MetricaLogistica.objects.count(),
+        'activas': MetricaLogistica.objects.filter(ativo=True).count(),
+        'inactivas': MetricaLogistica.objects.filter(ativo=False).count(),
+        'valores_total': ValorMetrica.objects.count(),
+        'valores_30_dias': ValorMetrica.objects.filter(
+            data_referencia__gte=ultimos_30_dias
+        ).count(),
+    }
+    valores_recentes = ValorMetrica.objects.select_related('metrica').order_by('-data_referencia')[:8]
+
     context = {
         'page_obj': page_obj,
         'search': search,
         'tipo_metrica': tipo_metrica,
         'ativo': ativo,
-        'tipo_metrica_choices': tipo_metrica_choices,
+        'has_filters': bool(search or tipo_metrica or ativo),
+        'tipo_metrica_choices': MetricaLogistica.TIPO_METRICA_CHOICES,
+        'stats': stats,
+        'valores_recentes': valores_recentes,
+        'total_valores': stats['valores_total'],
     }
-    
+
     return render(request, 'stock/logistica/observability/metricas_list.html', context)
 
 
@@ -217,57 +229,96 @@ def metrica_detail(request, metrica_id):
 @require_stock_access
 def calcular_metricas(request):
     """Calcula métricas para um período específico."""
+    from .models_stock import Transportadora
+    from .models_masterdata import Regiao
+
+    hoje = timezone.now().date()
+    default_inicio = (hoje - timedelta(days=30)).isoformat()
+    default_fim = hoje.isoformat()
+
+    form_data = {
+        'data_inicio': request.POST.get('data_inicio', default_inicio) if request.method == 'POST' else default_inicio,
+        'data_fim': request.POST.get('data_fim', default_fim) if request.method == 'POST' else default_fim,
+        'regiao': request.POST.get('regiao', '') if request.method == 'POST' else '',
+        'transportadora': request.POST.get('transportadora', '') if request.method == 'POST' else '',
+        'veiculo_interno': request.POST.get('veiculo_interno', '') if request.method == 'POST' else '',
+    }
+
     if request.method == 'POST':
         try:
             observability_service = ObservabilityService()
-            
-            # Processar datas
-            data_inicio = datetime.strptime(request.POST.get('data_inicio'), '%Y-%m-%d').date()
-            data_fim = datetime.strptime(request.POST.get('data_fim'), '%Y-%m-%d').date()
-            
-            # Processar filtros
+            data_inicio = datetime.strptime(form_data['data_inicio'], '%Y-%m-%d').date()
+            data_fim = datetime.strptime(form_data['data_fim'], '%Y-%m-%d').date()
+
+            if data_fim < data_inicio:
+                raise ValueError('A data fim não pode ser anterior à data início.')
+
             filtros = {}
-            if request.POST.get('regiao'):
-                filtros['regiao'] = request.POST.get('regiao')
-            if request.POST.get('transportadora'):
-                filtros['transportadora'] = request.POST.get('transportadora')
-            if request.POST.get('veiculo_interno'):
-                filtros['veiculo_interno'] = request.POST.get('veiculo_interno')
-            
-            # Calcular métricas
-            metricas_calculadas = observability_service.calcular_todas_metricas(
-                data_inicio, data_fim, filtros
-            )
-            
-            # Salvar métricas
+            if form_data['regiao']:
+                regiao = Regiao.objects.filter(pk=form_data['regiao']).first()
+                if regiao:
+                    filtros['regiao'] = regiao.nome
+            if form_data['transportadora']:
+                transportadora = Transportadora.objects.filter(pk=form_data['transportadora']).first()
+                if transportadora:
+                    filtros['transportadora'] = transportadora.nome
+            if form_data['veiculo_interno']:
+                from .services.freight_service import resolver_filtro_viatura_interna
+                filtros.update(resolver_filtro_viatura_interna(form_data['veiculo_interno']))
+
             periodo_inicio = datetime.combine(data_inicio, datetime.min.time())
             periodo_fim = datetime.combine(data_fim, datetime.max.time())
-            
+
             valores_salvos = observability_service.salvar_metricas_periodo(
-                data_inicio, periodo_inicio, periodo_fim, filtros
+                data_fim, periodo_inicio, periodo_fim, filtros
             )
-            
-            messages.success(request, f'Métricas calculadas e salvas para o período {data_inicio} a {data_fim}')
+
+            if valores_salvos:
+                messages.success(
+                    request,
+                    f'{len(valores_salvos)} métrica(s) calculada(s) e guardada(s) para {data_inicio:%d/%m/%Y} a {data_fim:%d/%m/%Y}.',
+                )
+            else:
+                messages.warning(
+                    request,
+                    'Cálculo concluído, mas nenhum valor foi guardado. Verifique se existem métricas activas no catálogo.',
+                )
             return redirect('stock:observability:metricas_list')
-            
+
         except Exception as e:
             logger.error(f"Erro ao calcular métricas: {e}")
             messages.error(request, f'Erro ao calcular métricas: {str(e)}')
-    
-    # GET - mostrar formulário
-    from .models_stock import Transportadora, VeiculoInterno
-    from .models_masterdata import Regiao
-    
-    transportadoras = Transportadora.objects.filter(ativo=True)
-    veiculos_internos = VeiculoInterno.objects.filter(ativo=True)
-    regioes = Regiao.objects.filter(ativo=True)
-    
-    context = {
-        'transportadoras': transportadoras,
-        'veiculos_internos': veiculos_internos,
-        'regioes': regioes,
+
+    ultimos_30_dias = hoje - timedelta(days=30)
+    stats = {
+        'metricas_activas': MetricaLogistica.objects.filter(ativo=True).count(),
+        'valores_total': ValorMetrica.objects.count(),
+        'valores_30_dias': ValorMetrica.objects.filter(
+            data_referencia__gte=ultimos_30_dias
+        ).count(),
     }
-    
+
+    from .services.freight_service import opcoes_filtro_viatura_interna, queryset_transportadoras_externas
+
+    context = {
+        'transportadoras': queryset_transportadoras_externas(),
+        'opcoes_viatura': opcoes_filtro_viatura_interna(),
+        'regioes': Regiao.objects.filter(ativo=True).order_by('nome'),
+        'metricas_activas': MetricaLogistica.objects.filter(ativo=True).order_by('tipo_metrica', 'nome'),
+        'valores_recentes': ValorMetrica.objects.select_related('metrica').order_by('-data_referencia')[:8],
+        'stats': stats,
+        'form_data': form_data,
+        'indicadores_calculo': [
+            ('OTD', 'On-Time Delivery', '% entregas no prazo'),
+            ('LEAD_TIME', 'Lead Time', 'Tempo médio de entrega'),
+            ('COST_PER_DELIVERY', 'Custo por entrega', 'MT por entrega'),
+            ('VOLUME_DELIVERED', 'Volume entregue', 'Unidades entregues'),
+            ('EXCEPTION_RATE', 'Taxa de excepções', '% operações com excepção'),
+            ('FLEET_UTILIZATION', 'Utilização da frota', '% capacidade usada'),
+            ('ROUTE_EFFICIENCY', 'Eficiência de rota', 'Entregas por km'),
+        ],
+    }
+
     return render(request, 'stock/logistica/observability/calcular_metricas.html', context)
 
 
@@ -298,24 +349,41 @@ def relatorios_list(request):
     if ativo:
         relatorios = relatorios.filter(ativo=ativo == 'true')
     
-    relatorios = relatorios.order_by('tipo_relatorio', 'nome')
-    
-    # Paginação
+    relatorios = relatorios.annotate(
+        num_execucoes=Count('execucoes', distinct=True),
+        num_metricas=Count('metricas_incluidas', distinct=True),
+    ).order_by('tipo_relatorio', 'nome')
+
     paginator = Paginator(relatorios, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    tipo_relatorio_choices = RelatorioLogistico.TIPO_RELATORIO_CHOICES
-    
+
+    hoje = timezone.now().date()
+    ultimos_30_dias = hoje - timedelta(days=30)
+    stats = {
+        'total': RelatorioLogistico.objects.count(),
+        'activos': RelatorioLogistico.objects.filter(ativo=True).count(),
+        'execucoes_total': ExecucaoRelatorio.objects.count(),
+        'execucoes_30_dias': ExecucaoRelatorio.objects.filter(
+            data_inicio__date__gte=ultimos_30_dias
+        ).count(),
+    }
+    execucoes_recentes = ExecucaoRelatorio.objects.select_related(
+        'relatorio', 'usuario'
+    ).order_by('-data_inicio')[:8]
+
     context = {
         'page_obj': page_obj,
         'search': search,
         'tipo_relatorio': tipo_relatorio,
         'ativo': ativo,
-        'tipo_relatorio_choices': tipo_relatorio_choices,
+        'has_filters': bool(search or tipo_relatorio or ativo),
+        'tipo_relatorio_choices': RelatorioLogistico.TIPO_RELATORIO_CHOICES,
+        'stats': stats,
+        'execucoes_recentes': execucoes_recentes,
+        'total_execucoes': stats['execucoes_total'],
     }
-    
+
     return render(request, 'stock/logistica/observability/relatorios_list.html', context)
 
 

@@ -1,0 +1,120 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Estatísticas — Custos &amp; faturamento{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:cost_billing:dashboard' as cost_billing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Custos & faturamento' breadcrumb_section_url=cost_billing_dashboard_url breadcrumb_current='Estatísticas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-chart-bar" aria-hidden="true"></i> Estatísticas financeiras</h1>
+                <p class="page-subtitle">Análise de custos e faturamento por período</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Período</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio-stats">De</label>
+                <input type="date" id="filtro-inicio-stats" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim-stats">Até</label>
+                <input type="date" id="filtro-fim-stats" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Filtrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header"><h3 class="section-title">Custos logísticos</h3></div>
+        <div class="stats-grid stock-dash-kpi-grid">
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+                <div class="stat-content"><div class="stat-number">{{ stats_custos.total_custos|default:"0" }}</div><div class="stat-label">Total custos</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+                <div class="stat-content"><div class="stat-number">{{ stats_custos.custos_pendentes|default:"0" }}</div><div class="stat-label">Pendentes</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+                <div class="stat-content"><div class="stat-number">{{ stats_custos.custos_aprovados|default:"0" }}</div><div class="stat-label">Aprovados</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+                <div class="stat-content"><div class="stat-number">{{ stats_custos.valor_total|default:0|floatformat:0 }} MT</div><div class="stat-label">Valor total</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header"><h3 class="section-title">Faturamento</h3></div>
+        <div class="stats-grid stock-dash-kpi-grid">
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+                <div class="stat-content"><div class="stat-number">{{ stats_faturamento.total_faturas|default:"0" }}</div><div class="stat-label">Faturas</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+                <div class="stat-content"><div class="stat-number">{{ stats_faturamento.valor_pago|default:0|floatformat:0 }} MT</div><div class="stat-label">Recebido</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+                <div class="stat-content"><div class="stat-number">{{ stats_faturamento.valor_pendente|default:0|floatformat:0 }} MT</div><div class="stat-label">Pendente</div></div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+                <div class="stat-content"><div class="stat-number">{{ stats_faturamento.valor_total_faturado|default:0|floatformat:0 }} MT</div><div class="stat-label">Total faturado</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Por tipo de custo</h3></div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead><tr><th>Tipo</th><th>Qtd</th><th>Valor</th></tr></thead>
+                    <tbody>
+                        {% for tipo in tipos_custo_stats %}
+                        <tr>
+                            <td>{{ tipo.nome }}</td>
+                            <td>{{ tipo.total_custos }}</td>
+                            <td>{{ tipo.valor_total|default:0|floatformat:2 }} MT</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted text-center">Sem dados</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Por centro de custo</h3></div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead><tr><th>Centro</th><th>Qtd</th><th>Valor</th></tr></thead>
+                    <tbody>
+                        {% for centro in centros_custo_stats %}
+                        <tr>
+                            <td>{{ centro.nome }}</td>
+                            <td>{{ centro.total_custos }}</td>
+                            <td>{{ centro.valor_total|default:0|floatformat:2 }} MT</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted text-center">Sem dados</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

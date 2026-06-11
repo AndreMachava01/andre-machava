@@ -1,0 +1,146 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Validar restrições{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:masterdata:restricoes_list' as restricoes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Restrições' breadcrumb_section_url=restricoes_list_url breadcrumb_current='Validar' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-check-double" aria-hidden="true"></i> Validar restrições</h1>
+                <p class="page-subtitle">Simule peso, volume e contexto de entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:restricoes_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        Preencha os dados do envio hipotético e clique em <strong>Validar</strong>. O resultado aparece abaixo sem gravar nada na base de dados.
+    </div>
+
+    <form id="form-validar" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Dados do envio</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="peso_kg">Peso (kg)</label>
+                        <input type="number" id="peso_kg" name="peso_kg" class="form-control" step="0.01" min="0" placeholder="Ex.: 25.5">
+                        <p class="form-hint">Peso total da carga. Usado em restrições de peso.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="volume_m3">Volume (m³)</label>
+                        <input type="number" id="volume_m3" name="volume_m3" class="form-control" step="0.0001" min="0" placeholder="Ex.: 0.024">
+                        <p class="form-hint">Volume ocupado. Usado em restrições de volume e dimensão.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="valor_declarado">Valor declarado (MT)</label>
+                        <input type="number" id="valor_declarado" name="valor_declarado" class="form-control" step="0.01" min="0" placeholder="Ex.: 15000">
+                        <p class="form-hint">Valor da mercadoria em meticais. Usado em restrições de valor.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="zona_entrega_id">Zona de entrega</label>
+                        <select id="zona_entrega_id" name="zona_entrega_id" class="form-select">
+                            <option value="">—</option>
+                            {% for z in zonas_entrega %}
+                            <option value="{{ z.id }}">{{ z.nome }} ({{ z.codigo }})</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Zona de destino. Aplica limites e restrições geográficas da zona.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="transportadora_id">Transportadora</label>
+                        <select id="transportadora_id" name="transportadora_id" class="form-select">
+                            <option value="">—</option>
+                            {% for t in transportadoras %}
+                            <option value="{{ t.id }}">{{ t.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Opcional. Filtra restrições marcadas como aplicáveis a transportadoras.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="veiculo_interno_id">Viatura interna</label>
+                        <select id="veiculo_interno_id" name="veiculo_interno_id" class="form-select">
+                            <option value="">—</option>
+                            {% for v in viaturas_internas %}
+                            <option value="{{ v.id }}">{{ v.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Opcional. Viaturas do cadastro Logística → Viaturas (não transportadoras externas).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-play" aria-hidden="true"></i> Validar</button>
+        </div>
+    </form>
+
+    <div id="resultado-validacao" class="card stock-u-mt-24" hidden>
+        <div class="card-header"><h2 class="card-title">Resultado</h2></div>
+        <div class="card-body" id="resultado-conteudo"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('form-validar').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+    const box = document.getElementById('resultado-validacao');
+    const body = document.getElementById('resultado-conteudo');
+    body.innerHTML = '<p>A validar...</p>';
+    box.hidden = false;
+    try {
+        const res = await fetch('{% url "stock:masterdata:validar_restricoes" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf },
+            body: fd
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            body.innerHTML = '<div class="alert alert-danger">' + (data.erro || 'Erro na validação') + '</div>';
+            return;
+        }
+        let html = '';
+        const lista = data.restricoes_violadas || data.violacoes || [];
+        if (data.valido && lista.length === 0) {
+            html += '<div class="alert alert-success"><strong>OK:</strong> Nenhuma restrição bloqueante.</div>';
+        } else if (data.bloqueios && data.bloqueios.length) {
+            html += '<div class="alert alert-danger"><strong>Bloqueado:</strong> ' + data.bloqueios.length + ' violação(ões) impeditiva(s).</div>';
+        } else if (lista.length) {
+            html += '<div class="alert alert-warning"><strong>Atenção:</strong> Foram detectados avisos.</div>';
+        } else {
+            html += '<div class="alert alert-success"><strong>OK:</strong> Validação concluída.</div>';
+        }
+        if (lista.length) {
+            html += '<ul class="stock-u-mt-16">';
+            lista.forEach(function(v) {
+                const msg = v.mensagem || (
+                    (v.valor_atual != null && v.valor_limite != null)
+                        ? v.valor_atual + ' ' + (v.unidade || '') + ' (limite: ' + v.valor_limite + ')'
+                        : ''
+                );
+                html += '<li><strong>' + (v.restricao || v.codigo || v.tipo || '') + '</strong>: ' + msg + '</li>';
+            });
+            html += '</ul>';
+        }
+        if (data.total_violacoes != null) {
+            html += '<p class="form-hint stock-u-mt-8">Total: ' + data.total_violacoes + ' violação(ões).</p>';
+        }
+        body.innerHTML = html;
+    } catch (err) {
+        body.innerHTML = '<div class="alert alert-danger">Erro de rede: ' + err.message + '</div>';
+    }
+});
+</script>
+{% endblock %}

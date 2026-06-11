@@ -1,0 +1,97 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Tipos de Movimento - Stock{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Tipos de movimento</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-tags"></i> Tipos de Movimento</h1>
+                <p class="page-subtitle">Tipos de movimentação de stock</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:tipo_movimento_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Adicionar
+                </a>
+                <a href="{% url 'stock:movimentos' %}" class="btn btn-secondary">Movimentos</a>
+                <a href="{% url 'stock:main' %}" class="btn btn-secondary">Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="num">{{ total_tipos }}</div>
+            <div class="lbl">Total</div>
+        </div>
+        <div class="stat-box">
+            <div class="num">{{ tipos_entrada }}</div>
+            <div class="lbl">Entrada</div>
+        </div>
+        <div class="stat-box">
+            <div class="num">{{ tipos_saida }}</div>
+            <div class="lbl">Saída</div>
+        </div>
+    </div>
+
+    {% if tipos_movimento %}
+    <div class="table-container">
+        <div class="table-wrapper stock-table-scroll">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Aumenta stock</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tipo in tipos_movimento %}
+                    <tr>
+                        <td><strong>{{ tipo.nome }}</strong></td>
+                        <td>{{ tipo.codigo }}</td>
+                        <td>{{ tipo.descricao|default:"—" }}</td>
+                        <td>
+                            <span class="{% if tipo.aumenta_estoque %}status-entrada{% else %}status-saida{% endif %}">
+                                {{ tipo.aumenta_estoque|yesno:"Sim,Não" }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:tipo_movimento_edit' tipo.id %}" class="btn-action secondary" title="Editar" aria-label="Editar {{ tipo.nome }}">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                </a>
+                                <a href="{% url 'stock:tipo_movimento_delete' tipo.id %}" class="btn-action danger" title="Eliminar" aria-label="Eliminar {{ tipo.nome }}"
+                                   onclick="return confirm('Eliminar este tipo de movimento?')">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Nenhum tipo de movimento encontrado.</p>
+        <a href="{% url 'stock:tipo_movimento_add' %}" class="btn btn-primary">Adicionar primeiro tipo</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

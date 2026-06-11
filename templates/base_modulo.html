@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize l10n static %}
+    <title>{% block title %}Sistema Conception{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modulo-operacional.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        {% block modulo_header %}
+        <div class="header">
+            <div>
+                <h1>{% block modulo_icon %}{% endblock %} {% block modulo_title %}Módulo{% endblock %}</h1>
+                {% block modulo_subtitle %}<p></p>{% endblock %}
+            </div>
+            {% block modulo_header_actions %}
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            {% endblock %}
+        </div>
+        {% endblock %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">
+                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block modulo_filters %}{% endblock %}
+        {% block content %}{% endblock %}
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

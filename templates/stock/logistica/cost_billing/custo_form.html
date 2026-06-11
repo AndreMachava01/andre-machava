@@ -1,0 +1,117 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Novo custo logístico{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:cost_billing:custos_list' as custos_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Custos logísticos' breadcrumb_section_url=custos_list_url breadcrumb_current='Novo custo' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-plus" aria-hidden="true"></i> Novo custo logístico</h1>
+                <p class="page-subtitle">Registar despesa associada à operação logística</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="form-container">
+        {% csrf_token %}
+
+        {% if catalogo_vazio %}
+        <div class="alert alert-warning stock-u-mb-24" role="alert">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            O catálogo de tipos ou centros de custo está incompleto. Contacte o administrador para configurar os registos base.
+        </div>
+        {% endif %}
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Classificação</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="tipo_custo">Tipo de custo *</label>
+                        <select id="tipo_custo" name="tipo_custo" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {% for tipo in tipos_custo %}
+                            <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="centro_custo">Centro de custo *</label>
+                        <select id="centro_custo" name="centro_custo" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {% for centro in centros_custo %}
+                            <option value="{{ centro.id }}">{{ centro.codigo }} — {{ centro.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <label class="form-label" for="rastreamento_entrega">Rastreamento (opcional)</label>
+                        <select id="rastreamento_entrega" name="rastreamento_entrega" class="form-select">
+                            <option value="">Sem rastreamento</option>
+                            {% for r in rastreamentos %}
+                            <option value="{{ r.id }}">{{ r.codigo_rastreamento }} — {{ r.destinatario_nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Valores</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field form-field--full">
+                        <label class="form-label" for="descricao">Descrição *</label>
+                        <textarea id="descricao" name="descricao" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="valor">Valor (MT) *</label>
+                        <input type="number" id="valor" name="valor" class="form-control" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="data_custo">Data do custo *</label>
+                        <input type="date" id="data_custo" name="data_custo" class="form-control" required>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="numero_documento">N.º documento</label>
+                        <input type="text" id="numero_documento" name="numero_documento" class="form-control" maxlength="50">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="arquivo_comprovante">Comprovante</label>
+                        <input type="file" id="arquivo_comprovante" name="arquivo_comprovante" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success"><i class="fas fa-save" aria-hidden="true"></i> Registar custo</button>
+            <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const dataInput = document.getElementById('data_custo');
+    if (dataInput && !dataInput.value) {
+        dataInput.value = new Date().toISOString().slice(0, 10);
+    }
+})();
+</script>
+{% endblock %}

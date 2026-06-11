@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Movimentações - Sistema Conception</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .control-group select,
+        .control-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #28a745;
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.danger {
+            border-left-color: #dc3545;
+        }
+        
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.warning .stat-number {
+            color: #ffc107;
+        }
+        
+        .stat-card.danger .stat-number {
+            color: #dc3545;
+        }
+        
+        .stat-card.info .stat-number {
+            color: #17a2b8;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-description {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gráfico de Movimentações</h1>
+            <p>Análise temporal das movimentações de stock</p>
+        </div>
+
+        <div class="actions">
+            <a href="/stock/dashboard/" class="btn btn-primary">Voltar ao Dashboard</a>
+            <a href="/stock/" class="btn btn-secondary">Voltar ao Stock</a>
+            <a href="/stock/movimentos/" class="btn btn-success">Ver Movimentos</a>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="dias">Período (dias):</label>
+                <select id="dias">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="15">Últimos 15 dias</option>
+                    <option value="30" selected>Últimos 30 dias</option>
+                    <option value="60">Últimos 60 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="tipo_item">Tipo de Item:</label>
+                <select id="tipo_item">
+                    <option value="">Todos</option>
+                    <option value="PRODUTO">Produtos</option>
+                    <option value="MATERIAL">Materiais</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button id="atualizar" class="btn btn-info">Atualizar Gráfico</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Carregando dados do gráfico...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Erro ao carregar dados do gráfico. Tente novamente.</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-entradas">0</div>
+                    <div class="stat-label">Total Entradas</div>
+                    <div class="stat-description">Movimentações de entrada</div>
+                </div>
+                
+                <div class="stat-card danger">
+                    <div class="stat-number" id="total-saidas">0</div>
+                    <div class="stat-label">Total Saídas</div>
+                    <div class="stat-description">Movimentações de saída</div>
+                </div>
+                
+                <div class="stat-card info">
+                    <div class="stat-number" id="total-movimentos">0</div>
+                    <div class="stat-label">Total Movimentos</div>
+                    <div class="stat-description">Todas as movimentações</div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-number" id="periodo-dias">30</div>
+                    <div class="stat-label">Período (dias)</div>
+                    <div class="stat-description">Dias analisados</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>📊 Movimentações por Dia</h3>
+                <div class="chart-wrapper">
+                    <canvas id="movimentacoesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="empty">
+                <p><strong>📈 Gráfico de Movimentações</strong></p>
+                <p>Visualização temporal das entradas e saídas de stock.</p>
+                <p>Use os controles acima para ajustar o período e tipo de item.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        
+        // Carregar dados do gráfico
+        async function loadChartData() {
+            try {
+                const dias = document.getElementById('dias').value;
+                const tipoItem = document.getElementById('tipo_item').value;
+                
+                const url = `/stock/dashboard/chart-movimentacoes/?dias=${dias}&tipo_item=${tipoItem}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar loading e mostrar conteúdo
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Preencher estatísticas
+                document.getElementById('total-entradas').textContent = data.statistics.total_entradas || 0;
+                document.getElementById('total-saidas').textContent = data.statistics.total_saidas || 0;
+                document.getElementById('total-movimentos').textContent = data.statistics.total_movimentos || 0;
+                document.getElementById('periodo-dias').textContent = data.statistics.periodo_dias || 30;
+                
+                // Criar ou atualizar gráfico
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                const ctx = document.getElementById('movimentacoesChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: data.datasets || []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Movimentações de Stock por Dia'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Movimentações'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data'
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do gráfico:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('atualizar').addEventListener('click', loadChartData);
+        document.getElementById('dias').addEventListener('change', loadChartData);
+        document.getElementById('tipo_item').addEventListener('change', loadChartData);
+        
+        // Carregar dados quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadChartData);
+    </script>
+</body>
+</html>

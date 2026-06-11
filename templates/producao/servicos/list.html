@@ -1,0 +1,152 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Serviços - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'empresa/css/producao-servicos.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .filter-row { margin-bottom: 20px; }
+        .filter-row input[type="text"], .filter-row select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin: 0 4px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-ativo { background: #d1fae5; color: #065f46; }
+        .badge-inativo { background: #e5e7eb; color: #374151; }
+        .badge-esgotado { background: #fef3c7; color: #92400e; }
+        .badge-descontinuado { background: #fee2e2; color: #991b1b; }
+        .link-cell a { color: #b45309; text-decoration: none; }
+        .link-cell a:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+        .empty-state h3 { color: #374151; margin: 10px 0; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333; }
+        .pagination .current { background: #b45309; color: white; border-color: #b45309; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-concierge-bell"></i> Catálogo de Serviços</h1>
+                <p>Gerenciamento de serviços oferecidos</p>
+            </div>
+            <div class="ps-header-actions">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'producao:servicos_categorias' %}" class="btn btn-secondary"><i class="fas fa-tags"></i> Categorias</a>
+                <a href="{% url 'producao:servico_orcamento_add' %}" class="btn btn-primary" style="background: #059669;"><i class="fas fa-file-invoice-dollar"></i> Criar Orçamento</a>
+                <a href="{% url 'producao:servico_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Novo Serviço</a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="ps-alert ps-alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_servicos|default:0|intcomma }}</div>
+                <div class="lbl">Total de Serviços</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ servicos_ativos|default:0|intcomma }}</div>
+                <div class="lbl">Serviços Ativos</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ servicos_inativos|default:0|intcomma }}</div>
+                <div class="lbl">Serviços Inativos</div>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" name="search" placeholder="Buscar..." value="{{ search_query }}">
+                <select name="status">
+                    <option value="">Todos</option>
+                    <option value="ATIVO" {% if status_filter == 'ATIVO' %}selected{% endif %}>Ativo</option>
+                    <option value="INATIVO" {% if status_filter == 'INATIVO' %}selected{% endif %}>Inativo</option>
+                    <option value="ESGOTADO" {% if status_filter == 'ESGOTADO' %}selected{% endif %}>Esgotado</option>
+                    <option value="DESCONTINUADO" {% if status_filter == 'DESCONTINUADO' %}selected{% endif %}>Descontinuado</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+                {% if search_query or status_filter %}
+                <a href="{% url 'producao:servicos_list' %}" class="btn btn-secondary">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if servicos %}
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Unidade</th>
+                        <th class="num">Custo</th>
+                        <th class="num">Venda</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for servico in servicos %}
+                    <tr>
+                        <td><strong>{{ servico.codigo }}</strong></td>
+                        <td>{{ servico.nome }}</td>
+                        <td>{{ servico.get_unidade_medida_display }}</td>
+                        <td class="num">{% if servico.preco_custo %}{{ servico.preco_custo|floatformat:2 }} MT{% else %}—{% endif %}</td>
+                        <td class="num">{% if servico.preco_venda %}{{ servico.preco_venda|floatformat:2 }} MT{% else %}—{% endif %}</td>
+                        <td><span class="badge badge-{{ servico.status|lower }}">{{ servico.get_status_display }}</span></td>
+                        <td class="link-cell">
+                            <a href="{% url 'producao:servico_detail' servico.id %}">Ver</a>
+                            <a href="{% url 'producao:servico_edit' servico.id %}">Editar</a>
+                            <a href="{% url 'producao:servico_delete' servico.id %}" onclick="return confirm('Excluir este serviço?');">Excluir</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">«</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">‹</a>
+            {% endif %}
+            <span class="current">Pág. {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">»</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <p>Nenhum serviço encontrado. {% if search_query or status_filter %}Ajuste os filtros.{% else %}<a href="{% url 'producao:servico_add' %}" class="btn btn-primary" style="margin-top:10px;">Criar primeiro serviço</a>{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

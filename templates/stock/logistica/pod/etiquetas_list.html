@@ -3,29 +3,12 @@
 
 {% block title %}Etiquetas de Rastreamento{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Etiquetas de Rastreamento</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:pod:dashboard' as pod_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='POD & Documentos' breadcrumb_section_url=pod_dashboard_url breadcrumb_current='Etiquetas POD' %}
 
     <!-- Page Header -->
     <div class="page-header">
@@ -159,13 +142,13 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn-info btn-sm" title="Ver Detalhes">
-                                            <i class="fas fa-eye"></i>
+                                    <div class="cell-actions">
+                                        <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn-action primary" title="Ver etiqueta {{ etiqueta.codigo }}" aria-label="Ver etiqueta {{ etiqueta.codigo }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
                                         </a>
                                         {% if not etiqueta.impressa %}
-                                            <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn-success btn-sm" title="Imprimir Etiqueta">
-                                                <i class="fas fa-print"></i>
+                                            <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn-action secondary" title="Imprimir etiqueta {{ etiqueta.codigo }}" aria-label="Imprimir etiqueta {{ etiqueta.codigo }}">
+                                                <i class="fas fa-print" aria-hidden="true"></i>
                                             </a>
                                         {% endif %}
                                     </div>
@@ -176,42 +159,26 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
+                <!-- Paginação -->
+                {% if page_obj.has_other_pages %}
+                <nav class="pagination-nav" aria-label="Paginação de etiquetas">
+                    <div class="pagination-info">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </div>
+                    <div class="pagination-buttons">
                         {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
-                            </li>
+                        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-primary btn-sm" aria-label="Página anterior">Anterior</a>
                         {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Anterior</span>
-                            </li>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Página anterior (indisponível)">Anterior</button>
                         {% endif %}
-
-                        {% for i in page_obj.paginator.page_range %}
-                            {% if page_obj.number == i %}
-                                <li class="page-item active" aria-current="page">
-                                    <span class="page-link">{{ i }}</span>
-                                </li>
-                            {% else %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-
                         {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
-                            </li>
+                        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-primary btn-sm" aria-label="Página seguinte">Próxima</a>
                         {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Próxima</span>
-                            </li>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Página seguinte (indisponível)">Próxima</button>
                         {% endif %}
-                    </ul>
+                    </div>
                 </nav>
+                {% endif %}
             {% else %}
                 <div class="alert alert-info text-center">
                     <i class="fas fa-info-circle"></i>

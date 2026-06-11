@@ -1,0 +1,81 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-form input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        .stat-box { padding: 16px; border-radius: 8px; background: #fffbeb; border-left: 4px solid #b45309; margin-bottom: 20px; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        tr:hover { background: #f9fafb; }
+        .msg-success { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; }
+        .header-actions { display: flex; gap: 10px; }
+        .filter-input-search { min-width: 200px; }
+        .table-empty-cell { text-align: center; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ad"></i> {{ title }}</h1>
+            <div class="header-actions">
+                <a href="{% url 'marketing:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'marketing:publicidade_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Novo Investimento</a>
+            </div>
+        </div>
+        {% if messages %}{% for m in messages %}<div class="msg-success">{{ m }}</div>{% endfor %}{% endif %}
+        <div class="stat-box">
+            <div class="num">{{ total_investido|floatformat:2|intcomma }} MT</div>
+            <div class="lbl">Total investido</div>
+        </div>
+        <form method="get" class="filter-form">
+            <input type="text" name="q" value="{{ search }}" placeholder="Pesquisar canal, descrição..." class="filter-input-search" aria-label="Pesquisar">
+            <input type="text" name="canal" value="{{ canal_filter }}" placeholder="Canal">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Canal</th>
+                    <th>Descrição</th>
+                    <th>Campanha</th>
+                    <th class="num">Valor</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in investimentos %}
+                <tr>
+                    <td>{{ i.data_investimento|date:"d/m/Y" }}</td>
+                    <td>{{ i.canal }}</td>
+                    <td>{{ i.descricao|default:"-" }}</td>
+                    <td>{{ i.campanha.nome|default:"-" }}</td>
+                    <td class="num">{{ i.valor|floatformat:2|intcomma }} MT</td>
+                    <td><a href="{% url 'marketing:publicidade_edit' i.pk %}" class="btn btn-primary btn-sm" aria-label="Editar investimento"><i class="fas fa-edit" aria-hidden="true"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="table-empty-cell">Nenhum investimento registado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

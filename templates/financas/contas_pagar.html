@@ -1,0 +1,102 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fef3c7; border-left: 4px solid #b45309; margin-bottom: 20px; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .filter-row { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-pendente { background: #fef3c7; color: #92400e; }
+        .badge-confirmado { background: #d1fae5; color: #065f46; }
+        .badge-rejeitado { background: #fee2e2; color: #991b1b; }
+        .link-cell a { color: #b45309; text-decoration: none; }
+        .link-cell a:hover { text-decoration: underline; }
+        .help-text { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-money-check-alt"></i> {{ title }}</h1>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <p class="help-text">Itens pendentes de confirmação pelo departamento de Finanças. Os lançamentos só são criados quando confirma o pagamento.</p>
+
+        {% if total_pendente > 0 %}
+        <div class="stat-box">
+            <div class="num">{{ total_pendente|floatformat:2 }} MT</div>
+            <div style="font-size: 12px; color: #6b7280;">Total pendente de confirmação</div>
+        </div>
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>Estado:</label>
+                <select name="estado" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    {% for v, l in estado_choices %}
+                    <option value="{{ v }}" {% if estado_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Beneficiário</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor (MT)</th>
+                    <th>Estado</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pendentes %}
+                <tr>
+                    <td>{{ p.data_criacao|date:"d/m/Y H:i" }}</td>
+                    <td>{{ p.beneficiario }}</td>
+                    <td>{{ p.descricao|truncatewords:12 }}</td>
+                    <td class="num">{{ p.valor|floatformat:2 }}</td>
+                    <td><span class="badge badge-{{ p.estado|lower }}">{{ p.get_estado_display }}</span></td>
+                    <td>
+                        {% if p.url_origem %}
+                        <a href="{{ p.url_origem }}" class="link-cell" target="_blank">Ver origem</a>
+                        {% endif %}
+                        <a href="{% url 'financas:recibo_adiantamento_pagar' p.id %}" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; margin-left: 4px;" target="_blank"><i class="fas fa-file-pdf"></i> Recibo</a>
+                        {% if p.estado == 'PENDENTE' %}
+                        <a href="{% url 'financas:confirmar_conta_pagar' p.id %}" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px; margin-left: 8px;">Confirmar</a>
+                        <form method="post" action="{% url 'financas:rejeitar_conta_pagar' p.id %}" style="display: inline;" onsubmit="return confirm('Rejeitar este item?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;">Rejeitar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center;padding:24px;color:#6b7280;">Nenhum item {{ estado_filter|default:"pendente"|lower }}.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

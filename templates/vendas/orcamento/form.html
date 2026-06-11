@@ -1,0 +1,449 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Orçamento - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #ec4899;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #ec4899;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tipo-cotacao {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .tipo-cotacao h2 {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+        .tipo-cotacao-options {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .tipo-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            transition: all 0.2s;
+        }
+        .tipo-option:hover { border-color: #ec4899; background: #fdf2f8; }
+        .tipo-option input[type="radio"] { width: 18px; height: 18px; accent-color: #ec4899; cursor: pointer; }
+        .tipo-option.selected { border-color: #ec4899; background: #fdf2f8; }
+        .panel-servicos {
+            padding: 24px;
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .panel-servicos h3 { color: #0369a1; margin-bottom: 10px; font-size: 18px; }
+        .panel-servicos p { color: #0c4a6e; margin-bottom: 16px; }
+        .panel-servicos .btn { padding: 12px 24px; font-size: 14px; }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+        }
+        .required { color: #dc3545; }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .produto-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            align-items: flex-end;
+        }
+        .produto-row select,
+        .produto-row input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-remove {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .messages { margin-bottom: 20px; }
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-invoice-dollar"></i> Novo Orçamento</h1>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="tipo-cotacao">
+            <h2><i class="fas fa-list-check"></i> O que será cotado?</h2>
+            <div class="tipo-cotacao-options">
+                <label class="tipo-option selected" id="label-venda">
+                    <input type="radio" name="tipo_cotacao" value="venda" checked>
+                    <span><i class="fas fa-box" style="color: #ec4899;"></i> <strong>Venda (produtos)</strong></span>
+                </label>
+                <label class="tipo-option" id="label-servico">
+                    <input type="radio" name="tipo_cotacao" value="servico">
+                    <span><i class="fas fa-tools" style="color: #0ea5e9;"></i> <strong>Serviços</strong></span>
+                </label>
+            </div>
+        </div>
+
+        <div id="panel-servicos" style="display: none;">
+            <div style="padding: 32px; text-align: center; background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 12px; color: #0369a1; font-size: 20px;"><i class="fas fa-tools"></i> Cotação de serviços</h3>
+                <p style="margin-bottom: 20px; color: #0c4a6e;">Preencha o formulário de cotação de serviços (cliente, serviços, transporte, parcelas, etc.). Ao gravar, a cotação ficará disponível em Vendas e em Produção.</p>
+                <a href="{% url 'producao:servico_orcamento_add' %}?from=vendas" target="_top" class="btn btn-primary" style="background: #0ea5e9; padding: 14px 28px; font-size: 16px;"><i class="fas fa-external-link-alt"></i> Abrir formulário de cotação de serviços</a>
+            </div>
+        </div>
+
+        <div id="panel-venda">
+        <form method="POST" action="{% url 'vendas:orcamento_add' %}">
+            {% csrf_token %}
+            
+            <!-- VENDA A e Cliente -->
+            <div class="form-row" style="align-items: flex-end;">
+                <div class="form-group" style="flex: 0 0 200px;">
+                    <label for="forma_pagamento"><i class="fas fa-money-bill-wave"></i> VENDA A: <span class="required">*</span></label>
+                    <select id="forma_pagamento" name="forma_pagamento" required onchange="togglePaymentFields()">
+                        <option value="PRONTO_PAGAMENTO" selected>CASH</option>
+                        <option value="CREDITO">CREDITO</option>
+                    </select>
+                </div>
+                <div id="pronto-pagamento-section" class="form-group" style="flex: 1; display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <input type="text" id="nome_cliente_pagamento" name="nome_cliente_pagamento" 
+                               placeholder="Nome do Cliente *" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" id="nuit_cliente_pagamento" name="nuit_cliente_pagamento" 
+                               placeholder="NUIT do Cliente (Ex: 123456789)" pattern="[0-9]{9}" maxlength="9">
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" id="telefone_cliente_pagamento" name="telefone_cliente_pagamento" 
+                               placeholder="Contato/Telefone (Ex: +258 84 123 4567)">
+                    </div>
+                </div>
+                <div id="credito-section" class="form-group" style="flex: 1; display: none;">
+                    <label for="cliente">Cliente: <span class="required">*</span></label>
+                    <select id="cliente" name="cliente" required>
+                        <option value="">Selecione um cliente</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Local de Entrega -->
+            <div class="form-group">
+                <label for="endereco_entrega">Endereço de Entrega</label>
+                <textarea id="endereco_entrega" name="endereco_entrega" rows="2" 
+                          placeholder="Endereço onde os produtos serão entregues"></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="cidade_entrega">Cidade</label>
+                    <input type="text" id="cidade_entrega" name="cidade_entrega" placeholder="Cidade">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="data_entrega">Data de Entrega (Opcional)</label>
+                    <input type="date" id="data_entrega" name="data_entrega">
+                </div>
+            </div>
+
+            <!-- Produtos -->
+            <div class="form-group" style="margin-top: 30px; border-top: 2px solid #e5e7eb; padding-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">
+                        <i class="fas fa-box" style="color: #ec4899; margin-right: 8px;"></i> Produtos <span class="required">*</span>
+                    </h3>
+                    <button type="button" onclick="adicionarProduto()" 
+                            style="background: #ec4899; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-plus-circle"></i> Adicionar Produto
+                    </button>
+                </div>
+                <div id="produtos-container"></div>
+            </div>
+
+            <!-- Resumo de Valores -->
+            <div class="form-group" style="background: #f9fafb; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #374151; font-size: 16px;">Resumo de Valores</h3>
+                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 2px solid #e5e7eb; margin-top: 10px;">
+                    <span><strong>VALOR TOTAL:</strong></span>
+                    <span id="valor_final_exibicao" style="font-weight: 700; font-size: 18px; color: #ec4899;">0,00 MT</span>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações adicionais sobre o orçamento"></textarea>
+            </div>
+
+            <!-- Botões -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Criar Orçamento</button>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var radioVenda = document.querySelector('input[name="tipo_cotacao"][value="venda"]');
+            var radioServico = document.querySelector('input[name="tipo_cotacao"][value="servico"]');
+            var panelVenda = document.getElementById('panel-venda');
+            var panelServicos = document.getElementById('panel-servicos');
+            var labelVenda = document.getElementById('label-venda');
+            var labelServico = document.getElementById('label-servico');
+            function updatePanels() {
+                var isVenda = radioVenda && radioVenda.checked;
+                if (panelVenda) panelVenda.style.display = isVenda ? 'block' : 'none';
+                if (panelServicos) panelServicos.style.display = isVenda ? 'none' : 'block';
+                if (labelVenda) labelVenda.classList.toggle('selected', isVenda);
+                if (labelServico) labelServico.classList.toggle('selected', !isVenda);
+            }
+            if (radioVenda) radioVenda.addEventListener('change', updatePanels);
+            if (radioServico) radioServico.addEventListener('change', updatePanels);
+            updatePanels();
+        })();
+    </script>
+
+    <script>
+        let produtoIndex = 0;
+        const produtos = [
+            {% for produto in produtos %}
+            {id: {{ produto.id }}, nome: "{{ produto.nome }}", preco: {{ produto.preco_venda|default:0 }}},
+            {% endfor %}
+        ];
+
+        function togglePaymentFields() {
+            const formaPagamento = document.getElementById('forma_pagamento').value;
+            const prontoPagamentoSection = document.getElementById('pronto-pagamento-section');
+            const creditoSection = document.getElementById('credito-section');
+            
+            if (formaPagamento === 'PRONTO_PAGAMENTO') {
+                prontoPagamentoSection.style.display = 'flex';
+                creditoSection.style.display = 'none';
+                document.getElementById('nome_cliente_pagamento').required = true;
+                document.getElementById('cliente').required = false;
+            } else {
+                prontoPagamentoSection.style.display = 'none';
+                creditoSection.style.display = 'block';
+                document.getElementById('nome_cliente_pagamento').required = false;
+                document.getElementById('cliente').required = true;
+            }
+        }
+
+        function adicionarProduto() {
+            const container = document.getElementById('produtos-container');
+            const row = document.createElement('div');
+            row.className = 'produto-row';
+            row.dataset.index = produtoIndex;
+            
+            row.innerHTML = `
+                <div style="flex: 2;">
+                    <label>Produto <span class="required">*</span></label>
+                    <select name="produto_id[]" required onchange="atualizarPreco(this, ${produtoIndex})">
+                        <option value="">Selecione um produto</option>
+                        {% for produto in produtos %}
+                        <option value="{{ produto.id }}" data-preco="{{ produto.preco_venda|default:0 }}">{{ produto.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Quantidade <span class="required">*</span></label>
+                    <input type="number" name="produto_quantidade[]" step="0.01" min="0.01" value="1" required onchange="calcularTotal()">
+                </div>
+                <div style="flex: 1;">
+                    <label>Valor Unitário (MT)</label>
+                    <input type="number" name="produto_valor_unitario[]" step="0.01" min="0" value="0" required onchange="calcularTotal()">
+                </div>
+                <div style="flex: 1;">
+                    <label>Desconto %</label>
+                    <input type="number" name="produto_desconto_percentual[]" step="0.01" min="0" max="100" value="0" onchange="calcularTotal()">
+                </div>
+                <div style="flex: 1;">
+                    <label>Desconto (MT)</label>
+                    <input type="number" name="produto_desconto[]" step="0.01" min="0" value="0" onchange="calcularTotal()">
+                </div>
+                <div style="flex: 0 0 50px; display: flex; align-items: flex-end;">
+                    <button type="button" class="btn-remove" onclick="removerProduto(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            produtoIndex++;
+        }
+
+        function atualizarPreco(select, index) {
+            const option = select.options[select.selectedIndex];
+            const preco = option.getAttribute('data-preco') || 0;
+            const row = select.closest('.produto-row');
+            const valorInput = row.querySelector('input[name="produto_valor_unitario[]"]');
+            if (valorInput && preco > 0) {
+                valorInput.value = preco;
+            }
+            calcularTotal();
+        }
+
+        function removerProduto(button) {
+            button.closest('.produto-row').remove();
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            const rows = document.querySelectorAll('.produto-row');
+            
+            rows.forEach(row => {
+                const quantidade = parseFloat(row.querySelector('input[name="produto_quantidade[]"]').value) || 0;
+                const valorUnitario = parseFloat(row.querySelector('input[name="produto_valor_unitario[]"]').value) || 0;
+                const descontoPercentual = parseFloat(row.querySelector('input[name="produto_desconto_percentual[]"]').value) || 0;
+                const desconto = parseFloat(row.querySelector('input[name="produto_desconto[]"]').value) || 0;
+                
+                let subtotal = quantidade * valorUnitario;
+                if (descontoPercentual > 0) {
+                    subtotal -= (subtotal * descontoPercentual / 100);
+                }
+                subtotal -= desconto;
+                
+                total += Math.max(0, subtotal);
+            });
+            
+            document.getElementById('valor_final_exibicao').textContent = total.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' MT';
+        }
+
+        // Adicionar primeiro produto ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            adicionarProduto();
+        });
+    </script>
+</body>
+</html>
+

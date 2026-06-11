@@ -1,0 +1,264 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Nova exceção logística{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:exceptions:excecoes_list' as excecoes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Exceções' breadcrumb_section_url=excecoes_list_url breadcrumb_current='Nova exceção' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Nova exceção logística
+                </h1>
+                <p class="page-subtitle">Registar ocorrência durante operação de entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="post" novalidate id="excecao-form">
+            {% csrf_token %}
+
+            <div id="excecao-resultado" class="stock-u-mb-24" hidden></div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-tags" aria-hidden="true"></i> Classificação</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="tipo_codigo">Tipo de exceção *</label>
+                            <select id="tipo_codigo" name="tipo_codigo" class="form-select" required>
+                                <option value="">Selecione o tipo...</option>
+                                {% for tipo in tipos_excecao %}
+                                <option value="{{ tipo.codigo }}"
+                                        data-descricao="{{ tipo.descricao|escape }}"
+                                        data-bloqueia="{% if tipo.bloqueia_entrega %}1{% else %}0{% endif %}">
+                                    {{ tipo.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint" id="tipo-descricao-hint"></p>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="prioridade">Prioridade</label>
+                            <select id="prioridade" name="prioridade" class="form-select">
+                                {% for value, label in prioridade_choices %}
+                                <option value="{{ value }}" {% if value == 'NORMAL' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-truck" aria-hidden="true"></i> Rastreamento</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="rastreamento_id">Rastreamento associado</label>
+                            <select id="rastreamento_id" name="rastreamento_id" class="form-select"
+                                    data-endereco-field="local_ocorrencia">
+                                <option value="">Sem rastreamento associado</option>
+                                {% for r in rastreamentos %}
+                                <option value="{{ r.id }}"
+                                        {% if rastreamento_selecionado == r.id|stringformat:"s" %}selected{% endif %}
+                                        data-endereco="{{ r.endereco_entrega|escapejs }}, {{ r.cidade_entrega|escapejs }}">
+                                    {{ r.codigo_rastreamento }} — {{ r.destinatario_nome }} ({{ r.get_status_atual_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Rastreamentos em curso (preparação, coleta, trânsito ou distribuição).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-file-alt" aria-hidden="true"></i> Detalhes</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="descricao">Descrição *</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="3" required
+                                      placeholder="Descreva o que aconteceu..."></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="local_ocorrencia">Local da ocorrência</label>
+                            <input type="text" id="local_ocorrencia" name="local_ocorrencia" class="form-control"
+                                   placeholder="Endereço ou referência do local">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="evidencia_fotos">URLs de evidência</label>
+                            <textarea id="evidencia_fotos" name="evidencia_fotos" class="form-control" rows="2"
+                                      placeholder="Uma URL por linha (opcional)"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="latitude">Latitude</label>
+                            <input type="number" id="latitude" name="latitude" class="form-control"
+                                   step="any" min="-90" max="90" placeholder="Ex.: -25.9692">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="longitude">Longitude</label>
+                            <input type="number" id="longitude" name="longitude" class="form-control"
+                                   step="any" min="-180" max="180" placeholder="Ex.: 32.5732">
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="observacoes">Observações</label>
+                            <textarea id="observacoes" name="observacoes" class="form-control" rows="2"
+                                      placeholder="Informação adicional para a equipa..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger" id="btn-criar-excecao">
+                    <i class="fas fa-save" aria-hidden="true"></i> Registar exceção
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    const form = document.getElementById('excecao-form');
+    const resultado = document.getElementById('excecao-resultado');
+    const btn = document.getElementById('btn-criar-excecao');
+    const tipoSelect = document.getElementById('tipo_codigo');
+    const tipoHint = document.getElementById('tipo-descricao-hint');
+    const rastreamentoSelect = document.getElementById('rastreamento_id');
+    if (!form) return;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const excecaoDetailUrl = '{% url "stock:exceptions:excecao_detail" 0 %}'.replace('/0/', '/');
+
+    function showResult(html, type) {
+        resultado.hidden = false;
+        resultado.className = 'stock-u-mb-24 alert alert-' + (type || 'info');
+        resultado.innerHTML = html;
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function updateTipoHint() {
+        const opt = tipoSelect.options[tipoSelect.selectedIndex];
+        if (!opt || !opt.value) {
+            tipoHint.textContent = '';
+            return;
+        }
+        const parts = [];
+        if (opt.dataset.descricao) parts.push(opt.dataset.descricao);
+        if (opt.dataset.bloqueia === '1') parts.push('Este tipo pode bloquear a entrega.');
+        tipoHint.textContent = parts.join(' ');
+    }
+
+    function preencherLocal() {
+        const opt = rastreamentoSelect.options[rastreamentoSelect.selectedIndex];
+        const local = document.getElementById('local_ocorrencia');
+        if (!opt || !opt.value || !local || local.value) return;
+        if (opt.dataset.endereco) local.value = opt.dataset.endereco;
+    }
+
+    tipoSelect.addEventListener('change', updateTipoHint);
+    rastreamentoSelect.addEventListener('change', preencherLocal);
+    updateTipoHint();
+    if (rastreamentoSelect.value) preencherLocal();
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const tipoCodigo = tipoSelect.value;
+        const descricao = document.getElementById('descricao').value.trim();
+        if (!tipoCodigo || !descricao) {
+            showResult('<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Preencha o tipo e a descrição.', 'warning');
+            return;
+        }
+
+        const rastreamentoVal = rastreamentoSelect.value;
+        const latVal = document.getElementById('latitude').value;
+        const lngVal = document.getElementById('longitude').value;
+        const fotosRaw = document.getElementById('evidencia_fotos').value;
+        const evidenciaFotos = fotosRaw
+            ? fotosRaw.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
+            : [];
+
+        const payload = {
+            tipo_codigo: tipoCodigo,
+            descricao: descricao,
+            observacoes: document.getElementById('observacoes').value.trim(),
+            local_ocorrencia: document.getElementById('local_ocorrencia').value.trim(),
+            prioridade: document.getElementById('prioridade').value,
+            evidencia_fotos: evidenciaFotos,
+        };
+
+        if (rastreamentoVal) payload.rastreamento_id = parseInt(rastreamentoVal, 10);
+        if (latVal) payload.latitude = latVal;
+        if (lngVal) payload.longitude = lngVal;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> A guardar...';
+        resultado.hidden = true;
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                showResult(
+                    '<i class="fas fa-check-circle" aria-hidden="true"></i> Exceção <strong>' +
+                    (data.codigo || '') + '</strong> criada com sucesso. ' +
+                    '<a href="' + excecaoDetailUrl + data.excecao_id + '/" class="btn btn-sm btn-primary stock-u-ml-8">Ver exceção</a>',
+                    'success'
+                );
+                form.reset();
+                updateTipoHint();
+            } else {
+                showResult(
+                    '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> ' +
+                    (data.error || 'Não foi possível criar a exceção.'),
+                    'warning'
+                );
+            }
+        })
+        .catch(function () {
+            showResult('<i class="fas fa-times-circle" aria-hidden="true"></i> Erro de comunicação com o servidor.', 'danger');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save" aria-hidden="true"></i> Registar exceção';
+        });
+    });
+})();
+</script>
+{% endblock %}

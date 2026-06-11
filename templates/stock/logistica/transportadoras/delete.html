@@ -1,0 +1,73 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Excluir transportadora{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:logistica:transportadoras_list' as transportadoras_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Transportadoras' breadcrumb_section_url=transportadoras_url breadcrumb_current='Excluir' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-trash-alt" aria-hidden="true"></i> Excluir transportadora</h1>
+                <p class="page-subtitle">{{ transportadora.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:transportadoras_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirmation-card stock-confirmation-card">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                Confirmar exclusão
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                <strong>Atenção!</strong> Esta ação não pode ser desfeita. A transportadora será removida permanentemente.
+            </div>
+            <table class="table table-borderless table-sm">
+                <tr>
+                    <td><strong>Código:</strong></td>
+                    <td><code>{{ transportadora.codigo }}</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Nome:</strong></td>
+                    <td>{{ transportadora.nome }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo:</strong></td>
+                    <td>{{ transportadora.get_tipo_display }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Status:</strong></td>
+                    <td>{{ transportadora.get_status_display }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-footer">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-actions-row is-split">
+                    <a href="{% url 'stock:logistica:transportadoras_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i> Confirmar exclusão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

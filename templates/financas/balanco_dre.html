@@ -1,0 +1,132 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; }
+        .section { margin-bottom: 28px; }
+        .section h2 { font-size: 17px; color: #92400e; margin: 0 0 12px 0; }
+        .dre-table, .balanco-table { width: 100%; max-width: 400px; border-collapse: collapse; font-size: 14px; }
+        .dre-table td, .balanco-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
+        .dre-table .num, .balanco-table .num { text-align: right; font-weight: 500; }
+        .dre-table .total, .balanco-table .total { font-weight: 700; border-top: 2px solid #b45309; }
+        .info { font-size: 13px; color: #6b7280; margin-top: 8px; }
+        .detalhe-conta { margin-top: 12px; }
+        .detalhe-conta h3 { font-size: 14px; color: #6b7280; margin: 16px 0 8px 0; }
+        .detalhe-conta table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+        .detalhe-conta th, .detalhe-conta td { padding: 6px 10px; border: 1px solid #e5e7eb; text-align: left; }
+        .detalhe-conta th { background: #f3f4f6; font-weight: 600; }
+        .detalhe-conta .num { text-align: right; }
+        .cabecalho-empresa { width: 100%; margin-bottom: 16px; border-collapse: collapse; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; }
+        .cabecalho-empresa .cel-logo { width: 72px; vertical-align: top; padding-right: 12px; }
+        .cabecalho-empresa .logo-empresa { max-width: 70px; max-height: 56px; display: block; object-fit: contain; }
+        .cabecalho-empresa .cel-dados { vertical-align: top; font-size: 13px; line-height: 1.4; color: #374151; }
+        .cabecalho-empresa .nome-empresa { font-weight: bold; font-size: 15px; color: #b45309; margin-bottom: 4px; }
+        .cabecalho-empresa .dados-linha { margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table class="cabecalho-empresa">
+            <tr>
+                <td class="cel-logo">{% if logo_url %}<img src="{{ logo_url }}" alt="" class="logo-empresa">{% endif %}</td>
+                <td class="cel-dados">
+                    <div class="nome-empresa">{{ dados_empresa.nome|default:"—" }}</div>
+                    {% if dados_empresa.nuit %}<div class="dados-linha">NUIT: {{ dados_empresa.nuit }}</div>{% endif %}
+                    {% if dados_empresa.endereco %}<div class="dados-linha">{{ dados_empresa.endereco }}</div>{% endif %}
+                    {% if dados_empresa.telefone %}<div class="dados-linha">Tel: {{ dados_empresa.telefone }}</div>{% endif %}
+                    {% if dados_empresa.email %}<div class="dados-linha">Email: {{ dados_empresa.email }}</div>{% endif %}
+                </td>
+            </tr>
+        </table>
+        <div class="header">
+            <h1><i class="fas fa-balance-scale"></i> {{ title }}</h1>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>De:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                <label>Até:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary">Aplicar</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Demonstração de Resultados (DRE)</h2>
+            <table class="dre-table">
+                <tr>
+                    <td>Total Receitas</td>
+                    <td class="num">{{ total_receitas_dre|floatformat:2 }} MT</td>
+                </tr>
+                <tr>
+                    <td>Total Despesas</td>
+                    <td class="num">({{ total_despesas_dre|floatformat:2 }}) MT</td>
+                </tr>
+                <tr class="total">
+                    <td>Resultado do período</td>
+                    <td class="num">{{ resultado_dre|floatformat:2 }} MT</td>
+                </tr>
+            </table>
+            <p class="info">Valores calculados a partir dos lançamentos com contas do tipo Receita e Despesa.</p>
+        </div>
+
+        <div class="section">
+            <h2>Balanço (totais por natureza)</h2>
+            <table class="balanco-table">
+                <tr>
+                    <td>Ativo</td>
+                    <td class="num">{{ balanco.ATIVO|floatformat:2 }} MT</td>
+                </tr>
+                <tr>
+                    <td>Passivo</td>
+                    <td class="num">{{ balanco.PASSIVO|floatformat:2 }} MT</td>
+                </tr>
+                <tr>
+                    <td>Património líquido</td>
+                    <td class="num">{{ balanco.PATRIMONIO|floatformat:2 }} MT</td>
+                </tr>
+            </table>
+            <p class="info">Saldos acumulados à data fim (todos os lançamentos com data ≤ {{ data_fim }}).</p>
+
+            {% if balanco_por_conta %}
+            <div class="detalhe-conta">
+                <h3>Detalhe por conta (código, nome e saldo acumulado)</h3>
+                {% for tipo, contas in balanco_por_conta.items %}
+                    {% if contas %}
+                    <strong>{% if tipo == 'ATIVO' %}Ativo{% elif tipo == 'PASSIVO' %}Passivo{% else %}Património líquido{% endif %}</strong>
+                    <table>
+                        <thead>
+                            <tr><th>Código</th><th>Nome</th><th class="num">Saldo (MT)</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for c in contas %}
+                            <tr>
+                                <td>{{ c.codigo }}</td>
+                                <td>{{ c.nome }}</td>
+                                <td class="num">{{ c.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

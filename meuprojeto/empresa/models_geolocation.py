@@ -77,6 +77,40 @@ class EnderecoNormalizado(models.Model):
     
     def __str__(self):
         return f"{self.endereco_normalizado} ({self.latitude}, {self.longitude})"
+
+
+class CoordenadaHistorica(models.Model):
+    """Histórico de coordenadas por entidade (veículo, entrega, etc.)."""
+
+    TIPO_ENTIDADE_CHOICES = [
+        ('VEICULO', 'Veículo'),
+        ('ENTREGA', 'Entrega'),
+        ('MOTORISTA', 'Motorista'),
+        ('RASTREAMENTO', 'Rastreamento'),
+        ('OUTRO', 'Outro'),
+    ]
+
+    endereco = models.ForeignKey(
+        EnderecoNormalizado,
+        on_delete=models.CASCADE,
+        related_name='coordenadas_historicas',
+        null=True,
+        blank=True,
+    )
+    tipo_entidade = models.CharField(max_length=30, choices=TIPO_ENTIDADE_CHOICES)
+    entidade_id = models.CharField(max_length=64, db_index=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    observacoes = models.TextField(blank=True)
+    data_registro = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = 'Coordenada Histórica'
+        verbose_name_plural = 'Coordenadas Históricas'
+        ordering = ['-data_registro']
+
+    def __str__(self):
+        return f"{self.tipo_entidade}:{self.entidade_id} ({self.latitude}, {self.longitude})"
     
     def save(self, *args, **kwargs):
         if not self.hash_endereco:

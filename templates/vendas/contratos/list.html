@@ -1,0 +1,66 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #f59e0b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #f59e0b; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-info { background: #0ea5e9; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fef3c7; color: #92400e; font-weight: 600; }
+        tr:hover { background: #f9fafb; }
+        .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-contract"></i> {{ title }}</h1>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+        <p style="color: #666; margin-bottom: 16px;">Forneça os contratos aos clientes a partir dos orçamentos. Use <strong>Pré-visualizar</strong> para ver o contrato ou <strong>Gerar PDF</strong> para imprimir/entregar.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Cliente</th>
+                    <th>Data</th>
+                    <th>Valor total</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orcamento in orcamentos %}
+                <tr>
+                    <td><strong>{{ orcamento.codigo }}</strong></td>
+                    <td>{{ orcamento.cliente.nome|default:orcamento.nome_cliente_pagamento|default:"—" }}</td>
+                    <td>{{ orcamento.data_criacao|date:"d/m/Y H:i" }}</td>
+                    <td>{{ orcamento.valor_total|default:0|floatformat:2 }} MT</td>
+                    <td>
+                        <div class="acoes">
+                            <a href="{% url 'vendas:preview_contrato' orcamento.id %}" class="btn btn-info" target="_blank"><i class="fas fa-eye"></i> Pré-visualizar</a>
+                            <a href="{% url 'vendas:gerar_contrato' orcamento.id %}" class="btn btn-success" target="_blank"><i class="fas fa-file-pdf"></i> Gerar PDF</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px;">Nenhum orçamento encontrado</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

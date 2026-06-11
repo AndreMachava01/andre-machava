@@ -1,0 +1,75 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .policy { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 16px; margin-bottom: 20px; }
+        .policy h2 { margin: 0 0 8px 0; font-size: 16px; color: #92400e; }
+        .alert-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 16px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; }
+        td.num { text-align: right; }
+        .info { font-size: 13px; color: #6b7280; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-archive"></i> {{ title }}</h1>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="policy">
+            <h2>Prazo de conservação</h2>
+            <p>Documentos fiscais e contabilísticos devem ser conservados por <strong>{{ prazo_anos }} anos</strong> (conforme legislação aplicável em Moçambique).</p>
+            <p>Data limite para documentos no sistema: <strong>{{ limite_antigo|date:"d/m/Y" }}</strong>. Documentos com data anterior podem ser arquivados ou eliminados conforme política interna.</p>
+        </div>
+
+        {% if alertas_count > 0 %}
+        <div class="alert-box">
+            <strong><i class="fas fa-exclamation-triangle"></i> Alerta:</strong> Existem {{ alertas_count }} lançamento(s) com data anterior a {{ limite_alerta|date:"d/m/Y" }} que se aproximam do prazo de retenção.
+        </div>
+        {% endif %}
+
+        <h2 style="font-size: 16px; color: #b45309; margin-bottom: 10px;">Documentos mais antigos (amostra)</h2>
+        <p class="info">Total de lançamentos com data anterior ao prazo: {{ total_antigos }}.</p>
+        {% if antigos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Conta</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor (MT)</th>
+                    <th>Documento ref.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in antigos %}
+                <tr>
+                    <td>{{ m.data|date:"d/m/Y" }}</td>
+                    <td>{{ m.conta.codigo }} {{ m.conta.nome }}</td>
+                    <td>{{ m.descricao|truncatewords:8 }}</td>
+                    <td class="num">{{ m.valor|floatformat:2 }}</td>
+                    <td>{{ m.documento_ref|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Não há lançamentos na amostra de documentos antigos.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

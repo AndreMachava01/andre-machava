@@ -3,167 +3,139 @@
 
 {% block title %}Nova Movimentação de Stock{% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container stock-form-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:movimentos' %}">Movimentações</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Nova (unificada)</span>
+    </nav>
 
-    <!-- Header -->
     <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>
-                <i class="fas fa-exchange-alt"></i>
-                Nova Movimentação de Stock (Unificada)
-            </h2>
-            <a href="{% url 'stock:movimentos' %}" class="btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-exchange-alt" aria-hidden="true"></i> Nova movimentação (unificada)</h1>
+                <p class="page-subtitle">Registo unificado de entrada ou saída de stock</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:movimentos' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="form-container">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <!-- Informações Básicas -->
-                    <div class="form-section">
-                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
-                        
-                        <div class="row">
-                            <!-- Coluna Esquerda -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="item_search" class="form-label required-field">Item (Produto/Material)</label>
-                                    <div class="search-container">
-                                        <input type="text" class="form-control" id="item_search" 
-                                               placeholder="Digite o nome ou código do item..." autocomplete="off">
-                                        <input type="hidden" id="item_id" name="item_id">
-                                        <div class="search-results" id="item_results"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Coluna Direita -->
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="sucursal" class="form-label required-field">Sucursal</label>
-                                    <select class="form-select" id="sucursal" name="sucursal" required>
-                                        <option value="">Selecione uma sucursal</option>
-                                        {% for sucursal in sucursais %}
-                                            <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="tipo_movimento" class="form-label required-field">Tipo de Movimento</label>
-                                    <select class="form-select" id="tipo_movimento" name="tipo_movimento" required>
-                                        <option value="">Selecione o tipo de movimento</option>
-                                        {% for tipo in tipos_movimento %}
-                                            <option value="{{ tipo.id }}" data-aumenta="{{ tipo.aumenta_estoque|yesno:'true,false' }}">
-                                                {{ tipo.nome }} - {% if tipo.aumenta_estoque %}Entrada{% else %}Saída{% endif %}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="quantidade" class="form-label required-field">Quantidade</label>
-                                    <input type="number" class="form-control" id="quantidade" name="quantidade" 
-                                           min="1" required placeholder="Digite a quantidade">
-                                </div>
+    <div class="form-layout-with-sidebar">
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Informações básicas</h5>
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label for="item_search" class="form-label required-field">Item (produto / material)</label>
+                            <div class="search-container">
+                                <input type="text" class="form-control" id="item_search"
+                                       placeholder="Digite o nome ou código do item…" autocomplete="off">
+                                <input type="hidden" id="item_id" name="item_id">
+                                <div class="search-results" id="item_results"></div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Informações Financeiras -->
-                    <div class="form-section">
-                        <h5><i class="fas fa-money-bill-wave"></i> Informações Financeiras</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="preco_unitario" class="form-label required-field">Preço Unitário</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">MZN</span>
-                                        <input type="number" class="form-control" id="preco_unitario" name="preco_unitario" 
-                                               step="0.01" min="0.01" required placeholder="0.00">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="referencia" class="form-label">Referência</label>
-                                    <input type="text" class="form-control" id="referencia" name="referencia" 
-                                           placeholder="Ex: Nº da nota fiscal, ordem de compra, etc.">
-                                </div>
-                            </div>
+                        <div class="form-field">
+                            <label for="sucursal" class="form-label required-field">Sucursal</label>
+                            <select class="form-select" id="sucursal" name="sucursal" required>
+                                <option value="">Selecione uma sucursal</option>
+                                {% for sucursal in sucursais %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="tipo_movimento" class="form-label required-field">Tipo de movimento</label>
+                            <select class="form-select" id="tipo_movimento" name="tipo_movimento" required>
+                                <option value="">Selecione o tipo</option>
+                                {% for tipo in tipos_movimento %}
+                                <option value="{{ tipo.id }}" data-aumenta="{{ tipo.aumenta_estoque|yesno:'true,false' }}">
+                                    {{ tipo.nome }} — {% if tipo.aumenta_estoque %}Entrada{% else %}Saída{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="quantidade" class="form-label required-field">Quantidade</label>
+                            <input type="number" class="form-control" id="quantidade" name="quantidade"
+                                   min="1" required placeholder="Quantidade">
                         </div>
                     </div>
-
-                    <!-- Observações -->
-                    <div class="form-section">
-                        <h5><i class="fas fa-sticky-note"></i> Observações</h5>
-                        <div class="mb-3">
-                            <label for="observacoes" class="form-label">Observações</label>
-                            <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
-                                      placeholder="Observações adicionais sobre a movimentação"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Botões de Ação -->
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'stock:movimentos' %}" class="btn-secondary">
-                            <i class="fas fa-times"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save"></i>
-                            Registrar Movimentação
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Informações</h5>
                 </div>
-                <div class="card-body">
-                    <h6>Tipos de Movimentação:</h6>
-                    <ul class="list-unstyled">
-                        <li><strong>Entrada:</strong> Adição de produtos/materiais ao estoque</li>
-                        <li><strong>Saída:</strong> Remoção de produtos/materiais do estoque</li>
-                        <li><strong>Ajuste:</strong> Correção de inventário</li>
-                    </ul>
-                    
-                    <hr>
-                    
-                    <h6>Importante:</h6>
-                    <ul class="list-unstyled">
-                        <li>• Sistema unificado para produtos e materiais</li>
-                        <li>• Todas as movimentações são registradas permanentemente</li>
-                        <li>• Afetam o estoque atual da sucursal</li>
-                        <li>• Verifique a quantidade disponível antes de saídas</li>
-                        <li>• Use referências para rastreabilidade</li>
-                    </ul>
+
+                <div class="form-section">
+                    <h5><i class="fas fa-money-bill-wave" aria-hidden="true"></i> Informações financeiras</h5>
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label for="preco_unitario" class="form-label required-field">Preço unitário</label>
+                            <div class="input-group">
+                                <span class="input-group-text">MZN</span>
+                                <input type="number" class="form-control" id="preco_unitario" name="preco_unitario"
+                                       step="0.01" min="0.01" required placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="referencia" class="form-label">Referência</label>
+                            <input type="text" class="form-control" id="referencia" name="referencia"
+                                   placeholder="Nº nota fiscal, ordem de compra, etc.">
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="form-section">
+                    <h5><i class="fas fa-sticky-note" aria-hidden="true"></i> Observações</h5>
+                    <div class="form-field form-field--full">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="4"
+                                  placeholder="Observações adicionais"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions-row is-split">
+                    <a href="{% url 'stock:movimentos' %}" class="btn btn-secondary">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" aria-hidden="true"></i> Registar movimentação
+                    </button>
+                </div>
+            </form>
         </div>
+
+        <aside class="info-card" aria-label="Ajuda">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Tipos</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled stock-info-card-list">
+                    <li><strong>Entrada:</strong> adição ao stock</li>
+                    <li><strong>Saída:</strong> remoção do stock</li>
+                    <li><strong>Ajuste:</strong> correção de inventário</li>
+                </ul>
+                <hr>
+                <ul class="list-unstyled stock-info-card-list">
+                    <li>• Produtos e materiais num só formulário</li>
+                    <li>• Verifique stock antes de saídas</li>
+                    <li>• Use referência para rastreio</li>
+                </ul>
+            </div>
+        </aside>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -307,7 +279,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% endblock %}
-
-
 

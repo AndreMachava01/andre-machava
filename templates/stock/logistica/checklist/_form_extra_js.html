@@ -1,0 +1,41 @@
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var checkboxes = document.querySelectorAll('.js-checklist-item');
+    var totalEl = document.getElementById('checklist-stat-total');
+    var okEl = document.getElementById('checklist-stat-ok');
+    var nokEl = document.getElementById('checklist-stat-nok');
+    var scoreEl = document.getElementById('checklist-stat-score');
+
+    function updatePreview() {
+        var total = checkboxes.length;
+        var ok = Array.prototype.filter.call(checkboxes, function (cb) { return cb.checked; }).length;
+        var nok = total - ok;
+        var score = total ? Math.round((ok / total) * 100) : 0;
+
+        if (totalEl) totalEl.textContent = total;
+        if (okEl) okEl.textContent = ok;
+        if (nokEl) nokEl.textContent = nok;
+        if (scoreEl) scoreEl.textContent = score + '%';
+
+        checkboxes.forEach(function (checkbox) {
+            var status = checkbox.closest('.stock-checklist-form__item');
+            if (!status) return;
+            var badge = status.querySelector('.js-checklist-status');
+            if (!badge) return;
+            if (checkbox.checked) {
+                badge.textContent = 'OK';
+                badge.className = 'stock-checklist-form__status stock-checklist-form__status--ok js-checklist-status';
+            } else {
+                badge.textContent = 'NOK';
+                badge.className = 'stock-checklist-form__status stock-checklist-form__status--nok js-checklist-status';
+            }
+        });
+    }
+
+    checkboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', updatePreview);
+    });
+
+    updatePreview();
+});
+</script>

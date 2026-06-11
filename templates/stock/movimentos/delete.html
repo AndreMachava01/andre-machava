@@ -3,46 +3,33 @@
 
 {% block title %}Eliminar Movimentação{% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:movimentos' %}">Movimentações</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Eliminar Movimentação</li>
-        </ol>
+<div class="container stock-form-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:movimentos' %}">Movimentações</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Eliminar</span>
     </nav>
 
-    <!-- Header -->
     <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>
-                <i class="fas fa-trash-alt"></i>
-                Eliminar Movimentação
-            </h2>
-            <a href="{% url 'stock:movimentos' %}" class="btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-trash-alt" aria-hidden="true"></i> Eliminar movimentação</h1>
+                <p class="page-subtitle">{{ movimento.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:movimentos' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Confirmation Card -->
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="confirmation-card">
+    <div class="confirmation-card stock-confirmation-card">
                 <div class="card-header">
                     <h5 class="card-title">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -56,15 +43,15 @@
                     </div>
 
                     <!-- Movement Info -->
-                    <div class="row">
-                        <div class="col-md-6">
+                    <div class="form-grid form-grid--2">
+                        <div>
                             <h6 class="text-muted">Informações da Movimentação:</h6>
                             <table class="table table-borderless table-sm">
                                 <tr>
                                     <td><strong>Produto:</strong></td>
                                     <td>
-                                        {% if movimento.produto %}
-                                            <span class="badge bg-info">{{ movimento.produto.nome }}</span>
+                                        {% if movimento.item %}
+                                            <span class="badge bg-info">{{ movimento.item.nome }}</span>
                                         {% else %}
                                             <span class="text-muted">Não definido</span>
                                         {% endif %}
@@ -93,20 +80,20 @@
                                 <tr>
                                     <td><strong>Quantidade:</strong></td>
                                     <td>
-                                        <span style="color: #3b82f6; font-weight: 600;">
+                                        <span class="stock-delete-value-qty">
                                             {{ movimento.quantidade }} unidades
                                         </span>
                                     </td>
                                 </tr>
                             </table>
                         </div>
-                        <div class="col-md-6">
+                        <div>
                             <h6 class="text-muted">Detalhes:</h6>
                             <table class="table table-borderless table-sm">
                                 <tr>
                                     <td><strong>Preço Unitário:</strong></td>
                                     <td>
-                                        <span style="color: #059669; font-weight: 600; font-family: 'SF Mono', 'Monaco', monospace;">
+                                        <span class="stock-delete-value-money">
                                             {{ movimento.preco_unitario|floatformat:2 }} MT
                                         </span>
                                     </td>
@@ -114,7 +101,7 @@
                                 <tr>
                                     <td><strong>Valor Total:</strong></td>
                                     <td>
-                                        <span style="color: #dc2626; font-weight: 600; font-family: 'SF Mono', 'Monaco', monospace;">
+                                        <span class="stock-delete-value-danger">
                                             {{ movimento.valor_total|floatformat:2 }} MT
                                         </span>
                                     </td>
@@ -152,21 +139,19 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <form method="post" class="d-inline">
+                    <form method="post">
                         {% csrf_token %}
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'stock:movimentos' %}" class="btn-secondary">
-                                <i class="fas fa-times"></i> Cancelar
+                        <div class="form-actions-row is-split">
+                            <a href="{% url 'stock:movimentos' %}" class="btn btn-secondary">
+                                <i class="fas fa-times" aria-hidden="true"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.')">
-                                <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.')">
+                                <i class="fas fa-trash-alt" aria-hidden="true"></i> Confirmar exclusão
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Levantamento em Obra</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body {
+            margin: 0;
+            background: #ffffff;
+            font-family: Arial, sans-serif;
+            color: #111827;
+        }
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+        .title {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back {
+            text-decoration: none;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .placeholder {
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            padding: 18px;
+        }
+        .segments-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .segment-card {
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+        .segment-card h2 {
+            margin: 0 0 8px 0;
+            font-size: 17px;
+            color: #0c4a6e;
+        }
+        .segment-card p {
+            margin: 5px 0;
+            color: #334155;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+        @media (max-width: 900px) {
+            .segments-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="topbar">
+            <h1 class="title"><i class="fas fa-person-digging"></i> Novo Levantamento em Obra</h1>
+            <a class="back" href="{% url 'producao:main' %}"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="placeholder">
+            <div class="segments-grid">
+                <section class="segment-card">
+                    <h2>1. Preparação do terreno</h2>
+                    <p>Limpeza, demarcação e instalação provisória.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>2. Fundações</h2>
+                    <p>Escavação e execução de sapatas, blocos ou radier.</p>
+                    <p>Impermeabilização inicial.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>3. Estrutura parcial (pilares e vigas)</h2>
+                    <p>Execução de pilares e vigas por sectores ou módulos.</p>
+                    <p>Avança-se faseadamente, conforme recursos disponíveis.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>4. Alvenaria e vedação</h2>
+                    <p>Levantamento de paredes sobre a estrutura já concluída.</p>
+                    <p>Vergas e contravergas nos vãos.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>5. Cobertura (inclui lajes)</h2>
+                    <p>Execução das lajes (quando previstas).</p>
+                    <p>Estrutura do telhado (madeira ou metálica).</p>
+                    <p>Colocação de telhas e calhas.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>6. Instalações</h2>
+                    <p>Elétrica, hidráulica e esgoto, feitas por sectores conforme avanço da obra.</p>
+                    <p>Testes antes de fechar paredes/pisos.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>7. Revestimentos e acabamentos</h2>
+                    <p>Reboco, pisos, azulejos, pintura.</p>
+                    <p>Instalação de portas, janelas e acessórios.</p>
+                </section>
+
+                <section class="segment-card">
+                    <h2>8. Entrega</h2>
+                    <p>Vistoria final e correção de pendências.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

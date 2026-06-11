@@ -1,0 +1,104 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-success { background: #0d9488; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .form-box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .form-box h3 { margin: 0 0 12px 0; font-size: 16px; color: #374151; }
+        .form-row { margin-bottom: 12px; }
+        .form-row label { display: block; margin-bottom: 4px; font-weight: 600; color: #374151; font-size: 14px; }
+        .form-row input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; max-width: 280px; }
+        .form-actions { margin-top: 16px; }
+        .info { font-size: 13px; color: #6b7280; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-money-check-alt"></i> {{ title }}</h1>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding:10px;margin-bottom:12px;border-radius:6px;background:#fef3c7;color:#92400e;border-left:4px solid #b45309;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="info">Registe cobranças (entrada de dinheiro por pagamento de cliente) e pagamentos (saída de dinheiro a fornecedor). Cada operação gera dois lançamentos em partida dupla (26 Caixa, 22 Clientes ou 32 Fornecedores).</p>
+
+        <div class="form-box">
+            <h3><i class="fas fa-arrow-down"></i> Registar cobrança (cliente pagou)</h3>
+            <p class="info">Débito 26 Caixa, Crédito 22 Clientes.</p>
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="cobranca">
+                <div class="form-row">
+                    <label for="data_cob">Data:</label>
+                    <input type="date" name="data" id="data_cob" value="{{ hoje }}" required>
+                </div>
+                <div class="form-row">
+                    <label for="valor_cob">Valor (MT):</label>
+                    <input type="text" name="valor" id="valor_cob" placeholder="0.00" required>
+                </div>
+                <div class="form-row">
+                    <label for="descricao_cob">Descrição:</label>
+                    <input type="text" name="descricao" id="descricao_cob" placeholder="Ex: Cobrança fatura FT-2025-000001" required>
+                </div>
+                <div class="form-row">
+                    <label for="doc_cob">Referência documento:</label>
+                    <input type="text" name="documento_ref" id="doc_cob" placeholder="Opcional">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Registar cobrança</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-box">
+            <h3><i class="fas fa-arrow-up"></i> Registar pagamento (pagámos fornecedor)</h3>
+            <p class="info">Débito 32 Fornecedores, Crédito 26 Caixa.</p>
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="pagamento">
+                <div class="form-row">
+                    <label for="data_pag">Data:</label>
+                    <input type="date" name="data" id="data_pag" value="{{ hoje }}" required>
+                </div>
+                <div class="form-row">
+                    <label for="valor_pag">Valor (MT):</label>
+                    <input type="text" name="valor" id="valor_pag" placeholder="0.00" required>
+                </div>
+                <div class="form-row">
+                    <label for="descricao_pag">Descrição:</label>
+                    <input type="text" name="descricao" id="descricao_pag" placeholder="Ex: Pagamento ordem compra OC-001" required>
+                </div>
+                <div class="form-row">
+                    <label for="doc_pag">Referência documento:</label>
+                    <input type="text" name="documento_ref" id="doc_pag" placeholder="Opcional">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">Registar pagamento</button>
+                </div>
+            </form>
+        </div>
+
+        <p><a href="{% url 'financas:movimentos' %}" class="btn btn-secondary">Ver todos os movimentos</a></p>
+    </div>
+</body>
+</html>

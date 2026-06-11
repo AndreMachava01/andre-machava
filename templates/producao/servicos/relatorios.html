@@ -1,0 +1,440 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .filters-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+        }
+        .filters-section h3 {
+            margin-top: 0;
+            color: #b45309;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #fffbeb;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b45309;
+        }
+        .stat-box h4 {
+            margin: 0 0 10px 0;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #b45309;
+            margin: 0;
+        }
+        .report-section {
+            margin-bottom: 30px;
+        }
+        .report-section h3 {
+            color: #b45309;
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #b45309;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-agendada {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-em-andamento {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-concluida {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-pausada {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-chart-line"></i>
+                    {{ title }}
+                </h1>
+                <p>{{ description }}</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'producao:servicos_relatorios_pdf' %}?periodo={{ periodo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&cliente={{ cliente_id }}&status={{ status_filter }}" class="btn btn-primary">
+                    <i class="fas fa-file-pdf"></i>
+                    Gerar PDF
+                </a>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <h3><i class="fas fa-filter"></i> Filtros de Período</h3>
+            <form method="GET" action="{% url 'producao:servicos_relatorios' %}" class="filter-form">
+                <div class="filter-group">
+                    <label for="periodo">Período</label>
+                    <select id="periodo" name="periodo" onchange="toggleCustomDates()">
+                        <option value="semana" {% if periodo == 'semana' %}selected{% endif %}>Última Semana</option>
+                        <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Este Mês</option>
+                        <option value="ano" {% if periodo == 'ano' %}selected{% endif %}>Este Ano</option>
+                        <option value="personalizado" {% if periodo == 'personalizado' %}selected{% endif %}>Personalizado</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="data-inicio-group" style="display: {% if periodo == 'personalizado' %}block{% else %}none{% endif %};">
+                    <label for="data_inicio">Data Início</label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
+                </div>
+                <div class="filter-group" id="data-fim-group" style="display: {% if periodo == 'personalizado' %}block{% else %}none{% endif %};">
+                    <label for="data_fim">Data Fim</label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}">
+                </div>
+                <div class="filter-group">
+                    <label for="cliente">Cliente</label>
+                    <select id="cliente" name="cliente">
+                        <option value="">Todos os Clientes</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}" {% if cliente_id == cliente.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cliente.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="">Todos os Status</option>
+                        {% for status_code, status_name in STATUS_CHOICES %}
+                        <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                            {{ status_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h4>Total de Ordens</h4>
+                <p class="stat-number">{{ total_ordens|default:0 }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Concluídas</h4>
+                <p class="stat-number">{{ ordens_concluidas|default:0 }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Em Andamento</h4>
+                <p class="stat-number">{{ ordens_em_andamento|default:0 }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Agendadas</h4>
+                <p class="stat-number">{{ ordens_agendadas|default:0 }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Canceladas</h4>
+                <p class="stat-number">{{ ordens_canceladas|default:0 }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Total Faturado</h4>
+                <p class="stat-number">{{ total_faturado|floatformat:2|default:"0.00" }} MT</p>
+            </div>
+            <div class="stat-box">
+                <h4>Em Aberto</h4>
+                <p class="stat-number">{{ total_em_aberto|floatformat:2|default:"0.00" }} MT</p>
+            </div>
+            <div class="stat-box">
+                <h4>Período Selecionado</h4>
+                <p class="stat-number" style="font-size: 18px;">{{ quantidade_periodo|default:0 }} ordens</p>
+                <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">{{ total_periodo|floatformat:2|default:"0.00" }} MT</p>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="fas fa-chart-pie"></i> Estatísticas por Status</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Quantidade</th>
+                            <th>Valor Total</th>
+                            <th>Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if estatisticas_status %}
+                            {% for stat in estatisticas_status %}
+                            <tr>
+                                <td>
+                                    {% if stat.status == 'AGENDADA' %}
+                                        <span class="badge badge-agendada">{{ stat.status }}</span>
+                                    {% elif stat.status == 'EM_ANDAMENTO' %}
+                                        <span class="badge badge-em-andamento">{{ stat.status }}</span>
+                                    {% elif stat.status == 'CONCLUIDA' %}
+                                        <span class="badge badge-concluida">{{ stat.status }}</span>
+                                    {% elif stat.status == 'CANCELADA' %}
+                                        <span class="badge badge-cancelada">{{ stat.status }}</span>
+                                    {% elif stat.status == 'PAUSADA' %}
+                                        <span class="badge badge-pausada">{{ stat.status }}</span>
+                                    {% else %}
+                                        <span class="badge">{{ stat.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ stat.quantidade|default:0 }}</strong></td>
+                                <td>
+                                    {% if stat.total %}
+                                        <strong>{{ stat.total|floatformat:2 }} MT</strong>
+                                    {% else %}
+                                        <span style="color: #9ca3af;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if total_ordens > 0 %}
+                                        {% widthratio stat.quantidade total_ordens 100 as percentual %}
+                                        {{ percentual|floatformat:1 }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <p>Nenhum dado disponível</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="fas fa-users"></i> Top 10 Clientes</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Quantidade de Ordens</th>
+                            <th>Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if top_clientes %}
+                            {% for cliente in top_clientes %}
+                            <tr>
+                                <td><strong>{{ cliente.cliente__nome }}</strong></td>
+                                <td>{{ cliente.quantidade|default:0 }}</td>
+                                <td><strong>{{ cliente.total|floatformat:2|default:"0.00" }} MT</strong></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="empty-state">
+                                    <i class="fas fa-users"></i>
+                                    <p>Nenhum cliente encontrado</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h3><i class="fas fa-calendar-alt"></i> Resumo do Período</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+                <p><strong>Período:</strong> {{ data_inicio_periodo|date:"d/m/Y" }} até {{ data_fim_periodo|date:"d/m/Y" }}</p>
+                <p><strong>Ordens Concluídas no Período:</strong> {{ quantidade_periodo|default:0 }}</p>
+                <p><strong>Valor Total no Período:</strong> <strong>{{ total_periodo|floatformat:2|default:"0.00" }} MT</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCustomDates() {
+            const periodo = document.getElementById('periodo').value;
+            const dataInicioGroup = document.getElementById('data-inicio-group');
+            const dataFimGroup = document.getElementById('data-fim-group');
+            
+            if (periodo === 'personalizado') {
+                dataInicioGroup.style.display = 'block';
+                dataFimGroup.style.display = 'block';
+            } else {
+                dataInicioGroup.style.display = 'none';
+                dataFimGroup.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

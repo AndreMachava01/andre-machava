@@ -19,7 +19,6 @@
 
 .table-wrapper {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* =============================================================================
@@ -31,7 +30,7 @@
   border-collapse: separate;
   border-spacing: 0;
   background: transparent;
-  min-width: 800px; /* Garantir largura mínima para aproveitar espaço horizontal */
+  min-width: 0;
 }
 
 /* Otimização para telas grandes - aproveitar melhor o espaço horizontal */
@@ -45,9 +44,10 @@
     padding: var(--space-4) var(--space-6); /* Mais padding em telas grandes */
   }
   
-  /* Colunas com larguras específicas para melhor distribuição */
-  .table th[style*="width"],
-  .table td[style*="width"] {
+  /* Colunas com largura definida via colgroup / .col-* (evitar style="" no HTML) */
+  .table col.col-width,
+  .table th.col-width,
+  .table td.col-width {
     padding: var(--space-4) var(--space-5);
   }
 }
@@ -84,7 +84,12 @@
 
 .table tbody tr:hover {
   background: var(--surface-medium);
-  transform: scale(1.01);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .table tbody tr:hover {
+    transform: scale(1.01);
+  }
 }
 
 .table tbody tr:last-child td {
@@ -372,6 +377,7 @@
 
 .sortable {
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   position: relative;
 }
@@ -662,73 +668,31 @@
    OTIMIZAÇÃO HORIZONTAL PARA TELAS GRANDES
    ============================================================================= */
 
-/* Otimização específica para tabelas de cargos e outras listagens */
+/* Listagens largas: usar .table-with-actions + colgroup (ver modulo-layout-fixes.css) */
 @media (min-width: 1200px) {
   .table-container {
     margin: 0;
-    max-width: none; /* Remover limitação de largura */
+    max-width: none;
   }
-  
-  .table-wrapper {
-    overflow-x: visible; /* Remover scroll horizontal em telas grandes */
-  }
-  
-  .table {
+
+  .table.table-with-actions,
+  .table:has(.cell-actions) {
     min-width: 100%;
-    width: 100%; /* Forçar uso de toda a largura disponível */
+    width: 100%;
   }
-  
+
   .table th,
   .table td {
     padding: var(--space-4) var(--space-6);
   }
-  
-  /* Larguras expandidas para aproveitar todo o espaço horizontal */
-  .table th:nth-child(1),
-  .table td:nth-child(1) {
-    width: 30%; /* Nome do cargo - mais espaço */
-    min-width: 250px;
-  }
-  
-  .table th:nth-child(2),
-  .table td:nth-child(2) {
-    width: 15%; /* Código */
-    min-width: 120px;
-  }
-  
-  .table th:nth-child(3),
-  .table td:nth-child(3) {
-    width: 20%; /* Departamento */
-    min-width: 180px;
-  }
-  
-  .table th:nth-child(4),
-  .table td:nth-child(4) {
-    width: 10%; /* Status */
-    min-width: 100px;
-  }
-  
-  .table th:nth-child(5),
-  .table td:nth-child(5) {
-    width: 20%; /* Descrição - expandir */
-    min-width: 250px;
-  }
-  
-  .table th:nth-child(6),
-  .table td:nth-child(6) {
-    width: 5%; /* Ações */
-    min-width: 120px;
-  }
-  
-  /* Melhorar células de descrição para usar todo o espaço */
+
   .cell-tertiary {
     max-width: none;
     white-space: normal;
     line-height: 1.5;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
-  
-  /* Expandir células de nome também */
+
   .cell-primary {
     max-width: none;
     white-space: normal;

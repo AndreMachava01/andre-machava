@@ -1,0 +1,426 @@
+{% load humanize %}
+{% load math_filters %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Cotação - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #b45309;
+            position: relative;
+        }
+        .header-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        .header-actions .btn {
+            margin: 0;
+        }
+        .header .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            margin: 0 auto 15px;
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header p {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .info-card {
+            background: #fffbeb;
+            border: 1px solid #b45309;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .info-card h2 {
+            font-size: 18px;
+            color: #b45309;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .info-item {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #b45309;
+        }
+        .info-item label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-item .value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .summary-box {
+            background: #1f2937;
+            color: white;
+            border-radius: 5px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .summary-box h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .summary-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+        .summary-row label {
+            color: rgba(255,255,255,0.9);
+        }
+        .summary-row .value {
+            color: white;
+            font-weight: 600;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .actions-left {
+            display: flex;
+            gap: 15px;
+        }
+        .actions-right {
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .services-list {
+            margin-top: 15px;
+        }
+        .service-item {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid #b45309;
+        }
+        .service-item h4 {
+            color: #1f2937;
+            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .service-item .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .message-alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .message-alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+        .message-alert.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+        .message-alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #10b981;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-actions">
+                <a href="{% url 'producao:servico_orcamento_imprimir' ordem.id %}" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Imprimir Cotação
+                </a>
+            </div>
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1>
+                <i class="fas fa-file-invoice-dollar"></i>
+                Cotação Criada com Sucesso!
+            </h1>
+            <p>Código: <strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message-alert {{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                        <i class="fas fa-check-circle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-card">
+            <h2><i class="fas fa-info-circle"></i> Informações da Cotação</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Cliente</label>
+                    <div class="value">
+                        {% if ordem.cliente %}
+                            {{ ordem.cliente.nome }}
+                        {% elif ordem.nome_cliente_pagamento %}
+                            {{ ordem.nome_cliente_pagamento }} <span class="badge badge-success">CASH</span>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <label>Data de Criação</label>
+                    <div class="value">{{ ordem.data_criacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Data Agendada</label>
+                    <div class="value">
+                        {% if ordem.data_agendada %}
+                            {{ ordem.data_agendada|date:"d/m/Y H:i" }}
+                        {% else %}
+                            A definir
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <label>Forma de Pagamento</label>
+                    <div class="value">{{ ordem.get_forma_pagamento_display }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if servicos_orcamento %}
+        <div class="info-card">
+            <h2><i class="fas fa-tasks"></i> Serviços Incluídos</h2>
+            <div class="services-list">
+                {% for servico_orc in servicos_orcamento %}
+                <div class="service-item">
+                    <h4>
+                        {% if servico_orc.nome_documento %}
+                            {{ servico_orc.nome_documento }}
+                        {% else %}
+                            {{ servico_orc.servico.nome }}
+                        {% endif %}
+                    </h4>
+                    <div class="details">
+                        <span><strong>Quantidade:</strong> {{ servico_orc.quantidade|floatformat:2 }}</span>
+                        <span><strong>Valor Unit.:</strong> {{ servico_orc.valor_unitario|floatformat:2 }} MT</span>
+                        <span><strong>Total:</strong> {{ servico_orc.valor_total|floatformat:2 }} MT</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="summary-box">
+            <h3><i class="fas fa-calculator"></i> Resumo Financeiro</h3>
+            <div class="summary-row">
+                <label>Total de Serviços:</label>
+                <span class="value">{{ total_servicos|floatformat:2 }} MT</span>
+            </div>
+            {% if total_itens > 0 %}
+            <div class="summary-row">
+                <label>Total de Produtos/Materiais:</label>
+                <span class="value">{{ total_itens|floatformat:2 }} MT</span>
+            </div>
+            {% endif %}
+            {% if total_transporte > 0 %}
+            <div class="summary-row">
+                <label>Total de Transporte:</label>
+                <span class="value">{{ total_transporte|floatformat:2 }} MT</span>
+            </div>
+            {% endif %}
+            {% if total_descontos and total_descontos > 0 %}
+            <div class="summary-row">
+                <label>Total Descontos:</label>
+                <span class="value" style="color: #dc2626;">- {{ total_descontos|floatformat:2 }} MT</span>
+            </div>
+            {% endif %}
+            <div class="summary-row">
+                <label>Subtotal:</label>
+                <span class="value">{{ subtotal|floatformat:2 }} MT</span>
+            </div>
+            {% if ordem.desconto and ordem.desconto > 0 %}
+            <div class="summary-row">
+                <label>Desconto:</label>
+                <span class="value">- {{ ordem.desconto|floatformat:2 }} MT</span>
+            </div>
+            <div class="summary-row">
+                <label>Subtotal após Desconto:</label>
+                <span class="value">{{ valor_apos_desconto|floatformat:2 }} MT</span>
+            </div>
+            {% endif %}
+            <div class="summary-row">
+                <label>IVA ({{ taxa_iva|floatformat:0 }}%):</label>
+                <span class="value">{{ valor_iva|floatformat:2 }} MT</span>
+            </div>
+            <div class="summary-row">
+                <label>VALOR TOTAL:</label>
+                <span class="value">{{ valor_final|floatformat:2 }} MT</span>
+            </div>
+        </div>
+
+        <div class="actions">
+            <div class="actions-left">
+                <button type="button" onclick="window.history.back();" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+            </div>
+            <div class="actions-right">
+                <form method="POST" action="{% url 'producao:servico_orcamento_confirmar_acao' ordem.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Confirmar Cotação
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

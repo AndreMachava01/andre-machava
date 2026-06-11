@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propostas Técnicas - Produção - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-info { background: #0d9488; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row label { font-size: 14px; color: #374151; }
+        .filter-row select, .filter-row input[type="text"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-disponivel { background: #f3f4f6; color: #4b5563; }
+        .badge-em_andamento { background: #dbeafe; color: #1d4ed8; }
+        .badge-atrasada { background: #fee2e2; color: #dc2626; }
+        .badge-concluida { background: #d1fae5; color: #059669; }
+        .badge-cancelada { background: #f3e8ff; color: #7c3aed; }
+        .help-text { font-size: 13px; color: #6b7280; margin-top: 8px; }
+        .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-outline-primary { background: transparent; border: 1px solid #b45309; color: #b45309; }
+        .btn-outline-primary:hover { background: #fffbeb; }
+        .btn-outline-secondary { background: transparent; border: 1px solid #6c757d; color: #6c757d; }
+        .btn-outline-info { background: transparent; border: 1px solid #0d9488; color: #0d9488; }
+        .btn-outline-success { background: transparent; border: 1px solid #10b981; color: #10b981; }
+        .btn-outline-danger { background: transparent; border: 1px solid #dc2626; color: #dc2626; }
+        .link-cell a { color: #b45309; text-decoration: none; }
+        .link-cell a:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 40px; color: #6b7280; }
+        .empty-state .fa, .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: #b45309; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-clipboard-list"></i> Propostas Técnicas</h1>
+                <p>Gestão de propostas técnicas, cronogramas e conversão em orçamento (padrão Finanças)</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <a href="{% url 'producao:proposta_tecnica_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nova Proposta
+                </a>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <a href="{% url 'producao:propostas_tecnicas_cronograma' %}" style="font-size: 13px; color: #92400e; margin-left: 8px;"><i class="fas fa-calendar-alt"></i> Ver cronograma</a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding:12px;margin-bottom:15px;border-radius:6px;background:#fee2e2;color:#991b1b;border-left:4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="help-text">Lista de propostas técnicas. Use os filtros para refinar. Ações completas no detalhe.</p>
+
+        <!-- Estatísticas simplificadas (como outras secções) -->
+        <div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+            <div class="stat-box">
+                <div class="num">{{ propostas.count }}</div>
+                <div class="lbl">Total</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ em_andamento_count|default:0 }}</div>
+                <div class="lbl">Em andamento</div>
+            </div>
+        </div>
+
+        <!-- Filtro simples: Status + pesquisa -->
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>Status:</label>
+                <select name="status" onchange="this.form.submit()" aria-label="Status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <label>Pesquisar:</label>
+                <input type="text" name="cliente" value="{{ cliente_filter }}" placeholder="Cliente ou título..." style="min-width: 160px;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+                {% if status_filter or cliente_filter %}
+                <a href="{% url 'producao:propostas_tecnicas' %}" class="btn btn-secondary">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Lista de Propostas -->
+        <div class="section">
+            <h2><i class="fas fa-list"></i> Lista de propostas</h2>
+        {% if propostas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Título</th>
+                    <th>Cliente/Responsável</th>
+                    <th>Período</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposta in propostas %}
+                <tr>
+                    <td><strong>{{ proposta.codigo }}</strong></td>
+                    <td>
+                        <a href="{% url 'producao:proposta_tecnica_detail' proposta.id %}" style="color: #b45309; text-decoration: none;">
+                            {{ proposta.titulo|truncatechars:35 }}
+                        </a>
+                        <br><small style="color: #6b7280;">{{ proposta.get_estagio_atual_display }}</small>
+                    </td>
+                    <td>
+                        {% if proposta.cliente %}
+                            {{ proposta.cliente.nome|truncatechars:25 }}
+                        {% else %}
+                            <span style="color: #999;">Sem cliente</span>
+                        {% endif %}
+                        {% if proposta.responsavel %}
+                            <br><small>{{ proposta.responsavel.get_full_name|truncatechars:20 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if proposta.data_inicio_prevista %}
+                            {{ proposta.data_inicio_prevista|date:"d/m/Y" }}
+                            {% if proposta.data_fim_prevista and proposta.data_fim_prevista != proposta.data_inicio_prevista %}
+                                <br><small>{{ proposta.data_fim_prevista|date:"d/m/Y" }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #999;">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ proposta.status|lower }}">
+                            {{ proposta.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'producao:proposta_tecnica_edit' proposta.id %}" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="fas fa-edit"></i> Editar</a>
+                        <a href="{% url 'producao:proposta_tecnica_delete' proposta.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar" style="margin-left:4px;"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h5>Nenhuma proposta técnica encontrada</h5>
+            <p>
+                {% if status_filter or estagio_filter or cliente_filter %}
+                    Tente ajustar os filtros ou <a href="{% url 'producao:propostas_tecnicas' %}" style="color: #b45309;">limpar todos os filtros</a>.
+                {% else %}
+                    <a href="{% url 'producao:proposta_tecnica_add' }}" style="color: #b45309;">Crie a primeira proposta técnica</a>.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+        </div>
+    </div>
+</body>
+</html>

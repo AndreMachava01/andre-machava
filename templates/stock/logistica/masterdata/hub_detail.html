@@ -1,0 +1,45 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Hub {{ hub.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:hubs_list' as hubs_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Hubs' breadcrumb_section_url=hubs_list_url breadcrumb_current=hub.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-warehouse" aria-hidden="true"></i> {{ hub.nome }}</h1>
+                <p class="page-subtitle">{{ hub.codigo }} — {{ hub.get_tipo_display }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:hubs_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                {% include 'stock/logistica/includes/_masterdata_detail_actions.html' with object=hub edit_url='stock:masterdata:hub_edit' delete_url='stock:masterdata:hub_delete' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Detalhes</h2>
+            <span class="badge badge-{% if hub.ativo %}success{% else %}secondary{% endif %}">{% if hub.ativo %}Activo{% else %}Inactivo{% endif %}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Região</span><span class="info-value"><a href="{% url 'stock:masterdata:regiao_detail' hub.regiao.id %}">{{ hub.regiao.nome }}</a></span></div>
+                <div class="info-item"><span class="info-label">Cidade</span><span class="info-value">{{ hub.cidade }}</span></div>
+                <div class="info-item"><span class="info-label">Endereço</span><span class="info-value">{{ hub.endereco }}</span></div>
+                <div class="info-item"><span class="info-label">Coordenadas</span><span class="info-value">{{ hub.latitude }}, {{ hub.longitude }}</span></div>
+                <div class="info-item"><span class="info-label">Capacidade</span><span class="info-value">{{ hub.capacidade_maxima_kg|default:"—" }} kg / {{ hub.capacidade_maxima_m3|default:"—" }} m³</span></div>
+                <div class="info-item"><span class="info-label">Horário</span><span class="info-value">{% if hub.funcionamento_24h %}24h{% else %}{{ hub.horario_inicio }} – {{ hub.horario_fim }}{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Telefone</span><span class="info-value">{{ hub.telefone|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Email</span><span class="info-value">{{ hub.email|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Responsável</span><span class="info-value">{{ hub.responsavel|default:"—" }}</span></div>
+            </div>
+            {% if hub.descricao %}<p class="text-muted stock-u-mt-16">{{ hub.descricao }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

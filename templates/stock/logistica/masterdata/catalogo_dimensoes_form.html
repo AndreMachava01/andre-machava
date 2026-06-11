@@ -1,0 +1,85 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{% if dimensao %}Editar {{ dimensao.codigo }}{% else %}Nova dimensão{% endif %}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:masterdata:catalogo_dimensoes_list' as catalogo_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Dimensões' breadcrumb_section_url=catalogo_list_url breadcrumb_current='Nova entrada' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-{% if dimensao %}edit{% else %}plus{% endif %}" aria-hidden="true"></i> {% if dimensao %}Editar entrada{% else %}Nova entrada no catálogo{% endif %}</h1>
+                <p class="page-subtitle">Dimensão padrão reutilizável para cálculo de volume e restrições</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% if dimensao %}{% url 'stock:masterdata:catalogo_dimensoes_detail' dimensao.id %}{% else %}{% url 'stock:masterdata:catalogo_dimensoes_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    {% if not dimensao %}
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        O <strong>código</strong> (ex.: DIM0001) e o <strong>volume em m³</strong> são calculados automaticamente ao guardar.
+    </div>
+    {% else %}
+    <p class="stock-u-mb-16">Código: <code>{{ dimensao.codigo }}</code></p>
+    {% endif %}
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="nome">Nome *</label>
+                        <input type="text" id="nome" name="nome" class="form-control" required maxlength="100" value="{{ dimensao.nome|default:'' }}">
+                        <p class="form-hint">Descrição curta para seleção em formulários.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="categoria">Categoria</label>
+                        <select id="categoria" name="categoria" class="form-select">
+                            {% for val, label in categoria_choices %}
+                            <option value="{{ val }}" {% if dimensao.categoria == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Classificação do tipo de volume para relatórios e tarifas.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="peso_kg">Peso (kg) *</label>
+                        <input type="number" id="peso_kg" name="peso_kg" class="form-control" required step="0.01" min="0.01" value="{{ dimensao.peso_kg|default:'' }}">
+                        <p class="form-hint">Peso bruto típico deste formato, em quilogramas.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="comprimento_cm">Comprimento (cm) *</label>
+                        <input type="number" id="comprimento_cm" name="comprimento_cm" class="form-control" required step="0.01" min="0.01" value="{{ dimensao.comprimento_cm|default:'' }}">
+                        <p class="form-hint">Maior aresta do volume, em centímetros.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="largura_cm">Largura (cm) *</label>
+                        <input type="number" id="largura_cm" name="largura_cm" class="form-control" required step="0.01" min="0.01" value="{{ dimensao.largura_cm|default:'' }}">
+                        <p class="form-hint">Segunda aresta, em centímetros.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="altura_cm">Altura (cm) *</label>
+                        <input type="number" id="altura_cm" name="altura_cm" class="form-control" required step="0.01" min="0.01" value="{{ dimensao.altura_cm|default:'' }}">
+                        <p class="form-hint">Altura do volume, em centímetros.</p>
+                    </div>
+                </div>
+                {% if dimensao %}
+                <label class="form-check stock-u-mt-16">
+                    <input type="checkbox" name="ativo" {% if dimensao.ativo %}checked{% endif %}> Entrada activa
+                </label>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
+            <a href="{% if dimensao %}{% url 'stock:masterdata:catalogo_dimensoes_detail' dimensao.id %}{% else %}{% url 'stock:masterdata:catalogo_dimensoes_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

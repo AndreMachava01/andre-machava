@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load codigo_filters %}
+    <title>Plano de trabalho – Ordem de Serviço {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <style>
+        /* Base compacta: folha comprimida para impressão */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 9px; padding: 4px; max-width: 100%; margin: 0 auto; background: #fff; line-height: 1.2; }
+        .no-print { margin-bottom: 8px; }
+        .no-print .btn { padding: 4px 10px; border: none; border-radius: 3px; cursor: pointer; font-size: 9px; margin-right: 4px; text-decoration: none; display: inline-block; }
+        .no-print .btn-close { background: #6b7280; color: white; }
+        h1 { font-size: 12px; border-bottom: 1px solid; padding-bottom: 2px; margin-bottom: 3px; }
+        .meta { margin-bottom: 3px; font-size: 9px; }
+        .meta p { margin: 1px 0; }
+        .progresso { margin-bottom: 3px; }
+        .progresso span { font-weight: 600; font-size: 9px; }
+        .progresso-bar { width: 100%; height: 6px; border-radius: 2px; overflow: hidden; margin-top: 1px; border: 1px solid; box-sizing: border-box; }
+        .progresso-fill { height: 100%; width: 0; max-width: 100%; box-sizing: border-box; }
+        .atrasos { margin-bottom: 3px; padding: 3px 6px; border-radius: 2px; font-size: 9px; border: 1px solid; }
+        .atrasos .atrasos-list { margin: 1px 0 0 12px; padding-left: 0; list-style: disc; }
+        .atrasos .atrasos-list .atrasos-item { margin: 0; display: list-item; }
+        table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 9px; }
+        th, td { padding: 2px 4px; text-align: left; border: 1px solid; }
+        th { font-size: 9px; font-weight: 600; }
+        td { font-size: 9px; }
+        tr.subactividade td:first-child { padding-left: 12px; }
+        .sem-plano { padding: 8px; font-size: 9px; }
+        .gantt-box { margin-bottom: 5px; border: 1px solid; border-radius: 2px; overflow: hidden; }
+        .gantt-box .gantt-header { padding: 3px 6px; border-bottom: 1px solid; }
+        .gantt-box .gantt-header h3 { margin: 0; font-size: 10px; font-weight: 600; }
+        .gantt-box .gantt-header p { margin: 0; font-size: 8px; }
+        .gantt-box .gantt-body { padding: 4px 6px; }
+        .gantt-box table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        .gantt-box th { font-weight: 600; padding: 2px 4px; text-align: left; border-bottom: 1px solid; }
+        .gantt-box th.gantt-scale { padding: 0; }
+        .gantt-box td { padding: 1px 4px; border-bottom: 1px solid; vertical-align: middle; }
+        .gantt-box tr:nth-child(even) td { background: #f5f5f5; }
+        .gantt-box .gantt-body th.gantt-scale { padding: 0; }
+        .gantt-box .gantt-body td.gantt-td-scale { padding: 0; vertical-align: middle; }
+        .gantt-box .gantt-body table { table-layout: fixed; width: 100%; }
+        .gantt-box .gantt-body th:first-child { width: 18%; }
+        .gantt-box .gantt-body th:last-child { width: 82%; min-width: 0; }
+        .gantt-box .gantt-body td:last-child { width: 82%; }
+        .gantt-box .gantt-scale-inner { position: relative; width: 100%; height: 18px; display: block; box-sizing: border-box; }
+        .gantt-box .gantt-tick-date { position: absolute; left: 0; top: 2px; font-size: 7px; font-weight: 600; transform: translateX(-50%); }
+        .gantt-box .gantt-scale-inner .gantt-hoje,
+        .gantt-box .gantt-scale-inner .gantt-hoje-line { position: absolute; top: 0; bottom: 0; width: 1px; z-index: 2; transform: translateX(-1px); }
+        .gantt-box .gantt-scale-inner .gantt-hoje-label { position: absolute; top: 0; font-size: 6px; font-weight: 700; z-index: 3; transform: translateX(-50%); }
+        .gantt-box .gantt-track { position: relative; width: 100%; height: 20px; min-height: 20px; border-radius: 2px; display: block; box-sizing: border-box; }
+        .gantt-box .gantt-track .gantt-hoje { position: absolute; top: 0; bottom: 0; width: 1px; opacity: 0.9; z-index: 1; }
+        .gantt-box .gantt-bar-p, .gantt-box .gantt-bar-a { position: absolute; left: 0; height: 8px; min-width: 12px; border-radius: 1px; box-sizing: border-box; border: 1px solid; }
+        .gantt-box .gantt-bar-p { top: 2px; }
+        .gantt-box .gantt-bar-a { top: auto; bottom: 2px; }
+        .gantt-box .gantt-label.sub { padding-left: 12px; font-size: 8px; }
+        .gantt-box .gantt-cell-actividade { border-right: 1px solid; }
+        .gantt-box .gantt-parcela { font-size: 8px; }
+        .gantt-box .gantt-datas-previstas { font-size: 7px; margin-top: 0; }
+        .tab-parcela { font-size: 8px; }
+        .gantt-legend { margin-top: 3px; padding: 2px 6px; border-radius: 2px; font-size: 8px; font-weight: 500; border: 1px solid; }
+        .gantt-legend .swatch { display: inline-block; border-radius: 1px; vertical-align: middle; margin-right: 3px; border: 1px solid; }
+        .gantt-legend .swatch-p, .gantt-legend .swatch-a, .gantt-legend .swatch-atraso { width: 12px; height: 6px; }
+        .gantt-legend .swatch-hoje { width: 2px; height: 6px; border-radius: 0; border: none; }
+        .gantt-box .gantt-bar-label { position: absolute; font-size: 6px; font-weight: 700; transform: translateX(-50%); white-space: nowrap; z-index: 4; }
+        .gantt-box .gantt-bar-label-p { top: 2px; height: 8px; line-height: 8px; }
+        .gantt-box .gantt-bar-label-a { bottom: 2px; height: 8px; line-height: 8px; }
+
+        /* Vista: A CORES (predefinida) */
+        body:not(.print-bw) h1 { color: #1e293b; border-color: #b45309; }
+        body:not(.print-bw) .meta { color: #64748b; }
+        body:not(.print-bw) .meta strong { color: #374151; }
+        body:not(.print-bw) .progresso span { color: #374151; }
+        body:not(.print-bw) .progresso-bar { background: #e5e7eb; border-color: #94a3b8; }
+        body:not(.print-bw) .progresso-fill { background: #059669; }
+        body:not(.print-bw) .atrasos { background: #fef2f2; border-color: #fecaca; }
+        body:not(.print-bw) .atrasos strong, body:not(.print-bw) .atrasos .atrasos-list { color: #991b1b; }
+        body:not(.print-bw) th, body:not(.print-bw) td { color: #1e293b; border-color: #e2e8f0; }
+        body:not(.print-bw) th { background: #fffbeb; }
+        body:not(.print-bw) .sem-plano { color: #64748b; }
+        body:not(.print-bw) .gantt-box { border-color: #e2e8f0; }
+        body:not(.print-bw) .gantt-box .gantt-header { background: #f8fafc; border-color: #e2e8f0; }
+        body:not(.print-bw) .gantt-box .gantt-header h3 { color: #1e293b; }
+        body:not(.print-bw) .gantt-box .gantt-header p { color: #64748b; }
+        body:not(.print-bw) .gantt-box th { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+        body:not(.print-bw) .gantt-box th.gantt-scale { background: repeating-linear-gradient(90deg, #f8fafc, #f8fafc calc(25% - 1px), #e2e8f0 1px, #e2e8f0 25%); }
+        body:not(.print-bw) .gantt-box td { color: #1e293b; border-color: #f1f5f9; }
+        body:not(.print-bw) .gantt-box .gantt-tick-date { color: #475569; }
+        body:not(.print-bw) .gantt-box .gantt-scale-inner .gantt-hoje,
+        body:not(.print-bw) .gantt-box .gantt-track .gantt-hoje { background: #dc2626; }
+        body:not(.print-bw) .gantt-box .gantt-scale-inner .gantt-hoje-label { color: #dc2626; }
+        body:not(.print-bw) .gantt-box .gantt-track { background: repeating-linear-gradient(90deg, transparent, transparent calc(25% - 1px), #e2e8f0 1px, #e2e8f0 25%); }
+        body:not(.print-bw) .gantt-box .gantt-bar-p { background: #2563eb; border-color: #1e40af; }
+        body:not(.print-bw) .gantt-box .gantt-bar-a { background: #059669; border-color: #065f46; }
+        body:not(.print-bw) .gantt-box .gantt-label.sub { color: #64748b; }
+        body:not(.print-bw) .gantt-box .gantt-cell-actividade { border-right-color: #e2e8f0; }
+        body:not(.print-bw) .gantt-box .gantt-parcela,
+        body:not(.print-bw) .tab-parcela { color: #6b7280; }
+        body:not(.print-bw) .gantt-box .gantt-datas-previstas { color: #64748b; }
+        body:not(.print-bw) .gantt-legend { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+        body:not(.print-bw) .gantt-legend .swatch-p { background: #2563eb; border-color: #1e40af; }
+        body:not(.print-bw) .gantt-legend .swatch-a { background: #059669; border-color: #065f46; }
+        body:not(.print-bw) .gantt-legend .swatch-hoje { background: #dc2626; }
+        body:not(.print-bw) .gantt-box tr.gantt-row-atraso td { background: #fef2f2 !important; }
+        body:not(.print-bw) .gantt-box tr.gantt-row-atraso td:first-child { border-left: 3px solid #dc2626; font-weight: 600; color: #991b1b; }
+        body:not(.print-bw) .gantt-box tr.gantt-row-atraso .gantt-bar-p { background: #dc2626; border-color: #b91c1c; }
+        body:not(.print-bw) .gantt-legend .swatch-atraso { background: #dc2626; border-color: #b91c1c; }
+        body:not(.print-bw) .gantt-box .gantt-bar-label { color: #fff; }
+        body:not(.print-bw) { color: #1e293b; }
+
+        /* Vista: PRETO E BRANCO */
+        body.print-bw h1 { color: #000; border-color: #000; }
+        body.print-bw .meta, body.print-bw .meta strong { color: #333; }
+        body.print-bw .progresso span { color: #000; }
+        body.print-bw .progresso-bar { background: #e0e0e0; border-color: #999; }
+        body.print-bw .progresso-fill { background: #555; }
+        body.print-bw .atrasos { background: #f0f0f0; border-color: #666; }
+        body.print-bw .atrasos strong, body.print-bw .atrasos .atrasos-list { color: #000; }
+        body.print-bw th, body.print-bw td { color: #000; border-color: #999; }
+        body.print-bw th { background: #e8e8e8; }
+        body.print-bw .sem-plano { color: #333; }
+        body.print-bw .gantt-box { border-color: #666; }
+        body.print-bw .gantt-box .gantt-header { background: #e8e8e8; border-color: #666; }
+        body.print-bw .gantt-box .gantt-header h3, body.print-bw .gantt-box .gantt-header p { color: #000; }
+        body.print-bw .gantt-box th { background: #e8e8e8; color: #000; border-color: #666; }
+        body.print-bw .gantt-box th.gantt-scale { background: repeating-linear-gradient(90deg, #e8e8e8, #e8e8e8 calc(25% - 1px), #bbb 1px, #bbb 25%); }
+        body.print-bw .gantt-box td { color: #000; border-color: #ccc; }
+        body.print-bw .gantt-box .gantt-tick-date,
+        body.print-bw .gantt-box .gantt-scale-inner .gantt-hoje-label { color: #000; }
+        body.print-bw .gantt-box .gantt-scale-inner .gantt-hoje,
+        body.print-bw .gantt-box .gantt-track .gantt-hoje { background: #000; }
+        body.print-bw .gantt-box .gantt-track { background: repeating-linear-gradient(90deg, transparent, transparent calc(25% - 1px), #bbb 1px, #bbb 25%); }
+        body.print-bw .gantt-box .gantt-bar-p { background: #555; border-color: #333; }
+        body.print-bw .gantt-box .gantt-bar-a { background: #888; border-color: #555; }
+        body.print-bw .gantt-box .gantt-label.sub { color: #333; }
+        body.print-bw .gantt-box .gantt-cell-actividade { border-right-color: #999; }
+        body.print-bw .gantt-box .gantt-parcela,
+        body.print-bw .tab-parcela { color: #333; }
+        body.print-bw .gantt-box .gantt-datas-previstas { color: #555; }
+        body.print-bw .gantt-legend { background: #f5f5f5; color: #000; border-color: #666; }
+        body.print-bw .gantt-legend .swatch-p { background: #555; border-color: #333; }
+        body.print-bw .gantt-legend .swatch-a { background: #888; border-color: #555; }
+        body.print-bw .gantt-legend .swatch-hoje { background: #000; }
+        body.print-bw .gantt-box tr.gantt-row-atraso td { background: #e8e8e8 !important; }
+        body.print-bw .gantt-box tr.gantt-row-atraso td:first-child { border-left: 2px solid #000; font-weight: 600; color: #000; }
+        body.print-bw .gantt-box tr.gantt-row-atraso .gantt-bar-p { background: #333; border-color: #000; }
+        body.print-bw .gantt-legend .swatch-atraso { background: #333; border-color: #333; }
+        body.print-bw .gantt-box .gantt-bar-label { color: #fff; }
+        body.print-bw { color: #000; }
+
+        /* Segundo diagrama: previsão recebimentos parcelas (pontos + datas) */
+        .gantt-box-receb { margin-top: 4px; }
+        .gantt-box-receb .gantt-track-receb { position: relative; width: 100%; height: 18px; min-height: 18px; }
+        .gantt-box-receb .receb-ponto { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; z-index: 3; font-size: 6px; font-weight: 700; white-space: nowrap; }
+        body:not(.print-bw) .gantt-box-receb .receb-ponto { background: #059669; border: 1px solid #047857; color: #fff; }
+        body:not(.print-bw) .gantt-box-receb .receb-ponto-atraso { background: #dc2626; border-color: #b91c1c; color: #fff; }
+        body.print-bw .gantt-box-receb .receb-ponto { background: #555; border: 1px solid #333; color: #fff; }
+        body.print-bw .gantt-box-receb .receb-ponto-atraso { background: #333; border-color: #000; color: #fff; }
+        .gantt-box-receb .receb-row-atraso td { background: #fef2f2 !important; }
+        body.print-bw .gantt-box-receb .receb-row-atraso td { background: #e8e8e8 !important; }
+        .gantt-box-receb .receb-row-atraso td:first-child { border-left: 3px solid #dc2626; font-weight: 600; }
+        body.print-bw .gantt-box-receb .receb-row-atraso td:first-child { border-left: 2px solid #000; }
+        .gantt-box-receb .receb-badge-atraso { margin-left: 2px; padding: 0 3px; font-size: 7px; font-weight: 600; border-radius: 1px; }
+        body:not(.print-bw) .gantt-box-receb .receb-badge-atraso { background: #fef2f2; color: #dc2626; }
+        body.print-bw .gantt-box-receb .receb-badge-atraso { background: #e0e0e0; color: #000; }
+        .gantt-box-receb .swatch-receb-ok, .gantt-box-receb .swatch-receb-atraso { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+        body:not(.print-bw) .gantt-box-receb .swatch-receb-ok { background: #059669; border: 1px solid #047857; }
+        body:not(.print-bw) .gantt-box-receb .swatch-receb-atraso { background: #dc2626; border: 1px solid #b91c1c; }
+        body.print-bw .gantt-box-receb .swatch-receb-ok { background: #555; border: 1px solid #333; }
+        body.print-bw .gantt-box-receb .swatch-receb-atraso { background: #333; border: 1px solid #000; }
+
+        .no-print .vista-label { font-size: 10px; color: #64748b; margin-right: 10px; vertical-align: middle; }
+        .no-print .btn-vista { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
+        .no-print .btn-vista.active { background: #b45309; color: white; border-color: #92400e; }
+        .no-print .btn-print-cores { background: #059669; color: white; }
+        .no-print .btn-print-bw { background: #374151; color: white; }
+        .no-print-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .no-print-sep { width: 1px; height: 20px; background: #cbd5e1; }
+        .gantt-table-print col.gantt-col-actividade { width: 18%; }
+        .gantt-table-print col.gantt-col-scale { width: 82%; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 3px; }
+            .no-print { display: none !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            body.print-bw { background: #fff; color: #000; }
+            .gantt-box { margin-bottom: 4px; }
+            .gantt-box-receb { margin-top: 3px; }
+        }
+    </style>
+</head>
+<body id="plano-print-body">
+    <div class="no-print no-print-toolbar">
+        <span class="vista-label">Vista actual:</span>
+        <button type="button" class="btn btn-vista active" id="btn-cores" onclick="setVista('cores')">A cores</button>
+        <button type="button" class="btn btn-vista" id="btn-bw" onclick="setVista('bw')">Preto e branco</button>
+        <span class="no-print-sep"></span>
+        <button type="button" class="btn btn-print-cores" onclick="imprimirCores()">Imprimir a cores</button>
+        <button type="button" class="btn btn-print-bw" onclick="imprimirBw()">Imprimir a preto e branco</button>
+        <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn btn-close">Voltar à ordem</a>
+    </div>
+    <script>
+        function setVista(mode) {
+            var body = document.getElementById('plano-print-body');
+            var btnCores = document.getElementById('btn-cores');
+            var btnBw = document.getElementById('btn-bw');
+            if (mode === 'bw') {
+                body.classList.add('print-bw');
+                btnBw.classList.add('active');
+                btnCores.classList.remove('active');
+            } else {
+                body.classList.remove('print-bw');
+                btnCores.classList.add('active');
+                btnBw.classList.remove('active');
+            }
+        }
+        function imprimirCores() {
+            setVista('cores');
+            setTimeout(function() { window.print(); }, 100);
+        }
+        function imprimirBw() {
+            setVista('bw');
+            setTimeout(function() { window.print(); }, 100);
+        }
+    </script>
+
+    <h1>Plano de trabalho – Ordem de Serviço {{ ordem.codigo|formatar_codigo_ordem }}</h1>
+    <div class="meta">
+        <p><strong>Documento de referência</strong> da ordem de serviço (vista para impressão do plano de execução). Os dados e o cronograma são os mesmos da <a href="{% url 'producao:servico_ordem_detail' ordem.id %}">página de detalhe da ordem</a>.</p>
+        {% if ordem.cliente %}<p><strong>Cliente:</strong> {{ ordem.cliente.nome }}</p>{% endif %}
+        <p><strong>Data de referência (hoje):</strong> {% if data_referencia %}{{ data_referencia|date:"d/m/Y" }}{% else %}{% now "d/m/Y" %}{% endif %}</p>
+    </div>
+
+    {% if plano_tem_etapas %}
+        <div class="progresso">
+            <span>Avanço: {{ progresso_etapas.concluidas }} / {{ progresso_etapas.total }} etapas ({{ progresso_etapas.percent }}%{% if progresso_etapas.por_parcelas %} ponderado por parcelas{% endif %})</span>
+            <div class="progresso-bar"><div class="progresso-fill" data-percent="{{ progresso_etapas.percent }}"></div></div>
+        </div>
+        {% if cronograma_atrasos %}
+        <div class="atrasos">
+            <strong>Actividades em atraso / concluídas com atraso</strong>
+            <div class="atrasos-list" role="list">{% for atraso in cronograma_atrasos %}<div class="atrasos-item" role="listitem">{% if atraso.tipo == 'em_atraso' %}<strong>{{ atraso.atividade.nome }}</strong> — em atraso ({{ atraso.dias }} dia{{ atraso.dias|pluralize }}){% else %}{{ atraso.atividade.nome }} — concluída com {{ atraso.dias }} dia{{ atraso.dias|pluralize }} de atraso{% endif %}</div>{% endfor %}</div>
+        </div>
+        {% endif %}
+        {% if cronograma_gantt and gantt_min_date and gantt_max_date %}
+        <div class="gantt-box">
+            <div class="gantt-header">
+                <h3>Cronograma físico</h3>
+                <p>Previsto vs. real por actividade ({{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }})</p>
+            </div>
+            <div class="gantt-body">
+                <table class="gantt-table-print">
+                    {% include "producao/servicos/ordens/_gantt_table_shared.html" with cronograma_gantt=cronograma_gantt gantt_ticks=gantt_ticks gantt_hoje_pct=gantt_hoje_pct gantt_inline_styles=True %}
+                </table>
+                <div class="gantt-legend">
+                    <span class="swatch swatch-p"></span> Previsto &nbsp;&nbsp;
+                    <span class="swatch swatch-a"></span> Real (executado)
+                    {% if gantt_hoje_pct is not None %}&nbsp;&nbsp;<span class="swatch swatch-hoje"></span> Hoje{% endif %}
+                    &nbsp;&nbsp;<span class="swatch swatch-atraso"></span> Em atraso
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if recebimentos_parcelas_gantt and gantt_min_date and gantt_max_date and gantt_ticks %}
+        <div class="gantt-box gantt-box-receb">
+            <div class="gantt-header">
+                <h3>Previsão de recebimentos das parcelas</h3>
+                <p>Dia previsto de recebimento por parcela ({{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }})</p>
+            </div>
+            <div class="gantt-body">
+                <table class="gantt-table-print" style="margin-top: 2px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Parcela</th>
+                            <th class="gantt-scale" style="width: 82%;">
+                                <div class="gantt-scale-inner" style="height: 18px;">
+                                    {% for t in gantt_ticks %}
+                                    <span class="gantt-tick-date gantt-dyn-left" data-left="{{ t.pct }}" style="font-size: 8px;">{{ t.date|date:"d/m" }}</span>
+                                    {% endfor %}
+                                    {% if gantt_hoje_pct is not None %}
+                                    <span class="gantt-hoje-line gantt-dyn-left" data-left="{{ gantt_hoje_pct }}"></span>
+                                    <span class="gantt-hoje-label gantt-dyn-left" data-left="{{ gantt_hoje_pct }}" style="font-size: 7px;">Hoje</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in recebimentos_parcelas_gantt %}
+                        <tr class="{% if r.em_atraso %}receb-row-atraso{% endif %}">
+                            <td class="gantt-cell-actividade" style="border-right: 1px solid; padding: 2px 4px;">
+                                <strong>{{ r.label }}</strong>
+                                {% if r.em_atraso %}<span class="receb-badge-atraso">Em atraso</span>{% endif %}
+                            </td>
+                            <td class="gantt-td-scale" style="padding: 0;">
+                                <div class="gantt-track gantt-track-receb">
+                                    {% if gantt_hoje_pct is not None %}
+                                    <span class="gantt-hoje gantt-dyn-left" data-left="{{ gantt_hoje_pct }}" style="position: absolute; top: 0; bottom: 0; width: 1px;"></span>
+                                    {% endif %}
+                                    <span class="receb-ponto gantt-dyn-left {% if r.em_atraso %}receb-ponto-atraso{% endif %}" data-left="{{ r.left_pct }}">{{ r.data_prevista|date:"d/m" }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="gantt-legend" style="margin-top: 2px;">
+                    <span class="swatch swatch-receb-ok"></span> Previsto
+                    <span class="swatch swatch-receb-atraso"></span> Em atraso
+                    {% if gantt_hoje_pct is not None %}<span class="swatch swatch-hoje"></span> Hoje{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Actividade</th>
+                    <th>Data prevista início</th>
+                    <th>Prazo previsto</th>
+                    <th>Data início</th>
+                    <th>Data conclusão</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in atividades_flat %}
+                <tr class="{% if item.e_subactividade %}subactividade{% endif %}">
+                    <td>{% if item.atividade.status == 'CONCLUIDA' %}&#10003; {% endif %}{% if item.e_subactividade %}&rarr; {% endif %}<strong>{{ item.numero_display|default:"" }}</strong>{% if item.numero_display %}. {% endif %}{{ item.atividade.nome }}{% if item.atividade.parcela %} <span class="tab-parcela">→ Parcela {{ item.atividade.parcela.numero_ordem }} ({{ item.atividade.parcela.percentagem }}%)</span>{% endif %}</td>
+                    <td>{% if item.atividade.data_prevista_inicio %}{{ item.atividade.data_prevista_inicio|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td>{% if item.atividade.data_prevista_conclusao %}{{ item.atividade.data_prevista_conclusao|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td>{% if item.atividade.data_inicio %}{{ item.atividade.data_inicio|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td>{% if item.atividade.data_conclusao %}{{ item.atividade.data_conclusao|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if item.atividade.status == 'AGENDADA' %}Agendada
+                        {% elif item.atividade.status == 'EM_ANDAMENTO' %}Em andamento
+                        {% elif item.atividade.status == 'PAUSADA' %}Pausada
+                        {% elif item.atividade.status == 'CONCLUIDA' %}Concluída
+                        {% else %}{{ item.atividade.get_status_display }}{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="sem-plano">Nenhuma etapa definida no plano de execução.</p>
+    {% endif %}
+    <script>
+        (function() {
+            document.querySelectorAll('.progresso-fill[data-percent]').forEach(function(el) {
+                var p = el.getAttribute('data-percent');
+                if (p != null) el.style.width = parseFloat(p, 10) + '%';
+            });
+            document.querySelectorAll('.gantt-dyn-left').forEach(function(el) {
+                var L = el.getAttribute('data-left');
+                if (L != null) {
+                    var pct = parseFloat(L, 10);
+                    if (!isNaN(pct)) {
+                        pct = Math.max(0, Math.min(100, pct));
+                        el.style.left = pct + '%';
+                    }
+                }
+            });
+            document.querySelectorAll('[data-style]').forEach(function(el) {
+                var s = el.getAttribute('data-style');
+                if (s) el.style.cssText = s;
+            });
+        })();
+    </script>
+</body>
+</html>

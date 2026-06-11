@@ -19,6 +19,16 @@ from ..models_stock import RastreamentoEntrega, Transportadora, VeiculoInterno
 
 logger = logging.getLogger(__name__)
 
+METRICA_CHAVE_PARA_TIPO = {
+    'otd': 'OTD',
+    'lead_time': 'LEAD_TIME',
+    'custo_por_entrega': 'COST_PER_DELIVERY',
+    'volume_entregue': 'VOLUME_DELIVERED',
+    'taxa_excecoes': 'EXCEPTION_RATE',
+    'utilizacao_frota': 'FLEET_UTILIZATION',
+    'eficiencia_rota': 'ROUTE_EFFICIENCY',
+}
+
 
 class ObservabilityService:
     """Serviço para observabilidade e métricas logísticas."""
@@ -131,7 +141,9 @@ class ObservabilityService:
         try:
             queryset = RastreamentoEntrega.objects.filter(
                 data_criacao__date__range=[data_inicio, data_fim],
-                status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL']
+                status_atual='ENTREGUE',
+                data_entrega_realizada__isnull=False,
+                data_entrega_prevista__isnull=False,
             )
             
             # Aplicar filtros
@@ -149,7 +161,7 @@ class ObservabilityService:
             
             # Calcular entregas no prazo
             entregas_no_prazo = queryset.filter(
-                data_entrega__lte=F('data_prevista_entrega')
+                data_entrega_realizada__lte=F('data_entrega_prevista')
             ).count()
             
             otd_percentual = (entregas_no_prazo / total_entregas) * 100
@@ -177,8 +189,8 @@ class ObservabilityService:
         try:
             queryset = RastreamentoEntrega.objects.filter(
                 data_criacao__date__range=[data_inicio, data_fim],
-                status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL'],
-                data_entrega__isnull=False
+                status_atual='ENTREGUE',
+                data_entrega_realizada__isnull=False,
             )
             
             # Aplicar filtros
@@ -190,7 +202,7 @@ class ObservabilityService:
             
             # Calcular lead time médio
             lead_times = queryset.annotate(
-                lead_time=F('data_entrega') - F('data_criacao')
+                lead_time=F('data_entrega_realizada') - F('data_criacao')
             ).aggregate(
                 lead_time_medio=Avg('lead_time')
             )['lead_time_medio']
@@ -224,8 +236,8 @@ class ObservabilityService:
         try:
             queryset = RastreamentoEntrega.objects.filter(
                 data_criacao__date__range=[data_inicio, data_fim],
-                status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL'],
-                custo_estimado__gt=0
+                status_atual='ENTREGUE',
+                custo_envio__gt=0,
             )
             
             # Aplicar filtros
@@ -237,7 +249,7 @@ class ObservabilityService:
             
             # Calcular custo médio
             custo_medio = queryset.aggregate(
-                custo_medio=Avg('custo_estimado')
+                custo_medio=Avg('custo_envio')
             )['custo_medio']
             
             return custo_medio or Decimal('0.00')
@@ -264,8 +276,8 @@ class ObservabilityService:
         try:
             queryset = RastreamentoEntrega.objects.filter(
                 data_criacao__date__range=[data_inicio, data_fim],
-                status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL'],
-                peso_kg__gt=0
+                status_atual='ENTREGUE',
+                peso_total__gt=0,
             )
             
             # Aplicar filtros
@@ -277,7 +289,7 @@ class ObservabilityService:
             
             # Calcular volume total
             volume_total = queryset.aggregate(
-                volume_total=Sum('peso_kg')
+                volume_total=Sum('peso_total')
             )['volume_total']
             
             return volume_total or Decimal('0.00')
@@ -319,7 +331,7 @@ class ObservabilityService:
             
             # Contar exceções
             excecoes = queryset.filter(
-                status_atual__in=['DEVOLVIDA', 'RECUSADA', 'AVARIA', 'EXTRAVIADA']
+                status_atual__in=['DEVOLVIDO', 'PERDIDO', 'CANCELADO']
             ).count()
             
             taxa_excecoes = (excecoes / total_rastreamentos) * 100
@@ -384,7 +396,7 @@ class ObservabilityService:
         try:
             queryset = RastreamentoEntrega.objects.filter(
                 data_criacao__date__range=[data_inicio, data_fim],
-                status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL']
+                status_atual='ENTREGUE',
             )
             
             # Aplicar filtros
@@ -460,17 +472,22 @@ class ObservabilityService:
             Lista de ValoresMetrica salvos
         """
         try:
-            # Calcular todas as métricas
-            metricas_calculadas = self.calcular_todas_metricas(
-                data_referencia, data_referencia, filtros
+            periodo_inicio_date = (
+                periodo_inicio.date() if isinstance(periodo_inicio, datetime) else periodo_inicio
             )
-            
+            periodo_fim_date = (
+                periodo_fim.date() if isinstance(periodo_fim, datetime) else periodo_fim
+            )
+            metricas_calculadas = self.calcular_todas_metricas(
+                periodo_inicio_date, periodo_fim_date, filtros
+            )
+
             valores_salvos = []
-            
-            for tipo_metrica, valor in metricas_calculadas.items():
-                # Obter métrica
+
+            for chave, valor in metricas_calculadas.items():
+                tipo_metrica = METRICA_CHAVE_PARA_TIPO.get(chave, chave.upper())
                 try:
-                    metrica = MetricaLogistica.objects.get(tipo_metrica=tipo_metrica.upper())
+                    metrica = MetricaLogistica.objects.get(tipo_metrica=tipo_metrica, ativo=True)
                 except MetricaLogistica.DoesNotExist:
                     continue
                 
@@ -514,9 +531,20 @@ class ObservabilityService:
             hoje = timezone.now().date()
             ultimos_30_dias = hoje - timedelta(days=30)
             
+            auditoria_agg = AuditoriaTransicao.objects.aggregate(
+                total=Count('id'),
+                sucessos=Count('id', filter=Q(sucesso=True)),
+            )
+            total_auditoria = auditoria_agg['total'] or 0
+            taxa_sucesso_auditoria = (
+                (auditoria_agg['sucessos'] / total_auditoria * 100)
+                if total_auditoria > 0
+                else 0
+            )
+
             stats = {
                 'auditoria': {
-                    'total_registros': AuditoriaTransicao.objects.count(),
+                    'total_registros': total_auditoria,
                     'ultimos_30_dias': AuditoriaTransicao.objects.filter(
                         data_operacao__date__gte=ultimos_30_dias
                     ).count(),
@@ -525,9 +553,7 @@ class ObservabilityService:
                         .annotate(count=Count('id'))
                         .values_list('tipo_operacao', 'count')
                     ),
-                    'taxa_sucesso': AuditoriaTransicao.objects.aggregate(
-                        taxa_sucesso=Avg('sucesso')
-                    )['taxa_sucesso'] or 0
+                    'taxa_sucesso': round(taxa_sucesso_auditoria, 2),
                 },
                 'metricas': {
                     'total_metricas': MetricaLogistica.objects.filter(ativo=True).count(),

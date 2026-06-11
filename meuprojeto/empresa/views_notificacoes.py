@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
+from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime, timedelta
 import logging
@@ -50,6 +51,7 @@ def notificacoes_list(request):
         # Estatísticas
         total_notificacoes = notificacoes.count()
         nao_lidas = notificacoes.filter(lida=False).count()
+        lidas_count = total_notificacoes - nao_lidas
         criticas_count = notificacoes.filter(
             lida=False,
             tipo__in=['stock_baixo', 'error', 'warning'],
@@ -63,6 +65,7 @@ def notificacoes_list(request):
             'page_obj': page_obj,
             'total_notificacoes': total_notificacoes,
             'nao_lidas': nao_lidas,
+            'lidas_count': lidas_count,
             'criticas_count': criticas_count,
             'tipos_disponiveis': tipos_disponiveis,
             'filtro_tipo': tipo,
@@ -197,6 +200,12 @@ def notificacoes_dashboard(request):
         messages.error(request, 'Erro ao carregar dashboard de notificações.')
         return redirect('stock:main')
 
+def _item_detail_url(item):
+    if item.tipo == 'MATERIAL':
+        return reverse('stock:material_detail', args=[item.id])
+    return reverse('stock:produto_detail', args=[item.id])
+
+
 def criar_notificacao_stock_baixo():
     """Criar notificações para itens com estoque baixo"""
     try:
@@ -213,11 +222,16 @@ def criar_notificacao_stock_baixo():
             ).exists()
             
             if not notificacao_existente:
+                rotulo = 'material' if stock.item.tipo == 'MATERIAL' else 'produto'
                 NotificacaoStock.objects.create(
                     tipo='stock_baixo',
-                    titulo=f'Estoque Baixo: {stock.item.nome}',
-                    mensagem=f'O item {stock.item.nome} ({stock.item.codigo}) na sucursal {stock.sucursal.nome} está com estoque baixo. Quantidade atual: {stock.quantidade_atual}, Mínimo: {stock.item.estoque_minimo}.',
-                    url=f'/stock/item/{stock.item.id}/',
+                    titulo=f'Stock baixo: {stock.item.nome}',
+                    mensagem=(
+                        f'O {rotulo} {stock.item.nome} ({stock.item.codigo}) está com stock baixo '
+                        f'na sucursal {stock.sucursal.nome}. '
+                        f'Quantidade atual: {stock.quantidade_atual}, mínimo: {stock.item.estoque_minimo}.'
+                    ),
+                    url=_item_detail_url(stock.item),
                 )
         
         logger.info(f"Criadas notificações para {itens_estoque_baixo.count()} itens com estoque baixo")

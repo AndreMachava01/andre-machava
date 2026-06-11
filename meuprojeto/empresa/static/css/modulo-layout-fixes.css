@@ -1,0 +1,138 @@
+/* Correções de layout carregadas por último — evita sobreposição de campos */
+
+.action-buttons:not(:has(.btn-xl)) {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  grid-template-columns: unset !important;
+}
+
+.action-buttons:not(:has(.btn-xl)) .btn {
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: 8px 16px !important;
+  background: unset;
+  border: unset;
+  text-align: center !important;
+}
+
+.page-header .action-buttons .btn-primary {
+  background: var(--modulo-accent, #b45309) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.page-header .action-buttons .btn-secondary {
+  background: #6c757d !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.filters-row .filter-group {
+  min-width: 0;
+}
+
+.table-search {
+  min-width: 0 !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.form-group input:not([type="checkbox"]):not([type="radio"]) {
+  background-image: none !important;
+}
+
+.form-group select {
+  padding-right: 2rem;
+}
+
+.cell-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 6px;
+  align-items: center;
+  min-width: max-content;
+}
+
+/* Tabelas: coluna de ações visível sem zoom (tables.css tinha min-width 800px + overflow hidden) */
+.table-container {
+  overflow: visible !important;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.table {
+  min-width: 0 !important;
+  width: 100%;
+}
+
+/* Coluna de ações com largura fixa — sem sobrepor outras colunas */
+.table:has(.cell-actions),
+.table.table-with-actions {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.table:has(.cell-actions) th:not(:last-child),
+.table:has(.cell-actions) td:not(:last-child),
+.table.table-with-actions th:not(:last-child),
+.table.table-with-actions td:not(:last-child) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table:has(.cell-actions) th:last-child,
+.table:has(.cell-actions) td:last-child,
+.table.table-with-actions th.col-actions,
+.table.table-with-actions td.col-actions,
+.table.table-with-actions th:last-child,
+.table.table-with-actions td:last-child {
+  width: 11.5rem;
+  min-width: 11.5rem;
+  max-width: 11.5rem;
+  position: static;
+  box-shadow: none;
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table.table-with-actions col.col-actions {
+  width: 11.5rem;
+}
+
+/* Stock: botões de ação sempre em linha (tables.css empilha em mobile) */
+body.stock-module .cell-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: max-content;
+  margin: 0 auto;
+}
+
+body.stock-module .cell-actions .btn-action,
+body.stock-module td.col-actions > .btn-action {
+  flex-shrink: 0;
+}
+
+body.stock-module .table-wrapper {
+  overflow-x: auto;
+}
+
+.table tbody tr:hover {
+  transform: none !important;
+}
+
+.stock-table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+}

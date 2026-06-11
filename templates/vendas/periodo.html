@@ -1,0 +1,104 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #ec4899; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #ec4899; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #ec4899; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 120px; }
+        .stats { display: flex; gap: 24px; margin-bottom: 24px; padding: 16px; background: #fdf2f8; border-radius: 8px; border: 1px solid #ec4899; flex-wrap: wrap; }
+        .stats .item { font-size: 15px; }
+        .stats .item strong { color: #9d174d; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fdf2f8; color: #9d174d; font-weight: 600; }
+        td.num { text-align: right; }
+        tbody tr:hover { background: #fdf2f8; }
+        .total-row { font-weight: 600; background: #fce7f3 !important; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #6b7280; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; color: #d1d5db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-calendar-alt"></i> {{ title }}</h1>
+                <p>Análise por mês no ano seleccionado</p>
+            </div>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center;">
+                <label for="ano">Ano:</label>
+                <select name="ano" id="ano">
+                    {% for a in anos_disponiveis %}
+                        <option value="{{ a }}" {% if ano|add:0 == a %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Ver</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <span class="item">Total no ano: <strong>{{ total_ano_pedidos|default:0|intcomma }} pedidos</strong></span>
+            <span class="item">Valor total: <strong>{{ total_ano_valor|floatformat:2 }} MT</strong></span>
+        </div>
+
+        {% if meses_lista %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Mês</th>
+                    <th class="num">Pedidos</th>
+                    <th class="num">Concluídos</th>
+                    <th class="num">Valor (MT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in meses_lista %}
+                <tr>
+                    <td>{{ m.nome_mes }} {{ m.mes|date:"Y" }}</td>
+                    <td class="num">{{ m.total_pedidos }}</td>
+                    <td class="num">{{ m.concluidos }}</td>
+                    <td class="num">{{ m.total_valor|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td>Total {{ ano }}</td>
+                    <td class="num">{{ total_ano_pedidos|default:0|intcomma }}</td>
+                    <td class="num">—</td>
+                    <td class="num">{{ total_ano_valor|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-alt"></i>
+            <p><strong>Nenhum pedido em {{ ano }}</strong></p>
+            <p>Seleccione outro ano ou consulte <a href="{% url 'vendas:historico' %}">Histórico de Vendas</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

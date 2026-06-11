@@ -1,0 +1,44 @@
+<aside class="info-card" aria-label="Ajuda e progresso">
+    <div class="card-header">
+        <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Checklist de viatura</h5>
+    </div>
+    <div class="card-body">
+        <h6>Tipos de inspecção</h6>
+        <ul class="list-unstyled">
+            <li><strong>Pré-viagem / Pós-viagem:</strong> antes ou depois de deslocação</li>
+            <li><strong>Manutenção:</strong> após intervenção técnica</li>
+            <li><strong>Periódicas:</strong> semanal ou mensal</li>
+        </ul>
+        <hr>
+        <h6>Resultado</h6>
+        <p class="stock-u-mb-0">O estado final (aprovado, reprovado ou condicional) é calculado automaticamente com base nos itens marcados.</p>
+    </div>
+
+    <div class="card-body stock-checklist-form__preview">
+        <h6><i class="fas fa-chart-bar" aria-hidden="true"></i> Progresso</h6>
+        <dl class="stock-checklist-form__stats">
+            <div class="stock-checklist-form__stat">
+                <dt>Total de itens</dt>
+                <dd id="checklist-stat-total">{{ total_itens|default:"0" }}</dd>
+            </div>
+            <div class="stock-checklist-form__stat">
+                <dt>Itens OK</dt>
+                <dd id="checklist-stat-ok" class="stock-checklist-form__stat-value--ok">0</dd>
+            </div>
+            <div class="stock-checklist-form__stat">
+                <dt>Com problema</dt>
+                <dd id="checklist-stat-nok" class="stock-checklist-form__stat-value--nok">0</dd>
+            </div>
+            <div class="stock-checklist-form__stat">
+                <dt>Pontuação</dt>
+                <dd id="checklist-stat-score">0%</dd>
+            </div>
+        </dl>
+        <hr>
+        <p class="stock-u-mb-0">
+            <a href="{% url 'stock:logistica:checklist_print_blank' %}" target="_blank" rel="noopener">
+                <i class="fas fa-file-alt" aria-hidden="true"></i> Imprimir folha em branco
+            </a>
+        </p>
+    </div>
+</aside>

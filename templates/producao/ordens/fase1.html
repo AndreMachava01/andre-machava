@@ -1,0 +1,382 @@
+{% load humanize %}
+{% load rh_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem {{ ordem.codigo }} - Fase 1: Criação e Aprovação</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        h1 {
+            font-size: 24px;
+            color: #8b5cf6;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #8b5cf6;
+        }
+        .info-card h3 {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-card p {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-pendente { background: #fef3c7; color: #92400e; }
+        .badge-aprovada { background: #d1fae5; color: #065f46; }
+        .badge-rejeitada { background: #fee2e2; color: #991b1b; }
+        .badge-urgente { background: #fee2e2; color: #991b1b; }
+        .badge-alta { background: #fef3c7; color: #92400e; }
+        .badge-normal { background: #e5e7eb; color: #374151; }
+        .badge-baixa { background: #e5e7eb; color: #6b7280; }
+        .details-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .details-section h2 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #8b5cf6;
+        }
+        .action-box h3 {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .action-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .action-form input[type="text"] {
+            flex: 1;
+            min-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .itens-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .itens-table thead {
+            background: #8b5cf6;
+            color: white;
+        }
+        .itens-table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .itens-table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        .itens-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-clipboard-check"></i>
+                Ordem de Produção {{ ordem.codigo }} - Fase 1
+            </h1>
+            <div class="btn-group">
+                <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Código</h3>
+                <p>{{ ordem.codigo }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Status de Aprovação</h3>
+                <p>
+                    {% if ordem.status_aprovacao == 'PENDENTE' %}
+                        <span class="badge badge-pendente">{{ ordem.get_status_aprovacao_display }}</span>
+                    {% elif ordem.status_aprovacao == 'APROVADA' %}
+                        <span class="badge badge-aprovada">{{ ordem.get_status_aprovacao_display }}</span>
+                    {% else %}
+                        <span class="badge badge-rejeitada">{{ ordem.get_status_aprovacao_display }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>Receita</h3>
+                <p>{{ ordem.receita.nome }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Produto</h3>
+                <p>{% if ordem.receita.produto %}{{ ordem.receita.produto.nome }}{% else %}-{% endif %}</p>
+            </div>
+            <div class="info-card">
+                <h3>Quantidade</h3>
+                <p>{{ ordem.quantidade }} UN</p>
+            </div>
+            <div class="info-card">
+                <h3>Prioridade</h3>
+                <p>
+                    {% if ordem.prioridade == 'URGENTE' %}
+                        <span class="badge badge-urgente">{{ ordem.get_prioridade_display }}</span>
+                    {% elif ordem.prioridade == 'ALTA' %}
+                        <span class="badge badge-alta">{{ ordem.get_prioridade_display }}</span>
+                    {% elif ordem.prioridade == 'NORMAL' %}
+                        <span class="badge badge-normal">{{ ordem.get_prioridade_display }}</span>
+                    {% else %}
+                        <span class="badge badge-baixa">{{ ordem.get_prioridade_display }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-card">
+                <h3>Sucursal</h3>
+                <p>{{ ordem.sucursal.nome }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Data de Criação</h3>
+                <p>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Criado por</h3>
+                <p>{% if ordem.criado_por %}{{ ordem.criado_por.get_full_name|default:ordem.criado_por.username }}{% else %}-{% endif %}</p>
+            </div>
+            {% if ordem.aprovado_por %}
+            <div class="info-card">
+                <h3>Aprovado por</h3>
+                <p>{{ ordem.aprovado_por.get_full_name|default:ordem.aprovado_por.username }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Data de Aprovação</h3>
+                <p>{{ ordem.data_aprovacao|date:"d/m/Y H:i" }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if ordem.status_aprovacao == 'PENDENTE' %}
+        <div class="action-box">
+            <h3><i class="fas fa-check-circle"></i> Ações de Aprovação</h3>
+            <div class="action-form">
+                <form method="post" action="{% url 'producao:ordem_fase1_aprovar' ordem.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Aprovar Ordem
+                    </button>
+                </form>
+                <form method="post" action="{% url 'producao:ordem_fase1_rejeitar' ordem.id %}" style="display: inline; flex: 1; min-width: 300px;">
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <input type="text" name="motivo_rejeicao" placeholder="Motivo da rejeição (obrigatório)" required style="flex: 1;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times"></i> Rejeitar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% elif ordem.status_aprovacao == 'APROVADA' %}
+        <div class="alert alert-success">
+            <strong><i class="fas fa-check-circle"></i> Ordem Aprovada</strong>
+            <p style="margin-top: 5px; margin-bottom: 0;">
+                Esta ordem foi aprovada em {{ ordem.data_aprovacao|date:"d/m/Y H:i" }} por 
+                {% if ordem.aprovado_por %}{{ ordem.aprovado_por.get_full_name|default:ordem.aprovado_por.username }}{% else %}usuário{% endif %}.
+                <br>
+                <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn btn-success" style="margin-top: 10px;">
+                    <i class="fas fa-arrow-right"></i> Avançar para Fase 2
+                </a>
+            </p>
+        </div>
+        {% elif ordem.status_aprovacao == 'REJEITADA' %}
+        <div class="alert alert-danger">
+            <strong><i class="fas fa-times-circle"></i> Ordem Rejeitada</strong>
+            {% if ordem.motivo_rejeicao %}
+            <p style="margin-top: 5px;"><strong>Motivo:</strong> {{ ordem.motivo_rejeicao }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="details-section">
+            <h2><i class="fas fa-list"></i> Itens da Receita</h2>
+            <div style="overflow-x: auto;">
+                <table class="itens-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Código</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                            <th>Preço Unitário</th>
+                            <th>Custo Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ordem.receita.itens.all %}
+                        <tr>
+                            <td>{{ item.material.nome }}</td>
+                            <td><strong>{{ item.material.codigo }}</strong></td>
+                            <td>{{ item.quantidade|floatformat:3 }}</td>
+                            <td>{{ item.unidade_medida }}</td>
+                            <td>{{ item.material.preco_custo|floatformat:2 }} MT</td>
+                            <td><strong>{{ item.calcular_custo_item|floatformat:2 }} MT</strong></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                                Nenhum item cadastrado nesta receita.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8f9fa; font-weight: 600;">
+                            <td colspan="5" style="text-align: right; padding: 12px;">Custo por Unidade:</td>
+                            <td style="padding: 12px;">{{ ordem.receita.calcular_custo_por_produto|floatformat:2 }} MT</td>
+                        </tr>
+                        <tr style="background: #f5f3ff; font-weight: 600;">
+                            <td colspan="5" style="text-align: right; padding: 12px;">Custo Total da Ordem ({{ ordem.quantidade }} unidades):</td>
+                            <td style="padding: 12px; color: #8b5cf6;">{{ ordem.custo_total_estimado|floatformat:2 }} MT</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        {% if ordem.observacoes_criacao %}
+        <div class="details-section">
+            <h2><i class="fas fa-comment"></i> Observações</h2>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; color: #1f2937;">
+                {{ ordem.observacoes_criacao }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

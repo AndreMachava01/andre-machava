@@ -1,0 +1,259 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Requisições de Stock{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Requisições</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-clipboard-list"></i> Requisições de Stock</h1>
+                <p class="page-subtitle">Requisições entre sucursais e compras externas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ total_requisicoes }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ requisicoes_pendentes }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ requisicoes_aprovadas }}</div>
+            <div class="stat-label">Aprovadas</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ requisicoes_atendidas }}</div>
+            <div class="stat-label">Atendidas</div>
+        </div>
+    </div>
+
+    <div class="stock-actions-row">
+        <a href="{% url 'stock:requisicoes:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus" aria-hidden="true"></i> Nova requisição
+        </a>
+        <a href="{% url 'stock:requisicoes:verificar_stock_baixo' %}" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Stock baixo
+        </a>
+        <a href="{% url 'stock:requisicoes:ordens_compra_list' %}" class="btn btn-secondary">
+            <i class="fas fa-shopping-cart" aria-hidden="true"></i> Ordens de compra
+        </a>
+        <a href="{% url 'stock:requisicoes:compra_externa_list' %}" class="btn btn-secondary">
+            <i class="fas fa-store" aria-hidden="true"></i> Compras externas
+        </a>
+        <a href="{% url 'stock:main' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+        </a>
+    </div>
+
+    <div class="search-filters stock-search-filters">
+        <form method="get" id="filterForm">
+            <div class="search-input-wrapper filter-group">
+                <label class="filter-label" for="searchInput">Pesquisar</label>
+                <input type="text" name="search" id="searchInput" class="form-control"
+                       placeholder="Código, sucursal ou observações..." value="{{ search_query }}" autocomplete="off">
+                <span id="searchLoader" class="search-loader" hidden>
+                    <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="statusSelect">Status</label>
+                <select name="status" id="statusSelect" class="form-select" aria-label="Filtrar por status">
+                    <option value="">Todos</option>
+                    <option value="RASCUNHO" {% if status == "RASCUNHO" %}selected{% endif %}>Rascunho</option>
+                    <option value="PENDENTE" {% if status == "PENDENTE" %}selected{% endif %}>Pendente</option>
+                    <option value="APROVADA" {% if status == "APROVADA" %}selected{% endif %}>Aprovada</option>
+                    <option value="REJEITADA" {% if status == "REJEITADA" %}selected{% endif %}>Rejeitada</option>
+                    <option value="ATENDIDA" {% if status == "ATENDIDA" %}selected{% endif %}>Atendida</option>
+                    <option value="FINALIZADA" {% if status == "FINALIZADA" %}selected{% endif %}>Finalizada</option>
+                    <option value="CANCELADA" {% if status == "CANCELADA" %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="sucursalSelect">Sucursal</label>
+                <select name="sucursal" id="sucursalSelect" class="form-select" aria-label="Filtrar por sucursal">
+                    <option value="">Todas</option>
+                    {% for sucursal in sucursais %}
+                    <option value="{{ sucursal.id }}" {% if sucursal_id == sucursal.id|stringformat:"s" %}selected{% endif %}>{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if search_query or status or sucursal_id %}
+            <div class="filter-actions">
+                <a href="{% url 'stock:requisicoes:list' %}" class="btn-clear" id="clearBtn">
+                    <i class="fas fa-times" aria-hidden="true"></i> Limpar
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if requisicoes %}
+    <div class="table-container">
+        <div class="table-wrapper stock-table-scroll">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Status</th>
+                        <th>Itens</th>
+                        <th>Valor</th>
+                        <th>Criado por</th>
+                        <th>Data</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for requisicao in requisicoes %}
+                    <tr>
+                        <td><strong>{{ requisicao.codigo }}</strong></td>
+                        <td>
+                            {% if requisicao.sucursal_solicitante %}
+                                <span class="badge-success">Compra externa</span>
+                            {% elif requisicao.sucursal_origem %}
+                                {% if requisicao.sucursal_destino %}
+                                    <span class="badge-info">Transferência</span>
+                                {% else %}
+                                    <span class="badge-warning">Consumo</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge-success">Compra externa</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if requisicao.sucursal_origem %}
+                                {{ requisicao.sucursal_origem.nome }}
+                            {% elif requisicao.sucursal_solicitante %}
+                                {{ requisicao.sucursal_solicitante.nome }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if requisicao.sucursal_solicitante %}
+                                Fornecedor externo
+                            {% elif requisicao.sucursal_destino %}
+                                {{ requisicao.sucursal_destino.nome }}
+                            {% elif requisicao.ordem_producao %}
+                                <span class="text-producao">Produção — {{ requisicao.ordem_producao.codigo }}</span>
+                            {% else %}
+                                <span class="text-producao">Produção</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ requisicao.get_status_display }}</td>
+                        <td>{{ requisicao.itens.count }}</td>
+                        <td>{{ requisicao.valor_total|floatformat:2 }} MT</td>
+                        <td>{{ requisicao.criado_por.get_full_name|default:requisicao.criado_por.username|default:"—" }}</td>
+                        <td>{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                {% if requisicao.sucursal_solicitante %}
+                                <a href="{% url 'stock:requisicoes:compra_externa_detail' id=requisicao.id %}" class="btn-action success" title="Ver" aria-label="Ver {{ requisicao.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'stock:requisicoes:detail' id=requisicao.id %}" class="btn-action success" title="Ver" aria-label="Ver {{ requisicao.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                                {% if requisicao.status == 'PENDENTE' %}
+                                <a href="{% url 'stock:requisicoes:approve' id=requisicao.id %}" class="btn-action secondary" title="Aprovar" aria-label="Aprovar {{ requisicao.codigo }}">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                </a>
+                                {% elif requisicao.status == 'APROVADA' %}
+                                <a href="{% url 'stock:requisicoes:transfer_preview' id=requisicao.id %}" class="btn-action secondary" title="Atender" aria-label="Atender {{ requisicao.codigo }}">
+                                    <i class="fas fa-truck" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if requisicoes.has_other_pages %}
+    <nav class="pagination-modern" aria-label="Paginação">
+        {% if requisicoes.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn" aria-label="Primeira">«</a>
+        <a href="?page={{ requisicoes.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn" aria-label="Anterior">‹</a>
+        {% endif %}
+        <span class="page-info">Página {{ requisicoes.number }} de {{ requisicoes.paginator.num_pages }}</span>
+        {% if requisicoes.has_next %}
+        <a href="?page={{ requisicoes.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn" aria-label="Seguinte">›</a>
+        <a href="?page={{ requisicoes.paginator.num_pages }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if sucursal_id %}&sucursal={{ sucursal_id }}{% endif %}" class="page-btn" aria-label="Última">»</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <p>Nenhuma requisição encontrada.</p>
+        <a href="{% url 'stock:requisicoes:create' %}" class="btn btn-primary">Criar primeira requisição</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    const statusSelect = document.getElementById('statusSelect');
+    const sucursalSelect = document.getElementById('sucursalSelect');
+    const searchLoader = document.getElementById('searchLoader');
+    if (!searchInput) return;
+
+    function applyFilters() {
+        if (searchLoader) searchLoader.hidden = false;
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        const searchQuery = formData.get('search');
+        if (searchQuery && searchQuery.trim()) params.append('search', searchQuery.trim());
+        const status = formData.get('status');
+        if (status) params.append('status', status);
+        const sucursal = formData.get('sucursal');
+        if (sucursal) params.append('sucursal', sucursal);
+        const qs = params.toString();
+        window.location.href = qs ? '?' + qs : '{% url "stock:requisicoes:list" %}';
+    }
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        if (searchLoader) searchLoader.hidden = this.value.trim().length === 0;
+        searchTimeout = setTimeout(applyFilters, 500);
+    });
+    statusSelect.addEventListener('change', applyFilters);
+    sucursalSelect.addEventListener('change', applyFilters);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimeout); applyFilters(); }
+    });
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '{% url "stock:requisicoes:list" %}';
+        });
+    }
+})();
+</script>
+{% endblock %}

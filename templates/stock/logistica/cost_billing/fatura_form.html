@@ -1,0 +1,158 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Nova fatura de frete{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:cost_billing:faturas_list' as faturas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Faturas' breadcrumb_section_url=faturas_list_url breadcrumb_current='Nova fatura' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> Nova fatura de frete</h1>
+                <p class="page-subtitle">Gera uma fatura por documento de origem (transferência ou ordem de compra)</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        Os dados do cliente (nome, endereço e código do documento de origem) são obtidos automaticamente da
+        <strong>sucursal de destino</strong> do documento de origem. Se seleccionar entregas de documentos
+        diferentes, serão geradas <strong>várias faturas</strong>.
+    </div>
+
+    <form method="post" id="fatura-form" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Período e desconto</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--3">
+                    <div class="form-field">
+                        <label class="form-label" for="periodo_inicio">Início *</label>
+                        <input type="date" id="periodo_inicio" name="periodo_inicio" class="form-control" required>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="periodo_fim">Fim *</label>
+                        <input type="date" id="periodo_fim" name="periodo_fim" class="form-control" required>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="desconto_percentual">Desconto (%)</label>
+                        <input type="number" id="desconto_percentual" name="desconto_percentual" class="form-control" value="0" step="0.01" min="0" max="100">
+                    </div>
+                    <div class="form-field form-field--full">
+                        <label class="form-label" for="observacoes">Observações adicionais</label>
+                        <textarea id="observacoes" name="observacoes" class="form-control" rows="2" placeholder="Texto opcional (o documento de origem é incluído automaticamente)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header">
+                <h2 class="card-title">Rastreamentos elegíveis</h2>
+                <label class="form-check form-check--inline">
+                    <input type="checkbox" id="select-all-rastreamentos" class="form-check-input"> Seleccionar todos
+                </label>
+            </div>
+            <div class="card-body">
+                {% if rastreamentos %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="stock-table-col--select"><span class="sr-only">Seleccionar</span></th>
+                                <th>Código</th>
+                                <th>Documento origem</th>
+                                <th>Cliente (auto)</th>
+                                <th>Doc. origem</th>
+                                <th>Custo envio</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rastreamentos %}
+                            <tr>
+                                <td>
+                                    <label class="sr-only" for="fatura-rast-{{ row.obj.id }}">Seleccionar {{ row.obj.codigo_rastreamento }}</label>
+                                    <input type="checkbox" id="fatura-rast-{{ row.obj.id }}" name="rastreamentos_ids" value="{{ row.obj.id }}"
+                                           class="form-check-input rastreamento-checkbox"
+                                           data-doc="{{ row.documento_origem }}"
+                                           aria-label="Seleccionar {{ row.obj.codigo_rastreamento }}">
+                                </td>
+                                <td>{{ row.obj.codigo_rastreamento }}</td>
+                                <td>{{ row.documento_origem }}</td>
+                                <td>{{ row.cliente_nome }}</td>
+                                <td>{{ row.cliente_documento }}</td>
+                                <td>{{ row.obj.custo_envio|floatformat:2 }} MT</td>
+                                <td>{{ row.obj.data_criacao|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p id="fatura-preview" class="text-muted stock-u-mt-16" aria-live="polite"></p>
+                {% else %}
+                <div class="no-data"><p>Não há entregas elegíveis com custo de envio registado e ainda não faturadas.</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" {% if not rastreamentos %}disabled{% endif %}>
+                <i class="fas fa-save" aria-hidden="true"></i> Gerar fatura(s)
+            </button>
+            <a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const selectAll = document.getElementById('select-all-rastreamentos');
+    const checkboxes = document.querySelectorAll('.rastreamento-checkbox');
+    const form = document.getElementById('fatura-form');
+    const preview = document.getElementById('fatura-preview');
+
+    function actualizarPreview() {
+        if (!preview) return;
+        const docs = new Set();
+        checkboxes.forEach(function (cb) {
+            if (cb.checked && cb.dataset.doc) docs.add(cb.dataset.doc);
+        });
+        if (docs.size === 0) {
+            preview.textContent = '';
+        } else if (docs.size === 1) {
+            preview.textContent = 'Será gerada 1 fatura para: ' + Array.from(docs)[0] + '.';
+        } else {
+            preview.textContent = 'Serão geradas ' + docs.size + ' faturas (uma por documento de origem).';
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
+            actualizarPreview();
+        });
+    }
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', actualizarPreview);
+    });
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            if (!document.querySelector('.rastreamento-checkbox:checked')) {
+                e.preventDefault();
+                alert('Seleccione pelo menos um rastreamento.');
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #f59e0b; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #f59e0b; margin: 0; font-size: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-primary { background: #10b981; color: white; }
+        .btn-primary:hover { background: #059669; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .info { margin: 16px 0; padding: 12px; background: #ecfdf5; border-radius: 6px; color: #065f46; font-size: 14px; }
+        .aviso { margin: 16px 0; padding: 12px; background: #fef3c7; border-radius: 6px; color: #92400e; font-size: 14px; }
+        p { margin: 0 0 12px 0; color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-invoice"></i> {{ orcamento.codigo }}</h1>
+            <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+        <p><strong>Cliente:</strong> {{ orcamento.cliente.nome|default:orcamento.nome_cliente_pagamento|default:"—" }}</p>
+        <p><strong>Valor total:</strong> {{ orcamento.valor_total|floatformat:2|default:"0.00" }} MT</p>
+        {% if ja_tem_pedido %}
+            <div class="aviso">
+                Já foi criado um pedido a partir desta cotação. Use a lista de Pedidos de Venda para o consultar.
+            </div>
+            <a href="{% url 'vendas:pedido_detail' ja_tem_pedido.id %}" class="btn btn-primary"><i class="fas fa-eye"></i> Ver pedido</a>
+        {% else %}
+            <div class="info">
+                Ao converter, será criado um novo pedido (ordem de serviço) com os dados desta cotação. Pode depois editar e alterar o status na lista de Pedidos.
+            </div>
+            <form method="post" action="{% url 'vendas:confirmar_cotacao_acao' orcamento.id %}" style="margin-top: 16px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Converter em pedido</button>
+            </form>
+        {% endif %}
+    </div>
+</body>
+</html>

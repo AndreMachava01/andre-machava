@@ -1,0 +1,126 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Histórico de Alocações{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current='Histórico' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    Histórico de Alocações
+                </h1>
+                <p class="page-subtitle">Rastreamentos com transporte atribuído</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search">Pesquisar</label>
+                <input type="text" id="filtro-search" name="search" value="{{ search }}" class="form-control"
+                       placeholder="Código, destinatário, endereço...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo">Tipo</label>
+                <select id="filtro-tipo" name="tipo_alocacao" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="VEICULO_INTERNO" {% if tipo_alocacao == 'VEICULO_INTERNO' %}selected{% endif %}>Veículo interno</option>
+                    <option value="TRANSPORTADORA" {% if tipo_alocacao == 'TRANSPORTADORA' %}selected{% endif %}>Transportadora</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio">De</label>
+                <input type="date" id="filtro-inicio" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim">Até</label>
+                <input type="date" id="filtro-fim" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-list" aria-hidden="true"></i> Registos</h3>
+            <span class="page-info">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Destinatário</th>
+                        <th>Tipo</th>
+                        <th>Responsável</th>
+                        <th>Custo</th>
+                        <th>Data</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in page_obj %}
+                    <tr>
+                        <td><span class="badge badge-secondary">{{ r.codigo_rastreamento }}</span></td>
+                        <td>{{ r.destinatario_nome }}</td>
+                        <td>
+                            {% if r.veiculo_interno %}
+                                <span class="badge badge-success">Interno</span>
+                            {% else %}
+                                <span class="badge badge-info">Externo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.veiculo_interno %}{{ r.veiculo_interno.placa }}{% elif r.transportadora %}{{ r.transportadora.nome }}{% endif %}
+                        </td>
+                        <td>{% if r.custo_envio %}{{ r.custo_envio|floatformat:2 }} MT{% else %}—{% endif %}</td>
+                        <td>{{ r.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'stock:logistica:rastreamento_detail' r.id %}" class="btn-action secondary"
+                               title="Ver rastreamento" aria-label="Ver rastreamento {{ r.codigo_rastreamento }}">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&tipo_alocacao={{ tipo_alocacao }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search }}&tipo_alocacao={{ tipo_alocacao }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center text-muted py-4">Nenhum registo encontrado.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

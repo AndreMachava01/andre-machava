@@ -1,5 +1,12 @@
 from django.urls import path, include
-from . import views_stock, views_notificacoes, views_dashboard, views_alertas
+from django.views.generic import RedirectView
+from . import (
+    views_stock,
+    views_notificacoes,
+    views_dashboard,
+    views_alertas,
+    views_logistica_reports,
+)
 
 app_name = 'stock'
 
@@ -16,6 +23,7 @@ urlpatterns = [
     # Gestão de Categorias
     path('categorias/', views_stock.stock_categorias, name='categorias'),
     path('categorias/add/', views_stock.stock_categoria_add, name='categoria_add'),
+    path('categorias/<int:id>/', views_stock.stock_categoria_detail, name='categoria_detail'),
     path('categorias/<int:id>/edit/', views_stock.stock_categoria_edit, name='categoria_edit'),
     path('categorias/<int:id>/delete/', views_stock.stock_categoria_delete, name='categoria_delete'),
     
@@ -70,8 +78,9 @@ urlpatterns = [
     path('tipos-movimento/<int:id>/edit/', views_stock.stock_tipo_movimento_edit, name='tipo_movimento_edit'),
     path('tipos-movimento/<int:id>/delete/', views_stock.stock_tipo_movimento_delete, name='tipo_movimento_delete'),
     
-    # Dashboard Executivo
+    # Dashboard Executivo (/stock/dashboard/ e alias legado /stock/dashboard_executivo/)
     path('dashboard/', views_dashboard.dashboard_executivo, name='dashboard_executivo'),
+    path('dashboard_executivo/', views_dashboard.dashboard_executivo),
     path('dashboard/chart-movimentacoes/', views_dashboard.dashboard_chart_movimentacoes, name='dashboard_chart_movimentacoes'),
     path('dashboard/chart-estoque-sucursal/', views_dashboard.dashboard_chart_estoque_sucursal, name='dashboard_chart_estoque_sucursal'),
     path('dashboard/chart-categorias/', views_dashboard.dashboard_chart_categorias, name='dashboard_chart_categorias'),
@@ -100,6 +109,11 @@ urlpatterns = [
     path('relatorios/devolucoes/', views_stock.relatorio_devolucoes, name='relatorio_devolucoes'),
     path('relatorios/transferencias/', views_stock.relatorio_transferencias, name='relatorio_transferencias'),
     path('relatorios/valor-estoque/', views_stock.stock_relatorio_valor_estoque, name='relatorio_valor_estoque'),
+    path(
+        'relatorios/geral-stock-logistica/',
+        views_logistica_reports.relatorio_geral_stock_logistica,
+        name='relatorio_geral_stock_logistica',
+    ),
     
     # API Endpoints
     path('api/produtos/search/', views_stock.api_produtos_search, name='api_produtos_search'),
@@ -115,42 +129,27 @@ urlpatterns = [
     # Logística (integrada ao módulo de stock)
     path('logistica/', include('meuprojeto.empresa.urls_logistica', namespace='logistica')),
     
-    # Roteirização e Planejamento
+    # Submódulos logísticos avançados
     path('routing/', include('meuprojeto.empresa.urls_routing', namespace='routing')),
-    
-    # Exceções Logísticas
     path('exceptions/', include('meuprojeto.empresa.urls_exceptions', namespace='exceptions')),
-    
-    # POD (Prova de Entrega)
     path('pod/', include('meuprojeto.empresa.urls_pod', namespace='pod')),
-    
-    # Alocação Automática
     path('allocation/', include('meuprojeto.empresa.urls_allocation', namespace='allocation')),
-    
-    # Custos e Faturamento
     path('cost-billing/', include('meuprojeto.empresa.urls_cost_billing', namespace='cost_billing')),
-    
-    # Dados Mestres (Masterdata)
     path('masterdata/', include('meuprojeto.empresa.urls_masterdata', namespace='masterdata')),
-    
-    # Observabilidade
     path('observability/', include('meuprojeto.empresa.urls_observability', namespace='observability')),
-    
-    # Escalabilidade
-    path('scalability/', include('meuprojeto.empresa.urls_scalability', namespace='scalability')),
-    
-    # Geolocalização
-    path('geolocation/', include('meuprojeto.empresa.urls_geolocation', namespace='geolocation')),
-    
-    # UX Mobile
-    path('mobile/', include('meuprojeto.empresa.urls_mobile', namespace='mobile')),
-    
-    # Relatórios Logísticos
+    # path('scalability/', include('meuprojeto.empresa.urls_scalability', namespace='scalability')),
+    # path('geolocation/', include('meuprojeto.empresa.urls_geolocation', namespace='geolocation')),
+    # path('mobile/', include('meuprojeto.empresa.urls_mobile', namespace='mobile')),
+    path(
+        'reports/dashboard-executivo/',
+        RedirectView.as_view(url='/stock/dashboard/', permanent=False),
+        name='reports_dashboard_executivo',
+    ),
     path('reports/', include('meuprojeto.empresa.urls_reports', namespace='reports')),
     
-    # Notificações Push
-    path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
+    # Notificações Push (desactivado: modelos incompletos)
+    # path('notifications/', include('meuprojeto.empresa.urls_notifications', namespace='notifications')),
     
-    # Integrações com Transportadoras
-    path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
+    # Integrações com Transportadoras (desactivado até modelos/views estáveis)
+    # path('integrations/', include('meuprojeto.empresa.urls_integrations', namespace='integrations')),
 ]

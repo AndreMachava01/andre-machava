@@ -1,135 +1,178 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Checklist de Viatura (Em Branco){% endblock %}
+{% block title %}Checklist de viatura (em branco){% endblock %}
 
-{% block extra_style %}
-<style>
-    @media print {
-        .no-print { display: none !important; }
-        .print-header {
-            background: #8b5cf6 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-    }
-
-    .sheet {
-        background: white;
-        color: #111;
-        max-width: 900px;
-        margin: 16px auto;
-        padding: 24px;
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
-    }
-    .print-header {
-        color: #fff;
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .title {
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-    }
-    .meta { font-size: 12px; opacity: .9; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .field { display: flex; gap: 8px; align-items: center; }
-    .label { width: 180px; font-weight: 600; }
-    .line { flex: 1; border-bottom: 1px dashed #bbb; height: 16px; }
-
-    .category {
-        margin-top: 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .category-title { background: #f3f4f6; padding: 10px 14px; font-weight: 700; }
-    .items { padding: 10px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .item { display: flex; align-items: center; gap: 10px; }
-    .box { width: 16px; height: 16px; border: 2px solid #111; display: inline-block; }
-    .item-label { flex: 1; }
-
-    .sign { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
-    .sign-block { text-align: center; }
-    .sign-line { border-top: 1px solid #111; margin-top: 40px; padding-top: 4px; font-size: 12px; }
-
-    .actions { display: flex; justify-content: space-between; margin-bottom: 12px; }
-    .btn { padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; }
-    .btn-back { background: var(--surface-dark); color: var(--text-primary); border: 1px solid var(--border-color); }
-    .btn-print { background: var(--accent-primary); color: #fff; }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="sheet">
-    <div class="actions no-print">
-        <a href="{% url 'stock:logistica:checklist_list' %}" class="btn btn-back">
-            <i class="fas fa-arrow-left"></i> Voltar
-        </a>
-        <a href="#" onclick="window.print(); return false;" class="btn btn-print">
-            <i class="fas fa-print"></i> Imprimir
-        </a>
-    </div>
+<div class="container stock-page stock-checklist-print-page">
+    {% url 'stock:logistica:checklist_list' as checklist_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Checklists' breadcrumb_section_url=checklist_url breadcrumb_current='Imprimir em branco' %}
 
-    <div class="print-header">
-        <h1 class="title">Checklist de Viatura - Em Branco</h1>
-        <div class="meta">
-            Data: ______________________<br/>
-            Local: ______________________
-        </div>
-    </div>
-
-    <div class="grid-2">
-        <div class="field"><div class="label">Veículo</div><div class="line"></div></div>
-        <div class="field"><div class="label">Tipo</div><div class="line"></div></div>
-        <div class="field"><div class="label">Inspetor</div><div class="line"></div></div>
-        <div class="field"><div class="label">Motorista</div><div class="line"></div></div>
-        <div class="field"><div class="label">Quilometragem</div><div class="line"></div></div>
-    </div>
-
-    {% for categoria, itens in itens_por_categoria.items %}
-        <div class="category">
-            <div class="category-title">{{ categoria }}</div>
-            <div class="items">
-                {% for cod, rotulo in itens %}
-                    <div class="item">
-                        <span class="box"></span>
-                        <div class="item-label">{{ rotulo }}</div>
-                    </div>
-                {% endfor %}
+    <div class="page-header stock-no-print">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                    Checklist em branco
+                </h1>
+                <p class="page-subtitle">Folha para inspecção em campo — preencher à mão</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:checklist_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'stock:logistica:checklist_create' %}" class="btn btn-outline">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Registar
+                </a>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
             </div>
         </div>
-    {% endfor %}
-
-    <div class="category">
-        <div class="category-title">Observações</div>
-        <div class="items" style="grid-template-columns: 1fr; min-height: 120px;">
-            
-        </div>
     </div>
 
-    <div class="sign">
-        <div class="sign-block">
-            <div class="sign-line">Assinatura do Inspetor</div>
+    <div class="stock-doc-print stock-checklist-doc stock-checklist-doc--compact">
+        <header class="stock-doc-print__header stock-checklist-doc__header">
+            <div class="stock-checklist-doc__header-main">
+                <h2 class="stock-doc-print__title">CHECKLIST DE VIATURA</h2>
+                <p class="stock-doc-print__code">Folha em branco</p>
+            </div>
+            <div class="stock-doc-print__date">
+                <strong>Emitido:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}
+            </div>
+        </header>
+
+        <section class="stock-checklist-blank__section stock-checklist-blank__section--ident">
+            <h3 class="stock-checklist-blank__section-title">Identificação</h3>
+            <div class="stock-checklist-blank__fields-grid">
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Código</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Data / hora</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Veículo</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Placa</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Inspetor</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Motorista</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Local</span>
+                    <span class="stock-checklist-blank__fill" aria-hidden="true">&nbsp;</span>
+                </div>
+                <div class="stock-checklist-blank__field">
+                    <span class="stock-checklist-blank__field-label">Quilometragem</span>
+                    <span class="stock-checklist-blank__field-suffix">
+                        <span class="stock-checklist-blank__fill stock-checklist-blank__fill--short" aria-hidden="true">&nbsp;</span> km
+                    </span>
+                </div>
+            </div>
+            <div class="stock-checklist-blank__options">
+                <div class="stock-checklist-blank__options-block stock-checklist-blank__options-block--tipo">
+                    <span class="stock-checklist-blank__options-title">Tipo de inspecção</span>
+                    <div class="stock-checklist-blank__checks-row stock-checklist-blank__checks-row--tipo">
+                        {% for value, label in tipo_choices %}
+                        <div class="stock-checklist-blank__check-pair stock-checklist-blank__check-pair--option">
+                            <span class="stock-checklist-blank__box" aria-hidden="true"></span>
+                            <span class="stock-checklist-blank__check-label">{{ label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="stock-checklist-blank__options-block stock-checklist-blank__options-block--resultado">
+                    <span class="stock-checklist-blank__options-title">Resultado final</span>
+                    <div class="stock-checklist-blank__checks-row stock-checklist-blank__checks-row--resultado">
+                        <div class="stock-checklist-blank__check-pair stock-checklist-blank__check-pair--option">
+                            <span class="stock-checklist-blank__box" aria-hidden="true"></span>
+                            <span class="stock-checklist-blank__check-label">Aprovado</span>
+                        </div>
+                        <div class="stock-checklist-blank__check-pair stock-checklist-blank__check-pair--option">
+                            <span class="stock-checklist-blank__box" aria-hidden="true"></span>
+                            <span class="stock-checklist-blank__check-label">Reprovado</span>
+                        </div>
+                        <div class="stock-checklist-blank__check-pair stock-checklist-blank__check-pair--option">
+                            <span class="stock-checklist-blank__box" aria-hidden="true"></span>
+                            <span class="stock-checklist-blank__check-label">Com condições</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <p class="stock-checklist-blank__legend">
+            Marque <strong>OK</strong> ou <strong>NOK</strong> em cada item verificado.
+        </p>
+
+        <div class="stock-checklist-blank__catalog">
+            {% for categoria, itens in itens_por_categoria.items %}
+            <section class="stock-checklist-blank__section">
+                <h3 class="stock-checklist-blank__section-title">{{ categoria }}</h3>
+                <div class="stock-checklist-blank__items-grid">
+                    {% for cod, rotulo in itens %}
+                    <div class="stock-checklist-blank__item">
+                        <div class="stock-checklist-blank__checks" aria-hidden="true">
+                            <div class="stock-checklist-blank__check-pair">
+                                <span class="stock-checklist-blank__check-label">OK</span>
+                                <span class="stock-checklist-blank__box"></span>
+                            </div>
+                            <div class="stock-checklist-blank__check-pair">
+                                <span class="stock-checklist-blank__check-label">NOK</span>
+                                <span class="stock-checklist-blank__box"></span>
+                            </div>
+                        </div>
+                        <span class="stock-checklist-blank__label">{{ rotulo }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
         </div>
-        <div class="sign-block">
-            <div class="sign-line">Assinatura do Motorista</div>
+
+        <section class="stock-checklist-blank__section stock-checklist-blank__section--notes">
+            <h3 class="stock-checklist-blank__section-title">Observações e recomendações</h3>
+            <div class="stock-checklist-blank__notes" aria-hidden="true"></div>
+        </section>
+
+        <div class="stock-doc-print__signatures stock-checklist-doc__signatures">
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                Assinatura do inspetor
+            </div>
+            <div class="stock-doc-print__signature-box">
+                <div class="stock-doc-print__signature-line"></div>
+                Assinatura do motorista
+            </div>
         </div>
+
+        <footer class="stock-doc-print__footer">
+            Checklist de viatura · Conception · {{ data_relatorio|date:"d/m/Y" }}
+        </footer>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
-    // Nenhuma lógica: impressão direta
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.search.indexOf('imprimir=1') !== -1) {
+        window.setTimeout(function () { window.print(); }, 400);
+    }
+});
 </script>
 {% endblock %}
-
-
-

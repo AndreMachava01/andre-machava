@@ -1,0 +1,131 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Faturas de frete{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:cost_billing:dashboard' as cost_billing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Custos & faturamento' breadcrumb_section_url=cost_billing_dashboard_url breadcrumb_current='Faturas de frete' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> Faturas de frete</h1>
+                <p class="page-subtitle">Emissão e acompanhamento de faturamento logístico</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard</a>
+                <a href="{% url 'stock:cost_billing:fatura_create' %}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Nova fatura</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stat-content"><div class="stat-number">{{ stats.total|default:"0" }}</div><div class="stat-label">Total</div></div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stat-content"><div class="stat-number">{{ stats.pagas|default:"0" }}</div><div class="stat-label">Pagas</div></div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stat-content"><div class="stat-number">{{ stats.pendentes|default:"0" }}</div><div class="stat-label">Enviadas</div></div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stat-content"><div class="stat-number">{{ stats.valor_total|default:0|floatformat:0 }} MT</div><div class="stat-label">Valor total</div></div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search-faturas">Pesquisar</label>
+                <input type="text" id="filtro-search-faturas" name="search" value="{{ search }}" class="form-control" placeholder="Número, cliente, documento...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-faturas">Status</label>
+                <select id="filtro-status-faturas" name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio-faturas">De</label>
+                <input type="date" id="filtro-inicio-faturas" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim-faturas">Até</label>
+                <input type="date" id="filtro-fim-faturas" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                    {% if has_filters %}<a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn-clear">Limpar</a>{% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> Faturas</h3>
+            <span class="page-info">{{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Emissão</th>
+                        <th>Vencimento</th>
+                        <th>Valor líquido</th>
+                        <th>Status</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fatura in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ fatura.numero_fatura }}</strong></td>
+                        <td>{{ fatura.cliente_nome|truncatechars:30 }}</td>
+                        <td>{{ fatura.data_emissao|date:"d/m/Y" }}</td>
+                        <td>{{ fatura.data_vencimento|date:"d/m/Y" }}</td>
+                        <td>{{ fatura.valor_liquido|floatformat:2 }} MT</td>
+                        <td>
+                            <span class="badge badge-{% if fatura.status == 'PAGO' %}success{% elif fatura.status == 'VENCIDO' %}danger{% elif fatura.status == 'ENVIADO' %}warning{% elif fatura.status == 'RASCUNHO' %}secondary{% else %}info{% endif %}">
+                                {{ fatura.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <a href="{% url 'stock:cost_billing:fatura_detail' fatura.id %}" class="btn-action primary" title="Ver">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&status={{ status }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>{% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&search={{ search }}&status={{ status }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>{% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-file-invoice" aria-hidden="true"></i>
+            <h3>Nenhuma fatura encontrada</h3>
+            <a href="{% url 'stock:cost_billing:fatura_create' %}" class="btn btn-primary">Nova fatura</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

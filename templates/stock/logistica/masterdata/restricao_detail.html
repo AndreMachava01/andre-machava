@@ -1,0 +1,43 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Restrição {{ restricao.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:masterdata:restricoes_list' as restricoes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Restrições' breadcrumb_section_url=restricoes_list_url breadcrumb_current=restricao.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-ban" aria-hidden="true"></i> {{ restricao.nome }}</h1>
+                <p class="page-subtitle">{{ restricao.codigo }} — {{ restricao.get_tipo_display }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:masterdata:restricoes_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Lista</a>
+                {% include 'stock/logistica/includes/_masterdata_detail_actions.html' with object=restricao edit_url='stock:masterdata:restricao_edit' delete_url='stock:masterdata:restricao_delete' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Detalhes</h2>
+            <span class="badge badge-{% if restricao.ativo %}success{% else %}secondary{% endif %}">{% if restricao.ativo %}Activa{% else %}Inactiva{% endif %}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item"><span class="info-label">Tipo</span><span class="info-value">{{ restricao.get_tipo_display }}</span></div>
+                <div class="info-item"><span class="info-label">Valor mínimo</span><span class="info-value">{{ restricao.valor_minimo|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Valor máximo</span><span class="info-value">{{ restricao.valor_maximo|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Unidade</span><span class="info-value">{{ restricao.unidade_medida|default:"—" }}</span></div>
+                <div class="info-item"><span class="info-label">Viatura interna</span><span class="info-value">{% if restricao.aplicavel_veiculo_interno %}Sim{% else %}Não{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Transportadora</span><span class="info-value">{% if restricao.aplicavel_transportadora %}Sim{% else %}Não{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Acção em violação</span><span class="info-value">{{ restricao.get_acao_violacao_display }}</span></div>
+            </div>
+            {% if restricao.descricao %}<p class="text-muted stock-u-mt-16">{{ restricao.descricao }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

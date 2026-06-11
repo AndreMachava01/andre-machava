@@ -1,0 +1,237 @@
+"""
+SISTEMA UNIFICADO DE EFEITOS VISUAIS
+Arquivo centralizado para todos os efeitos visuais do sistema
+Elimina duplicações e facilita manutenção
+"""
+
+/* =============================================================================
+   VARIÁVEIS CSS PARA EFEITOS VISUAIS
+   ============================================================================= */
+
+:root {
+  /* Blur Effects */
+  --blur-light: blur(8px);
+  --blur-medium: blur(10px);
+  --blur-heavy: blur(15px);
+  --blur-extra-heavy: blur(20px);
+  
+  /* Brightness Effects */
+  --brightness-subtle: brightness(1.05);
+  --brightness-medium: brightness(1.1);
+  --brightness-high: brightness(1.3);
+  --brightness-extra-high: brightness(1.5);
+  
+  /* Shadow Effects - Green */
+  --shadow-glow-green-light: 0 0 15px rgba(16, 185, 129, 0.2);
+  --shadow-glow-green-medium: 0 0 25px rgba(16, 185, 129, 0.3);
+  --shadow-glow-green-heavy: 0 0 40px rgba(16, 185, 129, 0.4);
+  --shadow-inset-light: inset 0 2px 4px rgba(16, 185, 129, 0.1);
+  --shadow-inset-medium: inset 0 4px 8px rgba(16, 185, 129, 0.15);
+  
+  /* Shadow Effects - Gold */
+  --shadow-glow-gold-light: 0 0 15px rgba(255, 215, 0, 0.2);
+  --shadow-glow-gold-medium: 0 0 25px rgba(255, 215, 0, 0.3);
+  --shadow-glow-gold-heavy: 0 0 40px rgba(255, 215, 0, 0.4);
+  
+  /* Shadow Effects - General */
+  --shadow-elevation-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-elevation-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-elevation-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-elevation-xl: 0 16px 32px rgba(0, 0, 0, 0.25);
+  
+  /* Gradient Effects - Green */
+  --gradient-green-base: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(52, 211, 153, 0.5) 50%, rgba(16, 185, 129, 0.4) 100%);
+  --gradient-green-hover: linear-gradient(135deg, rgba(16, 185, 129, 0.6) 0%, rgba(52, 211, 153, 0.7) 50%, rgba(16, 185, 129, 0.6) 100%);
+  --gradient-green-overlay: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(16, 185, 129, 0.15) 50%, rgba(255, 255, 255, 0.05) 100%);
+  
+  /* Gradient Effects - Gold */
+  --gradient-gold-base: linear-gradient(135deg, rgba(255, 215, 0, 0.65) 0%, rgba(255, 193, 7, 0.7) 50%, rgba(255, 152, 0, 0.65) 100%);
+  --gradient-gold-hover: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.85) 50%, rgba(255, 152, 0, 0.8) 100%);
+  --gradient-gold-overlay: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 215, 0, 0.15) 50%, rgba(255, 255, 255, 0.05) 100%);
+  
+  /* Border Effects */
+  --border-green-light: 1px solid rgba(16, 185, 129, 0.3);
+  --border-green-medium: 2px solid rgba(16, 185, 129, 0.6);
+  --border-green-heavy: 2px solid rgba(16, 185, 129, 0.8);
+  --border-gold-light: 1px solid rgba(255, 215, 0, 0.3);
+  --border-gold-medium: 2px solid rgba(255, 215, 0, 0.5);
+  --border-gold-heavy: 2px solid rgba(255, 215, 0, 0.7);
+  
+  /* Background Effects */
+  --bg-white-transparent-light: rgba(255, 255, 255, 0.1);
+  --bg-white-transparent-medium: rgba(255, 255, 255, 0.2);
+  --bg-white-transparent-heavy: rgba(255, 255, 255, 0.3);
+  
+  /* Text Shadow Effects */
+  --text-shadow-light: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --text-shadow-medium: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --text-shadow-heavy: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE BLUR
+   ============================================================================= */
+
+.backdrop-blur-light { backdrop-filter: var(--blur-light) !important; }
+.backdrop-blur-medium { backdrop-filter: var(--blur-medium) !important; }
+.backdrop-blur-heavy { backdrop-filter: var(--blur-heavy) !important; }
+.backdrop-blur-extra-heavy { backdrop-filter: var(--blur-extra-heavy) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE BRIGHTNESS
+   ============================================================================= */
+
+.filter-brightness-subtle { filter: var(--brightness-subtle) !important; }
+.filter-brightness-medium { filter: var(--brightness-medium) !important; }
+.filter-brightness-high { filter: var(--brightness-high) !important; }
+.filter-brightness-extra-high { filter: var(--brightness-extra-high) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE SOMBRAS
+   ============================================================================= */
+
+/* Sombras de Elevação */
+.shadow-elevation-sm { box-shadow: var(--shadow-elevation-sm) !important; }
+.shadow-elevation-md { box-shadow: var(--shadow-elevation-md) !important; }
+.shadow-elevation-lg { box-shadow: var(--shadow-elevation-lg) !important; }
+.shadow-elevation-xl { box-shadow: var(--shadow-elevation-xl) !important; }
+
+/* Sombras com Brilho Verde */
+.shadow-glow-green-light { box-shadow: var(--shadow-glow-green-light) !important; }
+.shadow-glow-green-medium { box-shadow: var(--shadow-glow-green-medium) !important; }
+.shadow-glow-green-heavy { box-shadow: var(--shadow-glow-green-heavy) !important; }
+
+/* Sombras com Brilho Dourado */
+.shadow-glow-gold-light { box-shadow: var(--shadow-glow-gold-light) !important; }
+.shadow-glow-gold-medium { box-shadow: var(--shadow-glow-gold-medium) !important; }
+.shadow-glow-gold-heavy { box-shadow: var(--shadow-glow-gold-heavy) !important; }
+
+/* Sombras Internas */
+.shadow-inset-light { box-shadow: var(--shadow-inset-light) !important; }
+.shadow-inset-medium { box-shadow: var(--shadow-inset-medium) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE GRADIENTES
+   ============================================================================= */
+
+/* Gradientes Verdes */
+.gradient-green-base { background: var(--gradient-green-base) !important; }
+.gradient-green-hover { background: var(--gradient-green-hover) !important; }
+.gradient-green-overlay { background: var(--gradient-green-overlay) !important; }
+
+/* Gradientes Dourados */
+.gradient-gold-base { background: var(--gradient-gold-base) !important; }
+.gradient-gold-hover { background: var(--gradient-gold-hover) !important; }
+.gradient-gold-overlay { background: var(--gradient-gold-overlay) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE BORDAS
+   ============================================================================= */
+
+/* Bordas Verdes */
+.border-green-light { border: var(--border-green-light) !important; }
+.border-green-medium { border: var(--border-green-medium) !important; }
+.border-green-heavy { border: var(--border-green-heavy) !important; }
+
+/* Bordas Douradas */
+.border-gold-light { border: var(--border-gold-light) !important; }
+.border-gold-medium { border: var(--border-gold-medium) !important; }
+.border-gold-heavy { border: var(--border-gold-heavy) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE FUNDO
+   ============================================================================= */
+
+.bg-white-transparent-light { background: var(--bg-white-transparent-light) !important; }
+.bg-white-transparent-medium { background: var(--bg-white-transparent-medium) !important; }
+.bg-white-transparent-heavy { background: var(--bg-white-transparent-heavy) !important; }
+
+/* =============================================================================
+   CLASSES UTILITÁRIAS DE SOMBRA DE TEXTO
+   ============================================================================= */
+
+.text-shadow-light { text-shadow: var(--text-shadow-light) !important; }
+.text-shadow-medium { text-shadow: var(--text-shadow-medium) !important; }
+.text-shadow-heavy { text-shadow: var(--text-shadow-heavy) !important; }
+
+/* =============================================================================
+   EFEITOS COMPOSTOS PRONTOS
+   ============================================================================= */
+
+/* Efeito Glass (vidro fosco) */
+.effect-glass {
+  backdrop-filter: var(--blur-medium) !important;
+  background: var(--bg-white-transparent-light) !important;
+  border: var(--border-gold-light) !important;
+  box-shadow: var(--shadow-elevation-md) !important;
+}
+
+/* Efeito Glow Verde */
+.effect-glow-green {
+  background: var(--gradient-green-base) !important;
+  border: var(--border-green-medium) !important;
+  box-shadow: var(--shadow-glow-green-light), var(--shadow-inset-light) !important;
+  backdrop-filter: var(--blur-light) !important;
+  text-shadow: var(--text-shadow-light) !important;
+}
+
+/* Efeito Glow Dourado */
+.effect-glow-gold {
+  background: var(--gradient-gold-base) !important;
+  border: var(--border-gold-light) !important;
+  box-shadow: var(--shadow-glow-gold-medium) !important;
+  backdrop-filter: var(--blur-medium) !important;
+}
+
+/* Efeito Card Elevado */
+.effect-card-elevated {
+  background: var(--bg-white-transparent-medium) !important;
+  border: var(--border-gold-medium) !important;
+  box-shadow: var(--shadow-elevation-lg) !important;
+  backdrop-filter: var(--blur-medium) !important;
+}
+
+/* Efeito Hover Padrão */
+.effect-hover-default:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-elevation-lg) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Efeito Hover com Brilho Verde */
+.effect-hover-glow-green:hover {
+  background: var(--gradient-green-hover) !important;
+  border: var(--border-green-heavy) !important;
+  box-shadow: var(--shadow-glow-green-heavy) !important;
+  transform: translateY(-3px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Efeito Hover com Brilho Dourado */
+.effect-hover-glow-gold:hover {
+  background: var(--gradient-gold-hover) !important;
+  border: var(--border-gold-heavy) !important;
+  box-shadow: var(--shadow-glow-gold-heavy) !important;
+  transform: translateY(-3px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* =============================================================================
+   RESPONSIVIDADE
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .backdrop-blur-heavy { backdrop-filter: var(--blur-medium) !important; }
+  .backdrop-blur-extra-heavy { backdrop-filter: var(--blur-heavy) !important; }
+  
+  .shadow-glow-green-heavy { box-shadow: var(--shadow-glow-green-medium) !important; }
+  .shadow-glow-gold-heavy { box-shadow: var(--shadow-glow-gold-medium) !important; }
+}
+
+@media (max-width: 480px) {
+  .backdrop-blur-medium { backdrop-filter: var(--blur-light) !important; }
+  .backdrop-blur-heavy { backdrop-filter: var(--blur-medium) !important; }
+  
+  .shadow-glow-green-medium { box-shadow: var(--shadow-glow-green-light) !important; }
+  .shadow-glow-gold-medium { box-shadow: var(--shadow-glow-gold-light) !important; }
+}

@@ -1,0 +1,571 @@
+{% load humanize %}
+{% load rh_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem {{ ordem.codigo }} - Fase 2: Preparação e Execução</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        h1 {
+            font-size: 24px;
+            color: #8b5cf6;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #8b5cf6;
+        }
+        .info-card h3 {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-card p {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: width 0.3s ease;
+        }
+        .checklist-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .checklist-section h2 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checklist-item {
+            background: #f8f9fa;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .checklist-item.completed {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        .checklist-item.pending {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .checklist-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .checklist-number {
+            background: #8b5cf6;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .checklist-item.completed .checklist-number {
+            background: #10b981;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .checklist-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: #8b5cf6;
+            color: white;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        .section-title {
+            font-size: 18px;
+            color: #1f2937;
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-cogs"></i>
+                Ordem de Produção {{ ordem.codigo }} - Fase 2
+            </h1>
+            <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Informações da Ordem -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Código</h3>
+                <p>{{ ordem.codigo }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Receita</h3>
+                <p>{{ ordem.receita.nome }}</p>
+            </div>
+            <div class="info-card">
+                <h3>Produto</h3>
+                <p>{% if ordem.receita.produto %}{{ ordem.receita.produto.nome }}{% else %}-{% endif %}</p>
+            </div>
+            <div class="info-card">
+                <h3>Quantidade</h3>
+                <p>{{ ordem.quantidade }} UN</p>
+            </div>
+            <div class="info-card">
+                <h3>Progresso</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ ordem.progresso_percentual }}%;">
+                        {{ ordem.progresso_percentual|floatformat:0 }}%
+                    </div>
+                </div>
+            </div>
+            <div class="info-card">
+                <h3>Responsável</h3>
+                <p>{% if ordem.responsavel_fase2 %}{{ ordem.responsavel_fase2.get_full_name|default:ordem.responsavel_fase2.username }}{% else %}-{% endif %}</p>
+            </div>
+            {% if ordem.data_inicio_fase2 %}
+            <div class="info-card">
+                <h3>Início da Fase 2</h3>
+                <p>{{ ordem.data_inicio_fase2|date:"d/m/Y H:i" }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Checklist de Execução -->
+        <div class="checklist-section">
+            <h2><i class="fas fa-tasks"></i> Checklist de Execução</h2>
+            
+            <!-- 1. Requisição de Material -->
+            <div class="checklist-item {% if ordem.requisicao_material_criada %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">1</span>
+                        <span>Requisição de Material</span>
+                    </div>
+                    <div>
+                        {% if ordem.requisicao_material_criada %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Concluída
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.requisicao_material_criada %}
+                        {% with req_material=requisicao_material|default:ordem.requisicao_material %}
+                            {% if req_material %}
+                                <div class="alert alert-success">
+                                    <p style="margin: 0 0 10px 0; font-weight: 600;">
+                                        <i class="fas fa-check-circle"></i> Requisição de material criada com sucesso.
+                                    </p>
+                                    <p style="margin: 0;">
+                                        <strong>Código:</strong> {{ req_material.codigo }}
+                                        <br><small>Imprima a requisição para usar na coleta do material no armazém.</small>
+                                    </p>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <strong>Status:</strong>
+                                    {% if req_material.status == 'PENDENTE' %}
+                                        <span style="color: #f59e0b; font-weight: 600;">
+                                            <i class="fas fa-clock"></i> Pendente - Aguardando confirmação do armazém
+                                        </span>
+                                    {% elif req_material.status == 'APROVADA' %}
+                                        <span style="color: #10b981; font-weight: 600;">
+                                            <i class="fas fa-check-circle"></i> Confirmada pelo armazém - Pronta para recebimento
+                                        </span>
+                                    {% elif req_material.status == 'ATENDIDA' %}
+                                        <span style="color: #065f46; font-weight: 600;">
+                                            <i class="fas fa-check-double"></i> Material recebido e processado
+                                        </span>
+                                    {% else %}
+                                        {{ req_material.get_status_display }}
+                                    {% endif %}
+                                </div>
+                                
+                                <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                                    <a href="{% url 'producao:requisicao_imprimir' req_material.id %}" class="btn btn-primary" style="font-size: 14px; padding: 12px 24px; font-weight: 600;">
+                                        <i class="fas fa-print"></i> Imprimir Requisição para Coleta de Material
+                                    </a>
+                                    
+                                    {% if req_material.status == 'ATENDIDA' %}
+                                        <span style="padding: 12px 24px; background: #d1fae5; color: #065f46; border-radius: 5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;">
+                                            <i class="fas fa-check-double"></i> Recebimento Confirmado
+                                        </span>
+                                    {% elif req_material.status == 'APROVADA' %}
+                                        <a href="{% url 'producao:ordem_fase2_confirmar_recebimento' ordem.id %}" class="btn btn-success" style="font-size: 14px; padding: 12px 24px; font-weight: 600; background: #10b981; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);">
+                                            <i class="fas fa-check-double"></i> Confirmar Recebimento do Material
+                                        </a>
+                                    {% elif req_material.status == 'PENDENTE' %}
+                                        <span style="padding: 12px 24px; background: #fef3c7; color: #92400e; border-radius: 5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;">
+                                            <i class="fas fa-clock"></i> Aguardando Aprovação do Armazém
+                                        </span>
+                                    {% else %}
+                                        <form method="post" action="{% url 'producao:ordem_fase2_confirmar_recebimento' ordem.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success" style="font-size: 14px; padding: 12px 24px; font-weight: 600; background: #10b981; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);" onclick="return confirm('Tem certeza que deseja confirmar o recebimento do material do armazém? Esta ação irá reduzir o stock dos itens entregues.');">
+                                                <i class="fas fa-check-double"></i> Confirmar Recebimento do Material
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <p style="margin: 0;">A requisição foi criada mas não foi possível carregar os detalhes.</p>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <p style="margin: 0 0 15px 0;">
+                                <i class="fas fa-info-circle"></i> Crie uma requisição de material baseada nos itens da receita.
+                            </p>
+                            <form method="post" action="{% url 'producao:ordem_fase2_criar_requisicao' ordem.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-shopping-cart"></i> Criar Requisição de Material
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 2. Preparação de Peças -->
+            <div class="checklist-item {% if ordem.preparacao_pecas_concluida %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">2</span>
+                        <span>Preparação de Peças</span>
+                    </div>
+                    <div>
+                        {% if ordem.preparacao_pecas_concluida %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Concluída
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.preparacao_pecas_concluida %}
+                        <p style="color: #065f46; margin-bottom: 15px;">
+                            <i class="fas fa-check"></i> Preparação de peças concluída.
+                        </p>
+                    {% else %}
+                        <p style="color: #92400e; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Marque como concluída quando todas as peças estiverem preparadas.
+                        </p>
+                    {% endif %}
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                        {% if ordem.receita %}
+                            <a href="{% url 'producao:receita_documentos' ordem.receita.id %}" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+                                <i class="fas fa-file-pdf"></i> Ver Plano de Corte
+                            </a>
+                        {% endif %}
+                        
+                        {% if not ordem.preparacao_pecas_concluida %}
+                            <form method="post" action="{% url 'producao:ordem_fase2_marcar_preparacao' ordem.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+                                    <i class="fas fa-check"></i> Marcar Preparação como Concluída
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3. Montagem -->
+            <div class="checklist-item {% if ordem.montagem_concluida %}completed{% else %}pending{% endif %}">
+                <div class="checklist-header">
+                    <div class="checklist-title">
+                        <span class="checklist-number">3</span>
+                        <span>Montagem</span>
+                    </div>
+                    <div>
+                        {% if ordem.montagem_concluida %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Concluída
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pendente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="checklist-content">
+                    {% if ordem.montagem_concluida %}
+                        <p style="color: #065f46; margin-bottom: 15px;">
+                            <i class="fas fa-check"></i> Montagem concluída.
+                        </p>
+                    {% else %}
+                        <p style="color: #92400e; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Marque como concluída quando a montagem estiver finalizada.
+                        </p>
+                    {% endif %}
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                        {% if ordem.receita and ordem.receita.documento_pdf %}
+                            <a href="{% url 'producao:receita_projeto' ordem.receita.id %}" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+                                <i class="fas fa-print"></i> Imprimir Projeto
+                            </a>
+                        {% endif %}
+                        
+                        {% if not ordem.montagem_concluida %}
+                            <form method="post" action="{% url 'producao:ordem_fase2_marcar_montagem' ordem.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; font-weight: 600;">
+                                    <i class="fas fa-check"></i> Marcar Montagem como Concluída
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if ordem.pode_avancar_fase %}
+        <div class="alert alert-success" style="margin-top: 30px; padding: 25px; border-left: 5px solid #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <strong style="font-size: 18px; color: #065f46; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 24px;"></i> Todas as etapas concluídas!
+                    </strong>
+                    <p style="margin: 0; color: #047857; font-size: 15px;">
+                        Você pode avançar para a Fase 3 (Acabamentos e Finalizações).
+                    </p>
+                </div>
+                <div style="flex-shrink: 0;">
+                    <form method="post" action="{% url 'producao:ordem_fase2_avancar' ordem.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" style="font-size: 16px; padding: 14px 28px; font-weight: 600; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(16, 185, 129, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(16, 185, 129, 0.3)';">
+                            <i class="fas fa-arrow-right"></i> Avançar para Fase 3
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" style="margin-top: 30px; padding: 20px; border-left: 5px solid #f59e0b;">
+            <strong style="font-size: 16px; color: #92400e; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle"></i> Etapas pendentes
+            </strong>
+            <p style="margin-top: 10px; margin-bottom: 0; color: #78350f;">
+                Complete todas as etapas acima para avançar para a Fase 3.
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Itens da Receita -->
+        <div class="section-title">
+            <i class="fas fa-list"></i> Itens da Receita
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Código</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ordem.receita.itens.all %}
+                    <tr>
+                        <td>{{ item.material.nome }}</td>
+                        <td><strong>{{ item.material.codigo }}</strong></td>
+                        <td>{{ item.quantidade|floatformat:3 }}</td>
+                        <td>{{ item.unidade_medida }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+                            Nenhum item cadastrado nesta receita.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if ordem.observacoes_execucao %}
+        <div class="section-title">
+            <i class="fas fa-comment"></i> Observações
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; color: #1f2937;">
+            {{ ordem.observacoes_execucao }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

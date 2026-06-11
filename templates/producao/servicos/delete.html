@@ -1,0 +1,219 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluir Serviço - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #ef4444;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #ef4444;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert {
+            padding: 16px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            color: #92400e;
+        }
+        .alert strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .info-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .info-item strong {
+            display: block;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .info-item span {
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-ativo {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-inativo {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .form-actions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-trash-alt"></i>
+                Excluir Serviço
+            </h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="alert">
+            <strong><i class="fas fa-exclamation-triangle"></i> Atenção!</strong>
+            Esta acção não pode ser desfeita. O serviço será permanentemente removido do sistema.
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Código</strong>
+                <span>{{ servico.codigo }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Nome</strong>
+                <span>{{ servico.nome }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Categoria</strong>
+                <span>{{ servico.categoria.nome|default:"Não definida" }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Unidade de Cobrança</strong>
+                <span>{{ servico.get_unidade_medida_display }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Preço de Custo</strong>
+                <span>
+                    {% if servico.preco_custo %}
+                        {{ servico.preco_custo|floatformat:2|intcomma }} MT
+                    {% else %}
+                        <span style="color: #9ca3af;">-</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <strong>Preço de Venda</strong>
+                <span>
+                    {% if servico.preco_venda %}
+                        <strong>{{ servico.preco_venda|floatformat:2|intcomma }} MT</strong>
+                    {% else %}
+                        <span style="color: #9ca3af;">-</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <strong>Status</strong>
+                <span>
+                    <span class="badge badge-{{ servico.status|lower }}">
+                        {{ servico.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            {% if servico.descricao %}
+            <div class="info-item" style="grid-column: 1 / -1;">
+                <strong>Descrição</strong>
+                <span>{{ servico.descricao }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post" class="form-actions">
+            {% csrf_token %}
+            <a href="{% url 'producao:servicos_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir o serviço \"{{ servico.nome }}\"? Esta acção não pode ser desfeita.');">
+                <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+            </button>
+        </form>
+    </div>
+</body>
+</html>
+

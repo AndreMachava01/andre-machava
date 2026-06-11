@@ -1,0 +1,487 @@
+{% load humanize %}
+{% load rh_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Ordem {{ ordem.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        h1 {
+            font-size: 24px;
+            color: #8b5cf6;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .info-card {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #8b5cf6;
+        }
+        .info-card h3 {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-card p {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .badge-finalizada { background: #10b981; color: white; }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .table th {
+            background: #f5f3ff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .table tr:hover {
+            background: #f9fafb;
+        }
+        .etapas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .etapa-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .etapa-card.completed {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        .etapa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .etapa-nome {
+            font-weight: 600;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-clipboard-list"></i>
+                Detalhes da Ordem de Produção {{ ordem.codigo }}
+            </h1>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% if ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                    <a href="{% url 'producao:qualidade_inspecoes' %}?search={{ ordem.codigo }}" class="btn btn-secondary" style="background: #10b981;">
+                        <i class="fas fa-search"></i> Inspeção
+                    </a>
+                {% endif %}
+                {% if ordem.fase_atual == 'FINALIZADA' and ordem.controle_qualidade_aprovado %}
+                    <a href="{% url 'producao:qualidade_certificado_view' ordem.id %}" class="btn btn-secondary" style="background: #3b82f6;">
+                        <i class="fas fa-certificate"></i> Certificado
+                    </a>
+                {% endif %}
+                {% if ordem.status_aprovacao == 'REJEITADA' or ordem.fase_atual == 'CANCELADA' %}
+                    <a href="{% url 'producao:qualidade_nconformidades' %}?search={{ ordem.codigo }}" class="btn btn-secondary" style="background: #f59e0b;">
+                        <i class="fas fa-exclamation-triangle"></i> Não Conformidade
+                    </a>
+                {% endif %}
+                <a href="{% url 'producao:ordens' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 5px; background: {% if message.tags == 'error' %}#fee2e2{% elif message.tags == 'success' %}#d1fae5{% else %}#dbeafe{% endif %}; color: {% if message.tags == 'error' %}#991b1b{% elif message.tags == 'success' %}#065f46{% else %}#1e40af{% endif %};">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Informações Gerais -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-info-circle"></i> Informações Gerais
+            </div>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Código</h3>
+                    <p>{{ ordem.codigo }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Status</h3>
+                    <p>
+                        {% if ordem.status == 'CONCLUIDA' %}
+                            <span class="badge badge-finalizada">
+                                <i class="fas fa-check-circle"></i> Concluída
+                            </span>
+                        {% elif ordem.status == 'EM_PRODUCAO' %}
+                            <span class="badge badge-info">
+                                <i class="fas fa-cog"></i> Em Produção
+                            </span>
+                        {% elif ordem.status == 'PAUSADA' %}
+                            <span class="badge badge-warning">
+                                <i class="fas fa-pause"></i> Pausada
+                            </span>
+                        {% elif ordem.status == 'CANCELADA' %}
+                            <span class="badge badge-danger">
+                                <i class="fas fa-times-circle"></i> Cancelada
+                            </span>
+                        {% else %}
+                            <span class="badge badge-info">{{ ordem.get_status_display }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h3>Fase Atual</h3>
+                    <p>
+                        {% if ordem.fase_atual == 'FINALIZADA' %}
+                            <span class="badge badge-finalizada">Finalizada</span>
+                        {% elif ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                            <span class="badge badge-info">Fase 3: Finalização</span>
+                        {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                            <span class="badge badge-info">Fase 2: Execução</span>
+                        {% elif ordem.fase_atual == 'FASE1_CRIACAO' %}
+                            <span class="badge badge-warning">Fase 1: Criação</span>
+                        {% else %}
+                            <span class="badge badge-info">{{ ordem.get_fase_atual_display }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h3>Receita</h3>
+                    <p>{{ ordem.receita.nome|default:"N/A" }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Produto</h3>
+                    <p>{{ ordem.receita.produto.nome|default:"N/A" }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Quantidade</h3>
+                    <p>{{ ordem.quantidade|intcomma }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Quantidade Produzida</h3>
+                    <p>{{ ordem.quantidade_produzida|default:0|intcomma }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Sucursal</h3>
+                    <p>{{ ordem.sucursal.nome|default:"N/A" }}</p>
+                </div>
+                {% if ordem.responsavel_fase2 %}
+                <div class="info-card">
+                    <h3>Responsável Fase 2</h3>
+                    <p>{{ ordem.responsavel_fase2.get_full_name|default:ordem.responsavel_fase2.username|default:"N/A" }}</p>
+                </div>
+                {% endif %}
+                {% if ordem.responsavel_fase3 %}
+                <div class="info-card">
+                    <h3>Responsável Fase 3</h3>
+                    <p>{{ ordem.responsavel_fase3.get_full_name|default:ordem.responsavel_fase3.username|default:"N/A" }}</p>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <h3>Prioridade</h3>
+                    <p>{{ ordem.get_prioridade_display|default:"Normal" }}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Data de Criação</h3>
+                    <p>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% if ordem.data_finalizacao %}
+                <div class="info-card">
+                    <h3>Data de Finalização</h3>
+                    <p>{{ ordem.data_finalizacao|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+                {% if ordem.data_inicio_fase2 %}
+                <div class="info-card">
+                    <h3>Data de Início Fase 2</h3>
+                    <p>{{ ordem.data_inicio_fase2|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+                {% if ordem.data_inicio_fase3 %}
+                <div class="info-card">
+                    <h3>Data de Início Fase 3</h3>
+                    <p>{{ ordem.data_inicio_fase3|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+                {% if ordem.data_cancelamento %}
+                <div class="info-card">
+                    <h3>Data de Cancelamento</h3>
+                    <p>{{ ordem.data_cancelamento|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Itens da Receita -->
+        {% if ordem.receita %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-list"></i> Itens da Receita
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Código</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ordem.receita.itens.all %}
+                    <tr>
+                        <td><strong>{{ item.material.nome }}</strong></td>
+                        <td>{{ item.material.codigo }}</td>
+                        <td>{{ item.quantidade|floatformat:2 }}</td>
+                        <td>{{ item.material.unidade_medida|default:"un" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #6b7280; padding: 20px;">
+                            Nenhum item na receita
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Documentos da Receita -->
+        {% if ordem.receita.plano_corte_pdf or ordem.receita.documento_pdf %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-file-pdf"></i> Documentos da Receita
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px;">
+                {% if ordem.receita.plano_corte_pdf %}
+                <div style="background: #f5f3ff; border: 1px solid #8b5cf6; border-radius: 8px; padding: 15px; flex: 1; min-width: 250px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-file-pdf" style="color: #8b5cf6; font-size: 24px;"></i>
+                        <div>
+                            <h4 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">Plano de Corte</h4>
+                            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 13px;">Documento para preparação de peças</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="{% url 'producao:receita_documentos' ordem.receita.id %}" class="btn btn-primary" style="font-size: 13px; padding: 8px 16px;">
+                            <i class="fas fa-eye"></i> Ver Plano de Corte
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if ordem.receita.documento_pdf %}
+                <div style="background: #f5f3ff; border: 1px solid #8b5cf6; border-radius: 8px; padding: 15px; flex: 1; min-width: 250px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-file-pdf" style="color: #8b5cf6; font-size: 24px;"></i>
+                        <div>
+                            <h4 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">Projeto</h4>
+                            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 13px;">Documento para montagem</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="{% url 'producao:receita_projeto' ordem.receita.id %}" class="btn btn-primary" style="font-size: 13px; padding: 8px 16px;">
+                            <i class="fas fa-print"></i> Imprimir Projeto
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Processo e Etapas -->
+        {% if etapas_agrupadas %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-tasks"></i> Processo e Etapas
+            </div>
+            {% for grupo in etapas_agrupadas %}
+                <h4 style="margin: 20px 0 10px 0; color: #6b7280; font-size: 14px; text-transform: uppercase;">
+                    Etapas Paralelas - Ordem {{ grupo.ordem }}
+                </h4>
+                <div class="etapas-grid">
+                    {% for etapa in grupo.etapas %}
+                    <div class="etapa-card {% if etapa.id in etapas_concluidas_dict %}completed{% endif %}">
+                        <div class="etapa-header">
+                            <span class="etapa-nome">{{ etapa.nome }}</span>
+                            {% if etapa.id in etapas_concluidas_dict %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check"></i> Concluída
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">
+                                    <i class="fas fa-clock"></i> Pendente
+                                </span>
+                            {% endif %}
+                        </div>
+                        {% if etapa.descricao %}
+                        <p style="color: #6b7280; font-size: 13px; margin-top: 8px;">{{ etapa.descricao }}</p>
+                        {% endif %}
+                        {% if etapa.responsavel %}
+                        <p style="color: #6b7280; font-size: 12px; margin-top: 8px;">
+                            <i class="fas fa-user"></i> Responsável: {{ etapa.responsavel.get_full_name|default:etapa.responsavel.username }}
+                        </p>
+                        {% endif %}
+                        {% for etapa_id, etapa_concluida in etapas_concluidas_dict.items %}
+                            {% if etapa_id == etapa.id %}
+                            <p style="color: #065f46; font-size: 12px; margin-top: 8px;">
+                                <i class="fas fa-calendar-check"></i> 
+                                Concluída em: {{ etapa_concluida.data_conclusao|date:"d/m/Y H:i"|default:"N/A" }}
+                                {% if etapa_concluida.concluida_por %}
+                                    por {{ etapa_concluida.concluida_por.get_full_name|default:etapa_concluida.concluida_por.username }}
+                                {% endif %}
+                            </p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Observações -->
+        {% if ordem.observacoes_criacao or ordem.observacoes_execucao or ordem.observacoes_finalizacao %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-comment"></i> Observações
+            </div>
+            {% if ordem.observacoes_criacao %}
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">Fase 1 - Criação:</h4>
+                <p style="color: #1f2937; line-height: 1.6; white-space: pre-wrap;">{{ ordem.observacoes_criacao }}</p>
+            </div>
+            {% endif %}
+            {% if ordem.observacoes_execucao %}
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">Fase 2 - Execução:</h4>
+                <p style="color: #1f2937; line-height: 1.6; white-space: pre-wrap;">{{ ordem.observacoes_execucao }}</p>
+            </div>
+            {% endif %}
+            {% if ordem.observacoes_finalizacao %}
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">Fase 3 - Finalização:</h4>
+                <p style="color: #1f2937; line-height: 1.6; white-space: pre-wrap;">{{ ordem.observacoes_finalizacao }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Motivo de Cancelamento -->
+        {% if ordem.motivo_cancelamento %}
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-exclamation-triangle"></i> Motivo de Cancelamento
+            </div>
+            <p style="color: #991b1b; line-height: 1.6; white-space: pre-wrap;">{{ ordem.motivo_cancelamento }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

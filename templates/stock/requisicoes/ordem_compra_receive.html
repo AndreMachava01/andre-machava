@@ -3,79 +3,36 @@
 
 {% block title %}Receber Stock - {{ ordem_compra.codigo }}{% endblock %}
 
-{% block extra_style %}
-<style>
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
-    .page-subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 1rem;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .help-section {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 30px;
-    }
-    
-    .help-title {
-        color: #60a5fa;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .help-content {
-        color: #d1d5db;
-        line-height: 1.6;
-        font-size: 0.95rem;
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <!-- Header -->
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:requisicoes:ordens_compra_list' %}">Ordens de compra</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">{{ ordem_compra.codigo }}</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Receber stock</span>
+    </nav>
+
     <div class="page-header">
-        <div class="breadcrumb-modern">
-            <a href="{% url 'stock:main' %}">Stock</a>
-            <span class="separator">›</span>
-            <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
-            <span class="separator">›</span>
-            {% if ordem_compra.requisicao_origem %}
-                <a href="{% url 'stock:requisicoes:compra_externa_detail' ordem_compra.requisicao_origem.id %}">{{ ordem_compra.requisicao_origem.codigo }}</a>
-                <span class="separator">›</span>
-            {% endif %}
-            <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}">{{ ordem_compra.codigo }}</a>
-            <span class="separator">›</span>
-            <span class="current">Receber Stock</span>
-        </div>
-        <div class="page-title">
-            <h1>
-                <i class="fas fa-box-open"></i>
-                Receber Stock
-            </h1>
-            <p class="page-subtitle">{{ ordem_compra.codigo }} - {{ ordem_compra.fornecedor.nome }}</p>
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                    Receber stock
+                </h1>
+                <p class="page-subtitle">{{ ordem_compra.codigo }} — {{ ordem_compra.fornecedor.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
@@ -162,7 +119,7 @@
                             type="text" 
                             id="numero_fatura" 
                             name="numero_fatura" 
-                            class="form-control-modern" 
+                            class="form-control" 
                             placeholder="Digite o número da fatura fornecida pelo fornecedor"
                             required
                             autofocus
@@ -174,12 +131,12 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-modern btn-primary-modern">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-arrow-right"></i>
                             Continuar
                         </button>
                         
-                        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn-modern btn-secondary-modern">
+                        <a href="{% url 'stock:requisicoes:ordem_compra_preview' ordem_compra.id %}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i>
                             Voltar
                         </a>

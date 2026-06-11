@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remover Alertas Duplicados</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #e9ecef;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        h1 {
+            font-size: 24px;
+            color: #212529;
+            font-weight: 600;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .alert-info {
+            padding: 16px;
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            color: #0c5460;
+        }
+        .duplicados-group {
+            margin-bottom: 24px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .group-header {
+            background: #dc3545;
+            color: white;
+            padding: 12px 16px;
+            font-weight: 600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+        }
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        table tr:hover {
+            background: #f8f9fa;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .action-section {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-trash-alt"></i> Remover Alertas Duplicados</h1>
+            <a href="{% url 'stock:alertas_gerenciar' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if total_duplicados > 0 %}
+        <div class="alert-info">
+            <strong><i class="fas fa-info-circle"></i> Atenção:</strong>
+            Foram encontrados <strong>{{ total_duplicados }}</strong> alerta(s) duplicado(s).
+            Ao confirmar, serão mantidos apenas os mais recentes de cada grupo.
+        </div>
+
+        {% for chave, grupo in duplicados_encontrados.items %}
+        <div class="duplicados-group">
+            <div class="group-header">
+                <i class="fas fa-copy"></i> {{ grupo|length }} duplicado(s) - Tipo: {{ grupo.0.get_tipo_display }} | Título: "{{ grupo.0.titulo }}"
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Mensagem</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alerta in grupo %}
+                    <tr>
+                        <td>{{ alerta.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if alerta.lida %}badge-success{% else %}badge-warning{% endif %}">
+                                {% if alerta.lida %}Lido{% else %}Não Lido{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if alerta.prioridade == 4 %}badge-danger{% elif alerta.prioridade == 3 %}badge-warning{% else %}badge-info{% endif %}">
+                                {% if alerta.prioridade == 4 %}Crítica{% elif alerta.prioridade == 3 %}Alta{% elif alerta.prioridade == 2 %}Média{% else %}Baixa{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ alerta.mensagem|truncatewords:15 }}</td>
+                        <td>
+                            {% if forloop.first %}
+                                <span class="badge badge-success">Manter (mais recente)</span>
+                            {% else %}
+                                <span class="badge badge-danger">Será removido</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+
+        <div class="action-section">
+            <form method="post">
+                {% csrf_token %}
+                <p style="margin-bottom: 16px; color: #495057;">
+                    Tem certeza que deseja remover <strong>{{ total_duplicados }}</strong> alerta(s) duplicado(s)?
+                </p>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Confirmar Remoção
+                </button>
+                <a href="{% url 'stock:alertas_gerenciar' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty">
+            <p><i class="fas fa-check-circle" style="font-size: 48px; color: #28a745; margin-bottom: 16px;"></i></p>
+            <p><strong>Nenhum alerta duplicado encontrado!</strong></p>
+            <p style="margin-top: 8px;">Todos os alertas são únicos.</p>
+            <a href="{% url 'stock:alertas_gerenciar' %}" class="btn btn-secondary" style="margin-top: 16px;">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

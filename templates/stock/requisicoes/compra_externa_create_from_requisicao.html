@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Requisição de Compra Externa - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #10b981;
+        }
+        
+        .header-info h1 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header-info .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left-color: #3b82f6;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left-color: #f59e0b;
+        }
+        
+        .table-wrapper {
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .badge-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .badge-info {
+            background: #06b6d4;
+            color: white;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .actions-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .actions-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .actions-title i {
+            color: #10b981;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .actions-grid .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-info">
+                <h1>
+                    <i class="fas fa-shopping-cart"></i>
+                    Criar Requisição de Compra Externa
+                </h1>
+                <p class="subtitle">A partir da Requisição de Consumo {{ requisicao.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Informação:</strong>
+            Uma nova <strong>Requisição de Compra Externa</strong> (código <strong>RQCOMP####</strong>) será criada com os itens que não possuem stock suficiente na requisição de consumo <strong>{{ requisicao.codigo }}</strong>.
+        </div>
+        
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção:</strong>
+            Os seguintes itens serão adicionados à nova requisição de compra externa. 
+            {% if itens_sem_stock.0.rendimento_receita %}
+                <strong>Para compras externas, o sistema usa quantidades diretas da receita (sem considerar o rendimento).</strong>
+                A requisição de consumo usa o rendimento para calcular quantidades, mas a compra externa usa as quantidades diretas da receita.
+            {% else %}
+                <strong>As quantidades são fixas para facilitar o rastreamento do trabalho.</strong>
+            {% endif %}
+        </div>
+
+        <!-- Items Table -->
+        {% if itens_sem_stock %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Código</th>
+                        <th>Quantidade Solicitada (com rendimento)</th>
+                        <th>Stock Disponível</th>
+                        <th>Quantidade Faltante</th>
+                        {% if itens_sem_stock.0.rendimento_receita %}
+                        <th>Quantidade a Comprar (direta da receita)</th>
+                        <th>Rendimento</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_info in itens_sem_stock %}
+                    <tr>
+                        <td><strong>{{ item_info.item.nome }}</strong></td>
+                        <td>{{ item_info.item.codigo }}</td>
+                        <td>{{ item_info.quantidade_solicitada|floatformat:0 }}</td>
+                        <td>
+                            <span class="badge badge-danger">{{ item_info.stock_disponivel|floatformat:0 }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-warning">{{ item_info.quantidade_faltante|floatformat:0 }}</span>
+                        </td>
+                        {% if item_info.rendimento_receita %}
+                        <td>
+                            <span class="badge badge-primary">{{ item_info.quantidade_compra|floatformat:0 }}</span>
+                            {% if item_info.quantidade_direta_receita and item_info.quantidade_direta_receita != item_info.quantidade_faltante %}
+                            <br><small style="color: #6b7280;">(Direta da receita, sem rendimento)</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ item_info.rendimento_receita }} unidades</span>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h4>Todos os itens possuem stock suficiente</h4>
+            <p>Não é necessário criar uma requisição de compra externa.</p>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="actions-section">
+            <h3 class="actions-title">
+                <i class="fas fa-cogs"></i>
+                Ações Disponíveis
+            </h3>
+            <div class="actions-grid">
+                {% if itens_sem_stock %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i> Criar Requisição de Compra Externa
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'stock:requisicoes:detail' requisicao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

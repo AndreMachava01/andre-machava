@@ -1,0 +1,89 @@
+{% extends 'stock/includes/report_logistica_shell.html' %}
+
+{% block report_page_title %}Performance logística{% endblock %}
+{% block report_breadcrumb %}Performance{% endblock %}
+{% block report_icon %}fa-tachometer-alt{% endblock %}
+{% block report_heading %}Performance logística{% endblock %}
+{% block report_doc_title %}RELATÓRIO DE PERFORMANCE LOGÍSTICA{% endblock %}
+{% block report_code_prefix %}PERF{% endblock %}
+
+{% block report_content %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-chart-bar" aria-hidden="true"></i> Estatísticas gerais</h3>
+<div class="stock-report-kpi-grid">
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Total entregas</div>
+        <div class="stock-report-kpi__value">{{ dados.total_entregas|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Estados distintos</div>
+        <div class="stock-report-kpi__value">{{ dados.entregas_por_status|length|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Transportadoras</div>
+        <div class="stock-report-kpi__value">{{ dados.performance_transportadoras|length|default:0 }}</div>
+    </div>
+</div>
+
+{% if dados.entregas_por_status %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Por status</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.entregas_por_status %}
+            <tr>
+                <td>
+                    <span class="badge {% if item.status_atual == 'ENTREGUE' %}badge-success{% elif item.status_atual == 'EM_TRANSITO' or item.status_atual == 'EM_DISTRIBUICAO' %}badge-warning{% else %}badge-danger{% endif %}">
+                        {{ item.status_atual }}
+                    </span>
+                </td>
+                <td class="text-center"><strong>{{ item.count|default:0 }}</strong></td>
+                <td class="text-center">
+                    {% if dados.total_entregas > 0 %}{% widthratio item.count dados.total_entregas 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.performance_transportadoras %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-truck" aria-hidden="true"></i> Por transportadora</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Transportadora</th>
+                <th class="text-center">Total</th>
+                <th class="text-center">Concluídas</th>
+                <th class="text-center">Taxa sucesso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.performance_transportadoras %}
+            <tr>
+                <td><strong>{{ item.transportadora|default:"N/A" }}</strong></td>
+                <td class="text-center">{{ item.total|default:0 }}</td>
+                <td class="text-center">{{ item.concluidas|default:0 }}</td>
+                <td class="text-center">{{ item.taxa_sucesso|default:0|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.total_entregas == 0 %}
+<div class="stock-report-empty">
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
+    <p>Nenhuma entrega registada no período selecionado.</p>
+</div>
+{% endif %}
+{% endblock %}

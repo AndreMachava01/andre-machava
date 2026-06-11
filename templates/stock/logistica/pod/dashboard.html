@@ -1,388 +1,329 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Dashboard POD & Documentos Logísticos{% endblock %}
+{% block title %}POD e documentos logísticos{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>POD & Documentos</span>
-    </nav>
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='POD e documentos' %}
 
-    <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-file-signature"></i>
-                    Dashboard POD & Documentos Logísticos
+                    <i class="fas fa-file-signature" aria-hidden="true"></i>
+                    POD e documentos logísticos
                 </h1>
-                <p class="page-subtitle">
-                    Gerenciamento de Provas de Entrega e Guias de Transporte
-                </p>
+                <p class="page-subtitle">Provas de entrega, guias de remessa e etiquetas</p>
             </div>
             <div class="header-actions">
-                <a href="{% url 'stock:logistica:rastreamento_create' %}" class="btn btn-success">
-                    <i class="fas fa-truck"></i>
-                    Novo Rastreamento
+                <a href="{% url 'stock:logistica:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Logística
+                </a>
+                <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-outline">
+                    <i class="fas fa-truck" aria-hidden="true"></i> Rastreamentos
+                </a>
+                <a href="{% url 'stock:pod:prova_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova POD
                 </a>
                 <a href="{% url 'stock:pod:guia_create' %}" class="btn btn-primary">
-                    <i class="fas fa-file-alt"></i>
-                    Nova Guia
+                    <i class="fas fa-file-alt" aria-hidden="true"></i> Nova guia
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Estatísticas Gerais -->
-    <div class="stats-grid">
-        <div class="stat-card stat-success">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.provas_validadas }}</div>
-                <div class="stat-label">Provas Validadas</div>
+                <div class="stat-number">{{ stats.provas_validadas|default:"0" }}</div>
+                <div class="stat-label">Provas validadas</div>
             </div>
         </div>
-
-        <div class="stat-card stat-warning">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.provas_pendentes }}</div>
-                <div class="stat-label">Provas Pendentes</div>
+                <div class="stat-number">{{ stats.provas_pendentes|default:"0" }}</div>
+                <div class="stat-label">Provas pendentes</div>
             </div>
         </div>
-
-        <div class="stat-card stat-info">
-            <div class="stat-icon">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.provas_com_gps }}</div>
+                <div class="stat-number">{{ stats.provas_com_gps|default:"0" }}</div>
                 <div class="stat-label">Com GPS</div>
             </div>
         </div>
-
-        <div class="stat-card stat-primary">
-            <div class="stat-icon">
-                <i class="fas fa-signature"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-signature"></i></div>
             <div class="stat-content">
-                <div class="stat-number">{{ stats.provas_com_assinatura }}</div>
-                <div class="stat-label">Com Assinatura</div>
+                <div class="stat-number">{{ stats.provas_com_assinatura|default:"0" }}</div>
+                <div class="stat-label">Com assinatura</div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Provas Pendentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-clock text-warning"></i>
-                        Provas Pendentes de Validação
-                    </h3>
-                    <div class="card-actions">
-                        <a href="{% url 'stock:pod:provas_list' %}?status=PENDENTE" class="btn btn-warning btn-sm">
-                            Ver Todas
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if provas_pendentes %}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código POD</th>
-                                        <th>Rastreamento</th>
-                                        <th>Destinatário</th>
-                                        <th>Data</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for prova in provas_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ prova.codigo }}</span>
-                                        </td>
-                                        <td>{{ prova.rastreamento_entrega.codigo_rastreamento }}</td>
-                                        <td>{{ prova.nome_destinatario }}</td>
-                                        <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-check"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-check-circle fa-3x mb-3"></i>
-                            <p>Nenhuma prova pendente de validação</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-bolt" aria-hidden="true"></i> Acesso rápido</h3>
         </div>
-
-        <!-- Provas Recentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-history text-primary"></i>
-                        Provas Recentes (24h)
-                    </h3>
-                    <div class="card-actions">
-                        <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-primary btn-sm">
-                            Ver Todas
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if provas_recentes %}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código POD</th>
-                                        <th>Tipo</th>
-                                        <th>Status</th>
-                                        <th>Validada</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for prova in provas_recentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ prova.codigo }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
-                                                {{ prova.get_tipo_entrega_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
-                                                {{ prova.status }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if prova.validada %}
-                                                <i class="fas fa-check text-success"></i>
-                                            {% else %}
-                                                <i class="fas fa-clock text-warning"></i>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
-                            <p>Nenhuma prova nas últimas 24h</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="modules-grid">
+            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="module-card">
+                <h3><i class="fas fa-truck" aria-hidden="true"></i> Rastreamentos</h3>
+                <p>Acompanhar envios e entregas</p>
+            </a>
+            <a href="{% url 'stock:pod:provas_list' %}" class="module-card">
+                <h3><i class="fas fa-file-signature" aria-hidden="true"></i> Provas de entrega</h3>
+                <p>Registo e validação de POD</p>
+            </a>
+            <a href="{% url 'stock:pod:guias_list' %}" class="module-card">
+                <h3><i class="fas fa-file-alt" aria-hidden="true"></i> Guias de remessa</h3>
+                <p>Emissão e impressão de guias</p>
+            </a>
+            <a href="{% url 'stock:pod:etiquetas_list' %}" class="module-card">
+                <h3><i class="fas fa-tags" aria-hidden="true"></i> Etiquetas</h3>
+                <p>Etiquetas de envio e rastreamento</p>
+            </a>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Guias Pendentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-print text-info"></i>
-                        Guias Pendentes de Impressão
-                    </h3>
-                    <div class="card-actions">
-                        <a href="{% url 'stock:pod:guias_list' %}?impressa=false" class="btn btn-info btn-sm">
-                            Ver Todas
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if guias_pendentes %}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Destinatário</th>
-                                        <th>Data Prevista</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for guia in guias_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ guia.codigo }}</span>
-                                        </td>
-                                        <td>{{ guia.nome_destinatario }}</td>
-                                        <td>{{ guia.data_prevista_entrega|date:"d/m/Y" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:guia_detail' guia.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:pod:imprimir_guia' guia.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-print"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-check-circle fa-3x mb-3"></i>
-                            <p>Nenhuma guia pendente de impressão</p>
-                        </div>
-                    {% endif %}
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                    Provas pendentes de validação
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:pod:provas_list' %}?status=PENDENTE" class="btn btn-warning btn-sm">
+                        Ver todas
+                    </a>
                 </div>
             </div>
+            {% if provas_pendentes %}
+            <div class="table-wrapper">
+                <table class="table table-with-actions">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Rastreamento</th>
+                            <th>Destinatário</th>
+                            <th>Data</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prova in provas_pendentes %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ prova.codigo }}</strong></td>
+                            <td>{{ prova.rastreamento_entrega.codigo_rastreamento }}</td>
+                            <td>{{ prova.nome_destinatario|default:"—" }}</td>
+                            <td>{{ prova.data_entrega|date:"d/m/Y H:i" }}</td>
+                            <td class="col-actions">
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn-action primary"
+                                       title="Ver prova" aria-label="Ver prova {{ prova.codigo }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a href="{% url 'stock:pod:validar_prova' prova.id %}" class="btn-action secondary"
+                                       title="Validar prova" aria-label="Validar prova {{ prova.codigo }}">
+                                        <i class="fas fa-check" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <h3>Nenhuma prova pendente</h3>
+                <p>Todas as provas estão validadas ou em dia.</p>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Etiquetas Pendentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-tags text-secondary"></i>
-                        Etiquetas Pendentes de Impressão
-                    </h3>
-                    <div class="card-actions">
-                        <a href="{% url 'stock:pod:etiquetas_list' %}?impressa=false" class="btn btn-secondary btn-sm">
-                            Ver Todas
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if etiquetas_pendentes %}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Tipo</th>
-                                        <th>Data</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etiqueta in etiquetas_pendentes %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge badge-secondary">{{ etiqueta.codigo }}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-{% if etiqueta.tipo == 'RASTREAMENTO' %}primary{% elif etiqueta.tipo == 'ENVIO' %}info{% elif etiqueta.tipo == 'PRODUTO' %}success{% else %}secondary{% endif %}">
-                                                {{ etiqueta.get_tipo_display }}
-                                            </span>
-                                        </td>
-                                        <td>{{ etiqueta.data_criacao|date:"d/m/Y" }}</td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-print"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-check-circle fa-3x mb-3"></i>
-                            <p>Nenhuma etiqueta pendente de impressão</p>
-                        </div>
-                    {% endif %}
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    Provas recentes (24h)
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-primary btn-sm">
+                        Ver todas
+                    </a>
                 </div>
             </div>
+            {% if provas_recentes %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th class="text-center">Validada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prova in provas_recentes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="cell-primary">
+                                    {{ prova.codigo }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if prova.tipo_entrega == 'COMPLETA' %}success{% elif prova.tipo_entrega == 'PARCIAL' %}warning{% elif prova.tipo_entrega == 'RECUSADA' %}danger{% else %}secondary{% endif %}">
+                                    {{ prova.get_tipo_entrega_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if prova.status == 'CONCLUIDA' %}success{% elif prova.status == 'PENDENTE' %}warning{% elif prova.status == 'EM_ANDAMENTO' %}info{% else %}secondary{% endif %}">
+                                    {{ prova.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if prova.validada %}
+                                <i class="fas fa-check stock-text-success" aria-hidden="true" title="Validada"></i>
+                                {% else %}
+                                <i class="fas fa-clock stock-text-warning" aria-hidden="true" title="Pendente"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-calendar-times" aria-hidden="true"></i>
+                <h3>Sem actividade recente</h3>
+                <p>Nenhuma prova registada nas últimas 24 horas.</p>
+            </div>
+            {% endif %}
         </div>
-    </div>
 
-    <!-- Links Rápidos -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-bolt text-primary"></i>
-                        Acesso Rápido
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-outline-success btn-block">
-                                <i class="fas fa-truck"></i><br>
-                                Rastreamentos
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:provas_list' %}" class="btn btn-outline-warning btn-block">
-                                <i class="fas fa-file-signature"></i><br>
-                                Provas de Entrega
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:guias_list' %}" class="btn btn-outline-primary btn-block">
-                                <i class="fas fa-file-alt"></i><br>
-                                Guias de Remessa
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:pod:etiquetas_list' %}" class="btn btn-outline-info btn-block">
-                                <i class="fas fa-tags"></i><br>
-                                Etiquetas
-                            </a>
-                        </div>
-                    </div>
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-print" aria-hidden="true"></i>
+                    Guias pendentes de impressão
+                    {% if total_guias_pendentes %}<span class="stock-pod-dash-count">({{ total_guias_pendentes }})</span>{% endif %}
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:pod:guias_list' %}?impressa=false" class="btn btn-info btn-sm">
+                        Ver todas
+                    </a>
                 </div>
             </div>
+            {% if guias_pendentes %}
+            <div class="table-wrapper">
+                <table class="table table-with-actions">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Destinatário</th>
+                            <th>Data prevista</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for guia in guias_pendentes %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ guia.codigo }}</strong></td>
+                            <td>{{ guia.nome_destinatario|default:"—" }}</td>
+                            <td>{{ guia.data_prevista_entrega|date:"d/m/Y" }}</td>
+                            <td class="col-actions">
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:pod:guia_detail' guia.id %}" class="btn-action primary"
+                                       title="Ver guia" aria-label="Ver guia {{ guia.codigo }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a href="{% url 'stock:pod:imprimir_guia' guia.id %}" class="btn-action secondary"
+                                       title="Imprimir guia" aria-label="Imprimir guia {{ guia.codigo }}">
+                                        <i class="fas fa-print" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <h3>Nenhuma guia pendente</h3>
+                <p>Todas as guias foram impressas.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-tags" aria-hidden="true"></i>
+                    Etiquetas pendentes de impressão
+                    {% if total_etiquetas_pendentes %}<span class="stock-pod-dash-count">({{ total_etiquetas_pendentes }})</span>{% endif %}
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:pod:etiquetas_list' %}?impressa=false" class="btn btn-secondary btn-sm">
+                        Ver todas
+                    </a>
+                </div>
+            </div>
+            {% if etiquetas_pendentes %}
+            <div class="table-wrapper">
+                <table class="table table-with-actions">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Data</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for etiqueta in etiquetas_pendentes %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ etiqueta.codigo }}</strong></td>
+                            <td>
+                                <span class="badge badge-{% if etiqueta.tipo == 'RASTREAMENTO' %}primary{% elif etiqueta.tipo == 'ENVIO' %}info{% elif etiqueta.tipo == 'PRODUTO' %}success{% else %}secondary{% endif %}">
+                                    {{ etiqueta.get_tipo_display }}
+                                </span>
+                            </td>
+                            <td>{{ etiqueta.data_criacao|date:"d/m/Y" }}</td>
+                            <td class="col-actions">
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:pod:etiqueta_detail' etiqueta.id %}" class="btn-action primary"
+                                       title="Ver etiqueta" aria-label="Ver etiqueta {{ etiqueta.codigo }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a href="{% url 'stock:pod:imprimir_etiqueta' etiqueta.id %}" class="btn-action secondary"
+                                       title="Imprimir etiqueta" aria-label="Imprimir etiqueta {{ etiqueta.codigo }}">
+                                        <i class="fas fa-print" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <h3>Nenhuma etiqueta pendente</h3>
+                <p>Todas as etiquetas foram impressas.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

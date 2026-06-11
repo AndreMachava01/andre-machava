@@ -1,0 +1,152 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Finalizar inventário — {{ inventario.codigo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:inventario:list' %}">Inventário</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:inventario:detail' inventario.id %}">{{ inventario.codigo }}</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Finalizar</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-flag-checkered" aria-hidden="true"></i>
+                    Finalizar inventário
+                </h1>
+                <p class="page-subtitle">{{ inventario.codigo }} — {{ inventario.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if itens_com_diferenca %}
+    <div class="alert alert-warning stock-u-mb-24">
+        <strong>Atenção!</strong>
+        Este inventário possui <strong>{{ itens_com_diferenca.count }} item(ns)</strong> com diferenças entre o sistema e o contado fisicamente.
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-not-equal" aria-hidden="true"></i> Itens com diferenças</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Sistema</th>
+                            <th class="text-center">Contado</th>
+                            <th class="text-center">Diferença</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens_com_diferenca %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.item.nome }}</strong>
+                                <br><span class="cell-code">{{ item.item.codigo }}</span>
+                            </td>
+                            <td class="text-center">{{ item.quantidade_sistema }}</td>
+                            <td class="text-center">{{ item.quantidade_contada }}</td>
+                            <td class="text-center">
+                                {% if item.diferenca > 0 %}
+                                <span class="badge badge-success">+{{ item.diferenca }}</span>
+                                {% else %}
+                                <span class="badge badge-danger">{{ item.diferenca }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="stock-u-mb-20">Como deseja proceder?</h3>
+    <div class="stock-option-cards">
+        <div class="stock-option-card" data-option="ajustar_automatico" role="button" tabindex="0">
+            <div class="stock-option-card__title">Ajustar estoque automaticamente</div>
+            <p class="stock-option-card__desc">Cria ajustes de inventário e aplica imediatamente no estoque. O estoque será atualizado para refletir as quantidades contadas.</p>
+        </div>
+        <div class="stock-option-card" data-option="criar_pendentes" role="button" tabindex="0">
+            <div class="stock-option-card__title">Criar ajustes pendentes</div>
+            <p class="stock-option-card__desc">Cria ajustes de inventário pendentes de aprovação. Os ajustes precisarão ser aprovados posteriormente antes de serem aplicados ao estoque.</p>
+        </div>
+        <div class="stock-option-card" data-option="nao_ajustar" role="button" tabindex="0">
+            <div class="stock-option-card__title">Não ajustar estoque</div>
+            <p class="stock-option-card__desc">Finaliza o inventário sem criar ajustes. O estoque permanecerá inalterado. As diferenças serão registradas apenas no relatório.</p>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'stock:inventario:finalizar_com_ajuste' inventario.id %}" id="form-decisao">
+        {% csrf_token %}
+        <input type="hidden" name="acao" id="input-acao" value="">
+
+        <div class="header-actions stock-u-actions-end">
+            <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" id="btn-confirmar" class="btn btn-primary" disabled>Confirmar</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info stock-u-mb-24">
+        <strong>Todos os itens estão conformes!</strong>
+        Não há diferenças entre o sistema e o contado. O inventário será finalizado automaticamente.
+    </div>
+
+    <form method="post" action="{% url 'stock:inventario:finalizar_com_ajuste' inventario.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="nao_ajustar">
+        <div class="header-actions stock-u-actions-end">
+            <a href="{% url 'stock:inventario:detail' inventario.id %}" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-primary">Finalizar inventário</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+{% if itens_com_diferenca %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var optionCards = document.querySelectorAll('.stock-option-card');
+    var inputAcao = document.getElementById('input-acao');
+    var btnConfirmar = document.getElementById('btn-confirmar');
+
+    function selectCard(card) {
+        optionCards.forEach(function(c) { c.classList.remove('is-selected'); });
+        card.classList.add('is-selected');
+        inputAcao.value = card.getAttribute('data-option');
+        if (btnConfirmar) btnConfirmar.disabled = false;
+    }
+
+    optionCards.forEach(function(card) {
+        card.addEventListener('click', function() { selectCard(card); });
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectCard(card);
+            }
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

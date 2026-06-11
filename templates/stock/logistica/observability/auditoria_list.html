@@ -1,0 +1,155 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Auditoria{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:observability:dashboard' as observability_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Observabilidade' breadcrumb_section_url=observability_dashboard_url breadcrumb_current='Auditoria' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-history" aria-hidden="true"></i> Auditoria</h1>
+                <p class="page-subtitle">Transições de estado e operações críticas do sistema</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search">Pesquisar</label>
+                <input type="text" id="filtro-search" name="search" value="{{ search }}" class="form-control" placeholder="UUID, modelo, status...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo">Tipo de operação</label>
+                <select id="filtro-tipo" name="tipo_operacao" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_operacao_choices %}
+                    <option value="{{ value }}" {% if tipo_operacao == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-modelo">Modelo</label>
+                <select id="filtro-modelo" name="modelo_afetado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for m in modelos_disponiveis %}
+                    <option value="{{ m }}" {% if modelo_afetado == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-usuario">Utilizador</label>
+                <select id="filtro-usuario" name="usuario_id" class="form-select">
+                    <option value="">Todos</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}" {% if usuario_id == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-sucesso">Resultado</label>
+                <select id="filtro-sucesso" name="sucesso" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true" {% if sucesso == 'true' %}selected{% endif %}>Sucesso</option>
+                    <option value="false" {% if sucesso == 'false' %}selected{% endif %}>Falha</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio">De</label>
+                <input type="date" id="filtro-inicio" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim">Até</label>
+                <input type="date" id="filtro-fim" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                    <a href="{% url 'stock:observability:auditoria_list' %}" class="btn btn-secondary btn-sm">Limpar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">Registos de auditoria</h3>
+            <span class="page-info">{{ page_obj.paginator.count }} entrada(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Operação</th>
+                        <th>Modelo</th>
+                        <th>Transição</th>
+                        <th>Utilizador</th>
+                        <th>OK</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in page_obj %}
+                    <tr>
+                        <td>{{ a.data_operacao|date:"d/m/Y H:i" }}</td>
+                        <td>{{ a.get_tipo_operacao_display }}</td>
+                        <td>{{ a.modelo_afetado }} #{{ a.objeto_id }}</td>
+                        <td>
+                            {% if a.status_anterior or a.status_novo %}
+                            {{ a.status_anterior|default:"—" }} → {{ a.status_novo|default:"—" }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{% if a.usuario %}{{ a.usuario.username }}{% else %}Sistema{% endif %}</td>
+                        <td>
+                            {% if a.sucesso %}
+                            <span class="status-badge status-success">Sim</span>
+                            {% else %}
+                            <span class="status-badge status-danger">Não</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:observability:auditoria_detail' a.id %}" class="btn-action primary" title="Ver detalhes">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&tipo_operacao={{ tipo_operacao }}&modelo_afetado={{ modelo_afetado }}&usuario_id={{ usuario_id }}&sucesso={{ sucesso }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search }}&tipo_operacao={{ tipo_operacao }}&modelo_afetado={{ modelo_afetado }}&usuario_id={{ usuario_id }}&sucesso={{ sucesso }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-history" aria-hidden="true"></i>
+            <h3>Nenhum registo encontrado</h3>
+            <p>Ajuste os filtros ou aguarde novas operações no sistema.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

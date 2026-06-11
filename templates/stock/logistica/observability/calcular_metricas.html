@@ -1,0 +1,220 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Calcular métricas{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page stock-form-page">
+    {% url 'stock:observability:dashboard' as observability_dashboard_url %}
+    {% url 'stock:observability:metricas_list' as metricas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Observabilidade' breadcrumb_section_url=observability_dashboard_url breadcrumb_current='Calcular métricas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-calculator" aria-hidden="true"></i>
+                    Calcular métricas
+                </h1>
+                <p class="page-subtitle">Processa e grava indicadores logísticos para o período seleccionado</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:metricas_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar" aria-hidden="true"></i> Métricas
+                </a>
+                <a href="{% url 'stock:observability:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-chart-pie" aria-hidden="true"></i> Resumo</h3>
+        </div>
+        <div class="stats-grid stock-dash-kpi-grid">
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+                <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-chart-bar"></i></div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.metricas_activas|default:"0" }}</div>
+                    <div class="stat-label">Métricas activas</div>
+                </div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+                <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-database"></i></div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.valores_total|default:"0" }}</div>
+                    <div class="stat-label">Valores registados</div>
+                </div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+                <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ stats.valores_30_dias|default:"0" }}</div>
+                    <div class="stat-label">Valores (30 dias)</div>
+                </div>
+            </div>
+            <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+                <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+                <div class="stat-content">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Indicadores por execução</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-layout-with-sidebar stock-u-mb-24">
+        <div class="form-container">
+            <form method="post" class="stock-form">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Período</h3>
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label for="data_inicio" class="form-label required-field">Data início</label>
+                            <input type="date" id="data_inicio" name="data_inicio" class="form-control" value="{{ form_data.data_inicio }}" required>
+                            <p class="form-hint">Primeiro dia a incluir no cálculo.</p>
+                        </div>
+                        <div class="form-field">
+                            <label for="data_fim" class="form-label required-field">Data fim</label>
+                            <input type="date" id="data_fim" name="data_fim" class="form-control" value="{{ form_data.data_fim }}" required>
+                            <p class="form-hint">Último dia do intervalo (inclusive).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros opcionais</h3>
+                    <p class="form-hint stock-u-mb-16">Restringe o cálculo a uma região, transportadora externa ou viatura da frota. Deixe em branco para toda a operação.</p>
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label for="regiao" class="form-label">Região</label>
+                            <select id="regiao" name="regiao" class="form-select">
+                                <option value="">Todas</option>
+                                {% for regiao in regioes %}
+                                <option value="{{ regiao.id }}" {% if form_data.regiao == regiao.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ regiao.codigo }} — {{ regiao.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="transportadora" class="form-label">Transportadora externa</label>
+                            <select id="transportadora" name="transportadora" class="form-select">
+                                <option value="">Todas</option>
+                                {% for transportadora in transportadoras %}
+                                <option value="{{ transportadora.id }}" {% if form_data.transportadora == transportadora.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ transportadora.codigo }} — {{ transportadora.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label for="veiculo_interno" class="form-label">Viatura interna</label>
+                            <select id="veiculo_interno" name="veiculo_interno" class="form-select">
+                                <option value="">Todas</option>
+                                {% for opcao in opcoes_viatura %}
+                                <option value="{{ opcao.value }}" {% if form_data.veiculo_interno == opcao.value %}selected{% endif %}>
+                                    {{ opcao.label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play" aria-hidden="true"></i> Calcular e guardar
+                    </button>
+                    <a href="{% url 'stock:observability:metricas_list' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+
+        <aside class="form-sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Indicadores calculados</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stock-list-hint" role="list">
+                        {% for tipo, nome, desc in indicadores_calculo %}
+                        <div class="stock-list-hint__item" role="listitem">
+                            <strong>{{ nome }}</strong><span class="text-muted"> — {{ desc }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="form-hint stock-u-mt-16">
+                        Apenas métricas <strong>activas</strong> no catálogo recebem valores guardados.
+                    </p>
+                </div>
+            </div>
+
+            {% if metricas_activas %}
+            <div class="card stock-u-mt-16">
+                <div class="card-header">
+                    <h2 class="card-title">Catálogo activo ({{ metricas_activas|length }})</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stock-list-hint" role="list">
+                        {% for m in metricas_activas %}
+                        <div class="stock-list-hint__item" role="listitem">
+                            <a href="{% url 'stock:observability:metrica_detail' m.id %}">{{ m.codigo }}</a> — {{ m.nome }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning stock-u-mt-16" role="alert">
+                Não há métricas activas no catálogo. Active ou crie métricas antes de calcular.
+            </div>
+            {% endif %}
+        </aside>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-history" aria-hidden="true"></i> Últimos valores calculados</h3>
+            <div class="table-actions">
+                <a href="{% url 'stock:observability:metricas_list' %}" class="btn btn-primary btn-sm">Ver catálogo</a>
+            </div>
+        </div>
+        {% if valores_recentes %}
+        <div class="table-wrapper">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                        <th>Data referência</th>
+                        <th>Confiabilidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in valores_recentes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'stock:observability:metrica_detail' v.metrica.id %}">{{ v.metrica.nome }}</a>
+                        </td>
+                        <td>{{ v.valor|floatformat:2 }} {{ v.metrica.unidade_medida }}</td>
+                        <td>{{ v.data_referencia|date:"d/m/Y" }}</td>
+                        <td>{{ v.confiabilidade|floatformat:0 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>Ainda não há valores calculados.</p>
+            <p class="form-hint">Seleccione o período e clique em <strong>Calcular e guardar</strong>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

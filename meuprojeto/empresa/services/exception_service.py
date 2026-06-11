@@ -90,8 +90,6 @@ class ExceptionService:
             codigo=codigo,
             tipo_excecao=tipo_excecao,
             rastreamento_entrega_id=rastreamento_id,
-            planejamento_entrega_id=planejamento_id,
-            rota_id=rota_id,
             descricao=descricao,
             observacoes=observacoes,
             local_ocorrencia=local_ocorrencia,

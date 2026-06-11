@@ -1,0 +1,127 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #ec4899; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #ec4899; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #ec4899; color: white; }
+        .btn-primary:hover { background: #db2777; }
+        .search-filters { background: #fdf2f8; padding: 15px; border-radius: 5px; margin-bottom: 24px; border: 1px solid #ec4899; }
+        .filter-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-form label { font-weight: 500; color: #374151; }
+        .filter-form input, .filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-box { background: #fdf2f8; padding: 18px; border-radius: 8px; border: 1px solid #ec4899; text-align: center; }
+        .stat-number { font-size: 26px; font-weight: 700; color: #ec4899; margin-bottom: 4px; }
+        .stat-label { color: #666; font-size: 13px; }
+        .section { margin-bottom: 24px; }
+        .section h2 { color: #374151; font-size: 17px; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fdf2f8; color: #9d174d; font-weight: 600; }
+        tbody tr:hover { background: #fdf2f8; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+        .empty-state i { font-size: 42px; margin-bottom: 12px; color: #d1d5db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-file-chart-line"></i> {{ title }}</h1>
+                <p>Resumo por período</p>
+            </div>
+            <a href="{% url 'vendas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <label>Período:</label>
+                <select name="periodo">
+                    <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Este mês</option>
+                    <option value="trimestre" {% if periodo == 'trimestre' %}selected{% endif %}>Últimos 3 meses</option>
+                    <option value="ano" {% if periodo == 'ano' %}selected{% endif %}>Este ano</option>
+                    <option value="personalizado" {% if periodo == 'personalizado' %}selected{% endif %}>Personalizado</option>
+                </select>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}" title="Data início">
+                <input type="date" name="data_fim" value="{{ data_fim }}" title="Data fim">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Atualizar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_pedidos|default:0|intcomma }}</div>
+                <div class="stat-label">Pedidos no período</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_concluidos|default:0|intcomma }}</div>
+                <div class="stat-label">Concluídos</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ com_fatura|default:0|intcomma }}</div>
+                <div class="stat-label">Com fatura emitida</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_valor|floatformat:0|default:"0" }} MT</div>
+                <div class="stat-label">Valor total</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-users"></i> Top clientes no período (por valor)</h2>
+            {% if top_clientes or outros_count > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Pedidos</th>
+                        <th>Total (MT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in top_clientes %}
+                    <tr>
+                        <td>{{ row.cliente__nome|default:"—" }}</td>
+                        <td>{{ row.num_pedidos }}</td>
+                        <td>{{ row.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if outros_count > 0 %}
+                    <tr>
+                        <td><em>Sem cliente (pagamento direto)</em></td>
+                        <td>{{ outros_count }}</td>
+                        <td>{{ outros_valor|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-pie"></i>
+                <p>Nenhum pedido no período seleccionado.</p>
+                <p style="font-size: 13px;">Altere o período ou consulte <a href="{% url 'vendas:historico' %}">Histórico de Vendas</a>.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

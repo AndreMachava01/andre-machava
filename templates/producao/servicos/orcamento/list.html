@@ -1,0 +1,567 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamentos - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #92400e;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b45309;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-form input,
+        .filter-form select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        table thead {
+            background: #b45309;
+            color: white;
+        }
+        
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-pendente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-em-andamento {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-concluida {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-duplicata {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 10px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+        tr.possivel-duplicata {
+            background: #fffbeb;
+        }
+        tr.possivel-duplicata:hover {
+            background: #fef3c7;
+        }
+        
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-view:hover {
+            background: #2563eb;
+        }
+        
+        .btn-edit {
+            background: #10b981;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-edit:hover {
+            background: #059669;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #d1d5db;
+        }
+        
+        .empty-state h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+        
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box i {
+            color: #0ea5e9;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="header">
+            <div class="header-left">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+            <div class="header-left" style="flex: 1; margin-left: 20px;">
+                <h1>
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Orçamentos
+                </h1>
+                <p>Gerenciamento de orçamentos de serviços</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'producao:servico_orcamento_add' %}" class="btn btn-primary" style="background: #10b981;">
+                    <i class="fas fa-plus"></i>
+                    Novo Orçamento
+                </a>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 6px; background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af;">
+            <strong><i class="fas fa-info-circle"></i> Gerido em Vendas.</strong>
+            Os orçamentos são criados e geridos no módulo Vendas.
+            <a href="{% url 'vendas:orcamentos_list' %}" style="margin-left: 10px; color: #1d4ed8; font-weight: 600;">Abrir Orçamentos em Vendas →</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; border-left: 4px solid #10b981;">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_orcamentos|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Orçamentos</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ orcamentos_agendados|default:0|intcomma }}</div>
+                <div class="stat-label">Agendados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ orcamentos_concluidos|default:0|intcomma }}</div>
+                <div class="stat-label">Concluídos</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ orcamentos_cancelados|default:0|intcomma }}</div>
+                <div class="stat-label">Cancelados</div>
+            </div>
+        </div>
+
+
+        <!-- Filtros de Busca -->
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Buscar por código, cliente ou serviço..." 
+                       value="{{ search_query }}">
+                
+                <select name="status">
+                    <option value="">Todos os Status</option>
+                    {% for status_value, status_label in status_choices %}
+                        <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>{{ status_label }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="servico">
+                    <option value="">Todos os Serviços</option>
+                    {% for servico in servicos %}
+                        <option value="{{ servico.id }}" {% if servico_id == servico.id|stringformat:"s" %}selected{% endif %}>
+                            {{ servico.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                
+                {% if search_query or status_filter or servico_id %}
+                <a href="{% url 'producao:servicos_orcamento' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Tabela de Orçamentos -->
+        <div class="table-wrapper">
+            {% if orcamentos %}
+            {% if ids_possiveis_duplicados %}
+            <p style="margin-bottom: 12px; padding: 10px 14px; background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; font-size: 13px;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Possíveis duplicatas:</strong> As linhas assinaladas com <span class="badge badge-duplicata">Duplicata?</span> têm o mesmo cliente e a mesma data agendada que outras cotações. Revise e exclua as que forem repetidas (Detalhes → Deletar) ou execute <code>python manage.py remover_cotacoes_duplicadas --dry-run</code> para listar duplicatas.
+            </p>
+            {% endif %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Serviço</th>
+                        <th>Cliente</th>
+                        <th>Data Agendada</th>
+                        <th>Equipe</th>
+                        <th>Status</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orcamento in orcamentos %}
+                    <tr{% if orcamento.id in ids_possiveis_duplicados %} class="possivel-duplicata" title="Mesmo cliente e mesma data agendada que outras cotações"{% endif %}>
+                        <td>
+                            <strong>{{ orcamento.codigo|formatar_codigo_ordem }}</strong>
+                            {% if orcamento.id in ids_possiveis_duplicados %}
+                            <span class="badge badge-duplicata" title="Possível duplicata: mesmo cliente e mesma data">Duplicata?</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if orcamento.servicos_orcamento.exists %}
+                                {% with primeiro_servico=orcamento.servicos_orcamento.first %}
+                                    {{ primeiro_servico.servico.nome }}{% if orcamento.servicos_orcamento.count > 1 %} (+{{ orcamento.servicos_orcamento.count|add:"-1" }} mais){% endif %}
+                                {% endwith %}
+                            {% elif orcamento.servico %}
+                                {{ orcamento.servico.nome }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if orcamento.cliente %}
+                                {{ orcamento.cliente.nome }}
+                            {% elif orcamento.nome_cliente_pagamento %}
+                                {{ orcamento.nome_cliente_pagamento }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ orcamento.data_agendada|date:"d/m/Y H:i"|default:"-" }}</td>
+                        <td>{{ orcamento.equipe|default:"-" }}</td>
+                        <td>
+                            {% if orcamento.status == 'EM_ANDAMENTO' %}
+                            <span class="badge badge-em-andamento">
+                                {{ orcamento.get_status_display }}
+                            </span>
+                            {% elif orcamento.status == 'AGENDADA' %}
+                            <span class="badge badge-pendente">
+                                {{ orcamento.get_status_display }}
+                            </span>
+                            {% elif orcamento.status == 'CONCLUIDA' %}
+                            <span class="badge badge-concluida">
+                                {{ orcamento.get_status_display }}
+                            </span>
+                            {% elif orcamento.status == 'CANCELADA' %}
+                            <span class="badge badge-cancelada">
+                                {{ orcamento.get_status_display }}
+                            </span>
+                            {% else %}
+                            <span class="badge badge-pendente">
+                                {{ orcamento.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if orcamento.servicos_orcamento.exists %}
+                                {% with valor=orcamento.valor_total_com_itens %}
+                                    {% if valor %}
+                                        {{ valor|floatformat:2|intcomma }} MT
+                                    {% else %}
+                                        0,00 MT
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                {% if orcamento.valor_total %}
+                                    {{ orcamento.valor_total|floatformat:2|intcomma }} MT
+                                {% else %}
+                                    0,00 MT
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="{% url 'producao:servico_orcamento_detail' orcamento.id %}" class="btn-view">
+                                    <i class="fas fa-eye"></i> Detalhes
+                                </a>
+                                <a href="{% url 'producao:servico_orcamento_edit' orcamento.id %}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="{% url 'producao:servico_orcamento_delete' orcamento.id %}" class="btn-delete" onclick="return confirm('Tem certeza que deseja excluir este orçamento?');">
+                                    <i class="fas fa-trash"></i> Deletar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h3>Nenhum orçamento encontrado</h3>
+                <p>
+                    {% if search_query or status_filter or servico_id %}
+                        Tente ajustar os filtros de busca.
+                    {% else %}
+                        Ainda não há orçamentos cadastrados no sistema.
+                    {% endif %}
+                </p>
+                <a href="{% url 'producao:servico_orcamento_add' %}" class="btn btn-primary" style="background: #10b981; margin-top: 15px;">
+                    <i class="fas fa-plus"></i> Criar Primeiro Orçamento
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Paginação -->
+        {% if orcamentos.has_other_pages %}
+        <div style="margin-top: 30px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+            {% if orcamentos.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-angle-double-left"></i> Primeira
+                </a>
+                <a href="?page={{ orcamentos.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-angle-left"></i> Anterior
+                </a>
+            {% endif %}
+            
+            <span style="padding: 8px 16px; background: #f8f9fa; border-radius: 4px; color: #374151; font-weight: 500;">
+                Página {{ orcamentos.number }} de {{ orcamentos.paginator.num_pages }}
+            </span>
+            
+            {% if orcamentos.has_next %}
+                <a href="?page={{ orcamentos.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}" class="btn btn-secondary">
+                    Próxima <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ orcamentos.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if servico_id %}&servico={{ servico_id }}{% endif %}" class="btn btn-secondary">
+                    Última <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

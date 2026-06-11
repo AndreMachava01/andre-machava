@@ -1,0 +1,465 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-info {
+            background: #0ea5e9;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #0284c7;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b45309;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-form input,
+        .filter-form select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .filter-form input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-form select {
+            min-width: 150px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #b45309;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-agendada {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-em-andamento {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-pausada {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .badge-concluida {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-cancelada {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-com-contrato {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-sem-contrato {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .message {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .message-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        .message-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .message-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #374151;
+        }
+        .pagination .current {
+            background: #b45309;
+            color: white;
+            border-color: #b45309;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-file-contract"></i>
+                    {{ title }}
+                </h1>
+                <p>{{ description }}</p>
+            </div>
+            <div>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                <i class="fas fa-check-circle"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_orcamentos|default:0 }}</div>
+                <div class="stat-label">Total de Orçamentos</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ orcamentos_com_contrato|default:0 }}</div>
+                <div class="stat-label">Com Contrato Gerado</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ orcamentos_sem_contrato|default:0 }}</div>
+                <div class="stat-label">Sem Contrato</div>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <form method="GET" action="{% url 'producao:servicos_contratos' %}" class="filter-form">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Pesquisar por código, cliente ou endereço...">
+                <select name="status">
+                    <option value="">Todos os Status</option>
+                    {% for status_code, status_name in STATUS_CHOICES %}
+                    <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                        {{ status_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <select name="cliente">
+                    <option value="">Todos os Clientes</option>
+                    {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}" {% if cliente_id == cliente.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cliente.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                {% if search_query or status_filter or cliente_id %}
+                <a href="{% url 'producao:servicos_contratos' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Data Agendada</th>
+                        <th>Endereço</th>
+                        <th>Status</th>
+                        <th>Contrato</th>
+                        <th>Valor Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if orcamentos %}
+                        {% for orcamento in orcamentos %}
+                        <tr>
+                            <td><strong>{{ orcamento.codigo }}</strong></td>
+                            <td>
+                                {% if orcamento.cliente %}
+                                    {{ orcamento.cliente.nome }}
+                                {% else %}
+                                    <span style="color: #9ca3af;">{{ orcamento.nome_cliente_pagamento|default:"Cliente não cadastrado" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ orcamento.data_agendada|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {{ orcamento.endereco_servico|truncatewords:5 }}
+                                {% if orcamento.cidade_servico %}
+                                    <br><small style="color: #6b7280;">{{ orcamento.cidade_servico }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if orcamento.status == 'AGENDADA' %}
+                                    <span class="badge badge-agendada">{{ orcamento.get_status_display }}</span>
+                                {% elif orcamento.status == 'EM_ANDAMENTO' %}
+                                    <span class="badge badge-em-andamento">{{ orcamento.get_status_display }}</span>
+                                {% elif orcamento.status == 'PAUSADA' %}
+                                    <span class="badge badge-pausada">{{ orcamento.get_status_display }}</span>
+                                {% elif orcamento.status == 'CONCLUIDA' %}
+                                    <span class="badge badge-concluida">{{ orcamento.get_status_display }}</span>
+                                {% elif orcamento.status == 'CANCELADA' %}
+                                    <span class="badge badge-cancelada">{{ orcamento.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge">{{ orcamento.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if orcamento.ordens_servico_geradas.exists %}
+                                    <span class="badge badge-com-contrato">
+                                        <i class="fas fa-check-circle"></i> Gerado
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-sem-contrato">
+                                        <i class="fas fa-times-circle"></i> Não gerado
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if orcamento.valor_total %}
+                                    <strong>{{ orcamento.valor_total|floatformat:2 }} MT</strong>
+                                {% else %}
+                                    <span style="color: #9ca3af;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <a href="{% url 'producao:servico_orcamento_detail' orcamento.id %}" class="btn btn-info" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                    {% if not orcamento.ordens_servico_geradas.exists %}
+                                    <a href="{% url 'producao:preview_contrato_servico' orcamento.id %}" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-file-pdf"></i> Gerar Contrato
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'producao:gerar_contrato_servico' orcamento.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-download"></i> Baixar PDF
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-file-contract"></i>
+                                <p>Nenhum orçamento encontrado.</p>
+                                <p style="font-size: 13px; color: #9ca3af;">
+                                    {% if search_query or status_filter or cliente_id %}
+                                        Tente ajustar os filtros de pesquisa.
+                                    {% else %}
+                                        Crie um orçamento para poder gerar contratos.
+                                    {% endif %}
+                                </p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}">
+                <i class="fas fa-angle-left"></i>
+            </a>
+            {% endif %}
+            
+            <span class="current">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if cliente_id %}&cliente={{ cliente_id }}{% endif %}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

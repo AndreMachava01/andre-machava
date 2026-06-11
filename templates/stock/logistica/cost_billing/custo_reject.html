@@ -1,0 +1,39 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Rejeitar custo {{ custo.codigo }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:cost_billing:custo_detail' custo.id as custo_detail_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Rejeitar custo' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-times" aria-hidden="true"></i> Rejeitar custo</h1>
+                <p class="page-subtitle">{{ custo.codigo }} — {{ custo.valor|floatformat:2 }} MT</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ custo_detail_url }}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-body">
+                <div class="form-field">
+                    <label class="form-label" for="motivo_rejeicao">Motivo da rejeição *</label>
+                    <textarea id="motivo_rejeicao" name="motivo_rejeicao" class="form-control" rows="4" required></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger"><i class="fas fa-times" aria-hidden="true"></i> Confirmar rejeição</button>
+            <a href="{{ custo_detail_url }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

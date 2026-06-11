@@ -1,327 +1,311 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Dashboard de Exceções Logísticas{% endblock %}
+{% block title %}Exceções logísticas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Dashboard de Exceções Logísticas</h1>
-                <div>
-                    <a href="{% url 'stock:exceptions:excecao_create' %}" class="btn btn-danger">
-                        <i class="fas fa-plus"></i> Nova Exceção
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Exceções' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    Exceções logísticas
+                </h1>
+                <p class="page-subtitle">Ocorrências, devoluções e reentregas</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Logística
+                </a>
+                <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-outline">
+                    <i class="fas fa-truck" aria-hidden="true"></i> Rastreamentos
+                </a>
+                <a href="{% url 'stock:exceptions:devolucao_create' %}" class="btn btn-warning">
+                    <i class="fas fa-undo" aria-hidden="true"></i> Nova devolução
+                </a>
+                <a href="{% url 'stock:exceptions:excecao_create' %}" class="btn btn-danger">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova exceção
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.excecoes_abertas|default:"0" }}</div>
+                <div class="stat-label">Abertas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-search"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.excecoes_em_analise|default:"0" }}</div>
+                <div class="stat-label">Em análise</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.excecoes_resolvidas|default:"0" }}</div>
+                <div class="stat-label">Resolvidas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total_excecoes|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-bolt" aria-hidden="true"></i> Acesso rápido</h3>
+        </div>
+        <div class="modules-grid">
+            <a href="{% url 'stock:exceptions:excecoes_list' %}" class="module-card">
+                <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Exceções</h3>
+                <p>Registo e resolução de ocorrências</p>
+            </a>
+            <a href="{% url 'stock:exceptions:devolucoes_list' %}" class="module-card">
+                <h3><i class="fas fa-undo" aria-hidden="true"></i> Devoluções</h3>
+                <p>Solicitações e aprovação de devoluções</p>
+            </a>
+            <a href="{% url 'stock:exceptions:reentregas_list' %}" class="module-card">
+                <h3><i class="fas fa-redo" aria-hidden="true"></i> Reentregas</h3>
+                <p>Reagendamento de entregas falhadas</p>
+            </a>
+            <a href="{% url 'stock:exceptions:tipos_list' %}" class="module-card">
+                <h3><i class="fas fa-tags" aria-hidden="true"></i> Tipos de exceção</h3>
+                <p>Catálogo e configuração de tipos</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-fire" aria-hidden="true"></i>
+                    Exceções críticas
+                    {% if total_excecoes_criticas %}<span class="stock-pod-dash-count">({{ total_excecoes_criticas }})</span>{% endif %}
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:exceptions:excecoes_list' %}?prioridade=CRITICA" class="btn btn-danger btn-sm">
+                        Ver todas
                     </a>
-                    <a href="{% url 'stock:exceptions:devolucao_create' %}" class="btn btn-warning">
-                        <i class="fas fa-undo"></i> Nova Devolução
+                </div>
+            </div>
+            {% if excecoes_criticas %}
+            <div class="table-wrapper">
+                <table class="table table-with-actions">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for excecao in excecoes_criticas %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ excecao.codigo }}</strong></td>
+                            <td>{{ excecao.tipo_excecao.nome }}</td>
+                            <td>{{ excecao.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <span class="badge badge-{% if excecao.status == 'ABERTA' %}danger{% elif excecao.status == 'EM_ANALISE' %}warning{% elif excecao.status == 'RESOLVIDA' %}success{% elif excecao.status == 'ESCALADA' %}info{% else %}secondary{% endif %}">
+                                    {{ excecao.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="col-actions">
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:exceptions:excecao_detail' excecao.id %}" class="btn-action primary"
+                                       title="Ver exceção" aria-label="Ver exceção {{ excecao.codigo }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <h3>Nenhuma exceção crítica pendente</h3>
+                <p>Não há exceções críticas em aberto há mais de 24 horas.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    Exceções recentes (24h)
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn btn-primary btn-sm">
+                        Ver todas
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Estatísticas Gerais -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-danger shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                Exceções Abertas
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.excecoes_abertas }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+            {% if excecoes_recentes %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for excecao in excecoes_recentes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'stock:exceptions:excecao_detail' excecao.id %}" class="cell-primary">
+                                    {{ excecao.codigo }}
+                                </a>
+                            </td>
+                            <td>{{ excecao.tipo_excecao.nome }}</td>
+                            <td>
+                                <span class="badge badge-{% if excecao.prioridade == 'CRITICA' %}danger{% elif excecao.prioridade == 'ALTA' %}warning{% elif excecao.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}">
+                                    {{ excecao.get_prioridade_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if excecao.status == 'ABERTA' %}danger{% elif excecao.status == 'EM_ANALISE' %}warning{% elif excecao.status == 'RESOLVIDA' %}success{% elif excecao.status == 'ESCALADA' %}info{% else %}secondary{% endif %}">
+                                    {{ excecao.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Em Análise
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.excecoes_em_analise }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-search fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-calendar-times" aria-hidden="true"></i>
+                <h3>Sem actividade recente</h3>
+                <p>Nenhuma exceção registada nas últimas 24 horas.</p>
             </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Resolvidas
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.excecoes_resolvidas }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Total Exceções
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_excecoes }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-undo" aria-hidden="true"></i>
+                    Devoluções pendentes
+                    {% if total_devolucoes_pendentes %}<span class="stock-pod-dash-count">({{ total_devolucoes_pendentes }})</span>{% endif %}
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:exceptions:devolucoes_list' %}?status=SOLICITADA" class="btn btn-warning btn-sm">
+                        Ver todas
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Exceções Críticas -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-danger">Exceções Críticas</h6>
-                    <a href="{% url 'stock:exceptions:excecoes_list' %}?prioridade=CRITICA" class="btn btn-sm btn-danger">Ver Todas</a>
-                </div>
-                <div class="card-body">
-                    {% if excecoes_criticas %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Tipo</th>
-                                    <th>Data</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for excecao in excecoes_criticas %}
-                                <tr>
-                                    <td>{{ excecao.codigo }}</td>
-                                    <td>{{ excecao.tipo_excecao.nome }}</td>
-                                    <td>{{ excecao.data_ocorrencia|date:"d/m/Y H:i" }}</td>
-                                    <td>
-                                        <span class="badge badge-{% if excecao.status == 'ABERTA' %}danger{% elif excecao.status == 'EM_ANALISE' %}warning{% else %}secondary{% endif %}">
-                                            {{ excecao.status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'stock:exceptions:excecao_detail' excecao.id %}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                        <p class="text-gray-500">Nenhuma exceção crítica pendente</p>
-                    </div>
-                    {% endif %}
-                </div>
+            {% if devolucoes_pendentes %}
+            <div class="table-wrapper">
+                <table class="table table-with-actions">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Motivo</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for devolucao in devolucoes_pendentes %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ devolucao.codigo }}</strong></td>
+                            <td>{{ devolucao.get_motivo_display }}</td>
+                            <td>{{ devolucao.solicitado_por }}</td>
+                            <td>{{ devolucao.data_solicitacao|date:"d/m/Y" }}</td>
+                            <td class="col-actions">
+                                <div class="cell-actions">
+                                    <a href="{% url 'stock:exceptions:aprovar_devolucao' devolucao.id %}" class="btn-action secondary"
+                                       title="Aprovar devolução" aria-label="Aprovar devolução {{ devolucao.codigo }}">
+                                        <i class="fas fa-check" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <h3>Nenhuma devolução pendente</h3>
+                <p>Todas as solicitações de devolução foram tratadas.</p>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Exceções Recentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Exceções Recentes (24h)</h6>
-                    <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn btn-sm btn-primary">Ver Todas</a>
-                </div>
-                <div class="card-body">
-                    {% if excecoes_recentes %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Tipo</th>
-                                    <th>Prioridade</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for excecao in excecoes_recentes %}
-                                <tr>
-                                    <td>{{ excecao.codigo }}</td>
-                                    <td>{{ excecao.tipo_excecao.nome }}</td>
-                                    <td>
-                                        <span class="badge badge-{% if excecao.prioridade == 'CRITICA' %}danger{% elif excecao.prioridade == 'ALTA' %}warning{% elif excecao.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}">
-                                            {{ excecao.prioridade }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-{% if excecao.status == 'ABERTA' %}danger{% elif excecao.status == 'EM_ANALISE' %}warning{% elif excecao.status == 'RESOLVIDA' %}success{% else %}secondary{% endif %}">
-                                            {{ excecao.status }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-calendar-times fa-3x text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Nenhuma exceção nas últimas 24h</p>
-                    </div>
-                    {% endif %}
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-redo" aria-hidden="true"></i>
+                    Reentregas agendadas
+                    {% if total_reentregas_agendadas %}<span class="stock-pod-dash-count">({{ total_reentregas_agendadas }})</span>{% endif %}
+                </h3>
+                <div class="table-actions">
+                    <a href="{% url 'stock:exceptions:reentregas_list' %}?status=AGENDADA" class="btn btn-info btn-sm">
+                        Ver todas
+                    </a>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Devoluções Pendentes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-warning">Devoluções Pendentes</h6>
-                    <a href="{% url 'stock:exceptions:devolucoes_list' %}?status=SOLICITADA" class="btn btn-sm btn-warning">Ver Todas</a>
-                </div>
-                <div class="card-body">
-                    {% if devolucoes_pendentes %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Motivo</th>
-                                    <th>Solicitado por</th>
-                                    <th>Data</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for devolucao in devolucoes_pendentes %}
-                                <tr>
-                                    <td>{{ devolucao.codigo }}</td>
-                                    <td>{{ devolucao.get_motivo_display }}</td>
-                                    <td>{{ devolucao.solicitado_por }}</td>
-                                    <td>{{ devolucao.data_solicitacao|date:"d/m/Y" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                        <p class="text-gray-500">Nenhuma devolução pendente</p>
-                    </div>
-                    {% endif %}
-                </div>
+            {% if reentregas_agendadas %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Data</th>
+                            <th>Janela</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reentrega in reentregas_agendadas %}
+                        <tr>
+                            <td><strong class="cell-primary">{{ reentrega.codigo }}</strong></td>
+                            <td>{{ reentrega.nova_data_entrega|date:"d/m/Y" }}</td>
+                            <td>{{ reentrega.nova_janela_inicio|time:"H:i" }} — {{ reentrega.nova_janela_fim|time:"H:i" }}</td>
+                            <td>
+                                <span class="badge badge-{% if reentrega.status == 'AGENDADA' %}info{% elif reentrega.status == 'EM_ANDAMENTO' %}warning{% elif reentrega.status == 'CONCLUIDA' %}success{% elif reentrega.status == 'FALHADA' %}danger{% else %}secondary{% endif %}">
+                                    {{ reentrega.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
-
-        <!-- Reentregas Agendadas -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">Reentregas Agendadas</h6>
-                    <a href="{% url 'stock:exceptions:reentregas_list' %}?status=AGENDADA" class="btn btn-sm btn-info">Ver Todas</a>
-                </div>
-                <div class="card-body">
-                    {% if reentregas_agendadas %}
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Data</th>
-                                    <th>Janela</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for reentrega in reentregas_agendadas %}
-                                <tr>
-                                    <td>{{ reentrega.codigo }}</td>
-                                    <td>{{ reentrega.nova_data_entrega|date:"d/m/Y" }}</td>
-                                    <td>{{ reentrega.nova_janela_inicio|time:"H:i" }} - {{ reentrega.nova_janela_fim|time:"H:i" }}</td>
-                                    <td>
-                                        <span class="badge badge-{% if reentrega.status == 'AGENDADA' %}info{% elif reentrega.status == 'EM_ANDAMENTO' %}warning{% elif reentrega.status == 'CONCLUIDA' %}success{% else %}secondary{% endif %}">
-                                            {{ reentrega.status }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-calendar-check fa-3x text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Nenhuma reentrega agendada</p>
-                    </div>
-                    {% endif %}
-                </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                <h3>Nenhuma reentrega agendada</h3>
+                <p>Não há reentregas futuras por executar.</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Links Rápidos -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Acesso Rápido</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:exceptions:tipos_list' %}" class="btn btn-outline-primary btn-block">
-                                <i class="fas fa-tags"></i><br>
-                                Tipos de Exceção
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn btn-outline-danger btn-block">
-                                <i class="fas fa-exclamation-triangle"></i><br>
-                                Exceções
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:exceptions:devolucoes_list' %}" class="btn btn-outline-warning btn-block">
-                                <i class="fas fa-undo"></i><br>
-                                Devoluções
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'stock:exceptions:reentregas_list' %}" class="btn btn-outline-info btn-block">
-                                <i class="fas fa-redo"></i><br>
-                                Reentregas
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>

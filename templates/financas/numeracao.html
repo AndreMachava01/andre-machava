@@ -1,0 +1,61 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; }
+        td.num { text-align: right; }
+        .empty { text-align: center; padding: 24px; color: #6b7280; }
+        .info { font-size: 13px; color: #6b7280; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-sort-numeric-down"></i> {{ title }}</h1>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="/admin/empresa/contadorseriedocumento/" class="btn btn-secondary" target="_blank">Gerir no Admin</a>
+            </div>
+        </div>
+        <p>Controlo de sequência por série e ano para facturas, recibos e outros documentos fiscais. Use o Admin para criar ou editar séries.</p>
+        {% if contadores %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Série</th>
+                    <th>Ano</th>
+                    <th class="num">Próximo número</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contadores %}
+                <tr>
+                    <td>{{ c.serie }}</td>
+                    <td>{{ c.ano }}</td>
+                    <td class="num">{{ c.proximo_numero }}</td>
+                    <td>{{ c.descricao|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">Nenhuma série configurada. Crie séries no <a href="/admin/empresa/contadorseriedocumento/add/">Admin</a> (ex: FT para facturas, RC para recibos).</div>
+        {% endif %}
+        <p class="info">A emissão de facturas pode ser ligada a este contador para atribuir números sequenciais automaticamente.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize %}
+    {% load static %}
+    {% load l10n %}
+    <title>{% if ordem %}{% if is_orcamento %}Editar Cotação{% else %}Editar Ordem de Serviço{% endif %}{% else %}Novo Orçamento{% endif %} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'empresa/css/orcamento-servicos-form.css' %}">
+</head>
+<body class="{% if embed %}embed-form{% endif %}">
+    <div class="container">
+        {% if not embed %}
+        <div class="header">
+            <h1><i class="fas fa-file-invoice-dollar"></i> {% if ordem %}{% if is_orcamento %}Editar Cotação{% else %}Editar Ordem de Serviço{% endif %}{% else %}Novo Orçamento{% endif %}</h1>
+            {% if from_vendas %}
+            <a href="{% if ordem %}{% url 'vendas:orcamento_detail' ordem.id %}{% else %}{% url 'vendas:orcamentos_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> {% if ordem %}Voltar ao orçamento{% else %}Voltar aos orçamentos{% endif %}</a>
+            {% else %}
+            <a href="{% if is_orcamento %}{% url 'producao:servicos_orcamento' %}{% else %}{% url 'producao:servicos_ordens' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% if url_form_action %}{{ url_form_action }}{% elif ordem %}{% url 'producao:servico_orcamento_edit' ordem.id %}{% if from_vendas %}?from=vendas{% endif %}{% else %}{% url 'producao:servico_orcamento_add' %}{% if from_vendas %}?from=vendas{% endif %}{% if embed %}&embed=1{% endif %}{% endif %}">
+            {% csrf_token %}
+            {% if from_vendas %}<input type="hidden" name="from" value="vendas">{% endif %}
+            {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+            
+            <!-- VENDA A e Cliente -->
+            <div class="form-row orc-form-row-end">
+                <div class="form-group orc-fg-200">
+                    <label for="forma_pagamento"><i class="fas fa-money-bill-wave"></i> VENDA A: <span class="required">*</span></label>
+                    <select id="forma_pagamento" name="forma_pagamento" required onchange="togglePaymentFields()">
+                        <option value="PRONTO_PAGAMENTO" {% if ordem %}{% if ordem.forma_pagamento == 'PRONTO_PAGAMENTO' %}selected{% endif %}{% else %}selected{% endif %}>CASH</option>
+                        <option value="CREDITO" {% if ordem %}{% if ordem.forma_pagamento == 'CREDITO' %}selected{% endif %}{% endif %}>CREDITO</option>
+                    </select>
+                </div>
+                <div id="pronto-pagamento-section" class="form-group orc-fg-flex">
+                    <div class="orc-flex-1-rel">
+                        <input type="text" id="nome_cliente_pagamento" name="nome_cliente_pagamento" 
+                               value="{% if ordem %}{% if ordem.nome_cliente_pagamento %}{{ ordem.nome_cliente_pagamento }}{% endif %}{% endif %}" 
+                               placeholder="Nome do Cliente *" required autocomplete="off">
+                        <input type="hidden" id="cliente_id_hidden" name="cliente_id" value="{% if ordem %}{% if ordem.cliente_id %}{{ ordem.cliente_id }}{% endif %}{% endif %}">
+                        <div id="cliente-suggestions" class="orc-dnone"></div>
+                    </div>
+                    <div class="orc-flex-1">
+                        <input type="text" id="nuit_cliente_pagamento" name="nuit_cliente_pagamento" 
+                               value="{% if ordem %}{% if ordem.nuit_cliente_pagamento %}{{ ordem.nuit_cliente_pagamento }}{% endif %}{% endif %}" 
+                               placeholder="NUIT do Cliente (Ex: 123456789)" pattern="[0-9]{9}" maxlength="9">
+                    </div>
+                    <div class="orc-flex-1">
+                        <input type="text" id="telefone_cliente_pagamento" name="telefone_cliente_pagamento" 
+                               value="{% if ordem %}{% if ordem.telefone_cliente_pagamento %}{{ ordem.telefone_cliente_pagamento }}{% endif %}{% endif %}" 
+                               placeholder="Contato/Telefone (Ex: +258 84 123 4567)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Local de Entrega -->
+            <div id="local-entrega-section" class="form-group">
+                <textarea id="local_entrega_sucursal" name="local_entrega_sucursal" rows="1" 
+                          placeholder="Local de Entrega (Localização da sucursal ou endereço de entrega)">{% if ordem %}{% if ordem.endereco_servico %}{{ ordem.endereco_servico }}{% endif %}{% endif %}</textarea>
+            </div>
+
+            <!-- Info Crédito -->
+            <div id="credito-section" class="orc-dnone">
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i> <strong>Venda a Crédito:</strong> Todos os dados serão migrados automaticamente da conta do cliente, incluindo o local de descarga.
+                </div>
+            </div>
+
+            <!-- Serviços (Múltiplos) - Formulário para adicionar serviços à cotação -->
+            <div id="seccao-servicos-cotacao" class="form-group orc-seccao-top">
+                {% if not servicos %}
+                <div class="orc-alert-catalog">
+                    <strong>Nenhum serviço no catálogo.</strong> <a href="{% url 'producao:servico_add' %}" class="orc-link-amber">Adicione serviços</a> em Produção → Catálogo de Serviços para poder adicioná-los à cotação.
+                </div>
+                {% endif %}
+                <h3 class="orc-h3-seccao">
+                    <i class="fas fa-tools orc-icon-amber"></i> Serviços <span class="required">*</span>
+                </h3>
+                <div id="orcamento-debug-servicos" class="orc-debug-servicos">Carregando...</div>
+                <script>
+                (function(){
+                    var el = document.getElementById('orcamento-debug-servicos');
+                    if (el) el.innerHTML = 'Debug: painel ativo. A carregar dados...';
+                })();
+                </script>
+                <p class="orc-p-hint">Digite no campo Serviço para buscar e selecione na lista. Use o botão abaixo para adicionar mais serviços.</p>
+                <div id="servicos-container" class="orc-servicos-container">
+                    {% if servicos and not ordem %}
+                    <!-- Primeira linha renderizada no servidor para que os campos apareçam (novo e edição) mesmo se o JS falhar -->
+                    <div class="servico-row orc-servico-row" data-servico-index="0">
+                        <div class="orc-w100">
+                            <div class="orc-servico-header">
+                                <button type="button" class="btn-toggle-servico orc-btn-toggle" onclick="toggleServico(this)" title="Expandir ou retrair detalhes do serviço" aria-label="Expandir ou retrair detalhes do serviço"><i class="fas fa-chevron-down"></i></button>
+                                <div class="orc-servico-icon-box"><i class="fas fa-tools orc-icon-white"></i></div>
+                                <h4 class="orc-servico-title">Serviço #1</h4>
+                                <button type="button" class="btn-remove-servico orc-btn-remove-servico" onclick="removerServico(this)" title="Remover serviço" aria-label="Remover serviço"><i class="fas fa-trash-alt"></i> Remover</button>
+                            </div>
+                            <div class="servico-resumo orc-servico-resumo">
+                                <div class="orc-servico-grid">
+                                    <div class="orc-pos-rel">
+                                        <label for="servico_autocomplete_0" class="orc-label-inline">Serviço</label>
+                                        <input id="servico_autocomplete_0" type="text" name="servico_autocomplete[]" class="servico-autocomplete orc-input-servico" placeholder="Digite para buscar serviço..." autocomplete="off" required oninput="filtrarServicos(this)" onfocus="filtrarServicos(this)" onblur="var _in=this; setTimeout(function(){ if(typeof ocultarSugestoesServico==='function') ocultarSugestoesServico(_in); }, 300)">
+                                        <input type="hidden" name="servico_id[]" class="servico-id-hidden" value="">
+                                        <div class="sugestoes-servico orc-sugestoes-servico"></div>
+                                        <small class="orc-servico-unidade">Unidade de cobrança: —</small>
+                                    </div>
+                                    <div>
+                                        <label for="servico_quantidade_0" class="orc-label-inline">Quantidade</label>
+                                        <input id="servico_quantidade_0" type="number" name="servico_quantidade[]" step="0.01" min="0.01" value="1.00" required class="servico-quantidade orc-input-servico" onchange="if(typeof calcularServicoTotal==='function') calcularServicoTotal(this)">
+                                    </div>
+                                    <div>
+                                        <label for="servico_valor_unitario_0" class="orc-label-inline">Valor Unit. (MT)</label>
+                                        <input id="servico_valor_unitario_0" type="number" name="servico_valor_unitario[]" step="0.01" min="0" value="0.00" required class="servico-valor-unitario orc-input-servico" onchange="if(typeof calcularServicoTotal==='function') calcularServicoTotal(this)">
+                                    </div>
+                                    <div>
+                                        <label for="servico_desconto_pct_0" class="orc-label-inline">Desc. %</label>
+                                        <input id="servico_desconto_pct_0" type="number" name="servico_desconto_percentual[]" step="0.01" min="0" max="100" value="0.00" class="servico-desconto-percentual orc-input-servico">
+                                    </div>
+                                    <div>
+                                        <label for="servico_desconto_0" class="orc-label-inline">Desc. (MT)</label>
+                                        <input id="servico_desconto_0" type="number" name="servico_desconto[]" step="0.01" min="0" value="0.00" class="servico-desconto orc-input-servico">
+                                    </div>
+                                    <div>
+                                        <label for="servico_total_0" class="orc-label-inline">Total</label>
+                                        <input id="servico_total_0" type="text" class="servico-total orc-input-total" readonly value="0,00 MT">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="servico_nome_doc_0" class="orc-label-inline"><i class="fas fa-file-signature orc-icon-amber-sm"></i> Nome a Apresentar no Documento</label>
+                                    <input id="servico_nome_doc_0" type="text" name="servico_nome_documento[]" class="servico-nome-documento orc-input-servico" placeholder="Nome personalizado para o documento (deixe em branco para usar o nome do serviço)">
+                                </div>
+                            </div>
+                            <div class="servico-detalhes orc-servico-detalhes">
+                                <div class="orc-detalhes-inner">
+                                    <div class="itens-servico-container" data-servico-index="0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- Os serviços serão adicionados dinamicamente aqui -->
+                </div>
+                <div class="orc-btn-add-servico-wrap">
+                    <button type="button" class="orc-btn-add-servico" id="btn-adicionar-servico" onclick="window.adicionarServico()" title="Adicionar serviço à cotação" aria-label="Adicionar serviço à cotação">
+                        <i class="fas fa-plus-circle"></i> Adicionar Serviço
+                    </button>
+                </div>
+                <div id="servicos-empty-state" class="{% if servicos %}servicos-empty-state-hidden{% endif %} orc-empty-state">
+                    <i class="fas fa-tools orc-empty-icon"></i>
+                    <p class="orc-empty-p1">Nenhum serviço adicionado</p>
+                    <p class="orc-empty-p2">Clique em &quot;Adicionar Serviço&quot; para começar</p>
+                </div>
+            </div>
+
+            <!-- Transporte -->
+            <div class="form-group orc-seccao-top">
+                <h3 class="orc-h3-transporte">
+                    <i class="fas fa-truck"></i> Transporte (Opcional)
+                </h3>
+                <div id="transportes-container">
+                    {% if ordem %}
+                        {% for transporte in ordem.transportes_orcamento.all %}
+                        <div class="transporte-row orc-transporte-row" data-transporte-id="{{ transporte.id }}">
+                            <div class="orc-flex-2">
+                                <label for="transporte_tipo_{{ forloop.counter0 }}">Tipo de Transporte</label>
+                                <select id="transporte_tipo_{{ forloop.counter0 }}" name="transporte_tipo[]" class="transporte-tipo" required onchange="filtrarTransportadoras(this)" aria-label="Tipo de Transporte">
+                                    <option value="INTERNO" {% if transporte.tipo_transporte == 'INTERNO' %}selected{% endif %}>Veículo Interno</option>
+                                    <option value="EXTERNO" {% if transporte.tipo_transporte == 'EXTERNO' %}selected{% endif %}>Transportadora Externa</option>
+                                </select>
+                            </div>
+                            <div class="orc-flex-2">
+                                <label for="transporte_id_{{ forloop.counter0 }}">Transportadora/Veículo</label>
+                                <select id="transporte_id_{{ forloop.counter0 }}" name="transporte_id[]" class="transporte-select" required aria-label="Transportadora ou veículo">
+                                    <option value="">Selecione...</option>
+                                    {% for trans in transportadoras %}
+                                    <option value="{{ trans.id }}" data-tipo="{{ trans.tipo }}" {% if transporte.transportadora.id == trans.id %}selected{% endif %}>
+                                        {{ trans.nome }} - {{ trans.codigo }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="orc-flex-1">
+                                <label for="transporte_valor_{{ forloop.counter0 }}">Valor da Logística (MT)</label>
+                                <input id="transporte_valor_{{ forloop.counter0 }}" type="number" name="transporte_valor[]" step="0.01" min="0" value="{{ transporte.valor_frete|stringformat:'0.2f' }}" required class="transporte-valor" onchange="atualizarTotalTransporte()">
+                            </div>
+                            <div class="orc-flex-end">
+                                <button type="button" class="btn-remove-transporte orc-btn-remove-transporte" onclick="removerTransporte(this)" title="Remover transporte" aria-label="Remover transporte">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="orc-btn-add-transporte" onclick="adicionarTransporte()">
+                    <i class="fas fa-plus"></i> Adicionar Transporte
+                </button>
+            </div>
+
+            <!-- Data e Hora -->
+            <div class="form-row">
+                <div class="form-group orc-fg-1">
+                    <label for="data_agendada">Data Agendada (Opcional)</label>
+                    <input type="date" id="data_agendada" name="data_agendada" 
+                           value="{% if ordem %}{% if ordem.data_agendada %}{{ ordem.data_agendada|date:'Y-m-d' }}{% endif %}{% endif %}">
+                    <small>Preenchida automaticamente com base na prioridade e horário de expediente</small>
+                </div>
+                <div class="form-group orc-fg-1">
+                    <label for="hora_agendada">Hora Agendada (Opcional)</label>
+                    <input type="time" id="hora_agendada" name="hora_agendada" 
+                           value="{% if ordem %}{% if ordem.data_agendada %}{{ ordem.data_agendada|time:'H:i' }}{% else %}09:00{% endif %}{% else %}09:00{% endif %}">
+                    <small>Preenchida automaticamente com base na prioridade e horário de expediente</small>
+                </div>
+            </div>
+
+            <!-- Endereço do Serviço -->
+            <div class="form-group">
+                <label for="endereco_servico">Endereço do Serviço (Opcional)</label>
+                <textarea id="endereco_servico" name="endereco_servico" rows="2" 
+                          placeholder="Endereço onde o serviço será prestado">{% if ordem %}{% if ordem.endereco_servico %}{{ ordem.endereco_servico }}{% endif %}{% endif %}</textarea>
+                <small>Pode ser definido posteriormente</small>
+            </div>
+            
+            <input type="hidden" id="cidade_servico" name="cidade_servico" value="{% if ordem %}{% if ordem.cidade_servico %}{{ ordem.cidade_servico }}{% endif %}{% endif %}">
+
+            <!-- Resumo de Valores -->
+            <div class="form-group orc-resumo-box">
+                <h3 class="orc-h3-resumo">Resumo de Valores</h3>
+                <p class="orc-p-resumo">Subtotal = Total Serviços + Produtos/Materiais + Transporte. IVA aplicado sobre o subtotal.</p>
+                <div class="orc-row-between">
+                    <span><strong>Total Serviços (com descontos por serviço):</strong></span>
+                    <span id="total_servicos_exibicao" class="orc-span-green">0,00 MT</span>
+                </div>
+                <div class="orc-row-between">
+                    <span><strong>Total Produtos/Materiais:</strong></span>
+                    <span id="total_itens_exibicao" class="orc-span-green">0,00 MT</span>
+                </div>
+                <div class="orc-row-between">
+                    <span><strong>Total Transporte:</strong></span>
+                    <span id="total_transporte_exibicao" class="orc-span-green">0,00 MT</span>
+                </div>
+                <div id="total_descontos_row" class="orc-row-descontos">
+                    <span><strong>Total Descontos (serviços + materiais):</strong></span>
+                    <span id="total_descontos_exibicao" class="orc-span-red">0,00 MT</span>
+                </div>
+                <div class="orc-row-subtotal">
+                    <span><strong>Subtotal (base para IVA):</strong></span>
+                    <span id="subtotal_exibicao" class="orc-span-gray">0,00 MT</span>
+                </div>
+                <input type="hidden" name="desconto" id="desconto" value="0.00">
+                <input type="hidden" name="desconto_percentual" id="desconto_percentual" value="0">
+                <div class="orc-row-iva">
+                    <span><strong>IVA (<span id="taxa_iva_exibicao">{{ taxa_iva|default:16|floatformat:0 }}</span>%):</strong></span>
+                    <span id="iva_exibicao" class="orc-span-red">0,00 MT</span>
+                </div>
+                <div class="orc-row-final">
+                    <span><strong>VALOR TOTAL:</strong></span>
+                    <span id="valor_final_exibicao" class="orc-span-final">0,00 MT</span>
+                </div>
+            </div>
+
+            <!-- Prioridade e Responsável -->
+            <div class="form-row">
+                <div class="form-group orc-fg-1">
+                    <label for="prioridade">Prioridade</label>
+                    <select id="prioridade" name="prioridade">
+                        {% for value, label in prioridade_choices %}
+                        <option value="{{ value }}" {% if ordem %}{% if ordem.prioridade == value %}selected{% endif %}{% else %}{% if value == 'NORMAL' %}selected{% endif %}{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group orc-fg-1">
+                    <label for="responsavel">Responsável</label>
+                    <select id="responsavel" name="responsavel">
+                        <option value="">Selecione um responsável</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}" {% if ordem %}{% if ordem.responsavel_id == usuario.id %}selected{% endif %}{% endif %}>{{ usuario.get_full_name|default:usuario.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações adicionais sobre {% if is_orcamento %}o orçamento{% else %}a ordem de serviço{% endif %}">{% if ordem %}{% if ordem.observacoes %}{{ ordem.observacoes }}{% endif %}{% endif %}</textarea>
+            </div>
+
+            <!-- Validade da Garantia -->
+            <div class="form-group">
+                <label for="validade_garantia_dias">Validade da Garantia (dias)</label>
+                <input type="number" id="validade_garantia_dias" name="validade_garantia_dias" min="0" step="1" 
+                       value="{% if ordem %}{% if ordem.validade_garantia_dias %}{{ ordem.validade_garantia_dias }}{% else %}90{% endif %}{% else %}90{% endif %}" 
+                       placeholder="90">
+                <small>Número de dias de validade da garantia do serviço (padrão: 90 dias)</small>
+            </div>
+
+            <!-- Botões -->
+            <div class="orc-form-actions">
+                {% if from_vendas %}
+                {% if embed %}
+                <a href="#" onclick="window.top.location.href='{% url 'vendas:orcamentos_list' %}'; return false;" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% else %}
+                <a href="{% url 'vendas:orcamentos_list' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% endif %}
+                {% else %}
+                <a href="{% if is_orcamento %}{% url 'producao:servicos_orcamento' %}{% else %}{% url 'producao:servicos_ordens' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% endif %}
+                {% if ordem and is_orcamento %}
+                <a href="{% url 'producao:servico_orcamento_imprimir' id=ordem.id %}" class="btn orc-btn-imprimir"><i class="fas fa-print"></i> Imprimir Cotação</a>
+                <a href="{% if from_vendas %}{% url 'vendas:editar_contrato' ordem.id %}{% else %}{% url 'producao:editar_contrato_servico' orcamento_id=ordem.id %}{% endif %}" class="btn orc-btn-editar-contract"><i class="fas fa-file-contract"></i> Próximo: Editar Contrato</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {% if ordem %}{% if is_orcamento %}Atualizar Cotação{% else %}Atualizar Ordem de Serviço{% endif %}{% else %}Criar Orçamento{% endif %}</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // eslint-disable-next-line
+        const clientesData = [
+            {% for cliente in clientes %}
+            {
+                id: {{ cliente.id }},
+                nome: "{{ cliente.nome|escapejs }}",
+                endereco: "{% if cliente.endereco %}{{ cliente.endereco|escapejs }}{% endif %}",
+                cidade: "{% if cliente.cidade %}{{ cliente.cidade|escapejs }}{% endif %}",
+                telefone: "{% if cliente.telefone %}{{ cliente.telefone|escapejs }}{% endif %}",
+                nuit: "{% if cliente.nuit %}{{ cliente.nuit|escapejs }}{% endif %}",
+                email: "{% if cliente.email %}{{ cliente.email|escapejs }}{% endif %}",
+                isento_iva: {% if cliente.isento_iva %}true{% else %}false{% endif %}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        let currentSuggestions = [];
+        let selectedClienteIndex = -1;
+        let isSelectingCliente = false;
+
+        function togglePaymentFields() {
+            const formaPagamento = document.getElementById('forma_pagamento').value;
+            const prontoPagamentoSection = document.getElementById('pronto-pagamento-section');
+            const creditoSection = document.getElementById('credito-section');
+            const localEntregaSection = document.getElementById('local-entrega-section');
+            const nomeCliente = document.getElementById('nome_cliente_pagamento');
+            const telefoneCliente = document.getElementById('telefone_cliente_pagamento');
+            const nuitCliente = document.getElementById('nuit_cliente_pagamento');
+            const localEntrega = document.getElementById('local_entrega_sucursal');
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            
+            if (formaPagamento === 'PRONTO_PAGAMENTO') {
+                prontoPagamentoSection.style.display = 'flex';
+                if (localEntregaSection) localEntregaSection.style.display = 'block';
+                if (creditoSection) creditoSection.style.display = 'none';
+                if (nomeCliente) { nomeCliente.required = true; nomeCliente.readOnly = false; }
+                if (telefoneCliente) telefoneCliente.readOnly = false;
+                if (nuitCliente) nuitCliente.readOnly = false;
+                if (localEntrega) localEntrega.readOnly = false;
+            } else if (formaPagamento === 'CREDITO') {
+                prontoPagamentoSection.style.display = 'flex';
+                if (localEntregaSection) localEntregaSection.style.display = 'block';
+                if (creditoSection) creditoSection.style.display = 'block';
+                if (nomeCliente) { nomeCliente.required = true; nomeCliente.readOnly = false; }
+                if (telefoneCliente) telefoneCliente.readOnly = false;
+                if (nuitCliente) nuitCliente.readOnly = false;
+                if (localEntrega) localEntrega.readOnly = false;
+                
+                if (clienteIdHidden && clienteIdHidden.value) {
+                    const clienteSelecionado = clientesData.find(c => c.id == clienteIdHidden.value);
+                    if (clienteSelecionado) selecionarCliente(clienteSelecionado);
+                }
+            }
+        }
+
+        function filtrarClientes(termo) {
+            if (!termo || termo.length < 1) return [];
+            termo = termo.toLowerCase();
+            return clientesData.filter(cliente => 
+                cliente.nome.toLowerCase().includes(termo) ||
+                (cliente.telefone && cliente.telefone.includes(termo)) ||
+                (cliente.email && cliente.email.toLowerCase().includes(termo))
+            );
+        }
+
+        function mostrarSugestoes(sugestoes) {
+            const suggestionsDiv = document.getElementById('cliente-suggestions');
+            if (!suggestionsDiv) return;
+            if (sugestoes.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+            
+            suggestionsDiv.innerHTML = '';
+            sugestoes.forEach((cliente) => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `<strong>${cliente.nome}</strong>${cliente.telefone ? '<br><small style="color: #666;">' + cliente.telefone + '</small>' : ''}`;
+                // Usar mousedown em vez de click para evitar conflito com blur
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selecionarCliente(cliente);
+                });
+                suggestionsDiv.appendChild(item);
+            });
+            suggestionsDiv.style.display = 'block';
+        }
+
+        function selecionarCliente(cliente) {
+            isSelectingCliente = true;
+            const nomeCliente = document.getElementById('nome_cliente_pagamento');
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            const telefoneCliente = document.getElementById('telefone_cliente_pagamento');
+            const nuitCliente = document.getElementById('nuit_cliente_pagamento');
+            const localEntrega = document.getElementById('local_entrega_sucursal');
+            const enderecoServico = document.getElementById('endereco_servico');
+            const cidadeServico = document.getElementById('cidade_servico');
+            const suggestionsDiv = document.getElementById('cliente-suggestions');
+            const formaPagamento = document.getElementById('forma_pagamento').value;
+
+            if (clienteIdHidden) clienteIdHidden.value = cliente.id;
+
+            if (formaPagamento === 'CREDITO') {
+                if (nomeCliente) { nomeCliente.value = cliente.nome; nomeCliente.readOnly = true; }
+                if (telefoneCliente) { telefoneCliente.value = cliente.telefone || ''; telefoneCliente.readOnly = true; }
+                if (nuitCliente) { nuitCliente.value = cliente.nuit || ''; nuitCliente.readOnly = true; }
+                if (localEntrega) { localEntrega.value = cliente.endereco || 'Localização da sucursal'; localEntrega.readOnly = true; }
+                if (enderecoServico) enderecoServico.value = cliente.endereco || '';
+                if (cidadeServico) cidadeServico.value = cliente.cidade || '';
+            } else {
+                if (nomeCliente) nomeCliente.value = cliente.nome;
+                if (telefoneCliente) telefoneCliente.value = cliente.telefone || '';
+                if (nuitCliente) nuitCliente.value = cliente.nuit || '';
+                if (localEntrega && cliente.endereco) localEntrega.value = cliente.endereco;
+                if (enderecoServico && cliente.endereco) enderecoServico.value = cliente.endereco;
+                if (cidadeServico && cliente.cidade) cidadeServico.value = cliente.cidade;
+            }
+
+            if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+            currentSuggestions = [];
+            selectedClienteIndex = -1;
+            
+            // Recalcular valores quando cliente mudar (incluindo IVA se cliente for isento)
+            atualizarValorFinal();
+            
+            // Resetar flag após um pequeno delay
+            setTimeout(() => {
+                isSelectingCliente = false;
+            }, 200);
+        }
+
+        function limparSelecaoCliente() {
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            const nomeCliente = document.getElementById('nome_cliente_pagamento');
+            const formaPagamento = document.getElementById('forma_pagamento').value;
+            if (clienteIdHidden) clienteIdHidden.value = '';
+            if (nomeCliente && formaPagamento === 'CREDITO') nomeCliente.readOnly = false;
+        }
+
+        function updateValorUnitario() {
+            const servicoSelect = document.getElementById('servico');
+            const valorUnitarioInput = document.getElementById('valor_unitario');
+            const selectedOption = servicoSelect.options[servicoSelect.selectedIndex];
+            if (selectedOption.value && selectedOption.dataset.preco) {
+                const preco = parseFloat(selectedOption.dataset.preco);
+                if (!isNaN(preco) && preco > 0) {
+                    if (!valorUnitarioInput.value || parseFloat(valorUnitarioInput.value) === 0) {
+                        valorUnitarioInput.value = preco.toFixed(2);
+                        calcularValores();
+                    }
+                }
+            }
+        }
+
+        function formatarMoeda(valor) {
+            return parseFloat(valor || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function calcularValores() {
+            // Verificar se os elementos existem antes de calcular
+            if (!document.getElementById('total_servicos_exibicao') || 
+                !document.getElementById('total_itens_exibicao') || 
+                !document.getElementById('total_transporte_exibicao') || 
+                !document.getElementById('valor_final_exibicao')) {
+                return; // Elementos não estão prontos ainda
+            }
+            atualizarTotalServicos();
+            atualizarTotalItens();
+            atualizarTotalTransporte();
+            atualizarValorFinal();
+        }
+
+        // Funções para gerenciar serviços
+        var _debugEl = document.getElementById('orcamento-debug-servicos');
+        // eslint-disable-next-line
+        var servicosData = [];
+        try {
+        servicosData = [
+            {% for servico in servicos %}
+            {
+                id: {{ servico.id }},
+                nome: "{{ servico.nome|escapejs }}",
+                preco: "{{ servico.preco_venda|default_if_none:0|stringformat:'.2f' }}",
+                unidade: "{{ servico.unidade_medida|default:'UN'|escapejs }}",
+                unidade_label: "{{ servico.get_unidade_medida_display|default:'Unidade'|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        (function _dbgServicos() {
+            window._orcamentoDebugEl = _debugEl || document.getElementById('orcamento-debug-servicos');
+            var ok = typeof servicosData !== 'undefined' && Array.isArray(servicosData);
+            var n = ok ? servicosData.length : 0;
+            window._servicosDataCount = n;
+            console.log('[Orcamento] servicosData:', n, 'itens', ok ? '' : '(não é array ou indefinido)');
+            if (window._orcamentoDebugEl) {
+                window._orcamentoDebugEl.innerHTML = 'servicosData: <strong>' + n + '</strong> serviço(s). Digite no campo Serviço para ver a última chamada de filtrarServicos.';
+            }
+        })();
+        } catch (err) {
+            console.error('[Orcamento] Erro ao inicializar servicosData:', err);
+            if (_debugEl) _debugEl.innerHTML = '<span style="color:#b91c1c;">Erro JS: ' + (err.message || String(err)) + '</span>';
+        }
+
+        let servicoCounter = 0;
+
+        window.adicionarServico = function() {
+            var container = document.getElementById('servicos-container');
+            if (!container) container = document.querySelector('#seccao-servicos-cotacao #servicos-container');
+            if (!container) container = document.querySelector('[id="servicos-container"]');
+            const emptyState = document.getElementById('servicos-empty-state') || document.querySelector('#seccao-servicos-cotacao [id="servicos-empty-state"]');
+            if (emptyState) emptyState.style.display = 'none';
+            if (!container) return;
+
+            const servicoRow = document.createElement('div');
+            servicoRow.className = 'servico-row';
+            servicoRow.dataset.servicoIndex = servicoCounter++;
+            servicoRow.style.cssText = 'width: 100%; margin-bottom: 20px; padding: 20px; background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%); border-radius: 8px; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s ease;';
+
+            try {
+                servicoRow.innerHTML = `
+                <div style="width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+                        <button type="button" class="btn-toggle-servico" onclick="toggleServico(this)" 
+                                style="background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                                title="Expandir/Retrair detalhes do serviço">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #b45309 0%, #92400e 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);">
+                            <i class="fas fa-tools" style="color: white; font-size: 18px;"></i>
+                        </div>
+                        <h4 style="margin: 0; color: #374151; font-size: 16px; font-weight: 600; flex: 1;">Serviço #${parseInt(servicoRow.dataset.servicoIndex) + 1}</h4>
+                        <button type="button" class="btn-remove-servico" onclick="removerServico(this)" 
+                                style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                                onmouseenter="this.style.background='#fecaca'; this.style.borderColor='#f87171'; this.style.transform='translateY(-1px)'"
+                                onmouseleave="this.style.background='#fee2e2'; this.style.borderColor='#fecaca'; this.style.transform='translateY(0)'"
+                                title="Remover serviço">
+                            <i class="fas fa-trash-alt"></i> Remover
+                        </button>
+                    </div>
+                    <!-- Linha principal resumida (sempre visível) -->
+                    <div class="servico-resumo" style="margin-bottom: 15px; padding: 12px; background: #f9fafb; border-radius: 6px;">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 0.8fr 0.8fr 1.2fr; gap: 15px; margin-bottom: 12px;">
+                            <div class="orc-pos-rel" style="position: relative;">
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Serviço</label>
+                                <input type="text" 
+                                       name="servico_autocomplete[]"
+                                       class="servico-autocomplete" 
+                                       placeholder="Digite para buscar serviço..." 
+                                       autocomplete="off"
+                                       required
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       oninput="filtrarServicos(this)"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'; filtrarServicos(this)"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'; setTimeout(() => ocultarSugestoesServico(this), 300)">
+                                <input type="hidden" name="servico_id[]" class="servico-id-hidden" value="">
+                                <div class="sugestoes-servico orc-sugestoes-servico"></div>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Quantidade</label>
+                                <input type="number" name="servico_quantidade[]" step="0.01" min="0.01" value="1.00" required 
+                                       class="servico-quantidade" 
+                                       onchange="calcularServicoTotal(this)"
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Valor Unit. (MT)</label>
+                                <input type="number" name="servico_valor_unitario[]" step="0.01" min="0" value="0.00" required 
+                                       class="servico-valor-unitario" 
+                                       onchange="calcularServicoTotal(this)"
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Desc. %</label>
+                                <input type="number" name="servico_desconto_percentual[]" step="0.01" min="0" max="100" value="0.00" 
+                                       class="servico-desconto-percentual" 
+                                       onchange="atualizarDescontoServico(this, 'percentual')"
+                                       oninput="atualizarDescontoServico(this, 'percentual')"
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Desc. (MT)</label>
+                                <input type="number" name="servico_desconto[]" step="0.01" min="0" value="0.00" 
+                                       class="servico-desconto" 
+                                       onchange="atualizarDescontoServico(this, 'valor')"
+                                       oninput="atualizarDescontoServico(this, 'valor')"
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Total</label>
+                                <input type="text" class="servico-total" readonly 
+                                       style="width: 100%; padding: 10px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #86efac; border-radius: 6px; font-weight: 700; font-size: 14px; color: #059669; text-align: center; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1); cursor: not-allowed;" 
+                                       value="0,00 MT">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">
+                                <i class="fas fa-file-signature" style="color: #b45309; margin-right: 6px;"></i> Nome a Apresentar no Documento
+                            </label>
+                            <input type="text" 
+                                   name="servico_nome_documento[]" 
+                                   class="servico-nome-documento"
+                                   placeholder="Nome personalizado para o documento (deixe em branco para usar o nome do serviço)"
+                                   style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                   onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                   onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                        </div>
+                    </div>
+                    <!-- Detalhes expandidos (inicialmente ocultos) -->
+                    <div class="servico-detalhes" style="display: none;">
+                    <!-- Produtos e Materiais do Serviço -->
+                    <div style="margin-top: 20px; padding: 18px; background: linear-gradient(to bottom, #fafafa 0%, #f5f5f5 100%); border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="margin: 0; color: #374151; font-size: 15px; font-weight: 600;">
+                                <i class="fas fa-box" style="color: #059669; margin-right: 8px;"></i> Produtos e Materiais <span style="color: #6b7280; font-weight: 400; font-size: 13px;">(Opcional)</span>
+                            </h4>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn-add-produto-servico" onclick="adicionarItemServico(this, 'PRODUTO')" 
+                                        style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+                                               color: white; 
+                                               border: none; 
+                                               padding: 9px 18px; 
+                                               border-radius: 6px; 
+                                               cursor: pointer; 
+                                               font-size: 13px; 
+                                               font-weight: 500;
+                                               display: flex;
+                                               align-items: center;
+                                               gap: 6px;
+                                               box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+                                               transition: all 0.2s ease;"
+                                        onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
+                                        onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
+                                    <i class="fas fa-cube"></i> Adicionar Produto
+                                </button>
+                                <button type="button" class="btn-add-material-servico" onclick="adicionarItemServico(this, 'MATERIAL')" 
+                                        style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+                                               color: white; 
+                                               border: none; 
+                                               padding: 9px 18px; 
+                                               border-radius: 6px; 
+                                               cursor: pointer; 
+                                               font-size: 13px; 
+                                               font-weight: 500;
+                                               display: flex;
+                                               align-items: center;
+                                               gap: 6px;
+                                               box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+                                               transition: all 0.2s ease;"
+                                        onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(245, 158, 11, 0.4)'"
+                                        onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(245, 158, 11, 0.3)'">
+                                    <i class="fas fa-hammer"></i> Adicionar Material
+                                </button>
+                            </div>
+                        </div>
+                        <div class="itens-servico-container" data-servico-index="${servicoRow.dataset.servicoIndex}">
+                            <!-- Itens serão adicionados aqui -->
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            `;
+                container.appendChild(servicoRow);
+            } catch (e) {
+                var fallback = document.getElementById('seccao-servicos-cotacao') || document.body;
+                if (fallback) fallback.appendChild(servicoRow);
+            }
+        }
+
+        window.removerServico = function(button) {
+            const servicoRow = button.closest('.servico-row');
+            servicoRow.remove();
+            const container = document.getElementById('servicos-container');
+            const emptyState = document.getElementById('servicos-empty-state');
+            if (emptyState && container && !container.querySelector('.servico-row')) {
+                emptyState.style.display = 'block';
+            }
+            atualizarTotalServicos();
+            atualizarValorFinal();
+        }
+        
+        window.toggleServico = function(button) {
+            const servicoRow = button.closest('.servico-row');
+            const detalhes = servicoRow.querySelector('.servico-detalhes');
+            const icon = button.querySelector('i');
+            
+            if (detalhes.style.display === 'none') {
+                // Sincronizar valores da linha principal com a seção de detalhes (preview)
+                sincronizarDetalhesServico(servicoRow);
+                
+                detalhes.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                button.style.background = '#e0e7ff';
+                button.style.color = '#6366f1';
+                button.style.borderColor = '#818cf8';
+            } else {
+                detalhes.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                button.style.background = '#f3f4f6';
+                button.style.color = '#6b7280';
+                button.style.borderColor = '#d1d5db';
+            }
+        }
+        
+        // Função para sincronizar valores da linha principal com a seção de detalhes (preview)
+        window.sincronizarDetalhesServico = function(servicoRow) {
+            // Obter valores da linha principal
+            const servicoAutocomplete = servicoRow.querySelector('.servico-autocomplete');
+            const servicoQuantidade = servicoRow.querySelector('.servico-quantidade');
+            const servicoValorUnitario = servicoRow.querySelector('.servico-valor-unitario');
+            const servicoDescontoPercentual = servicoRow.querySelector('.servico-desconto-percentual');
+            const servicoDesconto = servicoRow.querySelector('.servico-desconto');
+            const servicoTotal = servicoRow.querySelector('.servico-total');
+            const servicoNomeDocumento = servicoRow.querySelector('.servico-nome-documento');
+            
+            // Atualizar campos de preview na seção de detalhes (agora são divs, não inputs)
+            const previewAutocomplete = servicoRow.querySelector('.servico-autocomplete-preview');
+            const previewQuantidade = servicoRow.querySelector('.servico-quantidade-preview');
+            const previewValorUnitario = servicoRow.querySelector('.servico-valor-unitario-preview');
+            const previewDescontoPercentual = servicoRow.querySelector('.servico-desconto-percentual-preview');
+            const previewDesconto = servicoRow.querySelector('.servico-desconto-preview');
+            const previewTotal = servicoRow.querySelector('.servico-total-preview');
+            const previewNomeDocumento = servicoRow.querySelector('.servico-nome-documento-preview');
+            
+            if (previewAutocomplete && servicoAutocomplete) {
+                previewAutocomplete.textContent = servicoAutocomplete.value || 'Não especificado';
+            }
+            if (previewQuantidade && servicoQuantidade) {
+                previewQuantidade.textContent = servicoQuantidade.value || '0.00';
+            }
+            if (previewValorUnitario && servicoValorUnitario) {
+                previewValorUnitario.textContent = formatarMoeda(parseFloat(servicoValorUnitario.value) || 0) + ' MT';
+            }
+            if (previewDescontoPercentual && servicoDescontoPercentual) {
+                const descontoPerc = parseFloat(servicoDescontoPercentual.value) || 0;
+                previewDescontoPercentual.textContent = descontoPerc > 0 ? descontoPerc.toFixed(2) + '%' : '0,00%';
+            }
+            if (previewDesconto && servicoDesconto) {
+                previewDesconto.textContent = formatarMoeda(parseFloat(servicoDesconto.value) || 0) + ' MT';
+            }
+            if (previewTotal && servicoTotal) {
+                previewTotal.textContent = servicoTotal.value || '0,00 MT';
+            }
+            if (previewNomeDocumento && servicoNomeDocumento) {
+                previewNomeDocumento.textContent = servicoNomeDocumento.value || '(Usar nome do serviço)';
+            }
+        }
+
+        // Funções para autocomplete de serviços
+        let isSelectingServico = false;
+        
+        window.filtrarServicos = function(input) {
+            var log = [];
+            try {
+                if (!input || !input.closest) {
+                    log.push('input inválido');
+                    throw new Error('input inválido');
+                }
+                const row = input.closest('.servico-row');
+                if (!row) {
+                    log.push('row não encontrado (closest .servico-row)');
+                    throw new Error('row não encontrado');
+                }
+                log.push('row ok');
+                const servicoIdHidden = row.querySelector('.servico-id-hidden');
+                const sugestoesDiv = row.querySelector('.sugestoes-servico');
+                if (!sugestoesDiv || !servicoIdHidden) {
+                    log.push('sugestoesDiv=' + !!sugestoesDiv + ' servicoIdHidden=' + !!servicoIdHidden);
+                    throw new Error('sugestoesDiv ou servicoIdHidden não encontrado');
+                }
+                log.push('sugestoesDiv ok');
+
+                const termo = (input.value || '').trim().toLowerCase();
+                log.push('termo="' + termo + '" len=' + termo.length);
+
+                if (termo.length < 1) {
+                    sugestoesDiv.classList.remove('sugestoes-visible');
+                    sugestoesDiv.style.display = 'none';
+                    servicoIdHidden.value = '';
+                    row.classList.remove('dropdown-servico-aberto');
+                    window._lastFiltrarServicosLog = log.join(' | ') + ' (escondido)';
+                    if (window._orcamentoDebugEl) window._orcamentoDebugEl.innerHTML = 'servicosData: ' + (typeof servicosData !== 'undefined' && Array.isArray(servicosData) ? servicosData.length : 0) + ' | ' + window._lastFiltrarServicosLog;
+                    return;
+                }
+
+                if (typeof servicosData === 'undefined' || !Array.isArray(servicosData)) {
+                    sugestoesDiv.innerHTML = '<div class="sugestao-servico" style="padding:10px;color:#6b7280;">Nenhum serviço no catálogo.</div>';
+                    sugestoesDiv.classList.add('sugestoes-visible');
+                    sugestoesDiv.style.display = 'block';
+                    log.push('servicosData indefinido ou não array');
+                    window._lastFiltrarServicosLog = log.join(' | ');
+                    if (window._orcamentoDebugEl) window._orcamentoDebugEl.innerHTML = 'servicosData: 0 (indefinido) | ' + window._lastFiltrarServicosLog;
+                    return;
+                }
+
+                const sugestoes = servicosData.filter(servico =>
+                    (String(servico.nome || '').toLowerCase()).includes(termo)
+                ).slice(0, 10);
+                log.push('sugestoes encontradas: ' + sugestoes.length);
+
+                if (sugestoes.length > 0) {
+                    const precoNum = (s) => { const n = parseFloat(s.preco); return isNaN(n) ? 0 : n; };
+                    sugestoesDiv.innerHTML = sugestoes.map(servico =>
+                        `<div class="sugestao-servico"
+                          data-id="${servico.id}"
+                          data-preco="${precoNum(servico)}"
+                          data-nome="${(String(servico.nome || '')).replace(/"/g, '&quot;')}"
+                          onmousedown="selecionarServico(this, event)"
+                          style="padding: 10px; cursor: pointer; border-bottom: 1px solid #e5e7eb; transition: background-color 0.2s;"
+                          onmouseenter="this.style.backgroundColor='#f3f4f6'"
+                          onmouseleave="this.style.backgroundColor='white'">
+                        <strong>${(String(servico.nome || '')).replace(/</g, '&lt;')}</strong> - ${typeof formatarMoeda === 'function' ? formatarMoeda(precoNum(servico)) : precoNum(servico).toFixed(2)} MT
+                    </div>`
+                    ).join('');
+                    sugestoesDiv.classList.add('sugestoes-visible');
+                    sugestoesDiv.style.display = 'block';
+                } else {
+                    sugestoesDiv.innerHTML = '<div class="sugestao-servico" style="padding:10px;color:#6b7280;">Nenhum serviço encontrado para &quot;' + (termo.replace(/</g, '&lt;')) + '&quot;</div>';
+                    sugestoesDiv.classList.add('sugestoes-visible');
+                    sugestoesDiv.style.display = 'block';
+                }
+                row.classList.add('dropdown-servico-aberto');
+                window._lastFiltrarServicosLog = log.join(' | ');
+                if (window._orcamentoDebugEl) window._orcamentoDebugEl.innerHTML = 'servicosData: ' + servicosData.length + ' | ' + window._lastFiltrarServicosLog;
+            } catch (err) {
+                log.push('ERRO: ' + (err && err.message ? err.message : String(err)));
+                window._lastFiltrarServicosLog = log.join(' | ');
+                console.error('[Orcamento] filtrarServicos:', err);
+                if (window._orcamentoDebugEl) window._orcamentoDebugEl.innerHTML = '<span style="color:#b91c1c;">' + window._lastFiltrarServicosLog + '</span>';
+            }
+        }
+        
+        window.mostrarSugestoesServico = function(input) {
+            const termo = input.value.toLowerCase();
+            if (termo.length >= 1) {
+                filtrarServicos(input);
+            }
+        }
+        
+        window.ocultarSugestoesServico = function(input) {
+            if (!isSelectingServico && input) {
+                const row = input.closest('.servico-row');
+                const sugestoesDiv = row ? row.querySelector('.sugestoes-servico') : null;
+                if (sugestoesDiv) {
+                    sugestoesDiv.classList.remove('sugestoes-visible');
+                    sugestoesDiv.style.display = 'none';
+                }
+                if (row) row.classList.remove('dropdown-servico-aberto');
+            }
+        }
+        
+        window.selecionarServico = function(element, event) {
+            event.preventDefault();
+            isSelectingServico = true;
+            
+            const servicoId = element.dataset.id;
+            const servicoPreco = parseFloat(element.dataset.preco);
+            const servicoNome = element.dataset.nome;
+            
+            const servicoRow = element.closest('.servico-row');
+            const input = servicoRow.querySelector('.servico-autocomplete');
+            const servicoIdHidden = servicoRow.querySelector('.servico-id-hidden');
+            const sugestoesDiv = servicoRow.querySelector('.sugestoes-servico');
+            const valorUnitarioInput = servicoRow.querySelector('.servico-valor-unitario');
+            const unidadeSpan = servicoRow.querySelector('.orc-servico-unidade');
+            
+            input.value = servicoNome;
+            servicoIdHidden.value = servicoId;
+            sugestoesDiv.style.display = 'none';
+            
+            if (unidadeSpan && Array.isArray(servicosData)) {
+                const servicoSel = servicosData.find(s => s.id == servicoId);
+                if (servicoSel) {
+                    const lbl = servicoSel.unidade_label || servicoSel.unidade || '';
+                    unidadeSpan.textContent = 'Unidade de cobrança: ' + lbl;
+                }
+            }
+            
+            if (!isNaN(servicoPreco) && servicoPreco > 0) {
+                valorUnitarioInput.value = servicoPreco.toFixed(2);
+                calcularServicoTotal(valorUnitarioInput);
+            }
+            
+            setTimeout(() => {
+                isSelectingServico = false;
+            }, 200);
+        }
+        
+        window.atualizarValorUnitarioServico = function(input) {
+            // Mantida para compatibilidade, mas não é mais usada com autocomplete
+            const row = input.closest('.servico-row');
+            const valorUnitarioInput = row.querySelector('.servico-valor-unitario');
+            const servicoIdHidden = row.querySelector('.servico-id-hidden');
+            
+            if (servicoIdHidden.value) {
+                const servico = servicosData.find(s => s.id == servicoIdHidden.value);
+                if (servico && servico.preco > 0) {
+                    valorUnitarioInput.value = servico.preco.toFixed(2);
+                    calcularServicoTotal(valorUnitarioInput);
+                }
+            }
+        }
+
+        // Função para atualizar desconto (mutuamente exclusivo - percentual OU valor em MT)
+        // Quando digitar em um campo, calcula e mostra o valor equivalente no outro, mas usa apenas o digitado nos cálculos
+        window.atualizarDescontoServico = function(input, tipo) {
+            // Evitar loops infinitos
+            if (input.dataset.updating === 'true') {
+                return;
+            }
+            
+            const row = input.closest('.servico-row');
+            if (!row) return;
+            
+            const quantidade = parseFloat(row.querySelector('.servico-quantidade')?.value) || 0;
+            const valorUnitario = parseFloat(row.querySelector('.servico-valor-unitario')?.value) || 0;
+            const descontoPercentualInput = row.querySelector('.servico-desconto-percentual');
+            const descontoValorInput = row.querySelector('.servico-desconto');
+            
+            if (!descontoPercentualInput || !descontoValorInput) return;
+            
+            // Calcular valor bruto do serviço
+            const valorBruto = quantidade * valorUnitario;
+            
+            if (valorBruto === 0) {
+                // Se não há valor bruto, não pode calcular desconto
+                calcularServicoTotal(input);
+                return;
+            }
+            
+            // Obter valor digitado
+            const valorDigitado = parseFloat(input.value) || 0;
+            const textoDigitado = input.value.trim();
+            
+            // Verificar se o usuário digitou algum valor (não vazio e não zero)
+            const temValorDigitado = (textoDigitado !== '' && textoDigitado !== '0' && textoDigitado !== '0.00' && textoDigitado !== '0,00') || valorDigitado > 0;
+            
+            if (tipo === 'percentual' && temValorDigitado) {
+                // Usuário digitou percentual - calcular valor equivalente em MT e mostrar no outro campo
+                // Marcar que o percentual é o campo ativo
+                descontoPercentualInput.dataset.active = 'true';
+                descontoValorInput.removeAttribute('data-active');
+                
+                // Calcular valor equivalente em MT
+                const valorEquivalenteMT = valorBruto * (valorDigitado / 100);
+                
+                // Mostrar valor equivalente no campo MT (apenas para visualização)
+                if (descontoValorInput.dataset.updating !== 'true') {
+                    descontoValorInput.dataset.updating = 'true';
+                    descontoValorInput.value = valorEquivalenteMT.toFixed(2);
+                    delete descontoValorInput.dataset.updating;
+                }
+            } else if (tipo === 'valor' && temValorDigitado) {
+                // Usuário digitou valor em MT - calcular percentagem equivalente e mostrar no outro campo
+                // Marcar que o MT é o campo ativo
+                descontoValorInput.dataset.active = 'true';
+                descontoPercentualInput.removeAttribute('data-active');
+                
+                // Calcular percentagem equivalente
+                const percentualEquivalente = (valorDigitado / valorBruto) * 100;
+                
+                // Mostrar percentagem equivalente no campo percentual (apenas para visualização)
+                if (descontoPercentualInput.dataset.updating !== 'true') {
+                    descontoPercentualInput.dataset.updating = 'true';
+                    descontoPercentualInput.value = percentualEquivalente.toFixed(2);
+                    delete descontoPercentualInput.dataset.updating;
+                }
+            } else {
+                // Se o valor foi zerado, limpar ambos os campos e remover marcação
+                descontoPercentualInput.removeAttribute('data-active');
+                descontoValorInput.removeAttribute('data-active');
+                
+                if (tipo === 'percentual') {
+                    if (descontoValorInput.dataset.updating !== 'true') {
+                        descontoValorInput.dataset.updating = 'true';
+                        descontoValorInput.value = '0.00';
+                        delete descontoValorInput.dataset.updating;
+                    }
+                } else if (tipo === 'valor') {
+                    if (descontoPercentualInput.dataset.updating !== 'true') {
+                        descontoPercentualInput.dataset.updating = 'true';
+                        descontoPercentualInput.value = '0.00';
+                        delete descontoPercentualInput.dataset.updating;
+                    }
+                }
+            }
+            
+            // Recalcular total do serviço
+            calcularServicoTotal(input);
+        }
+        
+        window.calcularServicoTotal = function(input) {
+            const row = input.closest('.servico-row');
+            const quantidade = parseFloat(row.querySelector('.servico-quantidade').value) || 0;
+            const valorUnitario = parseFloat(row.querySelector('.servico-valor-unitario').value) || 0;
+            const descontoPercentualInput = row.querySelector('.servico-desconto-percentual');
+            const descontoValorInput = row.querySelector('.servico-desconto');
+            const totalInput = row.querySelector('.servico-total');
+            
+            // Calcular valor bruto do serviço
+            const valorBruto = quantidade * valorUnitario;
+            
+            // Aplicar desconto: usar apenas o campo que está ativo (o que foi digitado por último)
+            // Se nenhum estiver marcado como ativo, usar o que tem valor > 0
+            let valorServico = valorBruto;
+            
+            const descontoPercentual = parseFloat(descontoPercentualInput?.value) || 0;
+            const descontoMT = parseFloat(descontoValorInput?.value) || 0;
+            
+            // Verificar qual campo está ativo (foi digitado por último)
+            const percentualAtivo = descontoPercentualInput?.dataset.active === 'true';
+            const valorMTAtivo = descontoValorInput?.dataset.active === 'true';
+            
+            if (percentualAtivo && descontoPercentual > 0) {
+                // Usar apenas desconto percentual (campo ativo)
+                valorServico = valorBruto * (1 - descontoPercentual / 100);
+            } else if (valorMTAtivo && descontoMT > 0) {
+                // Usar apenas desconto em MT (campo ativo)
+                valorServico = valorBruto - descontoMT;
+            } else {
+                // Fallback: se nenhum estiver marcado como ativo, usar o que tem valor > 0
+                // Mas priorizar percentual se ambos tiverem valor
+                if (descontoPercentual > 0) {
+                    valorServico = valorBruto * (1 - descontoPercentual / 100);
+                } else if (descontoMT > 0) {
+                    valorServico = valorBruto - descontoMT;
+                }
+            }
+            
+            // Garantir que o valor não seja negativo
+            valorServico = Math.max(0, valorServico);
+            
+            // Calcular total de itens (materiais e produtos) associados a este serviço
+            let totalItensServico = 0;
+            const itensServico = row.querySelectorAll('.item-servico-row');
+            itensServico.forEach(itemRow => {
+                const totalItemInput = itemRow.querySelector('.item-servico-total');
+                if (totalItemInput) {
+                    const totalItemText = totalItemInput.value || '0,00 MT';
+                    const valorItem = parseFloat(totalItemText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+                    totalItensServico += valorItem;
+                }
+            });
+            
+            // O total do serviço mostra o valor do serviço (com desconto) + total dos itens
+            const totalServicoComItens = valorServico + totalItensServico;
+            
+            // Atualizar o campo Total (somente leitura, apenas pré-visualização)
+            if (totalInput) {
+                totalInput.value = formatarMoeda(totalServicoComItens) + ' MT';
+                totalInput.setAttribute('readonly', 'readonly');
+                totalInput.style.cursor = 'not-allowed';
+            }
+            
+            // Atualizar o valor unitário para refletir o total incluindo itens (para pré-visualização)
+            // Isso é apenas visual, o valor unitário original do serviço permanece inalterado
+            const valorUnitarioInput = row.querySelector('.servico-valor-unitario');
+            if (valorUnitarioInput && quantidade > 0) {
+                // Calcular valor unitário incluindo itens (apenas para exibição)
+                const valorUnitarioComItens = totalServicoComItens / quantidade;
+                // Não alterar o valor do input, apenas mostrar tooltip ou informação adicional
+                valorUnitarioInput.title = `Valor unitário do serviço: ${formatarMoeda(valorUnitario)} MT | Valor unitário com itens: ${formatarMoeda(valorUnitarioComItens)} MT`;
+            }
+            
+            atualizarTotalServicos();
+            atualizarValorFinal();
+        }
+
+        function atualizarTotalServicos() {
+            const servicos = document.querySelectorAll('.servico-row');
+            let totalServicos = 0;
+            servicos.forEach(row => {
+                // Calcular apenas o valor do serviço (sem itens)
+                const quantidadeInput = row.querySelector('.servico-quantidade');
+                const valorUnitarioInput = row.querySelector('.servico-valor-unitario');
+                const descontoPercentualInput = row.querySelector('.servico-desconto-percentual');
+                const descontoValorInput = row.querySelector('.servico-desconto');
+                
+                if (quantidadeInput && valorUnitarioInput) {
+                    const quantidade = parseFloat(quantidadeInput.value) || 0;
+                    const valorUnitario = parseFloat(valorUnitarioInput.value) || 0;
+                    let valorBruto = quantidade * valorUnitario;
+                    
+                    // Aplicar desconto se houver
+                    if (descontoPercentualInput && parseFloat(descontoPercentualInput.value) > 0) {
+                        const descontoPercentual = parseFloat(descontoPercentualInput.value) / 100;
+                        valorBruto = valorBruto * (1 - descontoPercentual);
+                    } else if (descontoValorInput && parseFloat(descontoValorInput.value) > 0) {
+                        const desconto = parseFloat(descontoValorInput.value);
+                        valorBruto = Math.max(0, valorBruto - desconto);
+                    }
+                    
+                    totalServicos += valorBruto;
+                }
+            });
+            
+            document.getElementById('total_servicos_exibicao').textContent = formatarMoeda(totalServicos) + ' MT';
+            atualizarTotalItens(); // Atualizar também os itens (agora agrupados por serviço)
+        }
+
+        // Funções para gerenciar produtos e materiais dentro de cada serviço
+        window.adicionarItemServico = function(button, tipo) {
+            const servicoRow = button.closest('.servico-row');
+            const servicoIndex = servicoRow.dataset.servicoIndex;
+            const container = servicoRow.querySelector('.itens-servico-container');
+            
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-servico-row';
+            itemRow.dataset.itemTipo = tipo;
+            itemRow.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: #ffffff; border-radius: 4px; border: 1px solid #d1d5db;';
+            
+            const tipoLabel = tipo === 'PRODUTO' ? 'Produto' : 'Material';
+            const tipoPlaceholder = tipo === 'PRODUTO' ? 'Digite para buscar produto...' : 'Digite para buscar material...';
+            const tipoColor = tipo === 'PRODUTO' ? '#3b82f6' : '#f59e0b';
+            
+            itemRow.innerHTML = `
+                <div style="flex: 2; position: relative;">
+                    <label style="font-size: 12px;">${tipoLabel}</label>
+                    <input type="text" 
+                           name="item_servico_autocomplete[]"
+                           class="item-servico-autocomplete" 
+                           placeholder="${tipoPlaceholder}" 
+                           autocomplete="off"
+                           data-tipo="${tipo}"
+                           style="width: 100%; padding: 6px; border: 2px solid ${tipoColor}; border-radius: 4px; font-size: 12px;"
+                           oninput="filtrarProdutosMateriais(this)"
+                           onfocus="mostrarSugestoesItemServico(this)"
+                           onblur="setTimeout(() => ocultarSugestoesItemServico(this), 300)">
+                    <input type="hidden" name="item_servico_${servicoIndex}_id[]" class="item-servico-id-hidden" value="">
+                    <div class="sugestoes-item-servico" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid ${tipoColor}; border-radius: 4px; max-height: 150px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">Quantidade</label>
+                    <input type="number" name="item_servico_${servicoIndex}_quantidade[]" step="0.01" min="0.01" value="1.00" class="item-servico-quantidade" onchange="calcularItemServicoTotal(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">Valor Unit. (MT)</label>
+                    <input type="number" name="item_servico_${servicoIndex}_valor_unitario[]" step="0.01" min="0" value="0.00" class="item-servico-valor-unitario" onchange="calcularItemServicoTotal(this)">
+                </div>
+                <div style="flex: 0.8;">
+                    <label style="font-size: 12px;">Desc. %</label>
+                    <input type="number" name="item_servico_${servicoIndex}_desconto_percentual[]" step="0.01" min="0" max="100" value="0.00" class="item-servico-desconto-percentual" onchange="atualizarDescontoItemServico(this, 'percentual')" oninput="atualizarDescontoItemServico(this, 'percentual')" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+                </div>
+                <div style="flex: 0.8;">
+                    <label style="font-size: 12px;">Desc. (MT)</label>
+                    <input type="number" name="item_servico_${servicoIndex}_desconto[]" step="0.01" min="0" value="0.00" class="item-servico-desconto" onchange="atualizarDescontoItemServico(this, 'valor')" oninput="atualizarDescontoItemServico(this, 'valor')" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 12px;">Total</label>
+                    <input type="text" class="item-servico-total" readonly style="background-color: #f9fafb; font-weight: 600; font-size: 12px;" value="0,00 MT">
+                </div>
+                <div style="flex: 0 0 40px; display: flex; align-items: flex-end;">
+                    <button type="button" class="btn-remove-item-servico" onclick="removerItemServico(this)" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(itemRow);
+            
+            // Não precisa recalcular o total do serviço aqui, pois o total do serviço não inclui itens
+            // Os itens são somados separadamente no resumo
+            
+            atualizarTotalServicos();
+            atualizarValorFinal();
+        }
+
+        window.removerItemServico = function(button) {
+            const itemRow = button.closest('.item-servico-row');
+            const servicoRow = itemRow.closest('.servico-row');
+            itemRow.remove();
+            
+            // Não precisa recalcular o total do serviço aqui, pois o total do serviço não inclui itens
+            // Os itens são somados separadamente no resumo
+            
+            atualizarTotalItens();
+            atualizarTotalServicos();
+            atualizarValorFinal();
+        }
+
+        // Funções para autocomplete de produtos e materiais
+        let isSelectingItemServico = false;
+        
+        window.filtrarProdutosMateriais = function(input) {
+            const termo = input.value.toLowerCase();
+            const sugestoesDiv = input.nextElementSibling.nextElementSibling;
+            const itemIdHidden = input.nextElementSibling;
+            const tipo = input.dataset.tipo; // PRODUTO ou MATERIAL
+            
+            if (termo.length < 1) {
+                sugestoesDiv.style.display = 'none';
+                itemIdHidden.value = '';
+                return;
+            }
+            
+            // Filtrar baseado no tipo (PRODUTO ou MATERIAL)
+            const sugestoes = produtosMateriaisData.filter(item => 
+                item.tipo === tipo && item.nome.toLowerCase().includes(termo)
+            ).slice(0, 10);
+            
+            if (sugestoes.length > 0) {
+                sugestoesDiv.innerHTML = sugestoes.map(produto => 
+                    `<div class="sugestao-item-servico" 
+                          data-id="${produto.id}" 
+                          data-preco="${produto.preco}"
+                          data-nome="${produto.nome}"
+                          onmousedown="selecionarItemServico(this, event)"
+                          style="padding: 8px; cursor: pointer; border-bottom: 1px solid #e5e7eb; transition: background-color 0.2s; font-size: 12px;"
+                          onmouseenter="this.style.backgroundColor='#f3f4f6'"
+                          onmouseleave="this.style.backgroundColor='white'">
+                        <strong>${produto.nome}</strong> - ${formatarMoeda(produto.preco)} MT
+                    </div>`
+                ).join('');
+                sugestoesDiv.style.display = 'block';
+            } else {
+                sugestoesDiv.style.display = 'none';
+            }
+        }
+        
+        window.mostrarSugestoesItemServico = function(input) {
+            const termo = input.value.toLowerCase();
+            if (termo.length >= 1) {
+                filtrarProdutosMateriais(input);
+            }
+        }
+        
+        window.ocultarSugestoesItemServico = function(input) {
+            if (!isSelectingItemServico) {
+                const sugestoesDiv = input.nextElementSibling.nextElementSibling;
+                sugestoesDiv.style.display = 'none';
+            }
+        }
+        
+        window.selecionarItemServico = function(element, event) {
+            event.preventDefault();
+            isSelectingItemServico = true;
+            
+            const itemId = element.dataset.id;
+            const itemPreco = parseFloat(element.dataset.preco) || 0;
+            const itemNome = element.dataset.nome;
+            
+            const itemRow = element.closest('.item-servico-row');
+            const input = itemRow.querySelector('.item-servico-autocomplete');
+            const itemIdHidden = itemRow.querySelector('.item-servico-id-hidden');
+            const sugestoesDiv = itemRow.querySelector('.sugestoes-item-servico');
+            const valorUnitarioInput = itemRow.querySelector('.item-servico-valor-unitario');
+            
+            input.value = itemNome;
+            itemIdHidden.value = itemId;
+            sugestoesDiv.style.display = 'none';
+            
+            // Se o preço não foi encontrado no dataset, buscar do array produtosMateriaisData
+            let precoFinal = itemPreco;
+            if (!precoFinal || precoFinal === 0 || isNaN(precoFinal)) {
+                const produto = produtosMateriaisData.find(p => p.id == itemId);
+                if (produto && produto.preco) {
+                    precoFinal = parseFloat(produto.preco) || 0;
+                }
+            }
+            
+            // Definir o preço no campo, mesmo que seja 0 (para permitir edição manual)
+            if (valorUnitarioInput) {
+                valorUnitarioInput.value = precoFinal.toFixed(2);
+                if (precoFinal > 0) {
+                    calcularItemServicoTotal(valorUnitarioInput);
+                }
+            }
+            
+            setTimeout(() => {
+                isSelectingItemServico = false;
+            }, 200);
+        }
+        
+        window.atualizarValorUnitarioItemServico = function(input) {
+            // Mantida para compatibilidade, mas não é mais usada com autocomplete
+            const row = input.closest('.item-servico-row');
+            const valorUnitarioInput = row.querySelector('.item-servico-valor-unitario');
+            const itemIdHidden = row.querySelector('.item-servico-id-hidden');
+            
+            if (itemIdHidden.value) {
+                const produto = produtosMateriaisData.find(p => p.id == itemIdHidden.value);
+                if (produto && produto.preco > 0) {
+                    valorUnitarioInput.value = produto.preco.toFixed(2);
+                    calcularItemServicoTotal(valorUnitarioInput);
+                }
+            }
+        }
+
+        // Função para atualizar desconto de item (mutuamente exclusivo - percentual OU valor em MT)
+        window.atualizarDescontoItemServico = function(input, tipo) {
+            // Evitar loops infinitos
+            if (input.dataset.updating === 'true') {
+                return;
+            }
+            
+            const itemRow = input.closest('.item-servico-row');
+            if (!itemRow) return;
+            
+            const quantidade = parseFloat(itemRow.querySelector('.item-servico-quantidade')?.value) || 0;
+            const valorUnitario = parseFloat(itemRow.querySelector('.item-servico-valor-unitario')?.value) || 0;
+            const descontoPercentualInput = itemRow.querySelector('.item-servico-desconto-percentual');
+            const descontoValorInput = itemRow.querySelector('.item-servico-desconto');
+            
+            if (!descontoPercentualInput || !descontoValorInput) return;
+            
+            // Calcular valor bruto do item
+            const valorBruto = quantidade * valorUnitario;
+            
+            if (valorBruto === 0) {
+                calcularItemServicoTotal(input);
+                return;
+            }
+            
+            // Obter valor digitado
+            const valorDigitado = parseFloat(input.value) || 0;
+            const textoDigitado = input.value.trim();
+            
+            // Verificar se o usuário digitou algum valor
+            const temValorDigitado = (textoDigitado !== '' && textoDigitado !== '0' && textoDigitado !== '0.00' && textoDigitado !== '0,00') || valorDigitado > 0;
+            
+            if (tipo === 'percentual' && temValorDigitado) {
+                // Usuário digitou percentual - calcular valor equivalente em MT
+                descontoPercentualInput.dataset.active = 'true';
+                descontoValorInput.removeAttribute('data-active');
+                
+                const valorEquivalenteMT = valorBruto * (valorDigitado / 100);
+                
+                if (descontoValorInput.dataset.updating !== 'true') {
+                    descontoValorInput.dataset.updating = 'true';
+                    descontoValorInput.value = valorEquivalenteMT.toFixed(2);
+                    delete descontoValorInput.dataset.updating;
+                }
+            } else if (tipo === 'valor' && temValorDigitado) {
+                // Usuário digitou valor em MT - calcular percentagem equivalente
+                descontoValorInput.dataset.active = 'true';
+                descontoPercentualInput.removeAttribute('data-active');
+                
+                const percentualEquivalente = (valorDigitado / valorBruto) * 100;
+                
+                if (descontoPercentualInput.dataset.updating !== 'true') {
+                    descontoPercentualInput.dataset.updating = 'true';
+                    descontoPercentualInput.value = percentualEquivalente.toFixed(2);
+                    delete descontoPercentualInput.dataset.updating;
+                }
+            } else {
+                // Se o valor foi zerado, limpar ambos
+                descontoPercentualInput.removeAttribute('data-active');
+                descontoValorInput.removeAttribute('data-active');
+                
+                if (tipo === 'percentual') {
+                    if (descontoValorInput.dataset.updating !== 'true') {
+                        descontoValorInput.dataset.updating = 'true';
+                        descontoValorInput.value = '0.00';
+                        delete descontoValorInput.dataset.updating;
+                    }
+                } else if (tipo === 'valor') {
+                    if (descontoPercentualInput.dataset.updating !== 'true') {
+                        descontoPercentualInput.dataset.updating = 'true';
+                        descontoPercentualInput.value = '0.00';
+                        delete descontoPercentualInput.dataset.updating;
+                    }
+                }
+            }
+            
+            calcularItemServicoTotal(input);
+        }
+        
+        window.calcularItemServicoTotal = function(input) {
+            const itemRow = input.closest('.item-servico-row');
+            const servicoRow = itemRow.closest('.servico-row');
+            const quantidade = parseFloat(itemRow.querySelector('.item-servico-quantidade').value) || 0;
+            const valorUnitario = parseFloat(itemRow.querySelector('.item-servico-valor-unitario').value) || 0;
+            const descontoPercentualInput = itemRow.querySelector('.item-servico-desconto-percentual');
+            const descontoValorInput = itemRow.querySelector('.item-servico-desconto');
+            const totalInput = itemRow.querySelector('.item-servico-total');
+            
+            // Calcular valor bruto
+            const valorBruto = quantidade * valorUnitario;
+            
+            // Aplicar desconto: usar apenas o campo que está ativo
+            let valorTotal = valorBruto;
+            
+            const descontoPercentual = parseFloat(descontoPercentualInput?.value) || 0;
+            const desconto = parseFloat(descontoValorInput?.value) || 0;
+            
+            // Verificar qual campo está ativo
+            const percentualAtivo = descontoPercentualInput?.dataset.active === 'true';
+            const valorMTAtivo = descontoValorInput?.dataset.active === 'true';
+            
+            if (percentualAtivo && descontoPercentual > 0) {
+                // Usar apenas desconto percentual
+                valorTotal = valorBruto * (1 - descontoPercentual / 100);
+            } else if (valorMTAtivo && desconto > 0) {
+                // Usar apenas desconto em MT
+                valorTotal = valorBruto - desconto;
+            } else {
+                // Fallback: usar o que tem valor > 0, priorizando percentual
+                if (descontoPercentual > 0) {
+                    valorTotal = valorBruto * (1 - descontoPercentual / 100);
+                } else if (desconto > 0) {
+                    valorTotal = valorBruto - desconto;
+                }
+            }
+            
+            valorTotal = Math.max(0, valorTotal);
+            totalInput.value = formatarMoeda(valorTotal) + ' MT';
+            
+            // Recalcular o total do serviço para incluir os itens
+            if (servicoRow) {
+                const servicoQuantidade = parseFloat(servicoRow.querySelector('.servico-quantidade')?.value) || 0;
+                const servicoValorUnitario = parseFloat(servicoRow.querySelector('.servico-valor-unitario')?.value) || 0;
+                if (servicoQuantidade > 0 && servicoValorUnitario > 0) {
+                    calcularServicoTotal(servicoRow.querySelector('.servico-quantidade'));
+                }
+            }
+            
+            atualizarTotalItens();
+            atualizarTotalServicos();
+            atualizarValorFinal();
+        }
+
+        // Funções para gerenciar produtos e materiais
+        // eslint-disable-next-line
+        const produtosMateriaisData = [
+            {% for produto in produtos_materiais %}
+            {
+                id: {{ produto.id }},
+                nome: "{{ produto.nome|escapejs }}",
+                preco: "{% if produto.preco_venda %}{{ produto.preco_venda|stringformat:'.2f' }}{% else %}0.00{% endif %}",
+                tipo: "{{ produto.tipo|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Tornar funções globais para acesso via onclick
+        window.adicionarItem = function() {
+            const container = document.getElementById('itens-container');
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.style.cssText = 'display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;';
+            
+            let optionsHtml = '<option value="">Selecione...</option>';
+            produtosMateriaisData.forEach(produto => {
+                optionsHtml += `<option value="${produto.id}" data-preco="${produto.preco}">${produto.nome} - ${formatarMoeda(produto.preco)} MT</option>`;
+            });
+            
+            itemRow.innerHTML = `
+                <div style="flex: 2;">
+                    <label>Produto/Material</label>
+                    <select name="item_id[]" class="item-select" required onchange="atualizarValorUnitarioItem(this)">
+                        ${optionsHtml}
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Quantidade</label>
+                    <input type="number" name="item_quantidade[]" step="0.01" min="0.01" value="1.00" required class="item-quantidade" onchange="calcularItemTotal(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label>Valor Unit. (MT)</label>
+                    <input type="number" name="item_valor_unitario[]" step="0.01" min="0" value="0.00" required class="item-valor-unitario" onchange="calcularItemTotal(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label>Desconto (MT)</label>
+                    <input type="number" name="item_desconto[]" step="0.01" min="0" value="0.00" class="item-desconto" onchange="calcularItemTotal(this)">
+                </div>
+                <div style="flex: 1;">
+                    <label>Total</label>
+                    <input type="text" class="item-total" readonly style="background-color: #f9fafb; font-weight: 600;" value="0,00 MT">
+                </div>
+                <div style="flex: 0 0 50px; display: flex; align-items: flex-end;">
+                    <button type="button" class="btn-remove-item" onclick="removerItem(this)" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(itemRow);
+        }
+
+        window.removerItem = function(button) {
+            const itemRow = button.closest('.item-row');
+            itemRow.remove();
+            atualizarTotalItens();
+        }
+
+        window.atualizarValorUnitarioItem = function(select) {
+            const row = select.closest('.item-row');
+            const valorUnitarioInput = row.querySelector('.item-valor-unitario');
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption.value && selectedOption.dataset.preco) {
+                const preco = parseFloat(selectedOption.dataset.preco);
+                if (!isNaN(preco) && preco > 0) {
+                    valorUnitarioInput.value = preco.toFixed(2);
+                    calcularItemTotal(valorUnitarioInput);
+                }
+            }
+        }
+
+        window.calcularItemTotal = function(input) {
+            const row = input.closest('.item-row');
+            const quantidade = parseFloat(row.querySelector('.item-quantidade').value) || 0;
+            const valorUnitario = parseFloat(row.querySelector('.item-valor-unitario').value) || 0;
+            const desconto = parseFloat(row.querySelector('.item-desconto').value) || 0;
+            const totalInput = row.querySelector('.item-total');
+            
+            const valorTotal = (quantidade * valorUnitario) - desconto;
+            totalInput.value = formatarMoeda(valorTotal) + ' MT';
+            atualizarTotalItens();
+        }
+
+        function atualizarTotalItens() {
+            // Calcular itens agrupados por serviço
+            let totalItens = 0;
+            const servicos = document.querySelectorAll('.servico-row');
+            servicos.forEach(servicoRow => {
+                const itensServico = servicoRow.querySelectorAll('.item-servico-row');
+                itensServico.forEach(itemRow => {
+                    const totalText = itemRow.querySelector('.item-servico-total').value;
+                    const valor = parseFloat(totalText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+                    totalItens += valor;
+                });
+            });
+            
+            // Manter compatibilidade com itens legados (se houver)
+            const itensLegados = document.querySelectorAll('.item-row');
+            itensLegados.forEach(row => {
+                const totalText = row.querySelector('.item-total').value;
+                const valor = parseFloat(totalText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+                totalItens += valor;
+            });
+            
+            document.getElementById('total_itens_exibicao').textContent = formatarMoeda(totalItens) + ' MT';
+            atualizarValorFinal();
+        }
+
+        function atualizarValorFinal() {
+            const totalServicosElement = document.getElementById('total_servicos_exibicao');
+            const totalItensElement = document.getElementById('total_itens_exibicao');
+            const totalTransporteElement = document.getElementById('total_transporte_exibicao');
+            const subtotalElement = document.getElementById('subtotal_exibicao');
+            const valorFinalElement = document.getElementById('valor_final_exibicao');
+            const valorTotalFinalElement = document.getElementById('valor_total_final_exibicao');
+            const totalDescontosElement = document.getElementById('total_descontos_exibicao');
+            
+            if (!totalServicosElement || !totalItensElement || !totalTransporteElement || !subtotalElement || !valorFinalElement) {
+                return; // Elementos não estão prontos ainda
+            }
+            
+            const totalServicosText = totalServicosElement.textContent;
+            const totalItensText = totalItensElement.textContent;
+            const totalTransporteText = totalTransporteElement.textContent;
+            
+            const totalServicos = parseFloat(totalServicosText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            const totalItens = parseFloat(totalItensText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            const totalTransporte = parseFloat(totalTransporteText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            
+            // Calcular valores brutos para calcular descontos
+            let totalServicosBruto = 0;
+            let totalItensBruto = 0;
+            const servicos = document.querySelectorAll('.servico-row');
+            servicos.forEach(row => {
+                const quantidade = parseFloat(row.querySelector('.servico-quantidade').value) || 0;
+                const valorUnitario = parseFloat(row.querySelector('.servico-valor-unitario').value) || 0;
+                totalServicosBruto += quantidade * valorUnitario;
+                
+                // Calcular itens brutos deste serviço (itens dentro de cada serviço usam .item-servico-*)
+                const itensServico = row.querySelectorAll('.item-servico-row');
+                itensServico.forEach(itemRow => {
+                    const qtdInput = itemRow.querySelector('.item-servico-quantidade') || itemRow.querySelector('.item-quantidade');
+                    const valorInput = itemRow.querySelector('.item-servico-valor-unitario') || itemRow.querySelector('.item-valor-unitario');
+                    const qtdItem = parseFloat(qtdInput?.value) || 0;
+                    const valorUnitItem = parseFloat(valorInput?.value) || 0;
+                    totalItensBruto += qtdItem * valorUnitItem;
+                });
+            });
+            
+            // Calcular total de descontos
+            const totalDescontos = (totalServicosBruto + totalItensBruto) - (totalServicos + totalItens);
+            
+            // Exibir total de descontos se houver
+            if (totalDescontosElement) {
+                if (totalDescontos > 0) {
+                    totalDescontosElement.textContent = '- ' + formatarMoeda(totalDescontos) + ' MT';
+                    totalDescontosElement.parentElement.classList.add('orc-row-descontos-show');
+                } else {
+                    totalDescontosElement.parentElement.classList.remove('orc-row-descontos-show');
+                }
+            }
+            
+            const subtotal = totalServicos + totalItens + totalTransporte;
+            subtotalElement.textContent = formatarMoeda(subtotal) + ' MT';
+            
+            // Calcular valor final (descontos já estão aplicados nos serviços individuais)
+            calcularValorFinal(subtotal);
+        }
+        
+        window.validarDescontoMaximo = function(input) {
+            const valor = parseFloat(input.value) || 0;
+            if (valor > 30) {
+                input.value = 30;
+            } else if (valor < 0) {
+                input.value = 0;
+            }
+        }
+        
+        // Função para calcular valor final (descontos já estão aplicados nos serviços individuais)
+        window.calcularValorFinal = function(subtotalCalculado) {
+            const subtotalElement = document.getElementById('subtotal_exibicao');
+            const ivaElement = document.getElementById('iva_exibicao');
+            const valorFinalElement = document.getElementById('valor_final_exibicao');
+            
+            if (!subtotalElement || !valorFinalElement) {
+                console.warn('Elementos necessários não encontrados para calcular valor final');
+                return;
+            }
+            
+            // Se subtotal não foi passado, calcular do elemento
+            let subtotal = subtotalCalculado;
+            if (subtotal === undefined || subtotal === null || isNaN(subtotal)) {
+                const subtotalText = subtotalElement.textContent || '0,00 MT';
+                subtotal = parseFloat(subtotalText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            }
+            
+            // Garantir que subtotal seja um número válido
+            if (isNaN(subtotal) || subtotal < 0) {
+                subtotal = 0;
+            }
+            
+            // Atualizar subtotal no elemento (caso não tenha sido atualizado ainda)
+            subtotalElement.textContent = formatarMoeda(subtotal) + ' MT';
+            
+            // Verificar se o cliente selecionado tem isenção de IVA
+            let clienteIsentoIva = false;
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            if (clienteIdHidden && clienteIdHidden.value) {
+                const clienteSelecionado = clientesData.find(c => c.id == clienteIdHidden.value);
+                if (clienteSelecionado && clienteSelecionado.isento_iva) {
+                    clienteIsentoIva = true;
+                }
+            }
+            
+            // Calcular IVA (taxa de IVA vem do template)
+            // Se o cliente for isento, IVA = 0
+            let valorIva = 0;
+            let taxaIva = 0;
+            if (!clienteIsentoIva) {
+                taxaIva = parseFloat("{{ taxa_iva|default:16|stringformat:'.2f' }}") || 16;
+                const taxaIvaDecimal = taxaIva / 100;
+                valorIva = subtotal * taxaIvaDecimal;
+            }
+            
+            // Atualizar exibição da taxa de IVA
+            const taxaIvaExibicao = document.getElementById('taxa_iva_exibicao');
+            const ivaLabelElement = taxaIvaExibicao ? taxaIvaExibicao.parentElement : null;
+            if (taxaIvaExibicao) {
+                if (clienteIsentoIva) {
+                    taxaIvaExibicao.textContent = '0';
+                    if (ivaLabelElement) {
+                        ivaLabelElement.innerHTML = '<span><strong>IVA (Isento):</strong></span>';
+                    }
+                } else {
+                    taxaIvaExibicao.textContent = Math.round(taxaIva);
+                    if (ivaLabelElement && !ivaLabelElement.innerHTML.includes('taxa_iva_exibicao')) {
+                        ivaLabelElement.innerHTML = '<span><strong>IVA (<span id="taxa_iva_exibicao">' + Math.round(taxaIva) + '</span>%):</strong></span>';
+                    }
+                }
+            }
+            
+            // Atualizar IVA
+            if (ivaElement) {
+                if (clienteIsentoIva) {
+                    ivaElement.textContent = '0,00 MT (Isento)';
+                    ivaElement.style.color = '#059669'; // Verde para indicar isenção
+                } else {
+                    ivaElement.textContent = formatarMoeda(valorIva) + ' MT';
+                    ivaElement.style.color = '#dc2626'; // Vermelho padrão
+                }
+            } else {
+                console.warn('Elemento IVA não encontrado');
+            }
+            
+            // Valor final com IVA (subtotal já tem descontos aplicados)
+            // Se cliente isento, valor final = subtotal (sem IVA)
+            const valorFinal = subtotal + valorIva;
+            valorFinalElement.textContent = formatarMoeda(valorFinal) + ' MT';
+            
+            // Atualizar também o valor total final (com desconto aplicado)
+            const valorTotalFinalElement = document.getElementById('valor_total_final_exibicao');
+            if (valorTotalFinalElement) {
+                valorTotalFinalElement.textContent = formatarMoeda(valorFinal) + ' MT';
+            }
+        }
+
+        // Funções para gerenciar transporte
+        // eslint-disable-next-line
+        const transportadorasData = [
+            {% for trans in transportadoras %}
+            {
+                id: {{ trans.id }},
+                nome: "{{ trans.nome|escapejs }}",
+                codigo: "{{ trans.codigo|escapejs }}",
+                tipo: "{{ trans.tipo|default:''|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        window.adicionarTransporte = function() {
+            const container = document.getElementById('transportes-container');
+            const transporteRow = document.createElement('div');
+            transporteRow.className = 'transporte-row';
+            transporteRow.style.cssText = 'display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;';
+            
+            transporteRow.innerHTML = `
+                <div style="flex: 2;">
+                    <label>Tipo de Transporte</label>
+                    <select name="transporte_tipo[]" class="transporte-tipo" required onchange="filtrarTransportadoras(this)">
+                        <option value="INTERNO">Veículo Interno</option>
+                        <option value="EXTERNO" selected>Transportadora Externa</option>
+                    </select>
+                </div>
+                <div style="flex: 2;">
+                    <label>Transportadora/Veículo</label>
+                    <select name="transporte_id[]" class="transporte-select" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Valor da Logística (MT)</label>
+                    <input type="number" name="transporte_valor[]" step="0.01" min="0" value="0.00" required class="transporte-valor" onchange="atualizarTotalTransporte()">
+                </div>
+                <div style="flex: 0 0 50px; display: flex; align-items: flex-end;">
+                    <button type="button" class="btn-remove-transporte" onclick="removerTransporte(this)" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(transporteRow);
+            filtrarTransportadoras(transporteRow.querySelector('.transporte-tipo'));
+        }
+
+        window.removerTransporte = function(button) {
+            const transporteRow = button.closest('.transporte-row');
+            transporteRow.remove();
+            atualizarTotalTransporte();
+        }
+
+        window.filtrarTransportadoras = function(select) {
+            const row = select.closest('.transporte-row');
+            const transporteSelect = row.querySelector('.transporte-select');
+            const tipoSelecionado = select.value;
+            
+            // Preservar o valor selecionado antes de limpar
+            const valorSelecionado = transporteSelect.value;
+            
+            transporteSelect.innerHTML = '<option value="">Selecione...</option>';
+            
+            transportadorasData.forEach(trans => {
+                let mostrar = false;
+                if (tipoSelecionado === 'INTERNO') {
+                    mostrar = trans.tipo && trans.tipo.startsWith('VIATURA_INTERNA');
+                } else if (tipoSelecionado === 'EXTERNO') {
+                    mostrar = trans.tipo && !trans.tipo.startsWith('VIATURA_INTERNA') && 
+                              ['TRANSPORTADORA', 'ENTREGA_RAPIDA', 'CORREIOS', 'MOTORISTA', 'TERCEIRIZADA'].includes(trans.tipo);
+                }
+                
+                if (mostrar) {
+                    const option = document.createElement('option');
+                    option.value = trans.id;
+                    option.textContent = `${trans.nome} - ${trans.codigo}`;
+                    option.dataset.tipo = trans.tipo;
+                    // Restaurar seleção se corresponder ao valor anterior
+                    if (valorSelecionado && valorSelecionado == trans.id) {
+                        option.selected = true;
+                    }
+                    transporteSelect.appendChild(option);
+                }
+            });
+            
+            // Se o valor selecionado não foi encontrado no filtro, limpar a seleção
+            if (valorSelecionado && !transporteSelect.value) {
+                transporteSelect.value = '';
+            }
+        }
+
+        window.atualizarTotalTransporte = function() {
+            const transportes = document.querySelectorAll('.transporte-row');
+            let totalTransporte = 0;
+            transportes.forEach(row => {
+                const valorInput = row.querySelector('.transporte-valor');
+                if (valorInput) {
+                    totalTransporte += parseFloat(valorInput.value) || 0;
+                }
+            });
+            
+            // Atualizar o elemento no resumo de valores
+            const totalTransporteElement = document.getElementById('total_transporte_exibicao');
+            if (totalTransporteElement) {
+                totalTransporteElement.textContent = formatarMoeda(totalTransporte) + ' MT';
+            }
+            
+            // Garantir que atualizarValorFinal seja chamado para recalcular tudo
+            atualizarValorFinal();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            togglePaymentFields();
+            
+            // Resetar contador de serviços ao carregar
+            servicoCounter = 0;
+            
+            // Carregar serviços existentes se estiver editando
+            {% if ordem %}
+                {% for servico_orcamento in ordem.servicos_orcamento.all %}
+                let servicoRow_{{ forloop.counter0 }} = document.createElement('div');
+                servicoRow_{{ forloop.counter0 }}.className = 'servico-row';
+                const servicoIndex_{{ forloop.counter0 }} = servicoCounter++;
+                servicoRow_{{ forloop.counter0 }}.dataset.servicoIndex = servicoIndex_{{ forloop.counter0 }};
+                servicoRow_{{ forloop.counter0 }}.style.cssText = 'width: 100%; margin-bottom: 20px; padding: 20px; background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%); border-radius: 8px; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s ease;';
+                
+                {% if servico_orcamento.servico %}
+                const servicoSelecionado_{{ forloop.counter0 }} = servicosData.find(s => s.id == {{ servico_orcamento.servico.id }});
+                const servicoNome_{{ forloop.counter0 }} = servicoSelecionado_{{ forloop.counter0 }} ? servicoSelecionado_{{ forloop.counter0 }}.nome : '';
+                const servicoId_{{ forloop.counter0 }} = servicoSelecionado_{{ forloop.counter0 }} ? servicoSelecionado_{{ forloop.counter0 }}.id : '';
+                {% else %}
+                const servicoSelecionado_{{ forloop.counter0 }} = null;
+                const servicoNome_{{ forloop.counter0 }} = '';
+                const servicoId_{{ forloop.counter0 }} = '';
+                {% endif %}
+                const nomeDocumentoServico_{{ forloop.counter0 }} = {% if servico_orcamento.nome_documento %}"{{ servico_orcamento.nome_documento|escapejs }}"{% else %}''{% endif %};
+                
+                servicoRow_{{ forloop.counter0 }}.innerHTML = `
+                    <div style="width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+                            <button type="button" class="btn-toggle-servico" onclick="toggleServico(this)" 
+                                    style="background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                                    title="Expandir/Retrair detalhes do serviço">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #b45309 0%, #92400e 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);">
+                                <i class="fas fa-tools" style="color: white; font-size: 18px;"></i>
+                            </div>
+                            <h4 style="margin: 0; color: #374151; font-size: 16px; font-weight: 600; flex: 1;">Serviço #${parseInt(servicoIndex_{{ forloop.counter0 }}) + 1}</h4>
+                            <button type="button" class="btn-remove-servico" onclick="removerServico(this)" 
+                                    style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                                    onmouseenter="this.style.background='#fecaca'; this.style.borderColor='#f87171'; this.style.transform='translateY(-1px)'"
+                                    onmouseleave="this.style.background='#fee2e2'; this.style.borderColor='#fecaca'; this.style.transform='translateY(0)'"
+                                    title="Remover serviço">
+                                <i class="fas fa-trash-alt"></i> Remover
+                            </button>
+                        </div>
+                        <!-- Linha principal resumida (sempre visível) -->
+                        <div class="servico-resumo" style="margin-bottom: 15px; padding: 12px; background: #f9fafb; border-radius: 6px;">
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 0.8fr 0.8fr 1.2fr; gap: 15px; margin-bottom: 12px;">
+                                <div class="orc-pos-rel" style="position: relative;">
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Serviço</label>
+                                    <input type="text" 
+                                           name="servico_autocomplete[]"
+                                           class="servico-autocomplete" 
+                                           placeholder="Digite para buscar serviço..." 
+                                           autocomplete="off"
+                                           required
+                                           value="${servicoNome_{{ forloop.counter0 }}}"
+                                           style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                           oninput="filtrarServicos(this)"
+                                           onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'; filtrarServicos(this)"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'; setTimeout(() => ocultarSugestoesServico(this), 300)">
+                                    <input type="hidden" name="servico_id[]" class="servico-id-hidden" value="${servicoId_{{ forloop.counter0 }}}">
+                                    <div class="sugestoes-servico orc-sugestoes-servico"></div>
+                                    <small class="orc-servico-unidade">Unidade de cobrança: ${servicoSelecionado_{{ forloop.counter0 }} && servicoSelecionado_{{ forloop.counter0 }}.unidade_label ? servicoSelecionado_{{ forloop.counter0 }}.unidade_label : '—'}</small>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Quantidade</label>
+                                    <input type="number" name="servico_quantidade[]" step="0.01" min="0.01" value="{{ servico_orcamento.quantidade|stringformat:'0.2f' }}" required 
+                                           class="servico-quantidade" 
+                                           onchange="calcularServicoTotal(this)"
+                                           style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                           onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Valor Unit. (MT)</label>
+                                    <input type="number" name="servico_valor_unitario[]" step="0.01" min="0" value="{{ servico_orcamento.valor_unitario|stringformat:'0.2f' }}" required 
+                                           class="servico-valor-unitario" 
+                                           onchange="calcularServicoTotal(this)"
+                                           style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                           onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Desc. %</label>
+                                    <input type="number" name="servico_desconto_percentual[]" step="0.01" min="0" max="100" value="{% if servico_orcamento.desconto_percentual %}{{ servico_orcamento.desconto_percentual|stringformat:'0.2f' }}{% else %}0.00{% endif %}" 
+                                           class="servico-desconto-percentual" 
+                                           onchange="atualizarDescontoServico(this, 'percentual')"
+                                           oninput="atualizarDescontoServico(this, 'percentual')"
+                                           style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                           onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Desc. (MT)</label>
+                                    <input type="number" name="servico_desconto[]" step="0.01" min="0" value="{% if servico_orcamento.desconto %}{{ servico_orcamento.desconto|stringformat:'0.2f' }}{% else %}0.00{% endif %}" 
+                                           class="servico-desconto" 
+                                           onchange="atualizarDescontoServico(this, 'valor')"
+                                           oninput="atualizarDescontoServico(this, 'valor')"
+                                           style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                           onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">Total</label>
+                                    <input type="text" class="servico-total" readonly 
+                                           style="width: 100%; padding: 10px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #86efac; border-radius: 6px; font-weight: 700; font-size: 14px; color: #059669; text-align: center; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1); cursor: not-allowed;" 
+                                           value="${formatarMoeda({{ servico_orcamento.valor_total|floatformat:2 }})} MT">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #374151; margin-bottom: 4px; display: block; font-size: 13px;">
+                                    <i class="fas fa-file-signature" style="color: #b45309; margin-right: 6px;"></i> Nome a Apresentar no Documento
+                                </label>
+                                <input type="text" 
+                                       name="servico_nome_documento[]" 
+                                       class="servico-nome-documento"
+                                       placeholder="Nome personalizado para o documento (deixe em branco para usar o nome do serviço)"
+                                       value="${nomeDocumentoServico_{{ forloop.counter0 }}}"
+                                       style="width: 100%; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: all 0.2s;"
+                                       onfocus="this.style.borderColor='#b45309'; this.style.boxShadow='0 0 0 3px rgba(180, 83, 9, 0.1)'"
+                                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                            </div>
+                        </div>
+                        <!-- Detalhes expandidos (inicialmente ocultos) -->
+                        <div class="servico-detalhes" style="display: none;">
+                        <!-- Produtos e Materiais do Serviço -->
+                        <div style="margin-top: 20px; padding: 18px; background: linear-gradient(to bottom, #fafafa 0%, #f5f5f5 100%); border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4 style="margin: 0; color: #374151; font-size: 15px; font-weight: 600;">
+                                    <i class="fas fa-box" style="color: #059669; margin-right: 8px;"></i> Produtos e Materiais <span style="color: #6b7280; font-weight: 400; font-size: 13px;">(Opcional)</span>
+                                </h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="button" class="btn-add-produto-servico" onclick="adicionarItemServico(this, 'PRODUTO')" 
+                                            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+                                                   color: white; 
+                                                   border: none; 
+                                                   padding: 9px 18px; 
+                                                   border-radius: 6px; 
+                                                   cursor: pointer; 
+                                                   font-size: 13px; 
+                                                   font-weight: 500;
+                                                   display: flex;
+                                                   align-items: center;
+                                                   gap: 6px;
+                                                   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+                                                   transition: all 0.2s ease;"
+                                            onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'"
+                                            onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">
+                                        <i class="fas fa-cube"></i> Adicionar Produto
+                                    </button>
+                                    <button type="button" class="btn-add-material-servico" onclick="adicionarItemServico(this, 'MATERIAL')" 
+                                            style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+                                                   color: white; 
+                                                   border: none; 
+                                                   padding: 9px 18px; 
+                                                   border-radius: 6px; 
+                                                   cursor: pointer; 
+                                                   font-size: 13px; 
+                                                   font-weight: 500;
+                                                   display: flex;
+                                                   align-items: center;
+                                                   gap: 6px;
+                                                   box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+                                                   transition: all 0.2s ease;"
+                                            onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(245, 158, 11, 0.4)'"
+                                            onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(245, 158, 11, 0.3)'">
+                                        <i class="fas fa-hammer"></i> Adicionar Material
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="itens-servico-container" data-servico-index="${servicoIndex_{{ forloop.counter0 }}}">
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('servicos-container').appendChild(servicoRow_{{ forloop.counter0 }});
+                
+                // Calcular desconto aplicado e total do serviço após adicionar ao DOM
+                setTimeout(function() {
+                    const quantidadeInput = servicoRow_{{ forloop.counter0 }}.querySelector('.servico-quantidade');
+                    if (quantidadeInput) {
+                        calcularServicoTotal(quantidadeInput);
+                    }
+                }, 100);
+                
+                // Carregar itens deste serviço
+                {% for item in servico_orcamento.itens.all %}
+                {% if item.item %}
+                const itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = document.createElement('div');
+                itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.className = 'item-servico-row';
+                itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: #ffffff; border-radius: 4px; border: 1px solid #d1d5db;';
+                
+                const produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtosMateriaisData.find(p => p.id == {{ item.item.id }});
+                const produtoNome_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} ? produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.nome : '';
+                const produtoId_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} ? produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.id : '';
+                const produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} ? produtoSelecionado_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.tipo : 'PRODUTO';
+                
+                itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.dataset.itemTipo = produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }};
+                
+                const tipoLabel_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} === 'PRODUTO' ? 'Produto' : 'Material';
+                const tipoPlaceholder_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} === 'PRODUTO' ? 'Digite para buscar produto...' : 'Digite para buscar material...';
+                const tipoColor_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} = produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }} === 'PRODUTO' ? '#3b82f6' : '#f59e0b';
+                
+                itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}.innerHTML = `
+                    <div style="flex: 2; position: relative;">
+                        <label style="font-size: 12px;">${tipoLabel_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}</label>
+                        <input type="text" 
+                               name="item_servico_autocomplete[]"
+                               class="item-servico-autocomplete" 
+                               placeholder="${tipoPlaceholder_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}" 
+                               autocomplete="off"
+                               data-tipo="${produtoTipo_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}"
+                               value="${produtoNome_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}"
+                               style="width: 100%; padding: 6px; border: 2px solid ${tipoColor_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}; border-radius: 4px; font-size: 12px;"
+                               oninput="filtrarProdutosMateriais(this)"
+                               onfocus="mostrarSugestoesItemServico(this)"
+                               onblur="setTimeout(() => ocultarSugestoesItemServico(this), 300)">
+                        <input type="hidden" name="item_servico_${servicoIndex_{{ forloop.parentloop.counter0 }}}_id[]" class="item-servico-id-hidden" value="${produtoId_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}">
+                        <div class="sugestoes-item-servico" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid ${tipoColor_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}}; border-radius: 4px; max-height: 150px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px;">Quantidade</label>
+                        <input type="number" name="item_servico_${servicoIndex_{{ forloop.parentloop.counter0 }}}_quantidade[]" step="0.01" min="0.01" value="{{ item.quantidade|stringformat:'0.2f' }}" class="item-servico-quantidade" onchange="calcularItemServicoTotal(this)">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px;">Valor Unit. (MT)</label>
+                        <input type="number" name="item_servico_${servicoIndex_{{ forloop.parentloop.counter0 }}}_valor_unitario[]" step="0.01" min="0" value="{{ item.valor_unitario|stringformat:'0.2f' }}" class="item-servico-valor-unitario" onchange="calcularItemServicoTotal(this)">
+                    </div>
+                    <div style="flex: 0.8;">
+                        <label style="font-size: 12px;">Desc. %</label>
+                        <input type="number" name="item_servico_${servicoIndex_{{ forloop.parentloop.counter0 }}}_desconto_percentual[]" step="0.01" min="0" max="100" value="{% if item.desconto_percentual %}{{ item.desconto_percentual|stringformat:'0.2f' }}{% else %}0.00{% endif %}" class="item-servico-desconto-percentual" onchange="atualizarDescontoItemServico(this, 'percentual')" oninput="atualizarDescontoItemServico(this, 'percentual')" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+                    </div>
+                    <div style="flex: 0.8;">
+                        <label style="font-size: 12px;">Desc. (MT)</label>
+                        <input type="number" name="item_servico_${servicoIndex_{{ forloop.parentloop.counter0 }}}_desconto[]" step="0.01" min="0" value="{% if item.desconto %}{{ item.desconto|stringformat:'0.2f' }}{% else %}0.00{% endif %}" class="item-servico-desconto" onchange="atualizarDescontoItemServico(this, 'valor')" oninput="atualizarDescontoItemServico(this, 'valor')" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px;">Total</label>
+                        <input type="text" class="item-servico-total" readonly style="background-color: #f9fafb; font-weight: 600; font-size: 12px;" value="${formatarMoeda({{ item.valor_total|floatformat:2 }})} MT">
+                    </div>
+                    <div style="flex: 0 0 40px; display: flex; align-items: flex-end;">
+                        <button type="button" class="btn-remove-item-servico" onclick="removerItemServico(this)" style="background: #dc2626; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                servicoRow_{{ forloop.parentloop.counter0 }}.querySelector('.itens-servico-container').appendChild(itemRow_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }});
+                {% endif %}
+                {% endfor %}
+                
+                // Recalcular o total do serviço incluindo itens
+                setTimeout(function() {
+                    const quantidadeInput = servicoRow_{{ forloop.counter0 }}.querySelector('.servico-quantidade');
+                    if (quantidadeInput) {
+                        calcularServicoTotal(quantidadeInput);
+                    }
+                }, 100);
+                {% endfor %}
+                
+                // Após carregar todos os serviços e itens, atualizar os totais e IVA
+                setTimeout(function() {
+                    calcularValores(); // Calcular todos os valores primeiro
+                    setTimeout(function() {
+                        calcularValorFinal(); // Depois calcular o valor final com IVA
+                    }, 100);
+                }, 100);
+                // Ocultar estado vazio só quando há pelo menos uma linha de serviço
+                var container = document.getElementById('servicos-container');
+                var es = document.getElementById('servicos-empty-state');
+                var hasRows = container && container.querySelectorAll('.servico-row').length > 0;
+                if (es && hasRows) es.style.display = 'none';
+                // Se já existe linha (ex.: renderizada no servidor), inicializar contador; senão adicionar uma
+                if (hasRows) {
+                    servicoCounter = container.querySelectorAll('.servico-row').length;
+                }
+                if (!hasRows && typeof window.adicionarServico === 'function') {
+                    window.adicionarServico();
+                }
+            {% else %}
+                // Adicionar um serviço vazio por padrão ao criar novo orçamento (só se ainda não houver linha renderizada no servidor)
+                var containerInit = document.getElementById('servicos-container');
+                var hasRowsInit = containerInit && containerInit.querySelectorAll('.servico-row').length > 0;
+                if (!hasRowsInit && typeof window.adicionarServico === 'function') {
+                    window.adicionarServico();
+                } else if (hasRowsInit) {
+                    servicoCounter = containerInit.querySelectorAll('.servico-row').length;
+                }
+            {% endif %}
+            
+            // Carregar transportes existentes via JavaScript (os transportes estáticos já foram carregados no HTML)
+            // Apenas garantir que os selects de transportadora sejam populados corretamente
+            
+            // Carregar desconto existente se estiver editando
+            {% if ordem and ordem.desconto %}
+                // Calcular percentual de desconto baseado no subtotal
+                // O desconto é armazenado como valor fixo, precisamos calcular o percentual
+                setTimeout(function() {
+                    atualizarValorFinal(); // Primeiro atualizar totais
+                    const subtotalElement = document.getElementById('subtotal_exibicao');
+                    if (subtotalElement) {
+                        const subtotalText = subtotalElement.textContent;
+                        const subtotal = parseFloat(subtotalText.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+                        const descontoValor = parseFloat("{{ ordem.desconto|default_if_none:0|stringformat:'.2f' }}") || 0;
+                        if (subtotal > 0 && descontoValor > 0) {
+                            const percentual = (descontoValor / subtotal) * 100;
+                            // Limitar a 30%
+                            const percentualLimitado = Math.min(Math.max(percentual, 0), 30);
+                            const descontoInput = document.getElementById('desconto_percentual');
+                            if (descontoInput) {
+                                descontoInput.value = percentualLimitado.toFixed(1);
+                                calcularValorFinal(subtotal);
+                            }
+                        }
+                    }
+                }, 500);
+            {% endif %}
+            
+            // Aguardar um pouco para garantir que todos os elementos estejam prontos
+            setTimeout(function() {
+                atualizarTotalServicos(); // Atualizar totais de serviços
+                atualizarTotalItens(); // Atualizar totais de itens (chama atualizarValorFinal internamente)
+                // Garantir que o IVA seja calculado após calcular valores
+                setTimeout(function() {
+                    // Desconto global foi removido intencionalmente
+                    // Apenas garantir que o valor final seja calculado
+                    atualizarValorFinal(); // Recalcular tudo para garantir que está correto
+                }, 100);
+            }, 200);
+
+            // Filtrar transportadoras para transportes existentes
+            // Aguardar um pouco para garantir que os selects estejam populados
+            setTimeout(function() {
+                document.querySelectorAll('.transporte-tipo').forEach(select => {
+                    filtrarTransportadoras(select);
+                });
+            }, 100);
+            
+            // Garantir que o total de transporte seja calculado após carregar os transportes existentes
+            setTimeout(function() {
+                atualizarTotalTransporte();
+            }, 200);
+            
+            // Adicionar event listener para fechar sugestões de serviços e produtos/materiais ao clicar fora
+            document.addEventListener('click', function(e) {
+                // Fechar sugestões de serviços só se o clique foi fora do campo, do dropdown e do container do autocomplete (ex.: label)
+                var dentroServicoAutocomplete = e.target.closest('.servico-autocomplete') || e.target.closest('.sugestoes-servico') || e.target.closest('.sugestao-servico') || e.target.closest('.orc-pos-rel');
+                if (!dentroServicoAutocomplete) {
+                    document.querySelectorAll('.sugestoes-servico').forEach(div => {
+                        div.style.display = 'none';
+                        div.classList.remove('sugestoes-visible');
+                    });
+                }
+                // Fechar sugestões de produtos/materiais
+                if (!e.target.closest('.item-servico-autocomplete') && !e.target.closest('.sugestoes-item-servico') && !e.target.closest('.sugestao-item-servico')) {
+                    document.querySelectorAll('.sugestoes-item-servico').forEach(div => {
+                        div.style.display = 'none';
+                    });
+                }
+            });
+
+            const nomeCliente = document.getElementById('nome_cliente_pagamento');
+            if (nomeCliente) {
+                nomeCliente.addEventListener('input', function(e) {
+                    const termo = e.target.value;
+                    limparSelecaoCliente();
+                    if (termo.length >= 1) {
+                        const sugestoes = filtrarClientes(termo);
+                        currentSuggestions = sugestoes;
+                        mostrarSugestoes(sugestoes);
+                    } else {
+                        const suggestionsDiv = document.getElementById('cliente-suggestions');
+                        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                        currentSuggestions = [];
+                    }
+                });
+
+                nomeCliente.addEventListener('blur', function() {
+                    // Aguardar um pouco mais para permitir que o clique seja processado
+                    setTimeout(() => {
+                        if (!isSelectingCliente) {
+                            const suggestionsDiv = document.getElementById('cliente-suggestions');
+                            if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                        }
+                        isSelectingCliente = false;
+                    }, 300);
+                });
+
+                nomeCliente.addEventListener('keydown', function(e) {
+                    const suggestionsDiv = document.getElementById('cliente-suggestions');
+                    if (!suggestionsDiv || suggestionsDiv.style.display === 'none') return;
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        selectedClienteIndex = Math.min(selectedClienteIndex + 1, currentSuggestions.length - 1);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        selectedClienteIndex = Math.max(selectedClienteIndex - 1, -1);
+                    } else if (e.key === 'Enter' && selectedClienteIndex >= 0) {
+                        e.preventDefault();
+                        selecionarCliente(currentSuggestions[selectedClienteIndex]);
+                    } else if (e.key === 'Escape') {
+                        suggestionsDiv.style.display = 'none';
+                        selectedClienteIndex = -1;
+                    }
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                const wrapper = document.getElementById('pronto-pagamento-section');
+                const suggestionsDiv = document.getElementById('cliente-suggestions');
+                // Não fechar se o clique foi na lista de sugestões
+                if (suggestionsDiv && suggestionsDiv.contains(e.target)) {
+                    return;
+                }
+                if (wrapper && !wrapper.contains(e.target)) {
+                    if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                }
+            });
+            
+            // Função para calcular data e hora automaticamente baseado na prioridade
+            window.calcularDataHoraAutomatica = function() {
+                const prioridade = document.getElementById('prioridade').value;
+                const dataAgendadaInput = document.getElementById('data_agendada');
+                const horaAgendadaInput = document.getElementById('hora_agendada');
+                
+                if (!prioridade || !dataAgendadaInput || !horaAgendadaInput) {
+                    return;
+                }
+                
+                // Buscar horários disponíveis
+                fetch('{% url "producao:servico_orcamento_horarios_disponiveis" %}')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const horariosOcupados = data.horarios_ocupados || [];
+                            const horariosExpediente = data.horarios_expediente || {};
+                            
+                            // Calcular próximo slot disponível
+                            const proximoSlot = calcularProximoSlotDisponivel(
+                                prioridade,
+                                horariosOcupados,
+                                horariosExpediente
+                            );
+                            
+                            if (proximoSlot) {
+                                dataAgendadaInput.value = proximoSlot.data;
+                                horaAgendadaInput.value = proximoSlot.hora;
+                            }
+                        } else {
+                            console.warn('Resposta da API não foi bem-sucedida:', data.message || 'Erro desconhecido');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar horários disponíveis:', error);
+                        // Não interromper o fluxo - apenas logar o erro
+                    });
+            };
+            
+            // Função para calcular próximo slot disponível
+            function calcularProximoSlotDisponivel(prioridade, horariosOcupados, horariosExpediente) {
+                const agora = new Date();
+                const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+                
+                // Determinar data inicial baseado na prioridade
+                let diasOffset = 0;
+                
+                switch(prioridade) {
+                    case 'URGENTE':
+                        diasOffset = 0; // Hoje
+                        break;
+                    case 'ALTA':
+                        diasOffset = 1; // Amanhã
+                        break;
+                    case 'NORMAL':
+                        diasOffset = 2; // Depois de amanhã
+                        break;
+                    case 'BAIXA':
+                        diasOffset = 5; // Próxima semana
+                        break;
+                    default:
+                        diasOffset = 2;
+                }
+                
+                // Encontrar próximo dia útil
+                let dataAtual = new Date(hoje);
+                dataAtual.setDate(dataAtual.getDate() + diasOffset);
+                
+                // Procurar próximo slot disponível (máximo 30 dias)
+                for (let i = 0; i < 30; i++) {
+                    const diaSemana = dataAtual.getDay();
+                    const horarioDia = horariosExpediente[diaSemana];
+                    
+                    // Verificar se é dia de trabalho
+                    if (horarioDia) {
+                        const [horaInicioH, horaInicioM] = horarioDia.hora_inicio.split(':').map(Number);
+                        const [horaFimH, horaFimM] = horarioDia.hora_fim.split(':').map(Number);
+                        const duracaoAlmoco = horarioDia.duracao_almoco_minutos || 60;
+                        
+                        // Calcular hora de início do almoço (meio do expediente)
+                        const horaInicioAlmocoH = 12;
+                        const horaInicioAlmocoM = 0;
+                        const horaFimAlmocoH = horaInicioAlmocoH;
+                        const horaFimAlmocoM = horaInicioAlmocoM + duracaoAlmoco;
+                        
+                        // Tentar diferentes horários no dia
+                        const horariosTentativa = [
+                            {h: horaInicioH, m: horaInicioM}, // Início do expediente
+                            {h: horaInicioH + 2, m: horaInicioM}, // +2 horas
+                            {h: horaFimAlmocoH, m: horaFimAlmocoM}, // Fim do almoço
+                            {h: horaFimAlmocoH + 1, m: horaFimAlmocoM} // +1 hora após almoço
+                        ];
+                        
+                        for (let horaTentativa of horariosTentativa) {
+                            // Normalizar minutos
+                            if (horaTentativa.m >= 60) {
+                                horaTentativa.h += Math.floor(horaTentativa.m / 60);
+                                horaTentativa.m = horaTentativa.m % 60;
+                            }
+                            
+                            // Verificar se está dentro do horário de expediente
+                            const horaMinutos = horaTentativa.h * 60 + horaTentativa.m;
+                            const inicioMinutos = horaInicioH * 60 + horaInicioM;
+                            const fimMinutos = horaFimH * 60 + horaFimM;
+                            const inicioAlmocoMinutos = horaInicioAlmocoH * 60 + horaInicioAlmocoM;
+                            const fimAlmocoMinutos = horaFimAlmocoH * 60 + horaFimAlmocoM;
+                            
+                            if (horaMinutos >= inicioMinutos && horaMinutos <= fimMinutos) {
+                                // Verificar se não está no horário de almoço
+                                if (horaMinutos < inicioAlmocoMinutos || horaMinutos > fimAlmocoMinutos) {
+                                    const dataHoraCompleta = new Date(dataAtual);
+                                    dataHoraCompleta.setHours(horaTentativa.h, horaTentativa.m, 0, 0);
+                                    
+                                    // Verificar se não está ocupado
+                                    const dataHoraStr = formatarDataHora(dataHoraCompleta);
+                                    if (!horariosOcupados.includes(dataHoraStr)) {
+                                        // Verificar se não é no passado (para urgente)
+                                        if (prioridade !== 'URGENTE' || dataHoraCompleta > agora) {
+                                            return {
+                                                data: formatarData(dataAtual),
+                                                hora: formatarHora(dataHoraCompleta)
+                                            };
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Próximo dia
+                    dataAtual.setDate(dataAtual.getDate() + 1);
+                }
+                
+                // Se não encontrou, retornar padrão
+                const dataPadrao = new Date(hoje);
+                dataPadrao.setDate(dataPadrao.getDate() + diasOffset);
+                return {
+                    data: formatarData(dataPadrao),
+                    hora: '09:00'
+                };
+            }
+            
+            function parseTime(timeStr) {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                const date = new Date();
+                date.setHours(hours, minutes, 0, 0);
+                return date;
+            }
+            
+            function formatarData(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+            
+            function formatarHora(date) {
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${hours}:${minutes}`;
+            }
+            
+            function formatarDataHora(date) {
+                return formatarData(date) + ' ' + formatarHora(date);
+            }
+            
+            // Adicionar listener para mudança de prioridade
+            const prioridadeSelect = document.getElementById('prioridade');
+            if (prioridadeSelect) {
+                prioridadeSelect.addEventListener('change', function() {
+                    // Só calcular automaticamente se os campos estiverem vazios
+                    const dataAgendada = document.getElementById('data_agendada');
+                    const horaAgendada = document.getElementById('hora_agendada');
+                    
+                    if (!dataAgendada.value || !horaAgendada.value) {
+                        calcularDataHoraAutomatica();
+                    }
+                });
+                
+                // Calcular automaticamente ao carregar se os campos estiverem vazios
+                const dataAgendada = document.getElementById('data_agendada');
+                const horaAgendada = document.getElementById('hora_agendada');
+                if ((!dataAgendada.value || !horaAgendada.value) && prioridadeSelect.value) {
+                    setTimeout(function() {
+                        calcularDataHoraAutomatica();
+                    }, 500);
+                }
+            }
+        });
+    </script>
+    <script>
+    (function() {
+        var el = document.getElementById('orcamento-debug-servicos');
+        if (!el) return;
+        if (typeof window._servicosDataCount === 'number') {
+            el.innerHTML = 'servicosData: <strong>' + window._servicosDataCount + '</strong> serviço(s). Digite no campo Serviço para buscar.';
+        } else {
+            el.innerHTML = '<span class="orc-debug-erro">Script de dados não executou (erro de sintaxe?). Abra a consola do browser (F12) e recarregue a página.</span>';
+        }
+    })();
+    </script>
+</body>
+</html>
+
+
+

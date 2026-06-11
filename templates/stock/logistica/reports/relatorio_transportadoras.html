@@ -1,0 +1,66 @@
+{% extends 'stock/includes/report_logistica_shell.html' %}
+
+{% block report_page_title %}Transportadoras{% endblock %}
+{% block report_breadcrumb %}Transportadoras{% endblock %}
+{% block report_icon %}fa-truck{% endblock %}
+{% block report_heading %}Análise de transportadoras{% endblock %}
+{% block report_subtitle %}Período {{ data_inicio }} — {{ data_fim }} · cadastro e desempenho no período{% endblock %}
+{% block report_doc_title %}RELATÓRIO DE TRANSPORTADORAS{% endblock %}
+{% block report_code_prefix %}TRANS{% endblock %}
+
+{% block report_content %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-chart-bar" aria-hidden="true"></i> Resumo</h3>
+<div class="stock-report-kpi-grid">
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Total transportadoras</div>
+        <div class="stock-report-kpi__value">{{ dados.total_transportadoras|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--success">
+        <div class="stock-report-kpi__label">Ativas</div>
+        <div class="stock-report-kpi__value">{{ dados.transportadoras_ativas|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Entregas no período</div>
+        <div class="stock-report-kpi__value">{{ total_entregas|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi {% if taxa_media_sucesso >= 90 %}stock-report-kpi--success{% elif taxa_media_sucesso >= 70 %}stock-report-kpi--warning{% else %}stock-report-kpi--danger{% endif %}">
+        <div class="stock-report-kpi__label">Taxa média sucesso</div>
+        <div class="stock-report-kpi__value">{{ taxa_media_sucesso|default:0|floatformat:2 }}%</div>
+    </div>
+</div>
+
+{% if dados.transportadoras %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-truck" aria-hidden="true"></i> Detalhe por transportadora</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th class="text-center">Entregas</th>
+                <th class="text-center">Entregues</th>
+                <th class="text-center">Taxa</th>
+                <th class="text-center">Prazo padrão</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.transportadoras %}
+            <tr>
+                <td><strong>{{ item.transportadora.nome }}</strong></td>
+                <td class="text-center">{{ item.total_entregas|default:0 }}</td>
+                <td class="text-center">{{ item.entregues|default:0 }}</td>
+                <td class="text-center">{{ item.taxa_sucesso|default:0|floatformat:2 }}%</td>
+                <td class="text-center">{{ item.prazo_entrega_padrao|default:"—" }} dias</td>
+                <td class="text-center">{{ item.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="stock-report-empty">
+    <i class="fas fa-truck" aria-hidden="true"></i>
+    <p>Nenhuma transportadora registada.</p>
+</div>
+{% endif %}
+{% endblock %}

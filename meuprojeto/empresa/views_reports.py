@@ -15,19 +15,43 @@ import logging
 import csv
 from decimal import Decimal
 
-from .decorators import require_stock_access
+from .decorators import require_stock_access, get_user_sucursais
 from .models_stock import (
-    RastreamentoEntrega, EventoRastreamento, Transportadora, VeiculoInterno,
-    NotificacaoLogisticaUnificada
+    RastreamentoEntrega,
+    Transportadora,
+    Item,
+    StockItem,
+    MovimentoItem,
+    OrdemCompra,
+    ItemOrdemCompra,
 )
-from .models_pod import ProvaEntrega
-from .models_cost_billing import CustoLogistico, FaturamentoLogistico
-from .models_routing import Rota, PlanejamentoEntrega
-from .models_exceptions import ExcecaoLogistica
-from .models_geolocation import CalculoDistancia
-from .models_mobile import SessaoMotorista, EventoMotorista
+from .models_cost_billing import CustoLogistico
 
 logger = logging.getLogger(__name__)
+
+
+def _periodo_relatorio(request):
+    """Extrai período do GET (strings + dates)."""
+    hoje = timezone.now().date()
+    data_inicio_str = request.GET.get(
+        'data_inicio', (hoje - timedelta(days=30)).strftime('%Y-%m-%d'),
+    )
+    data_fim_str = request.GET.get('data_fim', hoje.strftime('%Y-%m-%d'))
+    data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+    data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+    return data_inicio_str, data_fim_str, data_inicio, data_fim
+
+
+def _contexto_relatorio(request, data_inicio_str, data_fim_str, extra=None):
+    ctx = {
+        'data_inicio': data_inicio_str,
+        'data_fim': data_fim_str,
+        'data_relatorio': timezone.now(),
+        'user': request.user,
+    }
+    if extra:
+        ctx.update(extra)
+    return ctx
 
 
 # =============================================================================
@@ -37,52 +61,13 @@ logger = logging.getLogger(__name__)
 @login_required
 @require_stock_access
 def dashboard_executivo(request):
-    """Dashboard executivo com métricas avançadas."""
-    
-    # Período padrão (últimos 30 dias)
-    data_fim = timezone.now().date()
-    data_inicio = data_fim - timedelta(days=30)
-    
-    # Permitir filtro de período
-    if request.GET.get('data_inicio'):
-        data_inicio = datetime.strptime(request.GET.get('data_inicio'), '%Y-%m-%d').date()
-    if request.GET.get('data_fim'):
-        data_fim = datetime.strptime(request.GET.get('data_fim'), '%Y-%m-%d').date()
-    
-    # KPIs Principais
-    kpis = _calcular_kpis_principais(data_inicio, data_fim)
-    
-    # Métricas de Performance
-    performance = _calcular_metricas_performance(data_inicio, data_fim)
-    
-    # Análise de Custos
-    custos = _calcular_analise_custos(data_inicio, data_fim)
-    
-    # SLA e Pontualidade
-    sla = _calcular_metricas_sla(data_inicio, data_fim)
-    
-    # Análise por Transportadora
-    transportadoras = _calcular_analise_transportadoras(data_inicio, data_fim)
-    
-    # Análise por Região
-    regioes = _calcular_analise_regioes(data_inicio, data_fim)
-    
-    # Tendências (últimos 7 dias)
-    tendencias = _calcular_tendencias()
-    
-    context = {
-        'data_inicio': data_inicio,
-        'data_fim': data_fim,
-        'kpis': kpis,
-        'performance': performance,
-        'custos': custos,
-        'sla': sla,
-        'transportadoras': transportadoras,
-        'regioes': regioes,
-        'tendencias': tendencias,
-    }
-    
-    return render(request, 'stock/logistica/reports/dashboard_executivo.html', context)
+    """Redireciona para o dashboard executivo unificado de stock."""
+    from django.urls import reverse
+    url = reverse('stock:dashboard_executivo')
+    query = request.GET.urlencode()
+    if query:
+        url = f'{url}?{query}'
+    return redirect(url)
 
 
 def _calcular_kpis_principais(data_inicio, data_fim):
@@ -106,16 +91,16 @@ def _calcular_kpis_principais(data_inicio, data_fim):
     tempo_medio = RastreamentoEntrega.objects.filter(
         data_criacao__date__range=[data_inicio, data_fim],
         status_atual='ENTREGUE',
-        data_entrega__isnull=False
+        data_entrega_realizada__isnull=False
     ).aggregate(
-        tempo_medio=Avg(F('data_entrega') - F('data_criacao'))
+        tempo_medio=Avg(F('data_entrega_realizada') - F('data_criacao'))
     )['tempo_medio']
     
     # Custo médio por entrega
     custo_medio = CustoLogistico.objects.filter(
-        data_criacao__date__range=[data_inicio, data_fim]
+        data_custo__range=[data_inicio, data_fim],
     ).aggregate(
-        custo_medio=Avg('valor_total')
+        custo_medio=Avg('valor'),
     )['custo_medio'] or Decimal('0')
     
     return {
@@ -187,8 +172,8 @@ def _calcular_analise_custos(data_inicio, data_fim):
     for i in range(7):
         data = data_fim - timedelta(days=i)
         total_dia = CustoLogistico.objects.filter(
-            data_criacao__date=data
-        ).aggregate(total=Sum('valor_total'))['total'] or Decimal('0')
+            data_custo=data
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0')
         
         evolucao_custos.append({
             'data': data.strftime('%d/%m'),
@@ -215,7 +200,7 @@ def _calcular_metricas_sla(data_inicio, data_fim):
     )
     
     entregas_no_prazo = entregas_com_prazo.filter(
-        data_entrega__lte=F('data_entrega_prevista')
+        data_entrega_realizada__lte=F('data_entrega_prevista')
     ).count()
     
     total_com_prazo = entregas_com_prazo.count()
@@ -226,7 +211,7 @@ def _calcular_metricas_sla(data_inicio, data_fim):
         data_criacao__date__range=[data_inicio, data_fim],
         data_entrega_prevista__isnull=False,
         status_atual='ENTREGUE',
-        data_entrega__gt=F('data_entrega_prevista'),
+        data_entrega_realizada__gt=F('data_entrega_prevista'),
         transportadora__isnull=False
     ).values('transportadora__nome').annotate(
         count=Count('id')
@@ -237,9 +222,9 @@ def _calcular_metricas_sla(data_inicio, data_fim):
         data_criacao__date__range=[data_inicio, data_fim],
         data_entrega_prevista__isnull=False,
         status_atual='ENTREGUE',
-        data_entrega__gt=F('data_entrega_prevista')
+        data_entrega_realizada__gt=F('data_entrega_prevista')
     ).aggregate(
-        tempo_atraso=Avg(F('data_entrega') - F('data_entrega_prevista'))
+        tempo_atraso=Avg(F('data_entrega_realizada') - F('data_entrega_prevista'))
     )['tempo_atraso']
     
     return {
@@ -256,7 +241,7 @@ def _calcular_analise_transportadoras(data_inicio, data_fim):
     
     transportadoras_data = []
     
-    for transportadora in Transportadora.objects.filter(ativo=True):
+    for transportadora in Transportadora.objects.filter(ativa=True):
         entregas = RastreamentoEntrega.objects.filter(
             transportadora=transportadora,
             data_criacao__date__range=[data_inicio, data_fim]
@@ -337,81 +322,105 @@ def _calcular_tendencias():
 @require_stock_access
 def relatorio_performance(request):
     """Relatório de performance logística."""
-    
-    data_inicio = request.GET.get('data_inicio', (timezone.now().date() - timedelta(days=30)).strftime('%Y-%m-%d'))
-    data_fim = request.GET.get('data_fim', timezone.now().date().strftime('%Y-%m-%d'))
-    
+    data_inicio_str, data_fim_str, _, _ = _periodo_relatorio(request)
     formato = request.GET.get('formato', 'html')
-    
-    # Dados do relatório
-    dados = _gerar_dados_relatorio_performance(data_inicio, data_fim)
-    
+    dados = _gerar_dados_relatorio_performance(data_inicio_str, data_fim_str)
+
     if formato == 'csv':
-        return _exportar_csv_performance(dados, data_inicio, data_fim)
-    elif formato == 'json':
+        return _exportar_csv_performance(dados, data_inicio_str, data_fim_str)
+    if formato == 'json':
         return JsonResponse(dados)
-    
-    context = {
-        'data_inicio': data_inicio,
-        'data_fim': data_fim,
-        'dados': dados,
-    }
-    
-    return render(request, 'stock/logistica/reports/relatorio_performance.html', context)
+
+    return render(
+        request,
+        'stock/logistica/reports/relatorio_performance.html',
+        _contexto_relatorio(request, data_inicio_str, data_fim_str, {'dados': dados}),
+    )
 
 
 @login_required
 @require_stock_access
 def relatorio_custos(request):
     """Relatório de custos logísticos."""
-    
-    data_inicio = request.GET.get('data_inicio', (timezone.now().date() - timedelta(days=30)).strftime('%Y-%m-%d'))
-    data_fim = request.GET.get('data_fim', timezone.now().date().strftime('%Y-%m-%d'))
-    
+    from .views_logistica_reports import (
+        _gerar_dados_relatorio_custos as gerar_custos,
+        enrich_custos_context,
+    )
+
+    data_inicio_str, data_fim_str, _, _ = _periodo_relatorio(request)
     formato = request.GET.get('formato', 'html')
-    
-    # Dados do relatório
-    dados = _gerar_dados_relatorio_custos(data_inicio, data_fim)
-    
+    dados = gerar_custos(data_inicio_str, data_fim_str)
+
     if formato == 'csv':
-        return _exportar_csv_custos(dados, data_inicio, data_fim)
-    elif formato == 'json':
+        return _exportar_csv_custos(dados, data_inicio_str, data_fim_str)
+    if formato == 'json':
         return JsonResponse(dados)
-    
-    context = {
-        'data_inicio': data_inicio,
-        'data_fim': data_fim,
-        'dados': dados,
-    }
-    
-    return render(request, 'stock/logistica/reports/relatorio_custos.html', context)
+
+    return render(
+        request,
+        'stock/logistica/reports/relatorio_custos.html',
+        _contexto_relatorio(
+            request, data_inicio_str, data_fim_str,
+            {'dados': dados, **enrich_custos_context(dados)},
+        ),
+    )
 
 
 @login_required
 @require_stock_access
 def relatorio_sla(request):
     """Relatório de SLA e pontualidade."""
-    
-    data_inicio = request.GET.get('data_inicio', (timezone.now().date() - timedelta(days=30)).strftime('%Y-%m-%d'))
-    data_fim = request.GET.get('data_fim', timezone.now().date().strftime('%Y-%m-%d'))
-    
+    from .views_logistica_reports import (
+        _gerar_dados_relatorio_sla as gerar_sla,
+        enrich_sla_context,
+    )
+
+    data_inicio_str, data_fim_str, _, _ = _periodo_relatorio(request)
     formato = request.GET.get('formato', 'html')
-    
-    # Dados do relatório
-    dados = _gerar_dados_relatorio_sla(data_inicio, data_fim)
-    
+    dados = gerar_sla(data_inicio_str, data_fim_str)
+
     if formato == 'csv':
-        return _exportar_csv_sla(dados, data_inicio, data_fim)
-    elif formato == 'json':
+        return _exportar_csv_sla(dados, data_inicio_str, data_fim_str)
+    if formato == 'json':
         return JsonResponse(dados)
-    
-    context = {
-        'data_inicio': data_inicio,
-        'data_fim': data_fim,
-        'dados': dados,
-    }
-    
-    return render(request, 'stock/logistica/reports/relatorio_sla.html', context)
+
+    return render(
+        request,
+        'stock/logistica/reports/relatorio_sla.html',
+        _contexto_relatorio(
+            request, data_inicio_str, data_fim_str,
+            {'dados': dados, **enrich_sla_context(dados)},
+        ),
+    )
+
+
+@login_required
+@require_stock_access
+def relatorio_rastreamentos(request):
+    """Relatório de rastreamentos e entregas."""
+    from .views_logistica_reports import (
+        _gerar_dados_relatorio_rastreamentos as gerar_rastreamentos,
+        enrich_rastreamentos_context,
+        serializar_dados_rastreamentos_json,
+    )
+
+    data_inicio_str, data_fim_str, _, _ = _periodo_relatorio(request)
+    formato = request.GET.get('formato', 'html')
+    dados = gerar_rastreamentos(data_inicio_str, data_fim_str)
+
+    if formato == 'csv':
+        return _exportar_csv_rastreamentos(dados, data_inicio_str, data_fim_str)
+    if formato == 'json':
+        return JsonResponse(serializar_dados_rastreamentos_json(dados))
+
+    return render(
+        request,
+        'stock/logistica/reports/relatorio_rastreamentos.html',
+        _contexto_relatorio(
+            request, data_inicio_str, data_fim_str,
+            {'dados': dados, **enrich_rastreamentos_context(dados)},
+        ),
+    )
 
 
 # =============================================================================
@@ -437,7 +446,7 @@ def _gerar_dados_relatorio_performance(data_inicio, data_fim):
     
     # Performance por transportadora
     performance_transportadoras = []
-    for transportadora in Transportadora.objects.filter(ativo=True):
+    for transportadora in Transportadora.objects.filter(ativa=True):
         entregas = RastreamentoEntrega.objects.filter(
             transportadora=transportadora,
             data_criacao__date__range=[data_inicio, data_fim]
@@ -498,8 +507,8 @@ def _gerar_dados_relatorio_custos(data_inicio, data_fim):
     for i in range(30):  # Últimos 30 dias
         data = data_fim - timedelta(days=i)
         total_dia = CustoLogistico.objects.filter(
-            data_criacao__date=data
-        ).aggregate(total=Sum('valor_total'))['total'] or Decimal('0')
+            data_custo=data
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0')
         
         evolucao_custos.append({
             'data': data.strftime('%d/%m'),
@@ -530,14 +539,14 @@ def _gerar_dados_relatorio_sla(data_inicio, data_fim):
     
     total_com_prazo = entregas_com_prazo.count()
     entregas_no_prazo = entregas_com_prazo.filter(
-        data_entrega__lte=F('data_entrega_prevista')
+        data_entrega_realizada__lte=F('data_entrega_prevista')
     ).count()
     
     sla_percentual = (entregas_no_prazo / total_com_prazo * 100) if total_com_prazo > 0 else 0
     
     # SLA por transportadora
     sla_transportadoras = []
-    for transportadora in Transportadora.objects.filter(ativo=True):
+    for transportadora in Transportadora.objects.filter(ativa=True):
         entregas = RastreamentoEntrega.objects.filter(
             transportadora=transportadora,
             data_criacao__date__range=[data_inicio, data_fim],
@@ -546,7 +555,7 @@ def _gerar_dados_relatorio_sla(data_inicio, data_fim):
         )
         
         total = entregas.count()
-        no_prazo = entregas.filter(data_entrega__lte=F('data_entrega_prevista')).count()
+        no_prazo = entregas.filter(data_entrega_realizada__lte=F('data_entrega_prevista')).count()
         sla = (no_prazo / total * 100) if total > 0 else 0
         
         sla_transportadoras.append({
@@ -612,8 +621,9 @@ def _exportar_csv_custos(dados, data_inicio, data_fim):
     # Por categoria
     writer.writerow(['Custos por Categoria'])
     writer.writerow(['Categoria', 'Total', 'Quantidade'])
-    for item in dados['custos_categoria']:
-        writer.writerow([item['categoria'], item['total'], item['count']])
+    for item in dados.get('custos_tipo', dados.get('custos_categoria', [])):
+        nome = item.get('tipo_custo__nome') or item.get('categoria', 'N/A')
+        writer.writerow([nome, item['total'], item['count']])
     writer.writerow([])
     
     # Por transportadora
@@ -648,4 +658,49 @@ def _exportar_csv_sla(dados, data_inicio, data_fim):
     for item in dados['sla_transportadoras']:
         writer.writerow([item['transportadora'], item['total'], item['no_prazo'], item['sla']])
     
+    return response
+
+
+def _exportar_csv_rastreamentos(dados, data_inicio, data_fim):
+    """Exporta relatório de rastreamentos para CSV."""
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = (
+        f'attachment; filename="rastreamentos_{data_inicio}_{data_fim}.csv"'
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(['Relatório de Rastreamentos e Entregas', f'{data_inicio} a {data_fim}'])
+    writer.writerow([])
+
+    writer.writerow(['Resumo'])
+    writer.writerow(['Total', dados.get('total_rastreamentos', 0)])
+    writer.writerow(['Concluídas', dados.get('entregas_concluidas', 0)])
+    writer.writerow(['Em curso', dados.get('em_curso', 0)])
+    writer.writerow(['Com problema', dados.get('com_problema', 0)])
+    writer.writerow(['Taxa conclusão (%)', dados.get('taxa_conclusao', 0)])
+    writer.writerow(['SLA (%)', dados.get('sla_percentual', 0)])
+    writer.writerow([])
+
+    writer.writerow(['Por status'])
+    writer.writerow(['Status', 'Quantidade'])
+    for item in dados.get('por_status', []):
+        writer.writerow([item.get('label', item.get('status_atual')), item.get('count', 0)])
+    writer.writerow([])
+
+    writer.writerow(['Por transportadora'])
+    writer.writerow(['Transportadora', 'Total', 'Entregues'])
+    for item in dados.get('por_transportadora', []):
+        writer.writerow([
+            item.get('transportadora__nome', '—'),
+            item.get('total', 0),
+            item.get('entregues', 0),
+        ])
+    writer.writerow([])
+
+    writer.writerow(['Por cidade'])
+    writer.writerow(['Cidade', 'Quantidade'])
+    for item in dados.get('por_cidade', []):
+        writer.writerow([item.get('cidade_entrega', '—'), item.get('total', 0)])
+
     return response

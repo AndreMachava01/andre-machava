@@ -1,0 +1,446 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes de Serviço - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #b45309;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #b45309;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-ativo {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-inativo {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #d1d5db;
+        }
+        .empty-state h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 24px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b45309;
+        }
+        .modal-header h2 {
+            color: #b45309;
+            margin: 0;
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .required {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-user-tie"></i>
+                    Clientes de Serviço
+                </h1>
+                <p>Cadastro e gestão de clientes</p>
+            </div>
+            <div>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <button onclick="document.getElementById('modalCliente').style.display='block'" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Novo Cliente
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 6px; background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af;">
+            <strong><i class="fas fa-info-circle"></i> Cadastro gerido em Vendas.</strong>
+            O cadastro de clientes é gerido no módulo Vendas.
+            <a href="{% url 'vendas:clientes_list' %}" style="margin-left: 10px; color: #1d4ed8; font-weight: 600;">Abrir Clientes em Vendas →</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                </div>
+                {% else %}
+                <div style="padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; border-left: 4px solid #10b981;">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_clientes|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Clientes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ clientes_ativos|default:0|intcomma }}</div>
+                <div class="stat-label">Clientes Ativos</div>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <form method="get" class="filter-form">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Buscar por nome, email, telefone, NUIT ou cidade..." 
+                       value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if search_query %}
+                <a href="{% url 'producao:servicos_clientes' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            {% if clientes %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>NUIT</th>
+                        <th>Cidade</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td><strong>{{ cliente.nome }}</strong></td>
+                        <td>{{ cliente.email|default:"-" }}</td>
+                        <td>{{ cliente.telefone|default:"-" }}</td>
+                        <td>{{ cliente.nuit|default:"-" }}</td>
+                        <td>{{ cliente.cidade|default:"-" }}</td>
+                        <td>
+                            <span class="badge badge-{% if cliente.ativo %}ativo{% else %}inativo{% endif %}">
+                                {% if cliente.ativo %}Ativo{% else %}Inativo{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="{% url 'producao:servico_cliente_detail' cliente.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                <a href="{% url 'producao:servico_cliente_edit' cliente.id %}" class="btn" style="padding: 6px 12px; font-size: 12px; background: #10b981; color: white; text-decoration: none;">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="{% url 'producao:servico_cliente_delete' cliente.id %}" class="btn" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white; text-decoration: none;">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if page_obj.has_other_pages %}
+            <div class="pagination" style="display: flex; justify-content: center; gap: 5px; margin-top: 20px;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">« Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">‹ Anterior</a>
+                {% endif %}
+                <span style="padding: 8px 12px; background: #b45309; color: white; border-radius: 4px;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">Próxima ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">Última »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-tie"></i>
+                <h3>Nenhum cliente encontrado</h3>
+                <p>{% if search_query %}Tente ajustar os filtros de busca.{% else %}Comece criando seu primeiro cliente.{% endif %}</p>
+                {% if not search_query %}
+                <button onclick="document.getElementById('modalCliente').style.display='block'" class="btn btn-primary" style="margin-top: 15px;">
+                    <i class="fas fa-plus"></i> Criar Primeiro Cliente
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal para criar cliente -->
+    <div id="modalCliente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> Novo Cliente</h2>
+                <span class="close" onclick="document.getElementById('modalCliente').style.display='none'">&times;</span>
+            </div>
+            <form method="POST" action="{% url 'producao:servicos_clientes' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nome">Nome <span class="required">*</span></label>
+                    <input type="text" id="nome" name="nome" required placeholder="Nome completo do cliente">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" name="telefone" placeholder="+258 XX XXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label for="nuit">NUIT</label>
+                    <input type="text" id="nuit" name="nuit" placeholder="123456789" pattern="[0-9]{9}" maxlength="9">
+                </div>
+                <div class="form-group">
+                    <label for="endereco">Endereço</label>
+                    <textarea id="endereco" name="endereco" rows="2" placeholder="Endereço completo"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" name="cidade" placeholder="Cidade">
+                </div>
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações sobre o cliente"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" onclick="document.getElementById('modalCliente').style.display='none'" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Criar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        window.onclick = function(event) {
+            var modal = document.getElementById('modalCliente');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

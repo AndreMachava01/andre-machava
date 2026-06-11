@@ -3,95 +3,59 @@
 
 {% block title %}Dashboard de Roteirização{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Dashboard de Roteirização</h1>
-                <div>
-                    <a href="{% url 'routing:otimizar_rotas' %}" class="btn btn-primary">
-                        <i class="fas fa-route"></i> Otimizar Rotas
-                    </a>
-                    <a href="{% url 'routing:planejamento_create' %}" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Novo Planejamento
-                    </a>
-                </div>
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Roteirização' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    Dashboard de roteirização
+                </h1>
+                <p class="page-subtitle">Planejamento e otimização de rotas de entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:otimizar_rotas' %}" class="btn btn-primary">
+                    <i class="fas fa-route" aria-hidden="true"></i> Otimizar rotas
+                </a>
+                <a href="{% url 'stock:routing:planejamento_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Novo planejamento
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Estatísticas Gerais -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Planejamentos Pendentes
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.planejamentos_pendentes }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.planejamentos_pendentes }}</div>
+                <div class="stat-label">Planejamentos Pendentes</div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Planejamentos Agendados
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.planejamentos_agendados }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.planejamentos_agendados }}</div>
+                <div class="stat-label">Planejamentos Agendados</div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Rotas Planejadas
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.rotas_planejadas }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-route fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-route"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.rotas_planejadas }}</div>
+                <div class="stat-label">Rotas Planejadas</div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Rotas Executando
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.rotas_executando }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-truck fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-truck"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.rotas_executando }}</div>
+                <div class="stat-label">Rotas Executando</div>
             </div>
         </div>
     </div>
@@ -148,7 +112,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Planejamentos Próximos (7 dias)</h6>
-                    <a href="{% url 'routing:planejamentos_list' %}" class="btn btn-sm btn-primary">Ver Todos</a>
+                    <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn btn-sm btn-primary">Ver Todos</a>
                 </div>
                 <div class="card-body">
                     {% if proximos_7_dias %}
@@ -207,25 +171,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:zonas_list' %}" class="btn btn-outline-primary btn-block">
+                            <a href="{% url 'stock:routing:zonas_list' %}" class="btn btn-outline-primary btn-block">
                                 <i class="fas fa-map-marked-alt"></i><br>
                                 Zonas de Entrega
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:planejamentos_list' %}" class="btn btn-outline-success btn-block">
+                            <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn btn-outline-success btn-block">
                                 <i class="fas fa-calendar-plus"></i><br>
                                 Planejamentos
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:rotas_list' %}" class="btn btn-outline-info btn-block">
+                            <a href="{% url 'stock:routing:rotas_list' %}" class="btn btn-outline-info btn-block">
                                 <i class="fas fa-route"></i><br>
                                 Rotas
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{% url 'routing:configuracoes' %}" class="btn btn-outline-secondary btn-block">
+                            <a href="{% url 'stock:routing:configuracoes' %}" class="btn btn-outline-secondary btn-block">
                                 <i class="fas fa-cog"></i><br>
                                 Configurações
                             </a>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data de conclusão – {{ atividade.nome }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 24px; max-width: 420px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        h1 { font-size: 18px; color: #374151; margin-bottom: 8px; }
+        .meta { color: #6b7280; font-size: 13px; margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        input[type="date"] { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .actions { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .error { color: #dc2626; font-size: 13px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1><i class="fas fa-check" style="color: #059669;"></i> Concluir actividade</h1>
+        <p class="meta">{{ ordem.codigo }} — {{ atividade.nome }}</p>
+        <p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">Indique a data de conclusão da actividade.</p>
+        {% if messages %}
+            {% for m in messages %}
+                {% if m.tags == 'error' %}<p class="error">{{ m }}</p>{% endif %}
+            {% endfor %}
+        {% endif %}
+        <form method="post" action="">
+            {% csrf_token %}
+            <label for="data_conclusao">Data de conclusão</label>
+            <input type="date" name="data_conclusao" id="data_conclusao" value="{{ data_conclusao_value }}" required>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Concluir</button>
+                <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load humanize l10n static %}
+    <title>Produção - Sistema Conception</title>
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .filter-row input[type="date"] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .section { margin-bottom: 24px; }
+        .section h2 { font-size: 18px; color: #b45309; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        .charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+        .charts-row .chart-wrap { max-width: none; margin-bottom: 0; min-height: 220px; }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .module-card { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px; text-decoration: none; color: #333; display: block; transition: all 0.2s; }
+        .module-card:hover { background: #fef3c7; text-decoration: none; color: #333; }
+        .module-card h3 { margin: 0 0 6px 0; font-size: 15px; color: #b45309; }
+        .module-card p { margin: 0; font-size: 13px; color: #666; }
+        .module-card--primary { background: #ecfeff; border-color: #67e8f9; }
+        .module-card--primary:hover { background: #cffafe; }
+        .module-card--primary h3 { color: #0e7490; }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } .charts-row .chart-wrap { margin-bottom: 24px; } .charts-row .chart-wrap:last-child { margin-bottom: 0; } }
+        @media (max-width: 768px) { .modules-grid { grid-template-columns: 1fr; } }
+        .msg-error { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .chart-canvas-wrap { position: relative; height: 200px; }
+    </style>
+    <script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-industry"></i> Produção</h1>
+                <p>Sistema integrado de gestão de processos produtivos e controle de qualidade</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filter-row">
+            <form method="get" class="filter-form">
+                <label for="data_inicio">De:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+                <label for="data_fim">Até:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_ordens|default:0|intcomma }}</div>
+                <div class="lbl">Total de Ordens</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ordens_em_producao|default:0|intcomma }}</div>
+                <div class="lbl">Ordens em Produção</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ quantidade_produzida|default:0|intcomma }}</div>
+                <div class="lbl">Unidades produzidas (período)</div>
+            </div>
+        </div>
+
+        <div class="section charts-row">
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Ordens por fase</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartOrdensFase"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartOrdensFase');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var labels = {{ chart_ordens_labels|safe }};
+                        var data = {{ chart_ordens_data|safe }};
+                        {% endlocalize %}
+                        if (!data || data.length === 0) { data = [1]; labels = ['Nenhuma']; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: ['rgba(180, 83, 9, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(13, 148, 136, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(107, 114, 128, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-bar"></i> Receitas mais utilizadas</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartReceitas"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartReceitas');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var labels = {{ chart_receitas_labels|safe }};
+                        var data = {{ chart_receitas_data|safe }};
+                        {% endlocalize %}
+                        var maxVal = Math.max.apply(null, data && data.length ? data : [1]);
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Ordens',
+                                    data: data,
+                                    backgroundColor: 'rgba(180, 83, 9, 0.7)',
+                                    borderColor: '#b45309',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                indexAxis: 'y',
+                                scales: { x: { beginAtZero: true, max: maxVal * 1.1 } },
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    })();
+                </script>
+            </div>
+            <div class="chart-wrap">
+                <h2><i class="fas fa-chart-pie"></i> Status das máquinas</h2>
+                <div class="chart-canvas-wrap">
+                    <canvas id="chartMaquinas"></canvas>
+                </div>
+                <script>
+                    (function() {
+                        var ctx = document.getElementById('chartMaquinas');
+                        if (!ctx) return;
+                        {% localize off %}
+                        var labels = {{ chart_maquinas_labels|safe }};
+                        var data = {{ chart_maquinas_data|safe }};
+                        {% endlocalize %}
+                        if (!data || data.length === 0) { data = [1]; labels = ['Nenhuma']; }
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(59, 130, 246, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    })();
+                </script>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-concierge-bell"></i> Gestão de Serviços</h2>
+            <div class="modules-grid">
+                <a href="{% url 'producao:servicos_list' %}" class="module-card">
+                    <h3><i class="fas fa-list"></i> Catálogo de Serviços</h3>
+                    <p>Gestão completa do catálogo de serviços oferecidos</p>
+                </a>
+                <a href="{% url 'vendas:orcamentos_list' %}" class="module-card">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Orçamento</h3>
+                    <p>Gerido em Vendas — criar e gerir orçamentos</p>
+                </a>
+                <a href="{% url 'producao:servicos_ordens' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-check"></i> Ordens de Serviço</h3>
+                    <p>Criar e gerenciar ordens de serviço</p>
+                </a>
+                <a href="{% url 'producao:servicos_agendamento' %}" class="module-card">
+                    <h3><i class="fas fa-calendar-alt"></i> Agendamento</h3>
+                    <p>Agendar e gerenciar serviços</p>
+                </a>
+                <a href="{% url 'producao:servicos_equipes' %}" class="module-card">
+                    <h3><i class="fas fa-users"></i> Equipes de Serviço</h3>
+                    <p>Gestão de equipes e técnicos</p>
+                </a>
+                <a href="{% url 'producao:levantamento_obra_add' %}" class="module-card module-card--primary">
+                    <h3><i class="fas fa-person-digging"></i> Criar Levantamento (Obra)</h3>
+                    <p>Iniciar um levantamento em obra para construção civil (Proposta Técnica)</p>
+                </a>
+                <a href="{% url 'producao:propostas_tecnicas' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-list"></i> Propostas Técnicas</h3>
+                    <p>Criar e gerenciar propostas técnicas e cronogramas</p>
+                </a>
+                <a href="{% url 'vendas:clientes_list' %}" class="module-card">
+                    <h3><i class="fas fa-user-tie"></i> Clientes</h3>
+                    <p>Gerido em Vendas — cadastro e gestão de clientes</p>
+                </a>
+                <a href="{% url 'producao:servicos_contratos' %}" class="module-card">
+                    <h3><i class="fas fa-file-contract"></i> Contratos</h3>
+                    <p>Gestão de contratos de serviço</p>
+                </a>
+                <a href="{% url 'vendas:faturamento' %}" class="module-card">
+                    <h3><i class="fas fa-receipt"></i> Faturamento</h3>
+                    <p>Gerido em Vendas — faturação e emissão de faturas</p>
+                </a>
+                <a href="{% url 'producao:servicos_relatorios' %}" class="module-card">
+                    <h3><i class="fas fa-chart-line"></i> Relatórios de Serviços</h3>
+                    <p>Relatórios e análises de serviços</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-cogs"></i> Gestão de Produção</h2>
+            <div class="modules-grid">
+                <a href="{% url 'producao:dashboard' %}" class="module-card">
+                    <h3><i class="fas fa-chart-line"></i> Dashboard Executivo</h3>
+                    <p>Visão geral e métricas da produção</p>
+                </a>
+                <a href="{% url 'producao:receitas' %}" class="module-card">
+                    <h3><i class="fas fa-book"></i> Receitas de Produção</h3>
+                    <p>Catálogo de receitas e fórmulas de produção</p>
+                </a>
+                <a href="{% url 'producao:ordens' %}" class="module-card">
+                    <h3><i class="fas fa-clipboard-list"></i> Ordens de Produção</h3>
+                    <p>Gestão completa de ordens de produção</p>
+                </a>
+                <a href="{% url 'producao:processos' %}" class="module-card">
+                    <h3><i class="fas fa-project-diagram"></i> Processos</h3>
+                    <p>Definição e gestão de processos produtivos</p>
+                </a>
+                <a href="{% url 'producao:maquinas' %}" class="module-card">
+                    <h3><i class="fas fa-tools"></i> Máquinas e Equipamentos</h3>
+                    <p>Gestão de máquinas e equipamentos de produção</p>
+                </a>
+                <a href="{% url 'producao:linhas' %}" class="module-card">
+                    <h3><i class="fas fa-layer-group"></i> Linhas de Produção</h3>
+                    <p>Gestão de linhas e células de produção</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-check-circle"></i> Controle de Qualidade</h2>
+            <div class="modules-grid">
+                <a href="{% url 'producao:qualidade_inspecoes' %}" class="module-card">
+                    <h3><i class="fas fa-search"></i> Inspeções de Qualidade</h3>
+                    <p>Realizar e gerenciar inspeções de qualidade</p>
+                </a>
+                <a href="{% url 'producao:qualidade_nconformidades' %}" class="module-card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Não Conformidades</h3>
+                    <p>Gestão de não conformidades e correções</p>
+                </a>
+                <a href="{% url 'producao:qualidade_certificados' %}" class="module-card">
+                    <h3><i class="fas fa-certificate"></i> Certificados de Qualidade</h3>
+                    <p>Emissão e gestão de certificados</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-calendar-alt"></i> Planejamento e Programação</h2>
+            <div class="modules-grid">
+                <a href="{% url 'producao:planejamento_capacidade' %}" class="module-card">
+                    <h3><i class="fas fa-chart-pie"></i> Planejamento de Capacidade</h3>
+                    <p>Análise e planejamento de capacidade produtiva</p>
+                </a>
+                <a href="{% url 'producao:planejamento_cronograma' %}" class="module-card">
+                    <h3><i class="fas fa-calendar-check"></i> Cronograma de Produção</h3>
+                    <p>Programação e cronograma de ordens</p>
+                </a>
+                <a href="{% url 'producao:planejamento_mrp' %}" class="module-card">
+                    <h3><i class="fas fa-calculator"></i> MRP - Planejamento de Necessidades</h3>
+                    <p>Cálculo de necessidades de materiais</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-link"></i> Acesso rápido</h2>
+            <div class="modules-grid">
+                <a href="{% url 'producao:servicos_relatorios' %}" class="module-card">
+                    <h3><i class="fas fa-file-chart-line"></i> Relatórios de Serviços</h3>
+                    <p>Relatórios e análises de serviços</p>
+                </a>
+                <a href="{% url 'producao:dashboard' %}" class="module-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> Dashboard de Produção</h3>
+                    <p>Visão geral e métricas da produção</p>
+                </a>
+                <a href="{% url 'producao:planejamento_mrp' %}" class="module-card">
+                    <h3><i class="fas fa-calculator"></i> Planejamento MRP</h3>
+                    <p>Análise de necessidades de materiais</p>
+                </a>
+                <a href="{% url 'financas:main' %}" class="module-card">
+                    <h3><i class="fas fa-coins"></i> Finanças</h3>
+                    <p>Visão consolidada de receitas e despesas</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

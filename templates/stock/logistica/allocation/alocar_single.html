@@ -1,0 +1,103 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Alocar {{ rastreamento.codigo_rastreamento }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current=rastreamento.codigo_rastreamento %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-robot" aria-hidden="true"></i>
+                    Alocação Automática
+                </h1>
+                <p class="page-subtitle">{{ rastreamento.codigo_rastreamento }} — {{ rastreamento.destinatario_nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn btn-secondary">
+                    <i class="fas fa-eye" aria-hidden="true"></i> Rastreamento
+                </a>
+                <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Dados da entrega</h2>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-label">Destino</span>
+                    <span class="info-value">{{ rastreamento.cidade_entrega }}, {{ rastreamento.provincia_entrega }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Peso</span>
+                    <span class="info-value">
+                        {% if rastreamento.peso_total %}{{ rastreamento.peso_total|floatformat:2 }} kg{% else %}—{% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">{{ rastreamento.get_status_atual_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-check">
+                            <input type="checkbox" name="usar_criterios_personalizados" class="form-check-input"
+                                   id="usar-criterios-personalizados">
+                            Usar critérios personalizados
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-check">
+                            <input type="checkbox" name="aplicar_alocacao" class="form-check-input" checked>
+                            Aplicar alocação automaticamente
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="criterios-personalizados" hidden>
+            {% include 'stock/logistica/allocation/_criteria_fields.html' with criteria=criteria_atual %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-play" aria-hidden="true"></i> Calcular alocação
+            </button>
+            <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const toggle = document.getElementById('usar-criterios-personalizados');
+    const panel = document.getElementById('criterios-personalizados');
+    if (toggle && panel) {
+        toggle.addEventListener('change', function () { panel.hidden = !toggle.checked; });
+    }
+})();
+</script>
+{% endblock %}

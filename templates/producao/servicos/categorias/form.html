@@ -1,0 +1,208 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if categoria %}Editar{% else %}Nova{% endif %} Categoria de Serviço - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'empresa/css/producao-servicos.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #b45309;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .required {
+            color: #ef4444;
+        }
+        .hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            margin: 0;
+            color: #0369a1;
+            font-size: 13px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-tag"></i>
+                {% if categoria %}Editar Categoria de Serviço{% else %}Nova Categoria de Serviço{% endif %}
+            </h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="ps-alert ps-alert-error">
+                    {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div class="ps-alert ps-alert-warning">
+                    {{ message }}
+                </div>
+                {% else %}
+                <div class="ps-alert ps-alert-success">
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-box">
+            <p>
+                <i class="fas fa-info-circle"></i>
+                <strong>Nota:</strong> Esta categoria será do tipo "Serviço" e poderá ser usada apenas para organizar serviços. 
+                {% if not categoria %}Deixe "Categoria Pai" em branco para criar uma categoria principal, ou selecione uma categoria existente para criar uma subcategoria.{% endif %}
+            </p>
+        </div>
+
+        <form method="POST" action="{% if categoria %}{% url 'producao:servicos_categoria_edit' categoria.id %}{% else %}{% url 'producao:servicos_categoria_add' %}{% endif %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome">Nome da Categoria <span class="required">*</span></label>
+                <input type="text" id="nome" name="nome" required value="{% if categoria %}{{ categoria.nome }}{% endif %}" placeholder="Ex: Consultoria, Instalação, Manutenção...">
+            </div>
+
+            <div class="form-group">
+                <label for="categoria_pai">
+                    Categoria Pai
+                    <div class="hint">
+                        ✓ Deixe em branco para criar uma <strong>categoria principal</strong><br>
+                        ✓ Selecione uma categoria para criar uma <strong>subcategoria</strong>
+                    </div>
+                </label>
+                <select id="categoria_pai" name="categoria_pai">
+                    <option value="">— Categoria Principal (não tem pai) —</option>
+                    {% for cat in categorias_pai %}
+                        <option value="{{ cat.id }}" {% if categoria and categoria.categoria_pai and categoria.categoria_pai.id == cat.id %}selected{% endif %}>
+                            📁 {{ cat.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao" placeholder="Descreva a categoria de serviço...">{% if categoria %}{{ categoria.descricao }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Categoria
+                </button>
+                <a href="{% url 'producao:servicos_categorias' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

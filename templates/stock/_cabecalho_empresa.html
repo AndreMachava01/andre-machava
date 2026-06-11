@@ -1,0 +1,20 @@
+{% load static %}
+<!-- Cabeçalho da empresa (logo e dados) para documentos de stock/logística -->
+<table class="cabecalho-empresa">
+    <tr>
+        <td class="cel-logo">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="" class="logo-empresa">
+            {% else %}
+                <img src="{% static 'empresa/img/LOGO DA CONCEPTION.jpg' %}" alt="Logo" class="logo-empresa">
+            {% endif %}
+        </td>
+        <td class="cel-dados">
+            <div class="nome-empresa">{{ dados_empresa.nome|default:"Conception Lda" }}</div>
+            {% if dados_empresa.nuit %}<div class="dados-linha">NUIT: {{ dados_empresa.nuit }}</div>{% endif %}
+            {% if dados_empresa.endereco %}<div class="dados-linha">{{ dados_empresa.endereco }}</div>{% endif %}
+            {% if dados_empresa.telefone %}<div class="dados-linha">Tel: {{ dados_empresa.telefone }}</div>{% endif %}
+            {% if dados_empresa.email %}<div class="dados-linha">Email: {{ dados_empresa.email }}</div>{% endif %}
+        </td>
+    </tr>
+</table>

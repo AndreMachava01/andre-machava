@@ -22,6 +22,9 @@ urlpatterns = [
     path('faturas/', views_cost_billing.faturas_list, name='faturas_list'),
     path('faturas/create/', views_cost_billing.fatura_create, name='fatura_create'),
     path('faturas/<int:fatura_id>/', views_cost_billing.fatura_detail, name='fatura_detail'),
+    path('faturas/<int:fatura_id>/print/', views_cost_billing.fatura_print, name='fatura_print'),
+    path('faturas/<int:fatura_id>/sync-financas/', views_cost_billing.fatura_sync_financas, name='fatura_sync_financas'),
+    path('faturas/<int:fatura_id>/recalcular/', views_cost_billing.fatura_recalcular, name='fatura_recalcular'),
     path('faturas/<int:fatura_id>/send/', views_cost_billing.fatura_send, name='fatura_send'),
     path('faturas/<int:fatura_id>/mark-paid/', views_cost_billing.fatura_mark_paid, name='fatura_mark_paid'),
     

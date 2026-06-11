@@ -1,0 +1,33 @@
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const marcaField = document.getElementById('id_marca');
+    const modeloField = document.getElementById('id_modelo');
+    if (marcaField && modeloField) {
+        marcaField.addEventListener('change', function () {
+            modeloField.placeholder = this.value === 'OUTRA'
+                ? 'Indique o modelo'
+                : 'Modelo da marca seleccionada';
+        });
+    }
+
+    const motoristaField = document.getElementById('id_motorista_responsavel');
+    const telefoneField = document.getElementById('id_telefone_motorista');
+    if (motoristaField && telefoneField) {
+        motoristaField.addEventListener('change', function () {
+            const selectedMotorista = this.value;
+            if (!selectedMotorista) {
+                telefoneField.value = '';
+                return;
+            }
+            fetch('/stock/logistica/get-funcionario-telefone/?nome=' + encodeURIComponent(selectedMotorista))
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.telefone) {
+                        telefoneField.value = data.telefone;
+                    }
+                })
+                .catch(function () {});
+        });
+    }
+});
+</script>

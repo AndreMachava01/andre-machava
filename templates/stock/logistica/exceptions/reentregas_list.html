@@ -1,0 +1,219 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Reentregas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:exceptions:dashboard' as exceptions_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Exceções' breadcrumb_section_url=exceptions_dashboard_url breadcrumb_current='Reentregas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-redo" aria-hidden="true"></i>
+                    Reentregas
+                </h1>
+                <p class="page-subtitle">Reagendamento de entregas após tentativas falhadas</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:exceptions:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:exceptions:reentrega_create' %}" class="btn btn-info">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova reentrega
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-calendar"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.agendadas|default:"0" }}</div>
+                <div class="stat-label">Agendadas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-truck"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.em_andamento|default:"0" }}</div>
+                <div class="stat-label">Em andamento</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.concluidas|default:"0" }}</div>
+                <div class="stat-label">Concluídas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-reentregas">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-reentregas" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, motivo, observações...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-reentregas">Status</label>
+                <select id="filtro-status-reentregas" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-reentregas">De</label>
+                <input type="date" id="filtro-data-inicio-reentregas" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data de entrega inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-reentregas">Até</label>
+                <input type="date" id="filtro-data-fim-reentregas" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data de entrega final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:exceptions:reentregas_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-redo" aria-hidden="true"></i>
+                Reentregas
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Rastreamento</th>
+                        <th>Nova data / janela</th>
+                        <th>Motivo anterior</th>
+                        <th>Status</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ item.codigo }}</strong></td>
+                        <td>
+                            <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_original.id %}" class="cell-primary">
+                                {{ item.rastreamento_original.codigo_rastreamento }}
+                            </a>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ item.rastreamento_original.destinatario_nome }}</div>
+                        </td>
+                        <td>
+                            <div>{{ item.nova_data_entrega|date:"d/m/Y" }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                {{ item.nova_janela_inicio|time:"H:i" }} — {{ item.nova_janela_fim|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ item.motivo_tentativa_anterior|truncatechars:60 }}</div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if item.status == 'AGENDADA' %}info{% elif item.status == 'EM_ANDAMENTO' %}warning{% elif item.status == 'CONCLUIDA' %}success{% elif item.status == 'FALHADA' %}danger{% else %}secondary{% endif %}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_original.id %}"
+                                   class="btn-action primary" title="Ver rastreamento"
+                                   aria-label="Ver rastreamento {{ item.rastreamento_original.codigo_rastreamento }}">
+                                    <i class="fas fa-truck" aria-hidden="true"></i>
+                                </a>
+                                {% if item.excecao_relacionada %}
+                                <a href="{% url 'stock:exceptions:excecao_detail' item.excecao_relacionada.id %}"
+                                   class="btn-action secondary" title="Ver exceção"
+                                   aria-label="Ver exceção {{ item.excecao_relacionada.codigo }}">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-redo" aria-hidden="true"></i>
+            <h3>Nenhuma reentrega encontrada</h3>
+            <p>Não há reentregas que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:exceptions:reentrega_create' %}" class="btn btn-info">
+                <i class="fas fa-plus" aria-hidden="true"></i> Nova reentrega
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

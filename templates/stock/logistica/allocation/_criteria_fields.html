@@ -1,0 +1,72 @@
+<div class="card stock-u-mb-24">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-sliders-h" aria-hidden="true"></i>
+            Critérios de alocação
+        </h2>
+    </div>
+    <div class="card-body">
+        <div class="form-grid form-grid--2 stock-u-mb-16">
+            <div class="form-field">
+                <label class="form-check">
+                    <input type="checkbox" name="priorizar_custo" class="form-check-input"
+                           {% if criteria.priorizar_custo %}checked{% endif %}>
+                    Priorizar menor custo
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check">
+                    <input type="checkbox" name="priorizar_sla" class="form-check-input"
+                           {% if criteria.priorizar_sla %}checked{% endif %}>
+                    Priorizar menor SLA
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check">
+                    <input type="checkbox" name="considerar_zonas" class="form-check-input"
+                           {% if criteria.considerar_zonas %}checked{% endif %}>
+                    Considerar zonas de entrega
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check">
+                    <input type="checkbox" name="considerar_janelas_tempo" class="form-check-input"
+                           {% if criteria.considerar_janelas_tempo %}checked{% endif %}>
+                    Considerar janelas de tempo
+                </label>
+            </div>
+        </div>
+        <div class="form-grid form-grid--4">
+            <div class="form-field">
+                <label class="form-label" for="peso_custo">Peso custo</label>
+                <input type="number" id="peso_custo" name="peso_custo" class="form-control"
+                       value="{{ criteria.peso_custo }}" min="0" max="1" step="0.05">
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="peso_sla">Peso SLA</label>
+                <input type="number" id="peso_sla" name="peso_sla" class="form-control"
+                       value="{{ criteria.peso_sla }}" min="0" max="1" step="0.05">
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="peso_capacidade">Peso capacidade</label>
+                <input type="number" id="peso_capacidade" name="peso_capacidade" class="form-control"
+                       value="{{ criteria.peso_capacidade }}" min="0" max="1" step="0.05">
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="peso_disponibilidade">Peso disponibilidade</label>
+                <input type="number" id="peso_disponibilidade" name="peso_disponibilidade" class="form-control"
+                       value="{{ criteria.peso_disponibilidade }}" min="0" max="1" step="0.05">
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="custo_maximo_diferenca">Dif. máx. custo (MT)</label>
+                <input type="number" id="custo_maximo_diferenca" name="custo_maximo_diferenca" class="form-control"
+                       value="{{ criteria.custo_maximo_diferenca }}" min="0" step="0.01">
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="sla_maximo_diferenca_dias">Dif. máx. SLA (dias)</label>
+                <input type="number" id="sla_maximo_diferenca_dias" name="sla_maximo_diferenca_dias" class="form-control"
+                       value="{{ criteria.sla_maximo_diferenca_dias }}" min="0" step="1">
+            </div>
+        </div>
+    </div>
+</div>

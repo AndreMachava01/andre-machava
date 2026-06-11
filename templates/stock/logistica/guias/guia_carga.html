@@ -1,0 +1,143 @@
+{% extends 'stock/includes/guia_transporte_shell.html' %}
+
+{% block guia_page_title %}Guia de transporte — {{ notificacao.codigo_operacao|default:notificacao.id }}{% endblock %}
+{% block guia_icon %}fa-dolly{% endblock %}
+
+{% block guia_meta %}
+<table class="stock-guia-kv stock-u-mb-12">
+    <tbody>
+        {% for par in resumo_linhas %}
+        <tr>
+            {% for label, value in par %}
+            {% if label %}
+            <th scope="row">{{ label }}</th>
+            <td>{{ value }}</td>
+            {% else %}
+            <th scope="row"></th>
+            <td></td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block guia_content %}
+<div class="stock-guia-route">
+    <section class="stock-guia-route__col">
+        <h3 class="stock-guia-route__title">Origem</h3>
+        <table class="stock-guia-kv">
+            <tbody>
+                <tr>
+                    <th scope="row">{{ origem.rotulo }}</th>
+                    <td><strong>{{ origem.nome }}</strong></td>
+                </tr>
+                {% if origem.endereco %}
+                <tr>
+                    <th scope="row">Endereço</th>
+                    <td>{{ origem.endereco }}</td>
+                </tr>
+                {% endif %}
+                {% if origem.localidade %}
+                <tr>
+                    <th scope="row">Localidade</th>
+                    <td>{{ origem.localidade }}</td>
+                </tr>
+                {% endif %}
+                {% if origem.telefone %}
+                <tr>
+                    <th scope="row">Tel.</th>
+                    <td>{{ origem.telefone }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </section>
+    <section class="stock-guia-route__col">
+        <h3 class="stock-guia-route__title">Destino</h3>
+        <table class="stock-guia-kv">
+            <tbody>
+                <tr>
+                    <th scope="row">{{ destino.rotulo }}</th>
+                    <td><strong>{{ destino.nome }}</strong></td>
+                </tr>
+                {% if destino.endereco %}
+                <tr>
+                    <th scope="row">Endereço</th>
+                    <td>{{ destino.endereco }}</td>
+                </tr>
+                {% endif %}
+                {% if destino.localidade %}
+                <tr>
+                    <th scope="row">Localidade</th>
+                    <td>{{ destino.localidade }}</td>
+                </tr>
+                {% endif %}
+                {% if destino.telefone %}
+                <tr>
+                    <th scope="row">Tel.</th>
+                    <td>{{ destino.telefone }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<h3 class="stock-guia-section-title">Itens da carga ({{ itens|length }})</h3>
+{% if itens %}
+<div class="stock-guia-table-wrap">
+    <table class="table stock-guia-table">
+        <thead>
+            <tr>
+                <th>Cód.</th>
+                <th>Descrição</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">Un.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td>{{ item.codigo|default:"—" }}</td>
+                <td>{{ item.nome|default:"—" }}{% if item.observacoes and item.observacoes != "-" %} <span class="stock-guia-obs-inline">({{ item.observacoes }})</span>{% endif %}</td>
+                <td class="text-center">{{ item.quantidade_solicitada|default:"0" }}</td>
+                <td class="text-center">{{ item.unidade|default:"UN" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="stock-guia-empty">Sem itens registados.</p>
+{% endif %}
+
+{% if notificacao.observacoes_coleta %}
+<p class="stock-guia-obs"><strong>Obs. coleta:</strong> {{ notificacao.observacoes_coleta }}</p>
+{% endif %}
+{% endblock %}
+
+{% block guia_signatures %}
+<div class="stock-guia-signatures">
+    <div class="stock-guia-signatures__box">
+        <span class="stock-guia-signatures__label">Motorista / transportador</span>
+        <div class="stock-guia-signatures__line" aria-hidden="true"></div>
+    </div>
+    <div class="stock-guia-signatures__box">
+        <span class="stock-guia-signatures__label">Receptor (entrega)</span>
+        <div class="stock-guia-signatures__line" aria-hidden="true"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{% if imprimir_auto %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    window.setTimeout(function () { window.print(); }, 400);
+});
+</script>
+{% endif %}
+{% endblock %}

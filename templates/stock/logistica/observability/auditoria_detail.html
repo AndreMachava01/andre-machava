@@ -1,0 +1,106 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Auditoria #{{ auditoria.id }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:observability:auditoria_list' as auditoria_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Auditoria' breadcrumb_section_url=auditoria_list_url breadcrumb_current=auditoria.id %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    {{ auditoria.get_tipo_operacao_display }}
+                </h1>
+                <p class="page-subtitle">{{ auditoria.modelo_afetado }} #{{ auditoria.objeto_id }} · {{ auditoria.data_operacao|date:"d/m/Y H:i:s" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:auditoria_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title">Resumo</h2>
+            <span class="badge badge-{% if auditoria.sucesso %}success{% else %}danger{% endif %}">
+                {% if auditoria.sucesso %}Sucesso{% else %}Falha{% endif %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-label">UUID</span>
+                    <span class="info-value"><code>{{ auditoria.uuid }}</code></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Utilizador</span>
+                    <span class="info-value">{% if auditoria.usuario %}{{ auditoria.usuario.username }}{% else %}Sistema{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Duração</span>
+                    <span class="info-value">{% if auditoria.duracao_ms %}{{ auditoria.duracao_ms }} ms{% else %}—{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status anterior</span>
+                    <span class="info-value">{{ auditoria.status_anterior|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status novo</span>
+                    <span class="info-value">{{ auditoria.status_novo|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">IP</span>
+                    <span class="info-value">{{ auditoria.ip_address|default:"—" }}</span>
+                </div>
+            </div>
+            {% if auditoria.erro_mensagem %}
+            <div class="alert alert-danger stock-u-mt-16">
+                <strong>Erro:</strong> {{ auditoria.erro_mensagem }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stock-pod-dash-grid">
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Dados anteriores</h3></div>
+            {% if auditoria.dados_anteriores %}
+            <div class="card-body">
+                <pre class="stock-code-block">{{ auditoria.dados_anteriores }}</pre>
+            </div>
+            {% else %}
+            <div class="no-data"><p>Sem dados anteriores.</p></div>
+            {% endif %}
+        </div>
+        <div class="table-container">
+            <div class="table-header"><h3 class="table-title">Dados novos</h3></div>
+            {% if auditoria.dados_novos %}
+            <div class="card-body">
+                <pre class="stock-code-block">{{ auditoria.dados_novos }}</pre>
+            </div>
+            {% else %}
+            <div class="no-data"><p>Sem dados novos.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if auditoria.contexto_operacao %}
+    <div class="table-container stock-u-mt-24">
+        <div class="table-header"><h3 class="table-title">Contexto da operação</h3></div>
+        <div class="card-body">
+            <pre class="stock-code-block">{{ auditoria.contexto_operacao }}</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if auditoria.user_agent %}
+    <p class="text-muted stock-u-mt-16"><small>User-Agent: {{ auditoria.user_agent }}</small></p>
+    {% endif %}
+</div>
+{% endblock %}

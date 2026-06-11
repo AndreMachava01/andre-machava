@@ -29,6 +29,7 @@ def confirmar_coleta(models, notificacao, user, observacoes=''):
 
     notificacao.status = 'COLETADA'
     notificacao.data_coleta = timezone.now()
+    notificacao.coletado_por = user
     notificacao.observacoes_coleta = observacoes or notificacao.observacoes_coleta
     notificacao.save()
 

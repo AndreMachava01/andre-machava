@@ -3,37 +3,35 @@
 
 {% block title %}Nova Requisição de Stock{% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="modern-container">
-    <!-- Header -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <i class="fas fa-plus me-2"></i>Nova Requisição de Stock
-            </h1>
-            <div class="hero-actions">
-                <a href="{% url 'stock:requisicoes:list' %}" class="btn-modern btn-secondary-modern">
-                    <i class="fas fa-arrow-left"></i>Voltar às Requisições
+<div class="container stock-form-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Nova</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-plus"></i> Nova requisição de stock</h1>
+                <p class="page-subtitle">Requisição interna ou compra externa</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:requisicoes:list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Content Area -->
-    <div class="content-area">
-        <div class="form-container">
+    <div class="form-container">
             {% if messages %}
                 {% for message in messages %}
                     {% if message.tags == 'error' or message.tags == 'success' %}
@@ -52,7 +50,7 @@
                     <label class="form-label" for="tipo_requisicao">
                         <i class="fas fa-list"></i> Tipo de Requisição
                     </label>
-                    <select name="tipo_requisicao" id="tipo_requisicao" class="form-control-modern" required>
+                    <select name="tipo_requisicao" id="tipo_requisicao" class="form-control" required>
                         <option value="interna">Requisição Interna</option>
                         <option value="externa" selected>Compra Externa</option>
                     </select>
@@ -63,7 +61,7 @@
                     <label class="form-label" for="sucursal_solicitante">
                         <i class="fas fa-hand-paper"></i> Sucursal Solicitante
                     </label>
-                    <select name="sucursal_solicitante" id="sucursal_solicitante" class="form-control-modern" required>
+                    <select name="sucursal_solicitante" id="sucursal_solicitante" class="form-control" required>
                         <option value="">Selecione quem está solicitando</option>
                         {% for sucursal in sucursais %}
                             <option value="{{ sucursal.id }}" {% if sucursal_solicitante_pre_selecionada and sucursal.id == sucursal_solicitante_pre_selecionada.id %}selected{% endif %}>{{ sucursal.nome }}</option>
@@ -83,7 +81,7 @@
                     <label class="form-label" for="prioridade">
                         <i class="fas fa-exclamation-triangle"></i> Prioridade
                     </label>
-                    <select name="prioridade" id="prioridade" class="form-control-modern">
+                    <select name="prioridade" id="prioridade" class="form-control">
                         <option value="">Prioridade Automática (baseada no valor)</option>
                         <option value="BAIXA">Baixa</option>
                         <option value="NORMAL">Normal</option>
@@ -97,7 +95,7 @@
                 </div>
 
                 <!-- Informações de Stock -->
-                <div id="stock-info-section" class="form-group" style="display: none;">
+                <div id="stock-info-section" class="form-group stock-u-hidden">
                     <label class="form-label" id="stock-info-label">
                         <i class="fas fa-boxes"></i> Stock Disponível
                     </label>
@@ -122,7 +120,7 @@
                     <label class="form-label" for="observacoes">
                         <i class="fas fa-comment"></i> Observações
                     </label>
-                    <textarea name="observacoes" id="observacoes" class="form-control-modern form-textarea" 
+                    <textarea name="observacoes" id="observacoes" class="form-control form-textarea" 
                               placeholder="Observações sobre a requisição (opcional)"></textarea>
                     <div class="form-help">Informações adicionais sobre esta requisição</div>
                 </div>
@@ -137,7 +135,6 @@
                 </div>
             </form>
         </div>
-    </div>
 </div>
 
 <script>

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Contrato - {{ orcamento.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 3px solid #b45309;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header .info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+        .alert--messages {
+            background: #f8fafc;
+            border-left-color: #64748b;
+            color: #0f172a;
+        }
+        .alert--messages .error {
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            margin-top: 8px;
+        }
+        .alert--messages .success {
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            margin-top: 8px;
+        }
+        .alert--messages .warning {
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            margin-top: 8px;
+        }
+        .alert i {
+            margin-right: 8px;
+        }
+        .clausula-section {
+            margin-bottom: 30px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .clausula-section h3 {
+            color: #b45309;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .clausula-section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .clausula-section textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.2s;
+        }
+        .clausula-section textarea.fallback-mode {
+            display: block !important;
+            background: #fff;
+        }
+        .editor-container {
+            margin-top: 8px;
+        }
+        .ql-container {
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            min-height: 200px;
+        }
+        .ql-editor {
+            min-height: 200px;
+        }
+        .clausula-section textarea:focus {
+            outline: none;
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
+        }
+        .clausula-section small {
+            display: block;
+            margin-top: 8px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .help-text {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        .help-text code {
+            background: #dbeafe;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .parcela-servicos-oculto {
+            display: none;
+        }
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(180, 83, 9, 0.4);
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+        }
+        .help-text--min-conclusao {
+            margin-bottom: 12px;
+            background: #fffbeb;
+            border-left: 4px solid #b45309;
+            padding: 10px 12px;
+        }
+        .help-text--mb { margin-bottom: 12px; }
+        .help-text--produtos {
+            margin-bottom: 12px;
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        /* (legacy) parcela-row-head flex layout was replaced by grid below */
+        .parcela-num { font-weight: 600; min-width: 24px; }
+        .inp-parcela-pct { width: 70px; padding: 6px; }
+        .sel-parcela-tipo { padding: 6px 10px; min-width: 220px; }
+        .btn-remover-parcela {
+            padding: 4px 10px;
+            color: #b91c1c;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .parcela-row--warn {
+            outline: 2px solid #f59e0b;
+            outline-offset: 4px;
+            border-radius: 6px;
+        }
+        .parcela-min-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #92400e;
+        }
+        .parcela-min-info strong { color: #7c2d12; }
+        .parcela-servicos-inner { margin-left: 36px; margin-bottom: 12px; }
+        .parcela-servico-hint { font-size: 12px; color: #555; }
+        .parcela-servico-label { display: block; margin: 4px 0; font-size: 12px; }
+        .parcelas-panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .parcelas-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .parcelas-title {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+        .parcelas-title strong { color: #111827; }
+        .parcelas-title small { color: #6b7280; font-size: 12px; }
+        .parcelas-list {
+            display: grid;
+            gap: 12px;
+        }
+        .parcela-row {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 12px 10px 12px;
+        }
+        .parcela-row-head {
+            display: grid;
+            grid-template-columns: 36px 1fr 1.3fr auto;
+            gap: 10px 12px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .parcela-row-head--wrap { grid-template-columns: 36px 1fr 1.3fr auto; }
+        .parcela-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+            font-weight: 700;
+        }
+        .inp-parcela-pct { width: 100%; max-width: 120px; }
+        .sel-parcela-tipo { width: 100%; min-width: 240px; }
+        .btn-remover-parcela {
+            background: #fff;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-weight: 600;
+        }
+        .btn-remover-parcela:hover { background: #fef2f2; }
+        .parcela-servicos-inner { margin-left: 0; margin-bottom: 0; }
+        .parcela-servico-hint {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 12px;
+            color: #4b5563;
+            margin: 6px 0 8px 0;
+        }
+        .parcela-servicos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px 12px;
+            padding: 10px;
+            border: 1px dashed #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .parcela-servico-label {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            font-size: 12px;
+            margin: 0;
+            color: #111827;
+        }
+        .parcela-servico-label input { margin-top: 2px; }
+        .parcela-min-info {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+        .parcela-min-info strong { color: #7c2d12; }
+        .parcela-row--warn {
+            outline: 2px solid #f59e0b;
+            outline-offset: 3px;
+        }
+        @media (max-width: 820px) {
+            .parcela-row-head { grid-template-columns: 36px 1fr; }
+            .sel-parcela-tipo { min-width: 0; }
+            .parcela-servicos-grid { grid-template-columns: 1fr; }
+        }
+        #btn-adicionar-parcela {
+            margin-top: 8px;
+            padding: 8px 16px;
+            background: #b45309;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #pagamento-aviso { margin-top: 10px; color: #b45309; font-size: 12px; }
+        #pagamento-aviso.pagamento-aviso--hidden { display: none; }
+        .inp-pct-simple { width: 80px; padding: 6px; }
+        .lbl-pct-block { display: block; margin-bottom: 8px; }
+        .lbl-pct-block-mt { display: block; margin-top: 12px; margin-bottom: 8px; }
+        .prazo-input-num { width: 100px; padding: 8px; margin-right: 12px; }
+        .lbl-ml { margin-left: 16px; }
+        .select-prazo { padding: 8px 12px; }
+        .select-prazo-wide { padding: 8px 12px; min-width: 360px; }
+        .mt-14 { margin-top: 14px; }
+        .lbl-fins-semana { display: block; margin-bottom: 6px; font-weight: 600; }
+        .small-hint-muted { display: block; margin-top: 4px; color: #6b7280; }
+        .clausula-section label.lbl-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .box-clima {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            border-radius: 4px;
+        }
+        .clausula-section label.lbl-clima-principal {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .txt-clima-desc { font-size: 12px; color: #166534; margin-bottom: 8px; }
+        .lbl-clima-ta { font-size: 12px; }
+        .textarea-clima {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            font-size: 13px;
+        }
+        .small-mt-8 { display: block; margin-top: 8px; }
+        .subsec-title { font-weight: 600; margin: 12px 0 6px 0; }
+        .lbl-obrig-mini { font-size: 12px; }
+        .input-obrig-full {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .input-obrig-full-last {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+        .garantia-num { width: 100px; padding: 8px; margin-right: 12px; }
+        .clausula-textarea-hidden { display: none; }
+        .editor-container--hidden { display: none; }
+        .clausula-rescisao-list { margin-left: 20px; margin-bottom: 8px; font-size: 10px; line-height: 1.5; }
+        .clausula-rescisao-list li { margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-contract"></i> Editar Cláusulas do Contrato</h1>
+            <div class="info">
+                <strong>Orçamento:</strong> {{ orcamento.codigo }} | 
+                <strong>Cliente:</strong> {{ orcamento.cliente.nome|default:orcamento.nome_cliente_pagamento|default:"Não especificado" }}
+            </div>
+        </div>
+
+        <div class="alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Atenção:</strong> Após confirmar o serviço, as cláusulas do contrato não poderão mais ser editadas. 
+            Certifique-se de revisar todas as cláusulas antes de prosseguir.
+        </div>
+
+        {% if messages %}
+        <div class="alert alert--messages" role="status" aria-live="polite">
+            <strong>Validação / aviso:</strong>
+            {% for message in messages %}
+            <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% if url_form_action %}{{ url_form_action }}{% else %}{% url 'producao:editar_contrato_servico' orcamento_id=orcamento.id %}{% endif %}">
+            {% csrf_token %}
+            
+            <div class="clausula-section" id="sec-pagamento">
+                <h3><i class="fas fa-money-bill-wave"></i> 2. CONDIÇÕES DE PAGAMENTO</h3>
+                {% if percentagem_min_conclusao_trabalhos %}
+                <p class="help-text help-text--min-conclusao">
+                    <strong>Valor mínimo na conclusão dos trabalhos:</strong> o montante pago na conclusão (parcela «conclusão dos serviços seleccionados», «conclusão total» ou % na conclusão) deve ser, no mínimo, <strong>{{ percentagem_min_conclusao_trabalhos }}%</strong> do total do contrato — proporcional ao valor dos <strong>serviços cotados</strong> em relação ao total (materiais e outros itens contam no total mas não reduzem este mínimo).
+                </p>
+                {% endif %}
+                {% if mostrar_parcelas %}
+                <p class="help-text help-text--mb">Defina em quantas parcelas será dividido o pagamento. Cada parcela pode ser exigida à assinatura, na conclusão de serviços seleccionados (marque os serviços da cotação) ou na conclusão total. As percentagens devem somar 100%. Isto permite emitir faturas parciais na conclusão de alguns trabalhos. <strong>O pagamento parcelado aplica-se apenas a orçamentos de serviços.</strong></p>
+                <input type="hidden" name="parcela_count" id="parcela_count" value="{% if parcelas %}{{ parcelas|length }}{% else %}2{% endif %}">
+                <div class="parcelas-panel">
+                    <div class="parcelas-toolbar">
+                        <div class="parcelas-title">
+                            <strong>Parcelas</strong>
+                            <small>Defina percentagem + momento; marque serviços apenas quando for “conclusão dos serviços seleccionados”.</small>
+                        </div>
+                        <button type="button" id="btn-adicionar-parcela">+ Adicionar parcela</button>
+                    </div>
+                <div id="parcelas-lista" class="parcelas-list">
+                    {% if parcelas %}
+                        {% for p in parcelas %}
+                        <div class="parcela-row" data-index="{{ forloop.counter0 }}">
+                            <div class="parcela-row-head parcela-row-head--wrap">
+                                <span class="parcela-num">{{ forloop.counter }}.</span>
+                                <div>
+                                    <label class="lbl-obrig-mini" for="parcela_pct_{{ forloop.counter0 }}">Percentagem</label>
+                                    <input type="number" id="parcela_pct_{{ forloop.counter0 }}" class="inp-parcela-pct" name="parcela_{{ forloop.counter0 }}_percentagem" min="0" max="100" value="{{ p.percentagem }}" aria-label="Percentagem da parcela {{ forloop.counter }}">
+                                </div>
+                                <select id="parcela_tipo_{{ forloop.counter0 }}" class="parcela-tipo sel-parcela-tipo" name="parcela_{{ forloop.counter0 }}_tipo" aria-label="Momento de exigibilidade da parcela {{ forloop.counter }}">
+                                    <option value="ASSINATURA" {% if p.tipo == 'ASSINATURA' %}selected{% endif %}>À assinatura do contrato</option>
+                                    <option value="CONCLUSAO_SERVICOS" {% if p.tipo == 'CONCLUSAO_SERVICOS' %}selected{% endif %}>Na conclusão dos serviços seleccionados</option>
+                                    <option value="CONCLUSAO_TOTAL" {% if p.tipo == 'CONCLUSAO_TOTAL' %}selected{% endif %}>Na conclusão total dos serviços</option>
+                                </select>
+                                <button type="button" class="btn-remover-parcela">Remover</button>
+                            </div>
+                            <div class="parcela-servicos parcela-servicos-inner{% if p.tipo != 'CONCLUSAO_SERVICOS' %} parcela-servicos-oculto{% endif %}">
+                                <span class="parcela-servico-hint">
+                                    <span>Serviços incluídos nesta parcela</span>
+                                    <span>Marque os serviços que, ao concluírem, liberam esta parcela.</span>
+                                </span>
+                                <div class="parcela-servicos-grid">
+                                    {% for s in servicos_orcamento %}
+                                    <label class="parcela-servico-label">
+                                        <input type="checkbox" name="parcela_{{ forloop.parentloop.counter0 }}_servicos" value="{{ s.id }}" {% if s in p.servicos.all %}checked{% endif %}>
+                                        <span>{{ s.nome_para_documento|default:s.servico.nome }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="parcela-min-info" aria-live="polite"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="parcela-row" data-index="0">
+                            <div class="parcela-row-head">
+                                <span class="parcela-num">1.</span>
+                                <div>
+                                    <label class="lbl-obrig-mini" for="parcela_pct_0">Percentagem</label>
+                                    <input type="number" id="parcela_pct_0" class="inp-parcela-pct" name="parcela_0_percentagem" min="0" max="100" value="50" aria-label="Percentagem da parcela 1">
+                                </div>
+                                <select id="parcela_tipo_0" class="parcela-tipo sel-parcela-tipo" name="parcela_0_tipo" aria-label="Momento de exigibilidade da parcela 1"><option value="ASSINATURA" selected>À assinatura do contrato</option><option value="CONCLUSAO_SERVICOS">Na conclusão dos serviços seleccionados</option><option value="CONCLUSAO_TOTAL">Na conclusão total dos serviços</option></select>
+                                <button type="button" class="btn-remover-parcela">Remover</button>
+                            </div>
+                            <div class="parcela-servicos parcela-servicos-inner parcela-servicos-oculto">
+                                <span class="parcela-servico-hint">
+                                    <span>Serviços incluídos nesta parcela</span>
+                                    <span>Marque os serviços que, ao concluírem, liberam esta parcela.</span>
+                                </span>
+                                <div class="parcela-servicos-grid">
+                                    {% for s in servicos_orcamento %}
+                                    <label class="parcela-servico-label">
+                                        <input type="checkbox" name="parcela_0_servicos" value="{{ s.id }}">
+                                        <span>{{ s.nome_para_documento|default:s.servico.nome }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="parcela-min-info" aria-live="polite"></div>
+                            </div>
+                        </div>
+                        <div class="parcela-row" data-index="1">
+                            <div class="parcela-row-head">
+                                <span class="parcela-num">2.</span>
+                                <div>
+                                    <label class="lbl-obrig-mini" for="parcela_pct_1">Percentagem</label>
+                                    <input type="number" id="parcela_pct_1" class="inp-parcela-pct" name="parcela_1_percentagem" min="0" max="100" value="50" aria-label="Percentagem da parcela 2">
+                                </div>
+                                <select id="parcela_tipo_1" class="parcela-tipo sel-parcela-tipo" name="parcela_1_tipo" aria-label="Momento de exigibilidade da parcela 2"><option value="ASSINATURA">À assinatura do contrato</option><option value="CONCLUSAO_SERVICOS">Na conclusão dos serviços seleccionados</option><option value="CONCLUSAO_TOTAL" selected>Na conclusão total dos serviços</option></select>
+                                <button type="button" class="btn-remover-parcela">Remover</button>
+                            </div>
+                            <div class="parcela-servicos parcela-servicos-inner parcela-servicos-oculto">
+                                <span class="parcela-servico-hint">
+                                    <span>Serviços incluídos nesta parcela</span>
+                                    <span>Marque os serviços que, ao concluírem, liberam esta parcela.</span>
+                                </span>
+                                <div class="parcela-servicos-grid">
+                                    {% for s in servicos_orcamento %}
+                                    <label class="parcela-servico-label">
+                                        <input type="checkbox" name="parcela_1_servicos" value="{{ s.id }}">
+                                        <span>{{ s.nome_para_documento|default:s.servico.nome }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="parcela-min-info" aria-live="polite"></div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                </div>
+                <p id="pagamento-aviso" class="pagamento-aviso--hidden" role="status">As percentagens devem somar 100%.</p>
+                {% else %}
+                <p class="help-text help-text--produtos">O <strong>pagamento parcelado</strong> (várias parcelas à assinatura e na conclusão) aplica-se apenas a <strong>orçamentos de serviços</strong>. Este orçamento contém produtos; use as percentagens abaixo para definir o texto do contrato (ex.: 50% à assinatura, 50% na conclusão).</p>
+                <label class="lbl-pct-block" for="pagamento_pct_assinatura">% à assinatura:</label>
+                <input type="number" id="pagamento_pct_assinatura" class="inp-pct-simple" name="pagamento_percentagem_assinatura" min="0" max="100" value="{{ orcamento.pagamento_percentagem_assinatura|default:50 }}" aria-label="Percentagem à assinatura do contrato"> %
+                <label class="lbl-pct-block-mt" for="pagamento_pct_conclusao">% na conclusão:</label>
+                <input type="number" id="pagamento_pct_conclusao" class="inp-pct-simple" name="pagamento_percentagem_conclusao" min="0" max="100" value="{{ orcamento.pagamento_percentagem_conclusao|default:50 }}" aria-label="Percentagem na conclusão dos trabalhos"> %
+                {% endif %}
+            </div>
+            {% if mostrar_parcelas %}
+            <script>var servicosOrcamentoJson = {{ servicos_orcamento_json|safe }};</script>
+            <script>var valorTotalContrato = {{ valor_total_contrato_json|safe }};</script>
+            <script>
+            (function() {
+                var lista = document.getElementById('parcelas-lista');
+                var countInput = document.getElementById('parcela_count');
+                var aviso = document.getElementById('pagamento-aviso');
+                var maxParcelas = 12;
+                var servicosList = typeof servicosOrcamentoJson !== 'undefined' ? servicosOrcamentoJson : [];
+                var mapaServicosValor = {};
+                for (var k = 0; k < servicosList.length; k++) {
+                    mapaServicosValor[String(servicosList[k].id)] = parseFloat(servicosList[k].valor_total || 0) || 0;
+                }
+                function updateCount() {
+                    var rows = lista.querySelectorAll('.parcela-row');
+                    countInput.value = rows.length;
+                    aviso.classList.toggle('pagamento-aviso--hidden', somaPercentagens() === 100);
+                    rows.forEach(function(row) { updateRowMinInfo(row); });
+                }
+                function somaPercentagens() {
+                    var s = 0;
+                    lista.querySelectorAll('input[name^="parcela_"][name$="_percentagem"]').forEach(function(inp) {
+                        s += parseInt(inp.value, 10) || 0;
+                    });
+                    return s;
+                }
+                lista.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('parcela-tipo')) {
+                        var row = e.target.closest('.parcela-row');
+                        var servicosDiv = row.querySelector('.parcela-servicos');
+                        servicosDiv.classList.toggle('parcela-servicos-oculto', e.target.value !== 'CONCLUSAO_SERVICOS');
+                    }
+                    if (e.target.matches('input[type="checkbox"][name^="parcela_"][name$="_servicos"]')) {
+                        var row2 = e.target.closest('.parcela-row');
+                        if (row2) updateRowMinInfo(row2);
+                    }
+                    updateCount();
+                });
+                lista.addEventListener('input', function() { updateCount(); });
+                function _getRowPct(row) {
+                    var pctEl = row.querySelector('input[name^="parcela_"][name$="_percentagem"]');
+                    return parseInt(pctEl ? pctEl.value : '0', 10) || 0;
+                }
+                function _getRowTipo(row) {
+                    var sel = row.querySelector('select[name^="parcela_"][name$="_tipo"]');
+                    return sel ? (sel.value || '') : '';
+                }
+                function _getRowSelectedServicos(row) {
+                    var ids = [];
+                    row.querySelectorAll('input[type="checkbox"][name^="parcela_"][name$="_servicos"]:checked').forEach(function(cb) {
+                        ids.push(String(cb.value || ''));
+                    });
+                    return ids;
+                }
+                function _calcMinPctFromServicosIds(ids) {
+                    var total = parseFloat(valorTotalContrato || 0) || 0;
+                    if (total <= 0) return 0;
+                    var vs = 0;
+                    for (var i = 0; i < ids.length; i++) vs += (mapaServicosValor[ids[i]] || 0);
+                    if (vs <= 0) return 0;
+                    return Math.min(100, Math.ceil((vs / total) * 100));
+                }
+                function _calcPctAssinaturaTotal() {
+                    var s = 0;
+                    lista.querySelectorAll('.parcela-row').forEach(function(row) {
+                        var tipo = _getRowTipo(row);
+                        if (tipo === 'ASSINATURA') s += _getRowPct(row);
+                    });
+                    return s;
+                }
+                function updateRowMinInfo(row) {
+                    var tipo = _getRowTipo(row);
+                    var pct = _getRowPct(row);
+                    var info = row.querySelector('.parcela-min-info');
+                    if (!info) return;
+
+                    if (tipo === 'CONCLUSAO_SERVICOS') {
+                        var ids = _getRowSelectedServicos(row);
+                        var minPctBruto = _calcMinPctFromServicosIds(ids);
+                        var pctAss = _calcPctAssinaturaTotal();
+                        var minPct = Math.max(0, minPctBruto - pctAss);
+                        if (!ids.length) {
+                            info.innerHTML = '<strong>Dica:</strong> seleccione os serviços para calcular o mínimo exigido nesta parcela.';
+                            row.classList.remove('parcela-row--warn');
+                            return;
+                        }
+                        info.innerHTML = '<strong>Mínimo recomendado:</strong> ' + minPct + '% (após ' + pctAss + '% à assinatura).';
+                        row.classList.toggle('parcela-row--warn', minPct > 0 && pct < minPct);
+                        return;
+                    }
+
+                    info.textContent = '';
+                    row.classList.remove('parcela-row--warn');
+                }
+                document.getElementById('btn-adicionar-parcela').addEventListener('click', function() {
+                    var rows = lista.querySelectorAll('.parcela-row');
+                    if (rows.length >= maxParcelas) return;
+                    var idx = rows.length;
+                    var novaLinha = document.createElement('div');
+                    novaLinha.className = 'parcela-row';
+                    novaLinha.setAttribute('data-index', idx);
+                    var servicosCheck = '';
+                    for (var j = 0; j < servicosList.length; j++) {
+                        servicosCheck += '<label class="parcela-servico-label"><input type="checkbox" name="parcela_' + idx + '_servicos" value="' + servicosList[j].id + '"><span>' + (servicosList[j].nome || '') + '</span></label>';
+                    }
+                    var nParcela = idx + 1;
+                    novaLinha.innerHTML = '<div class="parcela-row-head">' +
+                        '<span class="parcela-num">' + nParcela + '.</span>' +
+                        '<div><label class="lbl-obrig-mini">Percentagem</label><input type="number" name="parcela_' + idx + '_percentagem" min="0" max="100" value="0" class="inp-parcela-pct" aria-label="Percentagem da parcela ' + nParcela + '"></div>' +
+                        '<select name="parcela_' + idx + '_tipo" class="parcela-tipo sel-parcela-tipo" aria-label="Momento de exigibilidade da parcela ' + nParcela + '">' +
+                        '<option value="ASSINATURA">À assinatura do contrato</option>' +
+                        '<option value="CONCLUSAO_SERVICOS">Na conclusão dos serviços seleccionados</option>' +
+                        '<option value="CONCLUSAO_TOTAL" selected>Na conclusão total dos serviços</option></select>' +
+                        '<button type="button" class="btn-remover-parcela">Remover</button></div>' +
+                        '<div class="parcela-servicos parcela-servicos-inner parcela-servicos-oculto">' +
+                        '<span class="parcela-servico-hint"><span>Serviços incluídos nesta parcela</span><span>Marque os serviços que, ao concluírem, liberam esta parcela.</span></span>' +
+                        '<div class="parcela-servicos-grid">' + servicosCheck + '</div>' +
+                        '<div class="parcela-min-info" aria-live="polite"></div>' +
+                        '</div>';
+                    lista.appendChild(novaLinha);
+                    renumberRows();
+                    updateCount();
+                });
+                lista.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('btn-remover-parcela')) {
+                        var row = e.target.closest('.parcela-row');
+                        if (lista.querySelectorAll('.parcela-row').length <= 1) return;
+                        row.remove();
+                        renumberRows();
+                        updateCount();
+                    }
+                });
+                function renumberRows() {
+                    lista.querySelectorAll('.parcela-row').forEach(function(row, i) {
+                        row.querySelector('span').textContent = (i + 1) + '.';
+                        row.setAttribute('data-index', i);
+                        row.querySelectorAll('input, select').forEach(function(el) {
+                            if (el.name) el.name = el.name.replace(/parcela_\d+_/, 'parcela_' + i + '_');
+                        });
+                    });
+                }
+                updateCount();
+            })();
+            </script>
+            {% endif %}
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-calendar-alt"></i> 3. PRAZO DE EXECUÇÃO</h3>
+                <p class="help-text help-text--mb">O prazo será redigido no contrato em termos jurídicos (dias/meses/anos, úteis ou corridos). Preencha apenas os campos abaixo.</p>
+                <label for="prazo_execucao_numero">Número</label>
+                <input type="number" id="prazo_execucao_numero" class="prazo-input-num" name="prazo_execucao_numero" min="1" step="1" value="{% if orcamento.prazo_execucao_numero %}{{ orcamento.prazo_execucao_numero }}{% else %}30{% endif %}">
+                <label for="prazo_execucao_unidade" class="lbl-ml">Unidade</label>
+                <select id="prazo_execucao_unidade" class="select-prazo" name="prazo_execucao_unidade">
+                    <option value="DIAS" {% if orcamento.prazo_execucao_unidade == 'DIAS' %}selected{% endif %}>Dias</option>
+                    <option value="MESES" {% if orcamento.prazo_execucao_unidade == 'MESES' or not orcamento.prazo_execucao_unidade %}selected{% endif %}>Meses</option>
+                    <option value="ANOS" {% if orcamento.prazo_execucao_unidade == 'ANOS' %}selected{% endif %}>Anos</option>
+                </select>
+                <div class="mt-14">
+                    <label for="prazo_fins_semana_modo" class="lbl-fins-semana">Contagem de fins de semana</label>
+                    <select id="prazo_fins_semana_modo" class="select-prazo-wide" name="prazo_fins_semana_modo">
+                        <option value="" {% if not orcamento.prazo_fins_semana_modo %}selected{% endif %}>— usar opção clássica (excluir sábado e domingo) —</option>
+                        <option value="SABADO_DOMINGO" {% if orcamento.prazo_fins_semana_modo == 'SABADO_DOMINGO' %}selected{% endif %}>Excluir sábados e domingos (apenas dias úteis)</option>
+                        <option value="SO_DOMINGO" {% if orcamento.prazo_fins_semana_modo == 'SO_DOMINGO' %}selected{% endif %}>Excluir apenas domingos (sábado conta como dia útil)</option>
+                        <option value="SABADO_MEIO" {% if orcamento.prazo_fins_semana_modo == 'SABADO_MEIO' %}selected{% endif %}>Sábado conta como meio dia; domingo excluído</option>
+                        <option value="CORRIDOS" {% if orcamento.prazo_fins_semana_modo == 'CORRIDOS' %}selected{% endif %}>Dias corridos (não excluir fins de semana)</option>
+                    </select>
+                    <small class="small-hint-muted">Para trabalhos que possam decorrer ao sábado (total ou meio dia), escolha a opção adequada.</small>
+                    <label class="lbl-checkbox-row" for="prazo_excluir_feriados">
+                        <input type="checkbox" id="prazo_excluir_feriados" name="prazo_excluir_feriados" value="1" {% if orcamento.prazo_excluir_feriados %}checked{% endif %}>
+                        Excluir feriados nacionais em Moçambique
+                    </label>
+                </div>
+                <div class="box-clima">
+                    <label class="lbl-clima-principal" for="incluir_clausula_suspensao_clima">
+                        <input type="checkbox" id="incluir_clausula_suspensao_clima" name="incluir_clausula_suspensao_clima" value="1" {% if orcamento.incluir_clausula_suspensao_clima %}checked{% endif %}>
+                        Incluir cláusula de suspensão por condições climáticas
+                    </label>
+                    <p class="txt-clima-desc">Permite suspender as actividades quando o clima não for favorável (chuva, vento forte, etc.), sem que tal conte como incumprimento do prazo.</p>
+                    <label for="clausula_suspensao_clima" class="lbl-clima-ta">Texto opcional da cláusula (se vazio, usa redacção padrão):</label>
+                    <textarea id="clausula_suspensao_clima" class="textarea-clima" name="clausula_suspensao_clima" rows="3" placeholder="Ex.: As partes reconhecem que as condições climáticas podem impedir ou condicionar a execução dos trabalhos. Os dias em que as actividades forem suspensas por esse motivo não contarão para o prazo de execução.">{% if orcamento.clausula_suspensao_clima %}{{ orcamento.clausula_suspensao_clima }}{% endif %}</textarea>
+                </div>
+                <small class="small-mt-8">O contrato utilizará automaticamente a redacção jurídica adequada com base nestes dados.</small>
+            </div>
+            
+            <div class="clausula-section">
+                <h3><i class="fas fa-handshake"></i> 4. OBRIGAÇÕES DAS PARTES</h3>
+                <p class="help-text help-text--mb">Obrigações pré-definidas susceptíveis de alteração. Pode editar o texto de cada alínea conforme necessário.</p>
+                <p class="subsec-title">Da CONTRATADA:</p>
+                <label for="obrigacao_contratada_1" class="lbl-obrig-mini">a)</label>
+                <input type="text" id="obrigacao_contratada_1" class="input-obrig-full" name="obrigacao_contratada_1" maxlength="500" value="{{ obrigacao_contratada_1 }}" placeholder="Ex.: Executar os serviços com rigor técnico, segurança e qualidade...">
+                <label for="obrigacao_contratada_2" class="lbl-obrig-mini">b)</label>
+                <input type="text" id="obrigacao_contratada_2" class="input-obrig-full" name="obrigacao_contratada_2" maxlength="500" value="{{ obrigacao_contratada_2 }}" placeholder="Ex.: Providenciar a mão-de-obra e os meios necessários...">
+                <label for="obrigacao_contratada_3" class="lbl-obrig-mini">c)</label>
+                <input type="text" id="obrigacao_contratada_3" class="input-obrig-full-last" name="obrigacao_contratada_3" maxlength="500" value="{{ obrigacao_contratada_3 }}" placeholder="Ex.: Cumprir as normas de higiene e segurança no trabalho...">
+                <p class="subsec-title">Do CONTRATANTE:</p>
+                <label for="obrigacao_contratante_1" class="lbl-obrig-mini">a)</label>
+                <input type="text" id="obrigacao_contratante_1" class="input-obrig-full" name="obrigacao_contratante_1" maxlength="500" value="{{ obrigacao_contratante_1 }}" placeholder="Ex.: Facilitar o acesso ao local dos trabalhos...">
+                <label for="obrigacao_contratante_2" class="lbl-obrig-mini">b)</label>
+                <input type="text" id="obrigacao_contratante_2" class="input-obrig-full" name="obrigacao_contratante_2" maxlength="500" value="{{ obrigacao_contratante_2 }}" placeholder="Ex.: Prestar as informações e esclarecimentos necessários...">
+                <label for="obrigacao_contratante_3" class="lbl-obrig-mini">c)</label>
+                <input type="text" id="obrigacao_contratante_3" class="input-obrig-full" name="obrigacao_contratante_3" maxlength="500" value="{{ obrigacao_contratante_3 }}" placeholder="Ex.: Cumprir os pagamentos nos prazos acordados.">
+            </div>
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-shield-alt"></i> 5. GARANTIA</h3>
+                <p class="help-text help-text--mb">A garantia será redigida no contrato em termos jurídicos. Indique o valor e a unidade (dias, meses ou anos).</p>
+                <label for="validade_garantia_valor">Valor (número)</label>
+                <input type="number" id="validade_garantia_valor" class="garantia-num" name="validade_garantia_valor" min="1" step="1" value="{{ garantia_valor }}">
+                <label for="validade_garantia_unidade" class="lbl-ml">Unidade</label>
+                <select id="validade_garantia_unidade" class="select-prazo" name="validade_garantia_unidade">
+                    <option value="DIAS" {% if orcamento.validade_garantia_unidade == 'DIAS' or not orcamento.validade_garantia_unidade %}selected{% endif %}>Dias</option>
+                    <option value="MESES" {% if orcamento.validade_garantia_unidade == 'MESES' %}selected{% endif %}>Meses</option>
+                    <option value="ANOS" {% if orcamento.validade_garantia_unidade == 'ANOS' %}selected{% endif %}>Anos</option>
+                </select>
+                <small class="small-mt-8">Ex.: 90 dias, 3 meses ou 1 ano. O contrato utilizará a redacção jurídica adequada.</small>
+            </div>
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-edit"></i> 6. ALTERAÇÕES DO CONTRATO</h3>
+                <label for="clausula6_alteracoes">Texto da Cláusula</label>
+                <div class="editor-container">
+                    <div id="editor-clausula6"></div>
+                </div>
+                <textarea id="clausula6_alteracoes" class="clausula-textarea-hidden" name="clausula6_alteracoes">{% if orcamento.clausula6_alteracoes %}{{ orcamento.clausula6_alteracoes }}{% elif textos_padrao.clausula6_alteracoes %}{{ textos_padrao.clausula6_alteracoes }}{% else %}<p>Qualquer alteração nas condições deste contrato só produzirá efeitos se formalizada por escrito e 
+assinada por ambas as partes.</p>{% endif %}</textarea>
+                <small>Defina como as alterações do contrato devem ser tratadas.</small>
+            </div>
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-ban"></i> 7. RESCISÃO</h3>
+                <label for="clausula7_rescisao">Texto da Cláusula</label>
+                <div class="editor-container">
+                    <div id="editor-clausula7"></div>
+                </div>
+                <textarea id="clausula7_rescisao" class="clausula-textarea-hidden" name="clausula7_rescisao">{% if orcamento.clausula7_rescisao %}{{ orcamento.clausula7_rescisao }}{% elif textos_padrao.clausula7_rescisao %}{{ textos_padrao.clausula7_rescisao }}{% else %}<p>O contrato pode ser rescindido:</p>
+<ol type="a" class="clausula-rescisao-list">
+    <li>Por mútuo acordo entre as partes;</li>
+    <li>Por incumprimento de qualquer das obrigações aqui estabelecidas;</li>
+    <li>Por motivo de força maior.</li>
+</ol>
+<p>Em caso de rescisão por culpa do CONTRATANTE, deverá ser pago o valor proporcional aos trabalhos 
+já executados, acrescido de 30% (trinta por cento) a título de despesas administrativas e lucros cessantes.</p>{% endif %}</textarea>
+                <small>Defina as condições de rescisão do contrato.</small>
+            </div>
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-lock"></i> 8. CONFIDENCIALIDADE</h3>
+                <label for="clausula8_confidencialidade">Texto da Cláusula</label>
+                <div class="editor-container">
+                    <div id="editor-clausula8"></div>
+                </div>
+                <textarea id="clausula8_confidencialidade" class="clausula-textarea-hidden" name="clausula8_confidencialidade">{% if orcamento.clausula8_confidencialidade %}{{ orcamento.clausula8_confidencialidade }}{% elif textos_padrao.clausula8_confidencialidade %}{{ textos_padrao.clausula8_confidencialidade }}{% else %}<p>As partes comprometem-se a manter sigilo sobre todas as informações trocadas no âmbito deste contrato, 
+não podendo divulgá-las a terceiros sem prévia autorização por escrito da parte detentora da informação.</p>{% endif %}</textarea>
+                <small>Defina os termos de confidencialidade do contrato.</small>
+            </div>
+
+            <div class="clausula-section">
+                <h3><i class="fas fa-gavel"></i> 9. LEGISLAÇÃO E FORO</h3>
+                <label for="clausula9_foro">Texto da Cláusula</label>
+                <div class="editor-container">
+                    <div id="editor-clausula9"></div>
+                </div>
+                <textarea id="clausula9_foro" class="clausula-textarea-hidden" name="clausula9_foro">{% if orcamento.clausula9_foro %}{{ orcamento.clausula9_foro }}{% elif textos_padrao.clausula9_foro %}{{ textos_padrao.clausula9_foro }}{% else %}<p>O presente contrato é regido pelas leis da República de Moçambique.</p>
+<p>Em caso de litígio, as partes elegem o foro da Comarca de Maputo, com renúncia expressa a qualquer outro, 
+por mais privilegiado que seja.</p>{% endif %}</textarea>
+                <small>Defina a legislação aplicável e o foro competente.</small>
+            </div>
+
+            <div class="buttons">
+                <a href="{% if url_voltar %}{{ url_voltar }}{% else %}{% url 'producao:servico_orcamento_detail' id=orcamento.id %}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" name="acao" value="preview" class="btn btn-info">
+                    <i class="fas fa-eye"></i> Salvar e Pré-visualizar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Carregar Quill antes de inicializar os editores -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Aguardar o carregamento completo da página e do Quill
+        function initEditors() {
+            // Verificar se Quill está disponível
+            if (typeof Quill === 'undefined') {
+                console.error('Quill não está carregado! Usando textareas como fallback.');
+                ['clausula6_alteracoes', 'clausula7_rescisao', 'clausula8_confidencialidade', 'clausula9_foro'].forEach(function(id) {
+                    var ta = document.getElementById(id);
+                    if (ta) {
+                        ta.classList.remove('clausula-textarea-hidden');
+                        ta.classList.add('fallback-mode');
+                    }
+                });
+                document.querySelectorAll('.editor-container').forEach(function(container) {
+                    container.classList.add('editor-container--hidden');
+                });
+                return;
+            }
+
+            // Configuração do editor Quill
+            var quillConfig = {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Digite o texto da cláusula...'
+            };
+
+            // Mapeamento de campos para IDs dos editores (cláusulas 2, 3, 4 e 5 são formulário estruturado, não Quill)
+            var clausulasMap = {
+                'clausula6_alteracoes': 'editor-clausula6',
+                'clausula7_rescisao': 'editor-clausula7',
+                'clausula8_confidencialidade': 'editor-clausula8',
+                'clausula9_foro': 'editor-clausula9'
+            };
+
+            // Inicializar editores Quill para cada cláusula
+            var editors = {};
+            
+            for (var campo in clausulasMap) {
+                var textarea = document.getElementById(campo);
+                var editorDivId = clausulasMap[campo];
+                var editorDiv = document.getElementById(editorDivId);
+                
+                if (textarea && editorDiv) {
+                    try {
+                        // Criar editor Quill
+                        var quill = new Quill(editorDiv, quillConfig);
+                        
+                        // Carregar conteúdo do textarea no editor
+                        if (textarea.value && textarea.value.trim()) {
+                            quill.root.innerHTML = textarea.value;
+                        }
+                        
+                        // Salvar conteúdo no textarea quando o editor mudar
+                        quill.on('text-change', function() {
+                            textarea.value = quill.root.innerHTML;
+                        });
+                        
+                        // Salvar também quando perder o foco
+                        quill.on('selection-change', function(range) {
+                            if (!range) {
+                                textarea.value = quill.root.innerHTML;
+                            }
+                        });
+                        
+                        // Armazenar referência do editor
+                        editors[campo] = quill;
+                        console.log('Editor Quill inicializado para:', campo);
+                    } catch (error) {
+                        console.error('Erro ao inicializar editor para', campo, ':', error);
+                        textarea.classList.remove('clausula-textarea-hidden');
+                        textarea.classList.add('fallback-mode');
+                    }
+                } else {
+                    console.warn('Elementos não encontrados:', campo, 'textarea:', !!textarea, 'editorDiv:', !!editorDiv);
+                }
+            }
+
+            // Garantir que o conteúdo seja salvo antes de submeter
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    for (var campo in editors) {
+                        if (editors[campo]) {
+                            var textarea = document.getElementById(campo);
+                            if (textarea && editors[campo]) {
+                                textarea.value = editors[campo].root.innerHTML;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Tentar inicializar quando o DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initEditors);
+        } else {
+            // DOM já está pronto, mas esperar um pouco para garantir que Quill carregou
+            setTimeout(initEditors, 100);
+        }
+    </script>
+</body>
+</html>

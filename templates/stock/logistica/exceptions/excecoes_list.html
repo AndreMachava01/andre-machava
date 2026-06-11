@@ -1,0 +1,248 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Exceções logísticas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:exceptions:dashboard' as exceptions_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Exceções' breadcrumb_section_url=exceptions_dashboard_url breadcrumb_current='Lista de exceções' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    Exceções logísticas
+                </h1>
+                <p class="page-subtitle">Ocorrências reportadas durante operações de entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:exceptions:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:exceptions:excecao_create' %}" class="btn btn-danger">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova exceção
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.abertas|default:"0" }}</div>
+                <div class="stat-label">Abertas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-search"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.em_analise|default:"0" }}</div>
+                <div class="stat-label">Em análise</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.resolvidas|default:"0" }}</div>
+                <div class="stat-label">Resolvidas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-excecoes">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-excecoes" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, descrição, local...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo-excecoes">Tipo</label>
+                <select id="filtro-tipo-excecoes" name="tipo_codigo" class="form-select" title="Filtrar por tipo">
+                    <option value="">Todos</option>
+                    {% for tipo in tipos_excecao %}
+                    <option value="{{ tipo.codigo }}" {% if tipo_codigo == tipo.codigo %}selected{% endif %}>{{ tipo.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-excecoes">Status</label>
+                <select id="filtro-status-excecoes" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-prioridade-excecoes">Prioridade</label>
+                <select id="filtro-prioridade-excecoes" name="prioridade" class="form-select" title="Filtrar por prioridade">
+                    <option value="">Todas</option>
+                    {% for value, label in prioridade_choices %}
+                    <option value="{{ value }}" {% if prioridade == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-excecoes">De</label>
+                <input type="date" id="filtro-data-inicio-excecoes" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-excecoes">Até</label>
+                <input type="date" id="filtro-data-fim-excecoes" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:exceptions:excecoes_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                Exceções
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo / descrição</th>
+                        <th>Rastreamento</th>
+                        <th>Data</th>
+                        <th>Prioridade</th>
+                        <th>Status</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ item.codigo }}</strong></td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ item.tipo_excecao.nome }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ item.descricao|truncatechars:60 }}</div>
+                            {% if item.local_ocorrencia %}
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ item.local_ocorrencia|truncatechars:40 }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.rastreamento_entrega %}
+                            <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_entrega.id %}" class="cell-primary">
+                                {{ item.rastreamento_entrega.codigo_rastreamento }}
+                            </a>
+                            {% else %}
+                            <span class="stock-text-placeholder">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge badge-{% if item.prioridade == 'CRITICA' %}danger{% elif item.prioridade == 'ALTA' %}warning{% elif item.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}">
+                                {{ item.get_prioridade_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if item.status == 'ABERTA' %}danger{% elif item.status == 'EM_ANALISE' %}warning{% elif item.status == 'RESOLVIDA' %}success{% elif item.status == 'ESCALADA' %}info{% else %}secondary{% endif %}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:exceptions:excecao_detail' item.id %}" class="btn-action primary"
+                                   title="Ver exceção" aria-label="Ver exceção {{ item.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% if item.rastreamento_entrega %}
+                                <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_entrega.id %}"
+                                   class="btn-action secondary" title="Ver rastreamento"
+                                   aria-label="Ver rastreamento {{ item.rastreamento_entrega.codigo_rastreamento }}">
+                                    <i class="fas fa-truck" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tipo_codigo %}&tipo_codigo={{ tipo_codigo }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tipo_codigo %}&tipo_codigo={{ tipo_codigo }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            <h3>Nenhuma exceção encontrada</h3>
+            <p>Não há exceções que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:exceptions:excecao_create' %}" class="btn btn-danger">
+                <i class="fas fa-plus" aria-hidden="true"></i> Nova exceção
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

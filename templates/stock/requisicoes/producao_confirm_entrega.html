@@ -1,0 +1,582 @@
+{% load rh_filters %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Entrega - {{ requisicao.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #b45309;
+        }
+        
+        .header-info h1 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header-info .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #b45309;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 5px;
+            border-left: 3px solid #b45309;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .item-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .item-card:hover {
+            border-color: #b45309;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
+        }
+        
+        .item-header {
+            margin-bottom: 15px;
+        }
+        
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .item-code {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .item-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .form-help {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .form-help i {
+            color: #b45309;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .help-section {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .help-title {
+            color: #92400e;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-content {
+            color: #78350f;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .help-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .help-content li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <div class="header-info">
+                <h1>
+                    <i class="fas fa-check-circle" style="color: #b45309;"></i>
+                    Confirmar Entrega de Material
+                </h1>
+                <p class="subtitle">{{ requisicao.codigo }} - Ordem: {{ requisicao.ordem_producao.codigo }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:requisicoes:producao_detail' requisicao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Informações da Requisição -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                Informações da Requisição
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Código da Requisição</div>
+                    <div class="info-value">{{ requisicao.codigo }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Ordem de Produção</div>
+                    <div class="info-value">{{ requisicao.ordem_producao.codigo }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Sucursal Origem</div>
+                    <div class="info-value">{{ requisicao.sucursal_origem.nome }}</div>
+                </div>
+                
+                {% if requisicao.data_criacao %}
+                <div class="info-item">
+                    <div class="info-label">Data de Criação</div>
+                    <div class="info-value">{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+                
+                {% if requisicao.valor_total %}
+                <div class="info-item">
+                    <div class="info-label">Valor Total</div>
+                    <div class="info-value">{{ requisicao.valor_total|floatformat:2 }} MT</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulário de Confirmação -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i>
+                Itens para Confirmação de Entrega
+            </div>
+            <form method="post" id="confirmForm">
+                {% csrf_token %}
+                
+                {% for item_info in itens_com_info %}
+                <div class="item-card">
+                    <div class="item-header">
+                        <div class="item-name">{{ item_info.item_requisicao.item.nome }}</div>
+                        <div class="item-code">{{ item_info.item_requisicao.item.codigo }}</div>
+                    </div>
+                    
+                    <div class="item-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Quantidade Solicitada</div>
+                            <div class="detail-value">{{ item_info.quantidade_solicitada }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Quantidade Já Atendida</div>
+                            <div class="detail-value">
+                                <span class="badge {% if item_info.quantidade_atendida == 0 %}badge-danger{% elif item_info.quantidade_atendida < item_info.quantidade_solicitada %}badge-warning{% else %}badge-success{% endif %}">
+                                    {{ item_info.quantidade_atendida }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Quantidade Pendente</div>
+                            <div class="detail-value">
+                                <span class="badge badge-danger">{{ item_info.quantidade_pendente }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Stock Disponível</div>
+                            <div class="detail-value">
+                                <span class="badge {% if item_info.stock_disponivel >= item_info.quantidade_pendente %}badge-success{% elif item_info.stock_disponivel > 0 %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ item_info.stock_disponivel }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantidade_entregue_{{ item_info.item_requisicao.id }}" class="form-label">
+                            <i class="fas fa-boxes"></i>
+                            Quantidade a Entregar <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="quantidade_entregue_{{ item_info.item_requisicao.id }}" 
+                            name="quantidade_entregue_{{ item_info.item_requisicao.id }}" 
+                            class="form-control" 
+                            min="0" 
+                            max="{{ item_info.quantidade_pendente }}"
+                            value="{% if item_info.pode_entregar > 0 %}{{ item_info.pode_entregar }}{% else %}0{% endif %}"
+                            required
+                            data-pendente="{{ item_info.quantidade_pendente }}"
+                            data-stock="{{ item_info.stock_disponivel }}"
+                        >
+                        <div class="form-help">
+                            <i class="fas fa-info-circle"></i> 
+                            Quantidade a entregar agora (máximo: {{ item_info.quantidade_pendente }} pendente, {{ item_info.stock_disponivel }} disponível em stock)
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-check"></i>
+                        Confirmar Entrega
+                    </button>
+                    
+                    <a href="{% url 'stock:requisicoes:producao_detail' requisicao.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Ajuda -->
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-lightbulb"></i>
+                Instruções Importantes
+            </div>
+            <div class="help-content">
+                <ul>
+                    <li><strong>Quantidade a Entregar:</strong> Digite a quantidade que está sendo entregue agora. Você pode fazer entregas parciais.</li>
+                    <li><strong>Entrega Parcial:</strong> Se não entregar tudo de uma vez, o sistema permitirá que você continue entregando os itens pendentes posteriormente.</li>
+                    <li><strong>Stock Disponível:</strong> O sistema verifica automaticamente se há stock suficiente. Você não pode entregar mais do que está disponível em stock.</li>
+                    <li><strong>Confirmar:</strong> Após preencher as quantidades, clique em "Confirmar Entrega" para registrar a entrega.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantidadeInputs = document.querySelectorAll('input[name^="quantidade_entregue_"]');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Validação em tempo real
+        quantidadeInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const pendente = parseInt(this.getAttribute('data-pendente'));
+                const stock = parseInt(this.getAttribute('data-stock'));
+                const currentValue = parseInt(this.value) || 0;
+                
+                // Limitar ao máximo pendente
+                if (currentValue > pendente) {
+                    this.value = pendente;
+                    alert(`A quantidade não pode ser maior que ${pendente} (pendente).`);
+                    return;
+                }
+                
+                // Limitar ao stock disponível
+                if (currentValue > stock) {
+                    this.value = Math.min(currentValue, stock);
+                    alert(`Stock insuficiente! Disponível: ${stock} unidades.`);
+                    return;
+                }
+                
+                if (currentValue < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+        
+        // Validação no submit
+        document.getElementById('confirmForm').addEventListener('submit', function(e) {
+            let hasError = false;
+            let totalEntregue = 0;
+            
+            quantidadeInputs.forEach(input => {
+                const pendente = parseInt(input.getAttribute('data-pendente'));
+                const stock = parseInt(input.getAttribute('data-stock'));
+                const value = parseInt(input.value) || 0;
+                
+                if (value > pendente) {
+                    e.preventDefault();
+                    alert(`A quantidade para ${input.closest('.item-card').querySelector('.item-name').textContent} não pode ser maior que ${pendente} (pendente).`);
+                    input.focus();
+                    hasError = true;
+                    return;
+                }
+                
+                if (value > stock) {
+                    e.preventDefault();
+                    alert(`Stock insuficiente para ${input.closest('.item-card').querySelector('.item-name').textContent}. Disponível: ${stock} unidades.`);
+                    input.focus();
+                    hasError = true;
+                    return;
+                }
+                
+                if (value > 0) {
+                    totalEntregue++;
+                }
+            });
+            
+            if (!hasError && totalEntregue === 0) {
+                e.preventDefault();
+                alert('Por favor, informe pelo menos uma quantidade a entregar.');
+                return false;
+            }
+        });
+    });
+    </script>
+</body>
+</html>

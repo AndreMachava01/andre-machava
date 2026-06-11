@@ -1,0 +1,70 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 720px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h3 { font-size: 14px; color: #6b7280; margin: 0 0 8px 0; text-transform: uppercase; }
+        .detail-section p { margin: 0 0 4px 0; color: #374151; line-height: 1.5; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .badge-em-curso { background: #d1fae5; color: #047857; }
+        .badge-rascunho { background: #e5e7eb; color: #4b5563; }
+        .badge-planeada { background: #dbeafe; color: #1e40af; }
+        .badge-concluida { background: #e0e7ff; color: #3730a3; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .actions { display: flex; gap: 10px; margin-top: 20px; }
+        .header-actions { display: flex; gap: 10px; }
+        .detail-meta { font-size: 12px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bullhorn"></i> {{ campanha.nome }}</h1>
+            <div class="header-actions">
+                <a href="{% url 'marketing:campanha_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'marketing:campanha_edit' campanha.pk %}" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a>
+            </div>
+        </div>
+
+        <p><span class="badge badge-{{ campanha.estado|slugify }}">{{ campanha.get_estado_display }}</span></p>
+
+        {% if campanha.descricao %}
+        <div class="detail-section">
+            <h3>Descrição e objetivos</h3>
+            <p>{{ campanha.descricao|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        <div class="detail-section">
+            <h3>Informações</h3>
+            <p><strong>Canal:</strong> {{ campanha.canal|default:"-" }}</p>
+            <p><strong>Orçamento:</strong> {% if campanha.orcamento %}{{ campanha.orcamento|floatformat:2|intcomma }} MT{% else %}-{% endif %}</p>
+            <p><strong>Período:</strong> {{ campanha.data_inicio|date:"d/m/Y"|default:"-" }} a {{ campanha.data_fim|date:"d/m/Y"|default:"-" }}</p>
+            <p><strong>Responsável:</strong> {{ campanha.responsavel.get_full_name|default:campanha.responsavel.username|default:"-" }}</p>
+        </div>
+
+        {% if campanha.observacoes %}
+        <div class="detail-section">
+            <h3>Observações</h3>
+            <p>{{ campanha.observacoes|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        <div class="detail-section">
+            <p class="detail-meta">Criada em {{ campanha.data_criacao|date:"d/m/Y H:i" }}, última atualização {{ campanha.data_atualizacao|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+</body>
+</html>

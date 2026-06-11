@@ -1,0 +1,382 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado de Qualidade - {{ ordem.codigo }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+                background: white;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                color: #1f2937 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                padding: 5px;
+            }
+            .header {
+                border-bottom: 2px solid #10b981 !important;
+            }
+        }
+        .print-actions {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-print {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-print:hover {
+            background: #059669;
+        }
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background: #4b5563;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 10px;
+            color: #1f2937;
+            font-size: 10px;
+            line-height: 1.3;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+        }
+        .header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .logo-empresa {
+            max-width: 120px;
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+        .empresa-info {
+            flex: 1;
+        }
+        .empresa-info h1 {
+            font-size: 18px;
+            color: #10b981;
+            margin-bottom: 2px;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+            color: #6b7280;
+            font-size: 9px;
+        }
+        .certificado-info {
+            text-align: right;
+        }
+        .certificado-info h2 {
+            font-size: 20px;
+            color: #10b981;
+            margin-bottom: 2px;
+        }
+        .certificado-info p {
+            margin: 1px 0;
+            color: #6b7280;
+            font-size: 9px;
+        }
+        .order-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 6px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .info-box {
+            flex: 1;
+        }
+        .info-box h3 {
+            font-size: 10px;
+            color: #374151;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .info-box p {
+            margin: 1px 0;
+            color: #1f2937;
+            font-size: 9px;
+        }
+        .produto-info {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 10px;
+        }
+        .produto-info h3 {
+            font-size: 12px;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .produto-info ul {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+        .produto-info li {
+            margin: 4px 0;
+        }
+        .certificado-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            border-radius: 6px;
+        }
+        .certificado-details h3 {
+            font-size: 14px;
+            color: #065f46;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .certificado-details p {
+            font-size: 10px;
+            color: #1f2937;
+            line-height: 1.5;
+            margin: 5px 0;
+        }
+        .certificado-details .highlight {
+            font-weight: 700;
+            color: #065f46;
+        }
+        .signature-section {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .signature-box {
+            text-align: center;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 5px;
+        }
+        .signature-line {
+            border-top: 2px solid #1f2937;
+            margin-top: 25px;
+            padding-top: 5px;
+        }
+        .signature-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 11px;
+        }
+        .signature-role {
+            color: #6b7280;
+            font-size: 9px;
+            margin-top: 2px;
+        }
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-actions no-print">
+        <button onclick="window.print()" class="btn-print">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+        <a href="{% url 'producao:qualidade_certificados' %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+        </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-container">
+                    {% if dados_empresa and dados_empresa.logo %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}{{ dados_empresa.logo }}" alt="Logo da Empresa" class="logo-empresa">
+                    {% else %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}logos_empresas/LOGO_DA_CONCEPTION.jpg" alt="Logo da Empresa" class="logo-empresa">
+                    {% endif %}
+            </div>
+                <div class="empresa-info">
+                    {% if dados_empresa %}
+                    <h1>{{ dados_empresa.nome }}</h1>
+                    {% if dados_empresa.nuit %}<p><strong>NUIT:</strong> {{ dados_empresa.nuit }}</p>{% endif %}
+                    {% if dados_empresa.endereco %}<p>{{ dados_empresa.endereco }}</p>{% endif %}
+                    {% if dados_empresa.telefone %}<p><strong>Telefone:</strong> {{ dados_empresa.telefone }}</p>{% endif %}
+                    {% if dados_empresa.email %}<p><strong>Email:</strong> {{ dados_empresa.email }}</p>{% endif %}
+                        {% else %}
+                    <h1>Empresa</h1>
+                        {% endif %}
+                </div>
+                <div class="certificado-info">
+                    <h2 style="display: flex; align-items: center; gap: 10px;">
+                        CERTIFICADO DE QUALIDADE
+                        <span style="font-size: 12px; color: #10b981; font-weight: 700; text-transform: uppercase;">APROVADO</span>
+                    </h2>
+                    <p style="margin-top: 4px; margin-bottom: 2px; display: flex; align-items: baseline; gap: 6px;">
+                        <strong style="font-size: 10px; color: #6b7280;">Nº:</strong>
+                        <span style="font-size: 18px; font-weight: 700; color: #10b981; letter-spacing: 0.5px;">{{ ordem.codigo|formatar_codigo_ordem }}</span>
+                    </p>
+                    <p style="margin-top: 4px;"><strong>Data de Emissão:</strong> {% now "d/m/Y" %} <strong>Hora:</strong> {% now "H:i" %}</p>
+                    <p><strong>Ordem de Produção:</strong> {{ ordem.codigo|formatar_codigo_ordem }}</p>
+                    {% if ordem.receita %}
+                    <p><strong>Receita:</strong> {{ ordem.receita.nome }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="order-info">
+            <div class="info-box">
+                <h3>Informações da Produção</h3>
+                <p><strong>Receita:</strong> {{ ordem.receita.nome|default:"N/A" }}</p>
+                <p><strong>Produto:</strong> {{ ordem.receita.produto.nome|default:"N/A" }}</p>
+                <p><strong>Sucursal:</strong> {{ ordem.sucursal.nome }}</p>
+            </div>
+            <div class="info-box" style="text-align: right;">
+                <h3>Datas</h3>
+                <p><strong>Data de Criação:</strong> {{ ordem.data_criacao|date:"d/m/Y H:i" }}</p>
+                {% if ordem.data_finalizacao %}
+                <p><strong>Data de Finalização:</strong> {{ ordem.data_finalizacao|date:"d/m/Y H:i" }}</p>
+                {% endif %}
+                {% if ordem.data_aprovacao_qualidade %}
+                <p><strong>Data de Aprovação:</strong> {{ ordem.data_aprovacao_qualidade|date:"d/m/Y H:i" }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="produto-info">
+            <h3>Detalhes da Produção:</h3>
+            <ul>
+                <li><strong>Receita:</strong> {{ ordem.receita.nome|default:"N/A" }}</li>
+                <li><strong>Produto:</strong> {{ ordem.receita.produto.nome|default:"N/A" }}</li>
+            </ul>
+        </div>
+
+        <div class="certificado-details">
+            <h3><i class="fas fa-check-circle"></i> CERTIFICAÇÃO DE QUALIDADE</h3>
+            <p>Certificamos que a <span class="highlight">Ordem de Produção {{ ordem.codigo|formatar_codigo_ordem }}</span> foi concluída com sucesso e aprovada pelo controle de qualidade, atendendo a todos os padrões de qualidade estabelecidos pela <span class="highlight">{{ dados_empresa.nome|default:"empresa" }}</span>.</p>
+            <p style="margin-top: 10px;"><strong>Status de Qualidade:</strong> <span class="highlight">APROVADO</span></p>
+            <p><strong>Controle de Qualidade:</strong> <span class="highlight">Aprovado em {{ ordem.data_aprovacao_qualidade|date:"d/m/Y H:i"|default:"N/A" }}</span></p>
+            {% if ordem.observacoes_qualidade %}
+            <p style="margin-top: 10px;"><strong>Observações de Qualidade:</strong> {{ ordem.observacoes_qualidade }}</p>
+            {% endif %}
+            <p style="margin-top: 10px;"><strong>Garantia de Qualidade:</strong> Este certificado atesta que o produto foi fabricado seguindo rigorosamente os padrões de qualidade estabelecidos, utilizando os materiais e processos especificados na receita de produção.</p>
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line">
+                        <div class="signature-name">
+                            {% if ordem.aprovado_qualidade_por %}
+                                {{ ordem.aprovado_qualidade_por.get_full_name|default:ordem.aprovado_qualidade_por.username }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        <div class="signature-role">Aprovado por Qualidade</div>
+                        {% if ordem.data_aprovacao_qualidade %}
+                        <div class="signature-role" style="margin-top: 5px;">
+                            {{ ordem.data_aprovacao_qualidade|date:"d/m/Y H:i" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">
+                        <div class="signature-name">
+                            {% if ordem.criado_por %}
+                                {{ ordem.criado_por.get_full_name|default:ordem.criado_por.username }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        <div class="signature-role">Responsável pela Produção</div>
+                        <div class="signature-role" style="margin-top: 5px;">
+                            {{ ordem.data_criacao|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Este certificado de qualidade foi gerado automaticamente pelo sistema em {% now "d/m/Y" %} às {% now "H:i" %}.</p>
+            <p>Para questões relacionadas a este certificado, entre em contato conosco.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends 'stock/includes/report_logistica_shell.html' %}
+
+{% block report_page_title %}Custos logísticos{% endblock %}
+{% block report_breadcrumb %}Custos logísticos{% endblock %}
+{% block report_icon %}fa-coins{% endblock %}
+{% block report_heading %}Custos logísticos{% endblock %}
+{% block report_doc_title %}RELATÓRIO DE CUSTOS LOGÍSTICOS{% endblock %}
+{% block report_code_prefix %}CUST{% endblock %}
+{% block report_footer_note %}Relatório de custos logísticos — Conception{% endblock %}
+
+{% block report_content %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-chart-bar" aria-hidden="true"></i> Resumo de custos</h3>
+<div class="stock-report-kpi-grid">
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Total por tipo</div>
+        <div class="stock-report-kpi__value">{{ total_custos_tipo|default:0|floatformat:2 }} MT</div>
+    </div>
+    <div class="stock-report-kpi">
+        <div class="stock-report-kpi__label">Total por transportadora</div>
+        <div class="stock-report-kpi__value">{{ total_custos_transportadora|default:0|floatformat:2 }} MT</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--success">
+        <div class="stock-report-kpi__label">Total geral</div>
+        <div class="stock-report-kpi__value">{{ total_geral|default:0|floatformat:2 }} MT</div>
+    </div>
+</div>
+
+{% if dados.custos_tipo %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-tag" aria-hidden="true"></i> Custos por tipo</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Tipo de custo</th>
+                <th class="text-right">Total (MT)</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.custos_tipo %}
+            <tr>
+                <td><strong>{{ item.tipo_custo__nome|default:"N/A" }}</strong></td>
+                <td class="text-right">{{ item.total|default:0|floatformat:2 }}</td>
+                <td class="text-center">{{ item.count|default:0 }}</td>
+                <td class="text-center">
+                    {% if total_custos_tipo > 0 %}{% widthratio item.total total_custos_tipo 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-right">Total</th>
+                <th class="text-right">{{ total_custos_tipo|default:0|floatformat:2 }} MT</th>
+                <th class="text-center">{{ dados.custos_tipo|length }}</th>
+                <th class="text-center">100%</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.custos_transportadora %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-truck" aria-hidden="true"></i> Custos por transportadora</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Transportadora</th>
+                <th class="text-right">Total (MT)</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.custos_transportadora %}
+            <tr>
+                <td><strong>{{ item.rastreamento_entrega__transportadora__nome|default:"N/A" }}</strong></td>
+                <td class="text-right">{{ item.total|default:0|floatformat:2 }}</td>
+                <td class="text-center">{{ item.count|default:0 }}</td>
+                <td class="text-center">
+                    {% if total_custos_transportadora > 0 %}{% widthratio item.total total_custos_transportadora 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-right">Total</th>
+                <th class="text-right">{{ total_custos_transportadora|default:0|floatformat:2 }} MT</th>
+                <th class="text-center">{{ dados.custos_transportadora|length }}</th>
+                <th class="text-center">100%</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.evolucao_custos %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-chart-line" aria-hidden="true"></i> Evolução (últimos 30 dias)</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th class="text-right">Custo (MT)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.evolucao_custos %}
+            <tr>
+                <td><strong>{{ item.data }}</strong></td>
+                <td class="text-right">{{ item.total|default:0|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if not dados.custos_tipo and not dados.custos_transportadora and not dados.evolucao_custos %}
+<div class="stock-report-empty">
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
+    <p>Nenhum dado de custos disponível para o período selecionado.</p>
+</div>
+{% endif %}
+{% endblock %}

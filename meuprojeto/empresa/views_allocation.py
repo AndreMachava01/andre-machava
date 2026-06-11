@@ -36,14 +36,13 @@ def allocation_dashboard(request):
     rastreamentos_nao_alocados = RastreamentoEntrega.objects.filter(
         veiculo_interno__isnull=True,
         transportadora__isnull=True,
-        status_atual__in=['PENDENTE', 'PREPARANDO']
+        status_atual='PREPARANDO'
     ).order_by('-data_criacao')[:10]
     
     # Rastreamentos recentes alocados
     rastreamentos_alocados_recentes = RastreamentoEntrega.objects.filter(
         Q(veiculo_interno__isnull=False) | Q(transportadora__isnull=False),
-        data_atualizacao__gte=timezone.now() - timedelta(days=1)
-    ).order_by('-data_atualizacao')[:10]
+    ).select_related('veiculo_interno', 'transportadora').order_by('-data_criacao')[:10]
     
     context = {
         'stats': stats,
@@ -229,7 +228,7 @@ def allocation_batch(request):
     rastreamentos_nao_alocados = RastreamentoEntrega.objects.filter(
         veiculo_interno__isnull=True,
         transportadora__isnull=True,
-        status_atual__in=['PENDENTE', 'PREPARANDO']
+        status_atual='PREPARANDO'
     ).order_by('-data_criacao')
     
     # Paginação
@@ -264,7 +263,7 @@ def allocation_history(request):
     if search:
         rastreamentos = rastreamentos.filter(
             Q(codigo_rastreamento__icontains=search) |
-            Q(nome_destinatario__icontains=search) |
+            Q(destinatario_nome__icontains=search) |
             Q(endereco_entrega__icontains=search)
         )
     
@@ -275,12 +274,12 @@ def allocation_history(request):
             rastreamentos = rastreamentos.filter(transportadora__isnull=False)
     
     if data_inicio:
-        rastreamentos = rastreamentos.filter(data_atualizacao__date__gte=data_inicio)
+        rastreamentos = rastreamentos.filter(data_criacao__date__gte=data_inicio)
     
     if data_fim:
-        rastreamentos = rastreamentos.filter(data_atualizacao__date__lte=data_fim)
+        rastreamentos = rastreamentos.filter(data_criacao__date__lte=data_fim)
     
-    rastreamentos = rastreamentos.order_by('-data_atualizacao')
+    rastreamentos = rastreamentos.order_by('-data_criacao')
     
     # Paginação
     paginator = Paginator(rastreamentos, 20)
@@ -331,21 +330,20 @@ def allocation_stats(request):
     # Estatísticas por transportadora
     transportadoras_stats = Transportadora.objects.filter(
         ativo=True,
-        rastreamentoentrega__isnull=False
+        entregas__isnull=False
     ).annotate(
-        total_rastreamentos=Count('rastreamentoentrega'),
-        custo_medio=Avg('rastreamentoentrega__custo_estimado'),
-        sla_medio=Avg('rastreamentoentrega__sla_estimado_dias')
+        total_rastreamentos=Count('entregas'),
+        custo_medio=Avg('entregas__custo_envio'),
+        sla_medio=Avg('prazo_entrega_padrao')
     ).order_by('-total_rastreamentos')
     
     # Estatísticas por veículo interno
     veiculos_stats = VeiculoInterno.objects.filter(
         ativo=True,
-        rastreamentoentrega__isnull=False
+        entregas__isnull=False
     ).annotate(
-        total_rastreamentos=Count('rastreamentoentrega'),
-        custo_medio=Avg('rastreamentoentrega__custo_estimado'),
-        sla_medio=Avg('rastreamentoentrega__sla_estimado_dias')
+        total_rastreamentos=Count('entregas'),
+        custo_medio=Avg('entregas__custo_envio'),
     ).order_by('-total_rastreamentos')
     
     context = {

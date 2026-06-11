@@ -1,0 +1,41 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Critérios de Alocação{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current='Critérios' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    Critérios de Alocação
+                </h1>
+                <p class="page-subtitle">Configure pesos e prioridades do motor de alocação automática</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {% include 'stock/logistica/allocation/_criteria_fields.html' with criteria=criteria %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save" aria-hidden="true"></i> Guardar critérios
+            </button>
+            <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

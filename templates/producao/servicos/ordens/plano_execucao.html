@@ -1,0 +1,468 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de execução - {{ ordem.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 3px solid #b45309; padding-bottom: 20px; margin-bottom: 25px; }
+        .header h1 { font-size: 24px; color: #b45309; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .header .info { color: #6b7280; font-size: 14px; margin-top: 8px; }
+        .alert { padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .alert-warning { background: #fef3c7; border-left: 4px solid #f59e0b; color: #92400e; }
+        .alert-success { background: #d1fae5; border-left: 4px solid #10b981; color: #065f46; }
+        .alert-error { background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .help-text { background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; font-size: 14px; color: #1e40af; }
+        .etapa-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; padding: 10px; background: #fafafa; border-radius: 6px; border: 1px solid #e5e7eb; }
+        .etapa-row.subactividade { margin-left: 32px; border-left: 3px solid #b45309; }
+        .etapa-row label { font-size: 12px; color: #555; display: block; margin-bottom: 4px; }
+        .etapa-num { font-weight: 600; min-width: 28px; padding-top: 24px; }
+        input[type="text"], input[type="date"], select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        input[type="text"] { min-width: 220px; flex: 1; }
+        input[type="date"] { width: 150px; }
+        select { min-width: 200px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-primary:hover { background: #92400e; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-danger { background: #dc2626; color: white; padding: 6px 12px; font-size: 12px; }
+        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 25px; }
+        #etapas-lista .etapa-row { position: relative; }
+        .etapa-servicos .servicos-checkboxes { display: flex; flex-direction: column; gap: 6px; flex-wrap: wrap; max-height: 120px; }
+        .etapa-servicos .servicos-checkboxes label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: normal; color: #374151; cursor: pointer; }
+        .etapa-servicos .servicos-checkboxes input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+        .gantt-box { margin-top: 28px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+        .gantt-box .gantt-header { padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        .gantt-box .gantt-header h3 { margin: 0; font-size: 15px; font-weight: 600; color: #1e293b; }
+        .gantt-box .gantt-header p { margin: 4px 0 0 0; font-size: 12px; color: #64748b; }
+        .gantt-box .gantt-body { padding: 12px 16px; overflow-x: auto; }
+        .gantt-box table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+        .gantt-box th { font-weight: 600; padding: 8px 10px; text-align: left; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        .gantt-box td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .gantt-box .gantt-track { position: relative; width: 100%; height: 26px; min-height: 26px; border-radius: 4px; overflow: visible; background: repeating-linear-gradient(90deg, transparent, transparent calc(25% - 1px), #e2e8f0 1px, #e2e8f0 25%); }
+        .gantt-box .gantt-bar-p { position: absolute; top: 4px; left: 0; height: 10px; min-width: 6px; max-width: 100%; box-sizing: border-box; background: #2563eb; border: 1px solid #1e40af; border-radius: 3px; }
+        .gantt-box .gantt-bar-a { position: absolute; bottom: 4px; left: 0; height: 10px; min-width: 6px; max-width: 100%; box-sizing: border-box; background: #059669; border: 1px solid #065f46; border-radius: 3px; }
+        .gantt-box .gantt-hoje { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; z-index: 2; }
+        .gantt-box tr.gantt-row-atraso td { background: #fef2f2 !important; }
+        .gantt-box .gantt-label.sub { padding-left: 20px; font-size: 12px; color: #64748b; }
+        .gantt-legend { margin-top: 12px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 12px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .gantt-legend .swatch { display: inline-block; width: 20px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tasks"></i> Plano de execução: {{ ordem.codigo }}</h1>
+            <p class="info">Defina as etapas (actividades e subactividades) da ordem de execução. Os nomes são personalizáveis. Pode indicar a <strong>data prevista de início</strong> e o <strong>prazo previsto de conclusão</strong> de cada uma para o cronograma.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-warning{% endif %}">
+                    {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>{% elif message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>{% else %}<i class="fas fa-info-circle"></i>{% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="help-text">
+            <strong>Obrigatório:</strong> Ao converter uma cotação em ordem de serviço, deve definir pelo menos uma etapa. Pode adicionar subactividades (dependentes de uma actividade principal). A ordem de execução é respeitada ao iniciar/pausar/concluir. Pode ligar cada etapa a uma <strong>parcela do contrato</strong>: ao concluir essa etapa, a parcela fica exigível e é criado o pendente de conta a receber em Finanças.
+        </p>
+
+        {% if cronograma_atrasos %}
+        <div style="margin-bottom: 20px; padding: 14px 18px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; border-left: 4px solid #dc2626;">
+            <strong style="color: #991b1b; font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> Actividades em atraso / concluídas com atraso</strong>
+            <ul style="margin: 10px 0 0 20px; color: #991b1b; font-size: 13px;">
+                {% for atraso in cronograma_atrasos %}
+                <li>{% if atraso.tipo == 'em_atraso' %}<strong>{{ atraso.atividade.nome }}</strong> — em atraso ({{ atraso.dias }} dia{{ atraso.dias|pluralize }}){% else %}{{ atraso.atividade.nome }} — concluída com {{ atraso.dias }} dia{{ atraso.dias|pluralize }} de atraso{% endif %}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if plano_tem_etapas and cronograma_gantt and gantt_min_date and gantt_max_date %}
+        <div class="gantt-box" style="margin-bottom: 24px;">
+            <div class="gantt-header">
+                <h3><i class="fas fa-chart-gantt"></i> Cronograma físico</h3>
+                <p>Previsto vs. real por actividade ({{ gantt_min_date|date:"d/m/Y" }} – {{ gantt_max_date|date:"d/m/Y" }})</p>
+            </div>
+            <div class="gantt-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 200px;">Actividade</th>
+                            <th>
+                                <div style="position: relative; height: 36px;">
+                                    {% for t in gantt_ticks %}
+                                    <span style="position: absolute; left: {{ t.pct }}%; transform: translateX(-50%); top: 4px; font-size: 11px; font-weight: 600; color: #475569;">{{ t.date|date:"d/m" }}</span>
+                                    {% endfor %}
+                                    {% if gantt_hoje_pct is not None %}
+                                    <span style="position: absolute; left: {{ gantt_hoje_pct }}%; top: 0; bottom: 0; width: 2px; background: #dc2626; transform: translateX(-1px); z-index: 2;"></span>
+                                    <span style="position: absolute; left: {{ gantt_hoje_pct }}%; transform: translateX(-50%); top: 2px; font-size: 10px; font-weight: 700; color: #dc2626;">Hoje</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in cronograma_gantt %}
+                        <tr class="{% if g.em_atraso %}gantt-row-atraso{% endif %}">
+                            <td class="{% if g.item.e_subactividade %}gantt-label sub{% endif %}">{% if g.item.e_subactividade %}&rarr; {% endif %}{{ g.item.atividade.nome }}</td>
+                            <td>
+                                <div class="gantt-track">
+                                    {% if gantt_hoje_pct is not None %}<span class="gantt-hoje" style="left: {{ gantt_hoje_pct }}%; transform: translateX(-1px);"></span>{% endif %}
+                                    {% if g.width_p > 0 %}<div class="gantt-bar-p" style="left: {{ g.left_p }}%; width: {{ g.width_p }}%;"></div>{% endif %}
+                                    {% if g.width_a > 0 %}<div class="gantt-bar-a" style="left: {{ g.left_a }}%; width: {{ g.width_a }}%;"></div>{% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="gantt-legend">
+                    <span><span class="swatch" style="background:#2563eb;border:1px solid #1e40af;"></span> Previsto</span>
+                    <span><span class="swatch" style="background:#059669;border:1px solid #065f46;"></span> Real (executado)</span>
+                    {% if gantt_hoje_pct is not None %}<span><span class="swatch" style="width:4px;height:12px;background:#dc2626;"></span> Hoje</span>{% endif %}
+                    <span><span class="swatch" style="background:#dc2626;border:1px solid #b91c1c;"></span> Em atraso</span>
+                </div>
+                <p class="help-text" style="margin-top: 14px; margin-bottom: 0; font-size: 13px;">
+                    <i class="fas fa-info-circle"></i> <strong>Para ver as barras:</strong> defina o <strong>Prazo previsto</strong> em cada etapa abaixo e guarde o plano — aparecem as barras azuis (previsto). Ao <strong>iniciar</strong> e <strong>concluir</strong> actividades na ordem, aparecem as barras verdes (real).
+                </p>
+            </div>
+        </div>
+        {% elif plano_tem_etapas %}
+        <p class="help-text" style="margin-bottom: 20px;">
+            <i class="fas fa-info-circle"></i> Indique o <strong>prazo previsto</strong> em cada etapa abaixo para visualizar o cronograma físico.
+        </p>
+        {% endif %}
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="etapa_count" id="etapa_count" value="{{ etapa_count }}">
+            {% if from_vendas %}<input type="hidden" name="from" value="vendas">{% endif %}
+
+            <div id="etapas-lista">
+                {% for item in etapas %}
+                <div class="etapa-row {% if item.parent_flat_idx >= 0 %}subactividade{% endif %}" data-index="{{ forloop.counter0 }}">
+                    <span class="etapa-num">{{ forloop.counter }}.</span>
+                    <div>
+                        <label>Nome da etapa</label>
+                        <input type="text" name="etapa_{{ forloop.counter0 }}_nome" value="{{ item.atividade.nome }}" placeholder="Ex: Montagem, Instalação..." required>
+                    </div>
+                    <div>
+                        <label>Data prevista início</label>
+                        <input type="date" name="etapa_{{ forloop.counter0 }}_data_prevista_inicio" value="{% if item.atividade.data_prevista_inicio %}{{ item.atividade.data_prevista_inicio|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    <div>
+                        <label>Prazo previsto conclusão</label>
+                        <input type="date" name="etapa_{{ forloop.counter0 }}_data_prevista" value="{% if item.atividade.data_prevista_conclusao %}{{ item.atividade.data_prevista_conclusao|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    <div>
+                        <label>Subactividade de</label>
+                        <select name="etapa_{{ forloop.counter0 }}_parent_idx">
+                            <option value="-1" {% if item.parent_flat_idx == -1 %}selected{% endif %}>— Principal</option>
+                            {% for idx, label in roots_choices %}
+                                <option value="{{ idx }}" {% if item.parent_flat_idx == idx %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if servicos_orcamento %}
+                    <div class="etapa-servicos">
+                        <label style="margin-bottom: 6px;">Serviços que esta etapa entrega</label>
+                        <div class="servicos-checkboxes">
+                            {% for s in item.servicos_disponiveis %}
+                            <label><input type="checkbox" class="servico-cb-etapa" name="etapa_{{ forloop.parentloop.counter0 }}_servicos" value="{{ s.id }}" {% if s in item.atividade.servicos_entregues.all %}checked{% endif %}> {{ s.nome_para_documento|default:s.servico.nome }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trabalhos_empreitada %}
+                    <div>
+                        <label>Trabalho empreitada (RH)</label>
+                        <select name="etapa_{{ forloop.counter0 }}_trabalho_empreitada">
+                            <option value="">— Nenhum</option>
+                            {% for t in item.trabalhos_disponiveis %}
+                            <option value="{{ t.id }}" {% if item.atividade.trabalho_empreitada_id == t.id %}selected{% endif %}>{{ t.descricao }} ({{ t.prestador.nome }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    {% if parcelas_ordem %}
+                    <div>
+                        <label>Parcela (contrato)</label>
+                        <select name="etapa_{{ forloop.counter0 }}_parcela">
+                            <option value="">— Nenhuma</option>
+                            {% for p in parcelas_ordem %}
+                            <option value="{{ p.id }}" {% if item.atividade.parcela_id == p.id %}selected{% endif %}>Parcela {{ p.numero_ordem }} ({{ p.percentagem }}%) – {{ p.get_tipo_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div style="padding-top: 24px;">
+                        <button type="button" class="btn btn-danger btn-remover-etapa"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="etapa-row" data-index="0">
+                    <span class="etapa-num">1.</span>
+                    <div>
+                        <label>Nome da etapa</label>
+                        <input type="text" name="etapa_0_nome" placeholder="Ex: Montagem, Instalação..." required>
+                    </div>
+                    <div>
+                        <label>Data prevista início</label>
+                        <input type="date" name="etapa_0_data_prevista_inicio">
+                    </div>
+                    <div>
+                        <label>Prazo previsto conclusão</label>
+                        <input type="date" name="etapa_0_data_prevista">
+                    </div>
+                    <div>
+                        <label>Subactividade de</label>
+                        <select name="etapa_0_parent_idx"><option value="-1" selected>— Principal</option></select>
+                    </div>
+                    {% if servicos_orcamento %}
+                    <div class="etapa-servicos">
+                        <label style="margin-bottom: 6px;">Serviços que esta etapa entrega</label>
+                        <div class="servicos-checkboxes">
+                            {% for s in servicos_orcamento %}
+                            <label><input type="checkbox" name="etapa_0_servicos" value="{{ s.id }}"> {{ s.nome_para_documento|default:s.servico.nome }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trabalhos_empreitada %}
+                    <div>
+                        <label>Trabalho empreitada (RH)</label>
+                        <select name="etapa_0_trabalho_empreitada">
+                            <option value="">— Nenhum</option>
+                            {% for t in trabalhos_empreitada %}
+                            <option value="{{ t.id }}">{{ t.descricao }} ({{ t.prestador.nome }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    {% if parcelas_ordem %}
+                    <div>
+                        <label>Parcela (contrato)</label>
+                        <select name="etapa_0_parcela">
+                            <option value="">— Nenhuma</option>
+                            {% for p in parcelas_ordem %}
+                            <option value="{{ p.id }}">Parcela {{ p.numero_ordem }} ({{ p.percentagem }}%) – {{ p.get_tipo_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div style="padding-top: 24px;">
+                        <button type="button" class="btn btn-danger btn-remover-etapa"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="btn-adicionar-etapa" class="btn btn-primary" style="margin-top: 12px;"><i class="fas fa-plus"></i> Adicionar etapa</button>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar plano</button>
+                <a href="{% url 'producao:servico_ordem_plano_imprimir' ordem.id %}" target="_blank" class="btn btn-secondary"><i class="fas fa-print"></i> Imprimir plano de trabalho</a>
+                {% if from_vendas %}
+                <a href="{% url 'vendas:pedido_detail' ordem.id %}" class="btn btn-secondary"><i class="fas fa-shopping-cart"></i> Voltar ao pedido (Vendas)</a>
+                {% endif %}
+                <a href="{% url 'producao:servico_ordem_detail' ordem.id %}" class="btn btn-secondary"><i class="fas fa-clipboard-list"></i> Ver ordem de serviço</a>
+            </div>
+        </form>
+    </div>
+    {% if servicos_orcamento %}
+    <div id="template-servicos-wrap" style="display:none;">
+        <div class="etapa-servicos">
+            <label style="margin-bottom: 6px;">Serviços que esta etapa entrega</label>
+            <div class="servicos-checkboxes">
+                {% for s in servicos_orcamento %}
+                <label><input type="checkbox" class="servico-cb" value="{{ s.id }}" name="etapa_TPL_servicos"> {{ s.nome_para_documento|default:s.servico.nome }}</label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if trabalhos_empreitada %}
+    <div id="template-trabalho-wrap" style="display:none;">
+        <div>
+            <label>Trabalho empreitada (RH)</label>
+            <select id="template-trabalho-select">
+                <option value="">— Nenhum</option>
+                {% for t in trabalhos_empreitada %}
+                <option value="{{ t.id }}">{{ t.descricao }} ({{ t.prestador.nome }})</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+    {% if parcelas_ordem %}
+    <div id="template-parcela-wrap" style="display:none;">
+        <div>
+            <label>Parcela (contrato)</label>
+            <select id="template-parcela-select">
+                <option value="">— Nenhuma</option>
+                {% for p in parcelas_ordem %}
+                <option value="{{ p.id }}">Parcela {{ p.numero_ordem }} ({{ p.percentagem }}%) – {{ p.get_tipo_display }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        (function() {
+            var lista = document.getElementById('etapas-lista');
+            var countInput = document.getElementById('etapa_count');
+            var maxEtapas = 30;
+
+            function renumberRows() {
+                var rows = lista.querySelectorAll('.etapa-row');
+                countInput.value = rows.length;
+                var roots = [];
+                rows.forEach(function(row, i) {
+                    row.setAttribute('data-index', i);
+                    row.querySelector('.etapa-num').textContent = (i + 1) + '.';
+                    var nomeInp = row.querySelector('input[name$="_nome"]');
+                    var dataInicioInp = row.querySelector('input[name$="_data_prevista_inicio"]');
+                    var dataInp = row.querySelector('input[name$="_data_prevista"]');
+                    var sel = row.querySelector('select[name$="_parent_idx"]');
+                    var servicosCbs = row.querySelectorAll('.etapa-servicos input[type="checkbox"]');
+                    var selTrabalho = row.querySelector('select[name$="_trabalho_empreitada"]');
+                    var selParcela = row.querySelector('select[name$="_parcela"]');
+                    if (nomeInp) nomeInp.name = 'etapa_' + i + '_nome';
+                    if (dataInicioInp) dataInicioInp.name = 'etapa_' + i + '_data_prevista_inicio';
+                    if (dataInp) dataInp.name = 'etapa_' + i + '_data_prevista';
+                    servicosCbs.forEach(function(cb) { cb.name = 'etapa_' + i + '_servicos'; });
+                    if (selTrabalho) selTrabalho.name = 'etapa_' + i + '_trabalho_empreitada';
+                    if (selParcela) selParcela.name = 'etapa_' + i + '_parcela';
+                    if (sel) {
+                        sel.name = 'etapa_' + i + '_parent_idx';
+                        var isRoot = sel.value === '-1' || sel.value === '';
+                        if (isRoot) roots.push({ idx: i, nome: nomeInp ? nomeInp.value : '' });
+                    }
+                });
+                // Atualizar opções "Principal" e pais nos selects
+                rows.forEach(function(row, i) {
+                    var sel = row.querySelector('select[name$="_parent_idx"]');
+                    if (!sel) return;
+                    var optPrincipal = sel.querySelector('option[value="-1"]');
+                    var optsPais = sel.querySelectorAll('option[value!="-1"]');
+                    optsPais.forEach(function(o) { o.remove(); });
+                    roots.forEach(function(r) {
+                        if (r.idx < i) {
+                            var opt = document.createElement('option');
+                            opt.value = r.idx;
+                            opt.textContent = (r.idx + 1) + '. ' + (r.nome || 'Actividade');
+                            sel.appendChild(opt);
+                        }
+                    });
+                });
+                // Trabalho empreitada: desactivar em cada select as opções já escolhidas noutras etapas
+                rows.forEach(function(row, i) {
+                    var selTrabalho = row.querySelector('select[name$="_trabalho_empreitada"]');
+                    if (!selTrabalho) return;
+                    var selectedElsewhere = new Set();
+                    rows.forEach(function(other, j) {
+                        if (j === i) return;
+                        var o = other.querySelector('select[name$="_trabalho_empreitada"]');
+                        if (o && o.value) selectedElsewhere.add(o.value);
+                    });
+                    var currentVal = selTrabalho.value;
+                    Array.from(selTrabalho.options).forEach(function(opt) {
+                        if (opt.value === '') return;
+                        if (opt.value === currentVal) { opt.disabled = false; return; }
+                        opt.disabled = selectedElsewhere.has(opt.value);
+                    });
+                });
+                // Serviços: desactivar em cada etapa os checkboxes já assinalados noutras etapas
+                rows.forEach(function(row, i) {
+                    var cbs = row.querySelectorAll('.etapa-servicos input[type="checkbox"]');
+                    if (!cbs.length) return;
+                    var checkedElsewhere = new Set();
+                    rows.forEach(function(other, j) {
+                        if (j === i) return;
+                        other.querySelectorAll('.etapa-servicos input[type="checkbox"]:checked').forEach(function(cb) {
+                            if (cb.value) checkedElsewhere.add(cb.value);
+                        });
+                    });
+                    cbs.forEach(function(cb) {
+                        if (cb.checked) { cb.disabled = false; return; }
+                        cb.disabled = checkedElsewhere.has(cb.value);
+                    });
+                });
+            }
+
+            document.getElementById('btn-adicionar-etapa').addEventListener('click', function() {
+                var rows = lista.querySelectorAll('.etapa-row');
+                if (rows.length >= maxEtapas) return;
+                var idx = rows.length;
+                var roots = [];
+                rows.forEach(function(row, i) {
+                    var sel = row.querySelector('select[name$="_parent_idx"]');
+                    var nomeInp = row.querySelector('input[name$="_nome"]');
+                    if (sel && (sel.value === '-1' || sel.value === '')) roots.push({ idx: i, nome: nomeInp ? nomeInp.value : '' });
+                });
+                var optPais = roots.map(function(r) { return '<option value="' + r.idx + '">' + (r.idx + 1) + '. ' + (r.nome || 'Actividade') + '</option>'; }).join('');
+                var servicosHtml = '';
+                var templateWrap = document.getElementById('template-servicos-wrap');
+                if (templateWrap) {
+                    var clone = templateWrap.querySelector('.etapa-servicos').cloneNode(true);
+                    clone.querySelectorAll('.servico-cb').forEach(function(cb) { cb.name = 'etapa_' + idx + '_servicos'; });
+                    servicosHtml = clone.outerHTML;
+                }
+                var trabalhoHtml = '';
+                var templateTrabalho = document.getElementById('template-trabalho-wrap');
+                if (templateTrabalho) {
+                    var cloneT = templateTrabalho.querySelector('div').cloneNode(true);
+                    cloneT.querySelector('select').name = 'etapa_' + idx + '_trabalho_empreitada';
+                    cloneT.querySelector('select').id = '';
+                    trabalhoHtml = cloneT.outerHTML;
+                }
+                var parcelaHtml = '';
+                var templateParcela = document.getElementById('template-parcela-wrap');
+                if (templateParcela) {
+                    var cloneP = templateParcela.querySelector('div').cloneNode(true);
+                    cloneP.querySelector('select').name = 'etapa_' + idx + '_parcela';
+                    cloneP.querySelector('select').id = '';
+                    parcelaHtml = cloneP.outerHTML;
+                }
+                var novaLinha = document.createElement('div');
+                novaLinha.className = 'etapa-row';
+                novaLinha.setAttribute('data-index', idx);
+                novaLinha.innerHTML = '<span class="etapa-num">' + (idx + 1) + '.</span>' +
+                    '<div><label>Nome da etapa</label><input type="text" name="etapa_' + idx + '_nome" placeholder="Ex: Montagem..." required></div>' +
+                    '<div><label>Data prevista início</label><input type="date" name="etapa_' + idx + '_data_prevista_inicio"></div>' +
+                    '<div><label>Prazo previsto conclusão</label><input type="date" name="etapa_' + idx + '_data_prevista"></div>' +
+                    '<div><label>Subactividade de</label><select name="etapa_' + idx + '_parent_idx"><option value="-1" selected>— Principal</option>' + optPais + '</select></div>' +
+                    servicosHtml +
+                    trabalhoHtml +
+                    parcelaHtml +
+                    '<div style="padding-top:24px"><button type="button" class="btn btn-danger btn-remover-etapa"><i class="fas fa-trash"></i></button></div>';
+                lista.appendChild(novaLinha);
+                renumberRows();
+            });
+
+            lista.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-remover-etapa')) {
+                    var row = e.target.closest('.etapa-row');
+                    if (lista.querySelectorAll('.etapa-row').length <= 1) return;
+                    row.remove();
+                    renumberRows();
+                }
+            });
+            lista.addEventListener('change', function(e) {
+                if (e.target.matches('select[name$="_trabalho_empreitada"]') || (e.target.type === 'checkbox' && e.target.closest('.etapa-servicos'))) renumberRows();
+            });
+
+            renumberRows();
+        })();
+    </script>
+</body>
+</html>

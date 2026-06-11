@@ -1,0 +1,124 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{% if zona %}Editar {{ zona.codigo }}{% else %}Nova zona{% endif %}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:masterdata:zonas_list' as zonas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Zonas' breadcrumb_section_url=zonas_list_url breadcrumb_current=zona.codigo|default:'Nova zona' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-{% if zona %}edit{% else %}plus{% endif %}" aria-hidden="true"></i>
+                    {% if zona %}Editar zona{% else %}Nova zona logística{% endif %}
+                </h1>
+                {% if zona %}<p class="page-subtitle">{{ zona.codigo }}</p>{% endif %}
+            </div>
+            <div class="header-actions">
+                <a href="{% if zona %}{% url 'stock:masterdata:zona_detail' zona.id %}{% else %}{% url 'stock:masterdata:zonas_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    {% if not zona %}
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        O <strong>código</strong> (ex.: ZN0001) é gerado automaticamente ao guardar.
+    </div>
+    {% else %}
+    <div class="form-field stock-u-mb-16">
+        <span class="form-label">Código</span>
+        <p><code>{{ zona.codigo }}</code></p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Identificação</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="nome">Nome *</label>
+                        <input type="text" id="nome" name="nome" class="form-control" required maxlength="100" value="{{ zona.nome|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="regiao">Região *</label>
+                        <select id="regiao" name="regiao" class="form-select" required>
+                            <option value="">Seleccionar...</option>
+                            {% for r in regioes %}
+                            <option value="{{ r.id }}" {% if zona.regiao_id == r.id %}selected{% endif %}>{{ r.nome }} ({{ r.codigo }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="prazo_entrega_dias">Prazo entrega (dias)</label>
+                        <input type="number" id="prazo_entrega_dias" name="prazo_entrega_dias" class="form-control" value="{{ zona.prazo_entrega_dias|default:1 }}" min="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Custos e limites</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="custo_adicional">Custo adicional (MT)</label>
+                        <input type="number" id="custo_adicional" name="custo_adicional" class="form-control" step="0.01" value="{{ zona.custo_adicional|default:0 }}" min="0">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="peso_maximo_kg">Peso máximo (kg)</label>
+                        <input type="number" id="peso_maximo_kg" name="peso_maximo_kg" class="form-control" step="0.01" value="{{ zona.peso_maximo_kg|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="volume_maximo_m3">Volume máximo (m³)</label>
+                        <input type="number" id="volume_maximo_m3" name="volume_maximo_m3" class="form-control" step="0.0001" value="{{ zona.volume_maximo_m3|default:'' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Horário e dias</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="horario_inicio">Horário início</label>
+                        <input type="time" id="horario_inicio" name="horario_inicio" class="form-control" value="{% if zona %}{{ zona.horario_inicio|time:'H:i' }}{% else %}08:00{% endif %}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="horario_fim">Horário fim</label>
+                        <input type="time" id="horario_fim" name="horario_fim" class="form-control" value="{% if zona %}{{ zona.horario_fim|time:'H:i' }}{% else %}18:00{% endif %}">
+                    </div>
+                </div>
+                <fieldset class="stock-u-mt-16">
+                    <legend class="form-label">Dias de funcionamento</legend>
+                    <div class="form-check-group">
+                        <label class="form-check"><input type="checkbox" name="dia_0" {% if zona and 0 in zona.dias_funcionamento %}checked{% endif %}> Segunda</label>
+                        <label class="form-check"><input type="checkbox" name="dia_1" {% if zona and 1 in zona.dias_funcionamento %}checked{% endif %}> Terça</label>
+                        <label class="form-check"><input type="checkbox" name="dia_2" {% if zona and 2 in zona.dias_funcionamento %}checked{% endif %}> Quarta</label>
+                        <label class="form-check"><input type="checkbox" name="dia_3" {% if zona and 3 in zona.dias_funcionamento %}checked{% endif %}> Quinta</label>
+                        <label class="form-check"><input type="checkbox" name="dia_4" {% if zona and 4 in zona.dias_funcionamento %}checked{% endif %}> Sexta</label>
+                        <label class="form-check"><input type="checkbox" name="dia_5" {% if zona and 5 in zona.dias_funcionamento %}checked{% endif %}> Sábado</label>
+                        <label class="form-check"><input type="checkbox" name="dia_6" {% if zona and 6 in zona.dias_funcionamento %}checked{% endif %}> Domingo</label>
+                    </div>
+                </fieldset>
+                {% if zona %}
+                <label class="form-check stock-u-mt-16">
+                    <input type="checkbox" name="ativo" {% if zona.ativo %}checked{% endif %}> Zona activa
+                </label>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
+            <a href="{% if zona %}{% url 'stock:masterdata:zona_detail' zona.id %}{% else %}{% url 'stock:masterdata:zonas_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

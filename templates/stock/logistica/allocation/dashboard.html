@@ -3,27 +3,11 @@
 
 {% block title %}Dashboard Alocação Automática{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Alocação Automática</span>
-    </nav>
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Alocação automática' %}
 
     <!-- Page Header -->
     <div class="page-header">
@@ -51,41 +35,30 @@
     </div>
 
     <!-- Estatísticas Gerais -->
-    <div class="stats-grid">
-        <div class="stat-card stat-success">
-            <div class="stat-icon">
-                <i class="fas fa-truck"></i>
-            </div>
+    <div class="stats-grid stock-dash-kpi-grid">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-truck"></i></div>
             <div class="stat-content">
                 <div class="stat-number">{{ stats.alocados_veiculo_interno }}</div>
                 <div class="stat-label">Veículos Internos</div>
             </div>
         </div>
-
-        <div class="stat-card stat-info">
-            <div class="stat-icon">
-                <i class="fas fa-shipping-fast"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-shipping-fast"></i></div>
             <div class="stat-content">
                 <div class="stat-number">{{ stats.alocados_transportadora }}</div>
                 <div class="stat-label">Transportadoras</div>
             </div>
         </div>
-
-        <div class="stat-card stat-warning">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
             <div class="stat-content">
                 <div class="stat-number">{{ stats.nao_alocados }}</div>
                 <div class="stat-label">Não Alocados</div>
             </div>
         </div>
-
-        <div class="stat-card stat-primary">
-            <div class="stat-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-chart-line"></i></div>
             <div class="stat-content">
                 <div class="stat-number">{{ stats.total_rastreamentos }}</div>
                 <div class="stat-label">Total Processados</div>
@@ -126,19 +99,19 @@
                                         <td>
                                             <span class="badge badge-secondary">{{ rastreamento.codigo_rastreamento }}</span>
                                         </td>
-                                        <td>{{ rastreamento.nome_destinatario }}</td>
+                                        <td>{{ rastreamento.destinatario_nome }}</td>
                                         <td>
-                                            <span class="badge badge-{% if rastreamento.status_atual == 'PENDENTE' %}warning{% elif rastreamento.status_atual == 'PREPARANDO' %}info{% else %}secondary{% endif %}">
+                                            <span class="badge badge-{% if rastreamento.status_atual == 'PREPARANDO' %}info{% else %}secondary{% endif %}">
                                                 {{ rastreamento.status_atual }}
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'stock:allocation:single' rastreamento.id %}" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-robot"></i>
+                                            <div class="cell-actions">
+                                                <a href="{% url 'stock:allocation:single' rastreamento.id %}" class="btn-action primary" title="Alocar automaticamente" aria-label="Alocar {{ rastreamento.codigo_rastreamento }}">
+                                                    <i class="fas fa-robot" aria-hidden="true"></i>
                                                 </a>
-                                                <a href="{% url 'stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i>
+                                                <a href="{% url 'stock:logistica:rastreamento_detail' rastreamento.id %}" class="btn-action secondary" title="Ver rastreamento" aria-label="Ver rastreamento {{ rastreamento.codigo_rastreamento }}">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
                                                 </a>
                                             </div>
                                         </td>
@@ -163,7 +136,7 @@
                 <div class="card-header">
                     <h3 class="card-title">
                         <i class="fas fa-history text-primary"></i>
-                        Alocações Recentes (24h)
+                        Alocações Recentes
                     </h3>
                     <div class="card-actions">
                         <a href="{% url 'stock:allocation:history' %}" class="btn btn-primary btn-sm">
@@ -201,15 +174,17 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if rastreamento.custo_estimado %}
-                                                R$ {{ rastreamento.custo_estimado|floatformat:2 }}
+                                            {% if rastreamento.custo_envio %}
+                                                {{ rastreamento.custo_envio|floatformat:2 }} MT
                                             {% else %}
                                                 <span class="text-muted">-</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if rastreamento.sla_estimado_dias %}
-                                                {{ rastreamento.sla_estimado_dias }} dias
+                                            {% if rastreamento.transportadora and rastreamento.transportadora.prazo_entrega_padrao %}
+                                                {{ rastreamento.transportadora.prazo_entrega_padrao }} dias
+                                            {% elif rastreamento.veiculo_interno %}
+                                                1 dia
                                             {% else %}
                                                 <span class="text-muted">-</span>
                                             {% endif %}
@@ -244,13 +219,13 @@
                     <div class="row">
                         <div class="col-6">
                             <div class="text-center">
-                                <h4 class="text-success">R$ {{ stats.custo_medio_veiculo_interno|floatformat:2 }}</h4>
+                                <h4 class="text-success">{{ stats.custo_medio_veiculo_interno|floatformat:2 }} MT</h4>
                                 <p class="text-muted">Custo Médio<br>Veículos Internos</p>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="text-center">
-                                <h4 class="text-info">R$ {{ stats.custo_medio_transportadora|floatformat:2 }}</h4>
+                                <h4 class="text-info">{{ stats.custo_medio_transportadora|floatformat:2 }} MT</h4>
                                 <p class="text-muted">Custo Médio<br>Transportadoras</p>
                             </div>
                         </div>

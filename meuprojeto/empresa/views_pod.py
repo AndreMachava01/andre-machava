@@ -33,63 +33,71 @@ logger = logging.getLogger(__name__)
 @require_stock_access
 def provas_entrega_list(request):
     """Lista de provas de entrega."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    tipo_entrega = request.GET.get('tipo_entrega', '')
-    validada = request.GET.get('validada', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    tipo_entrega = request.GET.get('tipo_entrega', '').strip()
+    validada = request.GET.get('validada', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     provas = ProvaEntrega.objects.select_related(
-        'rastreamento_entrega', 'entregue_por', 'validada_por'
+        'rastreamento_entrega', 'entregue_por', 'validada_por',
     )
-    
+
     if search:
         provas = provas.filter(
-            Q(codigo__icontains=search) |
-            Q(rastreamento_entrega__codigo_rastreamento__icontains=search) |
-            Q(nome_destinatario__icontains=search) |
-            Q(endereco_entrega__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(rastreamento_entrega__codigo_rastreamento__icontains=search)
+            | Q(nome_destinatario__icontains=search)
+            | Q(endereco_entrega__icontains=search),
         )
-    
+
     if status:
         provas = provas.filter(status=status)
-    
+
     if tipo_entrega:
         provas = provas.filter(tipo_entrega=tipo_entrega)
-    
-    if validada:
-        provas = provas.filter(validada=validada == 'true')
-    
+
+    if validada in ('true', 'false'):
+        provas = provas.filter(validada=(validada == 'true'))
+
     if data_inicio:
         provas = provas.filter(data_entrega__date__gte=data_inicio)
-    
+
     if data_fim:
         provas = provas.filter(data_entrega__date__lte=data_fim)
-    
+
     provas = provas.order_by('-data_entrega')
-    
-    # Paginação
+
+    stats = {
+        'total': provas.count(),
+        'pendentes': provas.filter(status='PENDENTE').count(),
+        'validadas': provas.filter(validada=True).count(),
+        'com_gps': provas.filter(
+            latitude__isnull=False,
+            longitude__isnull=False,
+        ).count(),
+    }
+
     paginator = Paginator(provas, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = ProvaEntrega.STATUS_CHOICES
-    tipo_entrega_choices = ProvaEntrega.TIPO_ENTREGA_CHOICES
-    
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     context = {
         'page_obj': page_obj,
+        'stats': stats,
         'search': search,
         'status': status,
         'tipo_entrega': tipo_entrega,
         'validada': validada,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
-        'tipo_entrega_choices': tipo_entrega_choices,
+        'status_choices': ProvaEntrega.STATUS_CHOICES,
+        'tipo_entrega_choices': ProvaEntrega.TIPO_ENTREGA_CHOICES,
+        'has_filters': bool(
+            search or status or tipo_entrega or validada or data_inicio or data_fim,
+        ),
     }
-    
+
     return render(request, 'stock/logistica/pod/provas_list.html', context)
 
 
@@ -622,37 +630,25 @@ def imprimir_etiqueta(request, etiqueta_id):
 @require_stock_access
 def dashboard_pod(request):
     """Dashboard de POD e documentos logísticos."""
-    hoje = timezone.now().date()
-    
-    # Estatísticas gerais
     pod_service = PODService()
     stats = pod_service.obter_estatisticas_pod()
-    
-    # Provas pendentes de validação
+
     provas_pendentes = pod_service.obter_provas_pendentes(dias_atraso=1)
-    
-    # Provas recentes (últimas 24h)
     provas_recentes = ProvaEntrega.objects.filter(
-        data_entrega__gte=timezone.now() - timedelta(days=1)
-    ).order_by('-data_entrega')[:10]
-    
-    # Guias pendentes de impressão
-    guias_pendentes = GuiaRemessa.objects.filter(
-        status='GERADA',
-        impressa=False
-    ).order_by('-data_emissao')[:5]
-    
-    # Etiquetas pendentes de impressão
-    etiquetas_pendentes = Etiqueta.objects.filter(
-        impressa=False
-    ).order_by('-data_criacao')[:5]
-    
+        data_entrega__gte=timezone.now() - timedelta(days=1),
+    ).select_related('rastreamento_entrega').order_by('-data_entrega')[:10]
+
+    guias_qs = GuiaRemessa.objects.filter(status='GERADA', impressa=False)
+    etiquetas_qs = Etiqueta.objects.filter(impressa=False)
+
     context = {
         'stats': stats,
         'provas_pendentes': provas_pendentes,
         'provas_recentes': provas_recentes,
-        'guias_pendentes': guias_pendentes,
-        'etiquetas_pendentes': etiquetas_pendentes,
+        'guias_pendentes': guias_qs.order_by('-data_emissao')[:5],
+        'etiquetas_pendentes': etiquetas_qs.order_by('-data_criacao')[:5],
+        'total_guias_pendentes': guias_qs.count(),
+        'total_etiquetas_pendentes': etiquetas_qs.count(),
     }
-    
+
     return render(request, 'stock/logistica/pod/dashboard.html', context)

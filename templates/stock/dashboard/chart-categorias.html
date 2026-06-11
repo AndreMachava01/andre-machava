@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Categorias - Sistema Conception</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #b45309;
+        }
+        
+        .stat-card.success {
+            border-left-color: #28a745;
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.success .stat-number {
+            color: #28a745;
+        }
+        
+        .stat-card.warning .stat-number {
+            color: #ffc107;
+        }
+        
+        .stat-card.info .stat-number {
+            color: #17a2b8;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-description {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .category-list {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .category-list h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .category-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .category-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .category-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .category-stat {
+            text-align: center;
+        }
+        
+        .category-stat .number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #b45309;
+        }
+        
+        .category-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .category-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gráfico de Categorias</h1>
+            <p>Distribuição de produtos por categoria</p>
+        </div>
+
+        <div class="actions">
+            <a href="/stock/dashboard/" class="btn btn-primary">Voltar ao Dashboard</a>
+            <a href="/stock/" class="btn btn-secondary">Voltar ao Stock</a>
+            <a href="/stock/categorias/" class="btn btn-info">Ver Categorias</a>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Carregando dados do gráfico...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Erro ao carregar dados do gráfico. Tente novamente.</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-categorias">0</div>
+                    <div class="stat-label">Total Categorias</div>
+                    <div class="stat-description">Categorias com produtos</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-number" id="total-quantidade">0</div>
+                    <div class="stat-label">Total Quantidade</div>
+                    <div class="stat-description">Unidades em estoque</div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-number" id="total-valor">0</div>
+                    <div class="stat-label">Valor Total</div>
+                    <div class="stat-description">Valor em MT</div>
+                </div>
+                
+                <div class="stat-card info">
+                    <div class="stat-number" id="categoria-top">-</div>
+                    <div class="stat-label">Categoria Top</div>
+                    <div class="stat-description">Maior quantidade</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>📊 Quantidade por Categoria</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="quantidadeChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>💰 Valor por Categoria</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="valorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-list">
+                <h3>📋 Detalhes por Categoria</h3>
+                <div id="category-details">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+            </div>
+
+            <div class="empty">
+                <p><strong>📈 Gráfico de Categorias</strong></p>
+                <p>Visualização da distribuição de produtos por categoria.</p>
+                <p>Compare quantidades e valores entre diferentes categorias.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let quantidadeChart = null;
+        let valorChart = null;
+        
+        // Carregar dados do gráfico
+        async function loadChartData() {
+            try {
+                const response = await fetch('/stock/dashboard/chart-categorias/', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar loading e mostrar conteúdo
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Calcular estatísticas
+                const labels = data.labels || [];
+                const quantidadeData = data.datasets[0]?.data || [];
+                const valorData = data.datasets[1]?.data || [];
+                
+                const totalQuantidade = quantidadeData.reduce((sum, val) => sum + parseFloat(val), 0);
+                const totalValor = valorData.reduce((sum, val) => sum + val, 0);
+                const categoriaTop = labels[0] || '-';
+                
+                // Preencher estatísticas
+                document.getElementById('total-categorias').textContent = labels.length;
+                document.getElementById('total-quantidade').textContent = totalQuantidade.toFixed(0);
+                document.getElementById('total-valor').textContent = totalValor.toLocaleString('pt-PT');
+                document.getElementById('categoria-top').textContent = categoriaTop;
+                
+                // Criar gráfico de quantidade
+                if (quantidadeChart) {
+                    quantidadeChart.destroy();
+                }
+                
+                const quantidadeCtx = document.getElementById('quantidadeChart').getContext('2d');
+                quantidadeChart = new Chart(quantidadeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: quantidadeData.map(val => parseFloat(val)),
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Quantidade de Produtos por Categoria'
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Categoria'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Criar gráfico de valor
+                if (valorChart) {
+                    valorChart.destroy();
+                }
+                
+                const valorCtx = document.getElementById('valorChart').getContext('2d');
+                valorChart = new Chart(valorCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Valor (MT)',
+                            data: valorData,
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Valor Total por Categoria'
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Valor (MT)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Categoria'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Preencher detalhes das categorias
+                const categoryDetails = document.getElementById('category-details');
+                categoryDetails.innerHTML = labels.map((label, index) => `
+                    <div class="category-item">
+                        <div class="category-name">${label}</div>
+                        <div class="category-stats">
+                            <div class="category-stat">
+                                <div class="number">${parseFloat(quantidadeData[index] || 0).toFixed(0)}</div>
+                                <div class="label">Quantidade</div>
+                            </div>
+                            <div class="category-stat">
+                                <div class="number">${(valorData[index] || 0).toLocaleString('pt-PT')}</div>
+                                <div class="label">Valor (MT)</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do gráfico:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        
+        // Carregar dados quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadChartData);
+    </script>
+</body>
+</html>

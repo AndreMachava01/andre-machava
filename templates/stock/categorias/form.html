@@ -9,149 +9,127 @@
     {% endif %}
 {% endblock %}
 
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'stock:main' %}">Stock</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'stock:categorias' %}">Categorias</a></li>
-            <li class="breadcrumb-item active">
-                {% if categoria %}Editar{% else %}Nova{% endif %} Categoria
-            </li>
-        </ol>
+<div class="container stock-form-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:categorias' %}">Categorias</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{% if categoria %}Editar{% else %}Nova{% endif %}</span>
     </nav>
 
-    <!-- Header -->
     <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>
-                <i class="fas fa-{% if categoria %}edit{% else %}plus{% endif %}"></i>
-                {% if categoria %}
-                    Editar Categoria
-                {% else %}
-                    Nova Categoria
-                {% endif %}
-            </h2>
-            <a href="{% url 'stock:categorias' %}" class="btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-{% if categoria %}edit{% else %}plus{% endif %}" aria-hidden="true"></i>
+                    {% if categoria %}Editar categoria — {{ categoria.nome }}{% else %}Nova categoria{% endif %}
+                </h1>
+                <p class="page-subtitle">
+                    {% if categoria %}Código {{ categoria.codigo }}{% else %}Cadastre uma nova categoria no catálogo{% endif %}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:categorias' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar à lista
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="form-container">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <!-- Informações Básicas -->
-                    <div class="form-section">
-                        <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nome" class="form-label required-field">Nome da Categoria</label>
-                                    <input type="text" class="form-control" id="nome" name="nome" 
-                                           value="{% if categoria %}{{ categoria.nome }}{% endif %}" required
-                                           placeholder="Nome descritivo da categoria">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="codigo" class="form-label required-field">Código</label>
-                                    <input type="text" class="form-control" id="codigo" name="codigo" 
-                                           value="{% if categoria %}{{ categoria.codigo }}{% endif %}" required
-                                           placeholder="Código único para identificação">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="tipo" class="form-label required-field">Tipo de Categoria</label>
-                                    <select class="form-select" id="tipo" name="tipo" required>
-                                        <option value="">Selecione o tipo</option>
-                                        {% for value, label in tipos %}
-                                            <option value="{{ value }}" 
-                                                    {% if categoria and categoria.tipo == value %}selected{% elif not categoria and value == 'AMBOS' %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="categoria_pai" class="form-label">Categoria Pai</label>
-                                    <select class="form-select" id="categoria_pai" name="categoria_pai">
-                                        <option value="">Selecione uma categoria pai (opcional)</option>
-                                        {% for cat in categorias_pai %}
-                                            <option value="{{ cat.id }}" 
-                                                    {% if categoria and categoria.categoria_pai and categoria.categoria_pai.id == cat.id %}selected{% endif %}>
-                                                {{ cat.nome }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="form-layout-with-sidebar">
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
 
-                    <!-- Descrição -->
-                    <div class="form-section">
-                        <h5><i class="fas fa-sticky-note"></i> Descrição</h5>
-                        <div class="mb-3">
-                            <label for="descricao" class="form-label">Descrição</label>
-                            <textarea class="form-control" id="descricao" name="descricao" rows="4" 
-                                      placeholder="Descrição detalhada da categoria (opcional)">{% if categoria %}{{ categoria.descricao }}{% endif %}</textarea>
+                <div class="form-section">
+                    <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Informações básicas</h5>
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label for="nome" class="form-label required-field">Nome da categoria</label>
+                            <input type="text" class="form-control" id="nome" name="nome"
+                                   value="{% if categoria %}{{ categoria.nome }}{% endif %}" required
+                                   placeholder="Nome descritivo">
+                        </div>
+                        <div class="form-field">
+                            <label for="codigo" class="form-label required-field">Código</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo"
+                                   value="{% if categoria %}{{ categoria.codigo }}{% endif %}" required
+                                   placeholder="Código único">
+                        </div>
+                        <div class="form-field">
+                            <label for="tipo" class="form-label required-field">Tipo de categoria</label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="">Selecione o tipo</option>
+                                {% for value, label in tipos %}
+                                <option value="{{ value }}" {% if categoria and categoria.tipo == value %}selected{% elif not categoria and value == 'AMBOS' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="categoria_pai" class="form-label">Categoria pai</label>
+                            <select class="form-select" id="categoria_pai" name="categoria_pai">
+                                <option value="">Nenhuma (raiz)</option>
+                                {% for cat in categorias_pai %}
+                                <option value="{{ cat.id }}" {% if categoria and categoria.categoria_pai and categoria.categoria_pai.id == cat.id %}selected{% endif %}>{{ cat.nome }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Botões de Ação -->
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'stock:categorias' %}" class="btn-secondary">
-                            <i class="fas fa-times"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save"></i>
-                            {% if categoria %}
-                                Atualizar Categoria
-                            {% else %}
-                                Criar Categoria
-                            {% endif %}
-                        </button>
+                <div class="form-section">
+                    <h5><i class="fas fa-sticky-note" aria-hidden="true"></i> Descrição</h5>
+                    <div class="form-field form-field--full">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="4"
+                                  placeholder="Descrição opcional">{% if categoria %}{{ categoria.descricao }}{% endif %}</textarea>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="form-actions-row is-split">
+                    <a href="{% url 'stock:categorias' %}" class="btn btn-secondary">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                        {% if categoria %}Atualizar categoria{% else %}Criar categoria{% endif %}
+                    </button>
+                </div>
+            </form>
         </div>
+
+        <aside class="info-card" aria-label="Ajuda">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Tipos</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled stock-info-card-list">
+                    <li><strong>Produto:</strong> apenas produtos</li>
+                    <li><strong>Material:</strong> apenas materiais</li>
+                    <li><strong>Ambos:</strong> produtos e materiais</li>
+                </ul>
+                <hr>
+                <p class="stock-info-card-text">O código deve ser único no sistema.</p>
+            </div>
+        </aside>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Validação do formulário
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const requiredFields = form.querySelectorAll('[required]');
-    
+
     form.addEventListener('submit', function(e) {
         let isValid = true;
-        
         requiredFields.forEach(function(field) {
             if (!field.value.trim()) {
                 field.classList.add('is-invalid');
@@ -160,14 +138,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 field.classList.remove('is-invalid');
             }
         });
-        
         if (!isValid) {
             e.preventDefault();
             alert('Por favor, preencha todos os campos obrigatórios.');
         }
     });
-    
-    // Remover classe de erro quando o usuário começar a digitar
+
     requiredFields.forEach(function(field) {
         field.addEventListener('input', function() {
             this.classList.remove('is-invalid');
@@ -176,4 +152,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-

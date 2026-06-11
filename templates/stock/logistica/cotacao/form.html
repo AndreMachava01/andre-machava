@@ -2,44 +2,27 @@
 
 {% block title %}Cotação Interna{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Cotação Interna</span>
-    </nav>
+<div class="container stock-form-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Cotação interna' %}
     
-    <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-calculator"></i>
-                    Cotação Interna
+                    <i class="fas fa-calculator" aria-hidden="true"></i>
+                    Cotação interna
                 </h1>
                 <p class="page-subtitle">
                     Calcular custos de transporte e logística
                 </p>
             </div>
             <div class="header-actions">
-                <a href="/stock/logistica/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar à Logística
+                <a href="{% url 'stock:logistica:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    Voltar à logística
                 </a>
             </div>
         </div>
@@ -47,66 +30,66 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="mb-3">
-                <label class="form-label">Transportadora</label>
-                <select id="transportadora" class="form-control">
+            <div class="form-group">
+                <label class="form-label" for="transportadora">Transportadora</label>
+                <select id="transportadora" class="form-control" title="Selecionar transportadora">
                     {% for t in transportadoras %}
                         <option value="{{ t.id }}">{{ t.nome }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="row">
-                <div class="col">
-                    <label class="form-label">Origem (Província)</label>
+            <div class="form-grid form-grid--2">
+                <div class="form-field">
+                    <label class="form-label" for="origem">Origem (província)</label>
                     <input id="origem" class="form-control" placeholder="Maputo" />
                 </div>
-                <div class="col">
-                    <label class="form-label">Destino (Província)</label>
+                <div class="form-field">
+                    <label class="form-label" for="destino">Destino (província)</label>
                     <input id="destino" class="form-control" placeholder="Maputo" />
                 </div>
             </div>
 
             <hr />
-            <div class="row">
-                <div class="col">
-                    <label class="form-label">Peso (kg)</label>
-                    <input id="peso" class="form-control" type="number" step="0.001" value="1" />
+            <div class="form-grid form-grid--3">
+                <div class="form-field">
+                    <label class="form-label" for="peso">Peso (kg)</label>
+                    <input id="peso" class="form-control" type="number" step="0.001" value="1" title="Peso em quilogramas" />
                 </div>
-                <div class="col">
-                    <label class="form-label">Dimensões (cm) C x L x A</label>
-                    <div class="d-flex gap-2">
-                        <input id="comp" class="form-control" type="number" step="0.1" placeholder="30" />
-                        <input id="larg" class="form-control" type="number" step="0.1" placeholder="20" />
-                        <input id="alt" class="form-control" type="number" step="0.1" placeholder="10" />
+                <div class="form-field">
+                    <span class="form-label">Dimensões (cm) C × L × A</span>
+                    <div class="form-grid form-grid--3 stock-form-grid--tight">
+                        <input id="comp" class="form-control" type="number" step="0.1" placeholder="30" aria-label="Comprimento em centímetros" title="Comprimento (cm)" />
+                        <input id="larg" class="form-control" type="number" step="0.1" placeholder="20" aria-label="Largura em centímetros" title="Largura (cm)" />
+                        <input id="alt" class="form-control" type="number" step="0.1" placeholder="10" aria-label="Altura em centímetros" title="Altura (cm)" />
                     </div>
                 </div>
-                <div class="col">
-                    <label class="form-label">Valor Declarado (MZN)</label>
-                    <input id="valor_decl" class="form-control" type="number" step="0.01" value="0" />
+                <div class="form-field">
+                    <label class="form-label" for="valor_decl">Valor declarado (MZN)</label>
+                    <input id="valor_decl" class="form-control" type="number" step="0.01" value="0" title="Valor declarado em meticais" />
                 </div>
             </div>
 
-            <div class="row mt-3">
-                <div class="col">
-                    <label class="form-label">Combustível (%)</label>
-                    <input id="fuel" class="form-control" type="number" step="0.01" value="0.12" />
+            <div class="form-grid form-grid--3 stock-u-mt-20">
+                <div class="form-field">
+                    <label class="form-label" for="fuel">Combustível (%)</label>
+                    <input id="fuel" class="form-control" type="number" step="0.01" value="0.12" title="Percentagem de combustível" />
                 </div>
-                <div class="col">
-                    <label class="form-label">Pedágios (MZN)</label>
-                    <input id="tolls" class="form-control" type="number" step="0.01" value="0" />
+                <div class="form-field">
+                    <label class="form-label" for="tolls">Pedágios (MZN)</label>
+                    <input id="tolls" class="form-control" type="number" step="0.01" value="0" title="Valor de pedágios" />
                 </div>
-                <div class="col">
-                    <label class="form-label">Seguro (%)</label>
-                    <input id="insurance" class="form-control" type="number" step="0.01" value="0.01" />
+                <div class="form-field">
+                    <label class="form-label" for="insurance">Seguro (%)</label>
+                    <input id="insurance" class="form-control" type="number" step="0.01" value="0.01" title="Percentagem de seguro" />
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button id="btnCotacao" class="btn btn-primary">Calcular Cotação</button>
+            <div class="form-actions stock-u-mt-20">
+                <button type="button" id="btnCotacao" class="btn btn-primary">Calcular cotação</button>
             </div>
 
-            <pre id="resultado" class="mt-4"></pre>
+            <pre id="resultado" class="stock-u-mt-20"></pre>
         </div>
     </div>
 </div>
@@ -130,7 +113,7 @@ document.getElementById('btnCotacao').addEventListener('click', async () => {
             }
         ]
     };
-    const resp = await fetch('/stock/logistica/cotacao-interna/', {
+    const resp = await fetch('{% url "stock:logistica:cotacao_interna" %}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -140,5 +123,3 @@ document.getElementById('btnCotacao').addEventListener('click', async () => {
 });
 </script>
 {% endblock %}
-
-

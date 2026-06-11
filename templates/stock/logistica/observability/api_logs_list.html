@@ -1,0 +1,136 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Logs de API{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:observability:dashboard' as observability_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Observabilidade' breadcrumb_section_url=observability_dashboard_url breadcrumb_current='Logs de API' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-code" aria-hidden="true"></i> Logs de API</h1>
+                <p class="page-subtitle">Requisições HTTP, tempos de resposta e códigos de estado</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-search">Pesquisar</label>
+                <input type="text" id="filtro-search" name="search" value="{{ search }}" class="form-control" placeholder="Endpoint, UUID...">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-metodo">Método</label>
+                <select id="filtro-metodo" name="metodo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in metodo_choices %}
+                    <option value="{{ value }}" {% if metodo == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status">HTTP</label>
+                <input type="number" id="filtro-status" name="status_code" value="{{ status_code }}" class="form-control" placeholder="ex. 200" min="100" max="599">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-usuario">Utilizador</label>
+                <select id="filtro-usuario" name="usuario_id" class="form-select">
+                    <option value="">Todos</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}" {% if usuario_id == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-inicio">De</label>
+                <input type="date" id="filtro-inicio" name="data_inicio" value="{{ data_inicio }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-fim">Até</label>
+                <input type="date" id="filtro-fim" name="data_fim" value="{{ data_fim }}" class="form-control">
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Buscar</button>
+                    <a href="{% url 'stock:observability:api_logs_list' %}" class="btn btn-secondary btn-sm">Limpar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">Requisições</h3>
+            <span class="page-info">{{ page_obj.paginator.count }} entrada(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Método</th>
+                        <th>Endpoint</th>
+                        <th>HTTP</th>
+                        <th>Tempo</th>
+                        <th>Utilizador</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <td>{{ log.data_requisicao|date:"d/m/Y H:i:s" }}</td>
+                        <td><span class="badge badge-secondary">{{ log.metodo }}</span></td>
+                        <td>{{ log.endpoint|truncatechars:40 }}</td>
+                        <td>
+                            <span class="badge badge-{% if log.status_code < 300 %}success{% elif log.status_code < 400 %}info{% elif log.status_code < 500 %}warning{% else %}danger{% endif %}">
+                                {{ log.status_code }}
+                            </span>
+                        </td>
+                        <td>{{ log.tempo_resposta_ms }} ms</td>
+                        <td>{% if log.usuario %}{{ log.usuario.username }}{% else %}—{% endif %}</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:observability:api_log_detail' log.id %}" class="btn-action primary" title="Ver detalhes">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="pagination stock-u-mt-16">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search }}&metodo={{ metodo }}&status_code={{ status_code }}&usuario_id={{ usuario_id }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Anterior</a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search }}&metodo={{ metodo }}&status_code={{ status_code }}&usuario_id={{ usuario_id }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}">Seguinte</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-code" aria-hidden="true"></i>
+            <h3>Nenhum log encontrado</h3>
+            <p>Os logs aparecem quando a API do módulo é utilizada.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

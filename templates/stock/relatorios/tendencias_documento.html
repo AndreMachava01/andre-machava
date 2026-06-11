@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Análise de Tendências - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    {% load math_filters %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        .no-print {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .period-filters {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+        .period-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid #6c757d;
+            background: white;
+            color: #6c757d;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .period-btn:hover,
+        .period-btn.active {
+            background: #6c757d;
+            color: white;
+        }
+        .print-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ec4899;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .logo-section img {
+            max-height: 35px;
+            width: auto;
+        }
+        .title-section {
+            flex: 1;
+            text-align: center;
+        }
+        .document-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #374151;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .document-subtitle {
+            font-size: 10px;
+            color: #6b7280;
+            margin: 3px 0 0 0;
+        }
+        .info-section {
+            text-align: right;
+            font-size: 9px;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+            margin: 12px 0 6px 0;
+            padding: 4px 0;
+            border-bottom: 2px solid #10b981;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .summary-card {
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 5px;
+            padding: 8px;
+            text-align: center;
+        }
+        .summary-label {
+            font-size: 9px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .summary-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #10b981;
+        }
+        .summary-value.positive {
+            color: #059669;
+        }
+        .summary-value.negative {
+            color: #dc2626;
+        }
+        .chart-container {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .chart-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #10b981;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+        .data-table th {
+            background: #10b981;
+            color: white;
+            padding: 6px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #ddd;
+            font-size: 9px;
+        }
+        .data-table td {
+            padding: 5px;
+            border: 1px solid #e5e7eb;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-positive {
+            color: #059669;
+            font-weight: 600;
+        }
+        .text-negative {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        .document-footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 9px;
+            color: #6b7280;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .chart-container {
+                display: none;
+            }
+            .print-container {
+                box-shadow: none;
+                padding: 8mm;
+                max-width: 100%;
+                margin: 0;
+            }
+            .document-header {
+                padding-bottom: 5px;
+                margin-bottom: 6px;
+            }
+            .document-title {
+                font-size: 13px;
+            }
+            .document-subtitle {
+                font-size: 9px;
+                margin-top: 2px;
+            }
+            .info-section {
+                font-size: 8px;
+            }
+            .logo-section img {
+                max-height: 25px;
+            }
+            .section-title {
+                font-size: 10px;
+                margin: 8px 0 4px 0;
+                padding: 3px 0;
+            }
+            .summary-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+            .summary-card {
+                padding: 6px;
+            }
+            .summary-label {
+                font-size: 8px;
+            }
+            .summary-value {
+                font-size: 12px;
+            }
+            .data-table {
+                margin-bottom: 6px;
+            }
+            .data-table th {
+                padding: 4px;
+                font-size: 8px;
+            }
+            .data-table td {
+                padding: 4px;
+                font-size: 8px;
+                line-height: 1.2;
+            }
+            .document-footer {
+                margin-top: 10px;
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <div class="action-buttons">
+            <a href="{% url 'stock:relatorios' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar aos Relatórios
+            </a>
+            <a href="{% url 'stock:main' %}" class="btn btn-secondary">
+                <i class="fas fa-warehouse"></i> Stock
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+        
+        <!-- Filtros de Período -->
+        <div class="period-filters">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #374151; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar-alt"></i> Período de Análise
+            </h3>
+            <div class="period-buttons">
+                <a href="?dias=7" class="period-btn {% if dias_periodo == 7 %}active{% endif %}">7 dias</a>
+                <a href="?dias=15" class="period-btn {% if dias_periodo == 15 %}active{% endif %}">15 dias</a>
+                <a href="?dias=30" class="period-btn {% if dias_periodo == 30 %}active{% endif %}">30 dias</a>
+                <a href="?dias=60" class="period-btn {% if dias_periodo == 60 %}active{% endif %}">60 dias</a>
+                <a href="?dias=90" class="period-btn {% if dias_periodo == 90 %}active{% endif %}">90 dias</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="print-container">
+        <!-- Cabeçalho -->
+        <div class="document-header">
+            <div class="logo-section">
+                <img src="{% static 'empresa/img/LOGO DA CONCEPTION.jpg' %}" alt="Logo Conception" class="logo">
+            </div>
+            <div class="title-section">
+                <h1 class="document-title">RELATÓRIO DE ANÁLISE DE TENDÊNCIAS</h1>
+                <p class="document-subtitle">Período: {{ data_inicio|date:"d/m/Y" }} a {{ data_fim|date:"d/m/Y" }} ({{ dias_periodo }} dias)</p>
+            </div>
+            <div class="info-section">
+                <div><strong>Relatório Nº:</strong> TEN-{{ data_relatorio|date:"YmdHis" }}</div>
+                <div><strong>Data:</strong> {{ data_relatorio|date:"d/m/Y" }}</div>
+                <div><strong>Gerado por:</strong> {{ user.get_full_name|default:user.username }}</div>
+            </div>
+        </div>
+        
+        <!-- Estatísticas Gerais -->
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i> ESTATÍSTICAS GERAIS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Entradas</div>
+                <div class="summary-value positive">{{ total_entradas|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Saídas</div>
+                <div class="summary-value negative">{{ total_saidas|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Saldo do Período</div>
+                <div class="summary-value {% if saldo_periodo >= 0 %}positive{% else %}negative{% endif %}">
+                    {{ saldo_periodo|floatformat:2 }} MT
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média Diária Entradas</div>
+                <div class="summary-value">{{ media_diaria_entradas|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média Diária Saídas</div>
+                <div class="summary-value">{{ media_diaria_saidas|floatformat:2 }} MT</div>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Tendências -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-chart-line"></i> TENDÊNCIAS DE MOVIMENTAÇÃO POR DIA
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="tendenciasChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Tendências por Categoria -->
+        {% if tendencias_categoria %}
+        <div class="section-title">
+            <i class="fas fa-chart-pie"></i> TENDÊNCIAS POR CATEGORIA
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th class="text-right">Entradas (MT)</th>
+                    <th class="text-right">Saídas (MT)</th>
+                    <th class="text-right">Saldo (MT)</th>
+                    <th class="text-center">Movimentos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in tendencias_categoria %}
+                <tr>
+                    <td><strong>
+                        {% if categoria.item__tipo %}
+                            {% for valor, nome in categorias %}
+                                {% if valor == categoria.item__tipo %}
+                                    {{ nome }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </strong></td>
+                    <td class="text-right">{{ categoria.entrada_valor|floatformat:2 }}</td>
+                    <td class="text-right">{{ categoria.saida_valor|floatformat:2 }}</td>
+                    <td class="text-right">
+                        {% with saldo=categoria.entrada_valor|sub:categoria.saida_valor %}
+                            <span class="{% if saldo >= 0 %}text-positive{% else %}text-negative{% endif %}">
+                                {{ saldo|floatformat:2 }}
+                            </span>
+                        {% endwith %}
+                    </td>
+                    <td class="text-center">{{ categoria.total_movimentos }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- Tendências por Sucursal -->
+        {% if tendencias_sucursal %}
+        <div class="section-title">
+            <i class="fas fa-building"></i> TENDÊNCIAS POR SUCURSAL
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Sucursal</th>
+                    <th class="text-right">Entradas (MT)</th>
+                    <th class="text-right">Saídas (MT)</th>
+                    <th class="text-right">Saldo (MT)</th>
+                    <th class="text-center">Movimentos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sucursal in tendencias_sucursal %}
+                <tr>
+                    <td><strong>{{ sucursal.sucursal__nome|default:"N/A" }}</strong></td>
+                    <td class="text-right">{{ sucursal.entrada_valor|floatformat:2 }}</td>
+                    <td class="text-right">{{ sucursal.saida_valor|floatformat:2 }}</td>
+                    <td class="text-right">
+                        {% with saldo=sucursal.entrada_valor|sub:sucursal.saida_valor %}
+                            <span class="{% if saldo >= 0 %}text-positive{% else %}text-negative{% endif %}">
+                                {{ saldo|floatformat:2 }}
+                            </span>
+                        {% endwith %}
+                    </td>
+                    <td class="text-center">{{ sucursal.total_movimentos }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- Itens Mais Movimentados -->
+        {% if itens_mais_movimentados %}
+        <div class="section-title">
+            <i class="fas fa-star"></i> ITENS MAIS MOVIMENTADOS (Top 10)
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th class="text-right">Entradas (MT)</th>
+                    <th class="text-right">Saídas (MT)</th>
+                    <th class="text-center">Movimentos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens_mais_movimentados %}
+                <tr>
+                    <td><strong>{{ item.item__nome|default:"N/A" }}</strong></td>
+                    <td>{{ item.item__codigo|default:"N/A" }}</td>
+                    <td>
+                        {% if item.item__tipo %}
+                            {% for valor, nome in categorias %}
+                                {% if valor == item.item__tipo %}
+                                    {{ nome }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td class="text-right">{{ item.entrada_valor|floatformat:2 }}</td>
+                    <td class="text-right">{{ item.saida_valor|floatformat:2 }}</td>
+                    <td class="text-center">{{ item.total_movimentos }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- Rodapé -->
+        <div class="document-footer">
+            <p style="margin: 0;">Relatório gerado automaticamente em {{ data_relatorio|date:"d/m/Y \à\s H:i" }}</p>
+            <p style="margin: 3px 0 0 0; font-size: 8px; color: #9ca3af;">
+                Análise baseada em {{ dias_periodo }} dias de movimentações | Sistema de Gestão Empresarial Conception - Relatórios de Stock
+            </p>
+        </div>
+    </div>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('tendenciasChart');
+            if (!ctx) return;
+            
+            const chartData = {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'Entradas',
+                    data: {{ dados_entrada|safe }},
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }, {
+                    label: 'Saídas',
+                    data: {{ dados_saida|safe }},
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            };
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Movimentações por Dia ({{ dias_periodo }} dias)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' MT';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor (MT)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2) + ' MT';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Data'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            if (window.tendenciasChart) {
+                window.tendenciasChart.destroy();
+            }
+            window.tendenciasChart = chart;
+        });
+    </script>
+</body>
+</html>

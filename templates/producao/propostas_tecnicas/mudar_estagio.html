@@ -1,0 +1,164 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estágios - {{ proposta.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #dc2626; color: white; }
+        .info-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; margin-bottom: 20px; }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .info-box p { margin: 4px 0; font-size: 13px; color: #6b7280; }
+        .stage-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stage-card { padding: 16px; border-radius: 8px; border: 2px solid #e5e7eb; background: #f9fafb; text-align: center; transition: all 0.3s; }
+        .stage-card.completed { border-color: #10b981; background: #d1fae5; }
+        .stage-card.current { border-color: #b45309; background: #fed7aa; }
+        .stage-card.pending { border-color: #9ca3af; background: #f3f4f6; }
+        .stage-icon { font-size: 32px; margin-bottom: 8px; }
+        .stage-title { font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 4px; }
+        .stage-status { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+        .stage-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .btn-sm { padding: 4px 8px; font-size: 12px; }
+        .header-subtitle { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 16px 0; }
+        .progress-fill { height: 100%; background: #b45309; transition: width 0.3s; }
+        .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; }
+        .alert-info { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-tasks"></i> Controle de Estágios - {{ proposta.codigo }}</h1>
+                <p class="header-subtitle">
+                    {{ proposta.titulo }} • Cliente: {% if proposta.cliente %}{{ proposta.cliente.nome }}{% else %}{{ proposta.nome_cliente_personalizado }}{% endif %}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'producao:proposta_tecnica_detail' proposta.id %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </div>
+
+        <!-- Informações Atuais -->
+        <div class="info-box">
+            <h3>📊 Status Atual</h3>
+            <p><strong>Estágio:</strong> {{ proposta.get_estagio_atual_display }}</p>
+            <p><strong>Status:</strong> {{ proposta.get_status_display }}</p>
+            <p><strong>Progresso:</strong> {% if proposta.estagio_atual == 'LEVANTAMENTO' %}16.7%{% elif proposta.estagio_atual == 'ANALISE_TECNICA' %}33.3%{% elif proposta.estagio_atual == 'ELABORACAO_PROPOSTA' %}50%{% elif proposta.estagio_atual == 'APRESENTACAO' %}66.7%{% elif proposta.estagio_atual == 'APROVACAO' %}83.3%{% elif proposta.estagio_atual == 'CONCLUIDA' %}100%{% else %}0%{% endif %}</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {% if proposta.estagio_atual == 'LEVANTAMENTO' %}16.7%{% elif proposta.estagio_atual == 'ANALISE_TECNICA' %}33.3%{% elif proposta.estagio_atual == 'ELABORACAO_PROPOSTA' %}50%{% elif proposta.estagio_atual == 'APRESENTACAO' %}66.7%{% elif proposta.estagio_atual == 'APROVACAO' %}83.3%{% elif proposta.estagio_atual == 'CONCLUIDA' %}100%{% else %}0%{% endif %}"></div>
+            </div>
+        </div>
+
+        <!-- Controle de Estágios -->
+        <div class="stage-controls">
+            {% for value, label in estagio_choices %}
+            <div class="stage-card {% if forloop.counter0 < estagio_midpoint %}completed{% elif value == proposta.estagio_atual %}current{% else %}pending{% endif %}">
+                <div class="stage-icon">
+                    {% if forloop.counter0 < estagio_midpoint %}
+                        ✅
+                    {% elif value == proposta.estagio_atual %}
+                        🔄
+                    {% else %}
+                        ⏳
+                    {% endif %}
+                </div>
+                <div class="stage-title">{{ label }}</div>
+                <div class="stage-status">
+                    {% if forloop.counter0 < estagio_midpoint %}
+                        Concluído
+                    {% elif value == proposta.estagio_atual %}
+                        Em Andamento
+                    {% else %}
+                        Pendente
+                    {% endif %}
+                </div>
+                <div class="stage-actions">
+                    {% if forloop.counter0 == estagio_midpoint %}
+                        <!-- Estágio atual - pode avançar -->
+                        {% if value != 'CONCLUIDA' %}
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="novo_estagio" value="ANALISE_TECNICA">
+                            <button type="submit" class="btn btn-success btn-sm" title="Avançar para próximo estágio">
+                                [▶️] Avançar
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% elif forloop.counter0 < estagio_midpoint %}
+                        <!-- Estágio concluído - pode reabrir -->
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="novo_estagio" value="{{ value }}">
+                            <button type="submit" class="btn btn-warning btn-sm" title="Reabrir este estágio">
+                                [↩️] Reabrir
+                            </button>
+                        </form>
+                    {% elif forloop.counter0 == estagio_midpoint|add:1 %}
+                        <!-- Próximo estágio - pode iniciar -->
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="novo_estagio" value="{{ value }}">
+                            <button type="submit" class="btn btn-primary btn-sm" title="Iniciar este estágio">
+                                [▶️] Iniciar
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="info-box">
+            <h3>🚀 Ações Rápidas</h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                {% if proposta.estagio_atual != 'CONCLUIDA' %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="novo_estagio" value="CONCLUIDA">
+                    <button type="submit" class="btn btn-success" title="Concluir proposta">
+                        [✅] Concluir Proposta
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if proposta.estagio_atual != 'LEVANTAMENTO' %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="novo_estagio" value="LEVANTAMENTO">
+                    <button type="submit" class="btn btn-warning" title="Reiniciar do início">
+                        [🔄] Reiniciar
+                    </button>
+                </form>
+                {% endif %}
+                
+                <a href="{% url 'producao:proposta_tecnica_edit' proposta.id %}" class="btn btn-secondary" title="Editar proposta">
+                    [✏️] Editar Proposta
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>

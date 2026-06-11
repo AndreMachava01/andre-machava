@@ -1,0 +1,592 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if processo %}Editar{% else %}Novo{% endif %} Processo de Produção</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #8b5cf6;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .required { color: #ef4444; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .etapas-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .etapas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .etapas-header h2 {
+            font-size: 18px;
+            color: #1f2937;
+        }
+        .etapa-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .etapa-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .etapa-item-header h3 {
+            font-size: 14px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .etapa-fields {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+        }
+        .etapa-fields input,
+        .etapa-fields select {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .etapa-descricao {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+        .etapa-descricao textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            min-height: 60px;
+        }
+        @media (max-width: 768px) {
+            .form-row, .etapa-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-project-diagram"></i>
+                {% if processo %}Editar{% else %}Novo{% endif %} Processo de Produção
+            </h1>
+            <a href="{% url 'producao:processos' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if processo %}
+        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #0369a1; font-size: 13px;">
+                <strong>Código:</strong> {{ processo.codigo }} | 
+                <strong>Criado em:</strong> {{ processo.data_criacao|date:"d/m/Y H:i" }}
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="post" id="processoForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nome">Nome do Processo <span class="required">*</span></label>
+                <input type="text" name="nome" id="nome" value="{% if processo %}{{ processo.nome }}{% endif %}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea name="descricao" id="descricao" rows="3">{% if processo %}{{ processo.descricao }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Receitas Associadas</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+                    <!-- Campo de pesquisa e lista de receitas disponíveis -->
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label for="receita-search" style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-search"></i> Pesquisar Receitas
+                        </label>
+                        <input type="text" 
+                               id="receita-search" 
+                               placeholder="Digite para pesquisar receitas..."
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px;">
+                        <div id="receitas-disponiveis" 
+                             style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;">
+                            {% for receita in receitas %}
+                            <div class="receita-item" 
+                                 data-receita-id="{{ receita.id }}"
+                                 data-receita-nome="{{ receita.nome }}"
+                                 data-receita-codigo="{{ receita.codigo }}"
+                                 {% if processo and receita in processo.receitas.all %}style="display: none;"{% endif %}>
+                                <div style="padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;"
+                                     onmouseover="this.style.background='#f0f9ff'" 
+                                     onmouseout="this.style.background='white'"
+                                     onclick="adicionarReceita({{ receita.id }}, '{{ receita.nome|escapejs }}', '{{ receita.codigo|escapejs }}')">
+                                    <div style="font-weight: 600; color: #1f2937;">{{ receita.nome }}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">{{ receita.codigo }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de receitas associadas -->
+                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; background: #f9fafb;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-check-circle"></i> Receitas Associadas
+                        </label>
+                        <div id="receitas-associadas" 
+                             style="min-height: 100px; max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white; padding: 8px;">
+                            {% if processo and processo.receitas.all %}
+                                {% for receita in processo.receitas.all %}
+                                <div class="receita-associada" data-receita-id="{{ receita.id }}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 4px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1f2937; font-size: 14px;">{{ receita.nome }}</div>
+                                        <div style="font-size: 11px; color: #6b7280;">{{ receita.codigo }}</div>
+                                    </div>
+                                    <button type="button" 
+                                            onclick="removerReceita({{ receita.id }}, '{{ receita.nome|escapejs }}', '{{ receita.codigo|escapejs }}')"
+                                            style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                                            onmouseover="this.style.background='#dc2626'" 
+                                            onmouseout="this.style.background='#ef4444'">
+                                        <i class="fas fa-times"></i> Remover
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                                    <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                    Nenhuma receita associada
+                                </div>
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="receitas" id="receitas-hidden" value="{% if processo %}{% for receita in processo.receitas.all %}{{ receita.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
+                    </div>
+                </div>
+                <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> 
+                    Clique em uma receita da lista à esquerda para associá-la ao processo. 
+                    Múltiplas receitas podem usar o mesmo processo.
+                </small>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if processo and processo.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" rows="3">{% if processo %}{{ processo.observacoes }}{% endif %}</textarea>
+            </div>
+
+            <div class="etapas-section">
+                <div class="etapas-header">
+                    <h2><i class="fas fa-list-ol"></i> Etapas do Processo</h2>
+                    <button type="button" class="btn btn-success" onclick="adicionarEtapa()">
+                        <i class="fas fa-plus"></i> Adicionar Etapa
+                    </button>
+                </div>
+                <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <p style="margin: 0; color: #0369a1; font-size: 12px;">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Dica:</strong> Para criar etapas paralelas (que ocorrem simultaneamente), 
+                        defina a mesma ordem para múltiplas etapas. O tempo total será calculado considerando 
+                        o tempo máximo das etapas paralelas.
+                    </p>
+                </div>
+                <div id="etapas-container">
+                    {% if processo %}
+                        {% for etapa in processo.etapas.all %}
+                        <div class="etapa-item" data-ordem="{{ etapa.ordem }}">
+                            <div class="etapa-item-header">
+                                <h3><i class="fas fa-step-forward"></i> Etapa {{ etapa.ordem }}</h3>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removerEtapa(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="etapa-fields">
+                                <input type="text" name="etapa_nome" placeholder="Nome da etapa" value="{{ etapa.nome }}" required>
+                                <input type="number" name="etapa_ordem" placeholder="Ordem (mesma ordem = paralelas)" value="{{ etapa.ordem }}" min="1" step="1" required>
+                                <input type="number" name="etapa_tempo" placeholder="Tempo (horas)" value="{{ etapa.tempo_estimado }}" min="0" step="0.01" required>
+                            </div>
+                            <div class="etapa-fields">
+                                <select name="etapa_responsavel">
+                                    <option value="">Sem responsável</option>
+                                    {% for usuario in usuarios %}
+                                    <option value="{{ usuario.id }}" {% if etapa.responsavel and etapa.responsavel.id == usuario.id %}selected{% endif %}>
+                                        {{ usuario.get_full_name|default:usuario.username }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="etapa-descricao">
+                                <textarea name="etapa_descricao" placeholder="Descrição da etapa">{{ etapa.descricao }}</textarea>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="etapas" id="etapas_json">
+
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                <a href="{% url 'producao:processos' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Processo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Gerenciamento de receitas associadas
+        let receitasAssociadas = new Set();
+        
+        // Inicializar receitas já associadas
+        {% if processo %}
+            {% for receita in processo.receitas.all %}
+            receitasAssociadas.add({{ receita.id }});
+            {% endfor %}
+        {% endif %}
+        
+        // Função para adicionar receita
+        function adicionarReceita(id, nome, codigo) {
+            if (receitasAssociadas.has(id)) {
+                return; // Já está associada
+            }
+            
+            receitasAssociadas.add(id);
+            
+            // Adicionar à lista de associadas
+            const container = document.getElementById('receitas-associadas');
+            const emptyMsg = container.querySelector('div[style*="text-align: center"]');
+            if (emptyMsg) {
+                emptyMsg.remove();
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'receita-associada';
+            div.setAttribute('data-receita-id', id);
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 4px;';
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight: 600; color: #1f2937; font-size: 14px;">${nome}</div>
+                    <div style="font-size: 11px; color: #6b7280;">${codigo}</div>
+                </div>
+                <button type="button" 
+                        onclick="removerReceita(${id}, '${nome.replace(/'/g, "\\'")}', '${codigo.replace(/'/g, "\\'")}')"
+                        style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"
+                        onmouseover="this.style.background='#dc2626'" 
+                        onmouseout="this.style.background='#ef4444'">
+                    <i class="fas fa-times"></i> Remover
+                </button>
+            `;
+            container.appendChild(div);
+            
+            // Ocultar da lista de disponíveis
+            const itemDisponivel = document.querySelector(`.receita-item[data-receita-id="${id}"]`);
+            if (itemDisponivel) {
+                itemDisponivel.style.display = 'none';
+            }
+            
+            // Atualizar campo hidden
+            atualizarReceitasHidden();
+        }
+        
+        // Função para remover receita
+        function removerReceita(id, nome, codigo) {
+            receitasAssociadas.delete(id);
+            
+            // Remover da lista de associadas
+            const itemAssociado = document.querySelector(`.receita-associada[data-receita-id="${id}"]`);
+            if (itemAssociado) {
+                itemAssociado.remove();
+            }
+            
+            // Mostrar novamente na lista de disponíveis
+            const itemDisponivel = document.querySelector(`.receita-item[data-receita-id="${id}"]`);
+            if (itemDisponivel) {
+                itemDisponivel.style.display = 'block';
+            }
+            
+            // Se não há mais receitas, mostrar mensagem
+            const container = document.getElementById('receitas-associadas');
+            if (receitasAssociadas.size === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                        Nenhuma receita associada
+                    </div>
+                `;
+            }
+            
+            // Atualizar campo hidden
+            atualizarReceitasHidden();
+        }
+        
+        // Função para atualizar campo hidden com IDs das receitas
+        function atualizarReceitasHidden() {
+            const hiddenInput = document.getElementById('receitas-hidden');
+            hiddenInput.value = Array.from(receitasAssociadas).join(',');
+        }
+        
+        // Pesquisa de receitas
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('receita-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    const items = document.querySelectorAll('.receita-item');
+                    
+                    items.forEach(item => {
+                        const nome = item.getAttribute('data-receita-nome').toLowerCase();
+                        const codigo = item.getAttribute('data-receita-codigo').toLowerCase();
+                        const receitaId = parseInt(item.getAttribute('data-receita-id'));
+                        
+                        // Só mostrar se não estiver associada e corresponder à pesquisa
+                        if (!receitasAssociadas.has(receitaId) && 
+                            (nome.includes(query) || codigo.includes(query))) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+        
+        let etapaCounter = {% if processo %}{{ processo.etapas.count|add:1 }}{% else %}1{% endif %};
+
+        function adicionarEtapa() {
+            const container = document.getElementById('etapas-container');
+            const etapaDiv = document.createElement('div');
+            etapaDiv.className = 'etapa-item';
+            etapaDiv.setAttribute('data-ordem', etapaCounter);
+            
+            etapaDiv.innerHTML = `
+                <div class="etapa-item-header">
+                    <h3><i class="fas fa-step-forward"></i> Etapa ${etapaCounter}</h3>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removerEtapa(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="etapa-fields">
+                    <input type="text" name="etapa_nome" placeholder="Nome da etapa" required>
+                    <input type="number" name="etapa_ordem" placeholder="Ordem (mesma ordem = paralelas)" value="${etapaCounter}" min="1" step="1" required>
+                    <input type="number" name="etapa_tempo" placeholder="Tempo (horas)" value="0" min="0" step="0.01" required>
+                </div>
+                <div class="etapa-fields">
+                    <select name="etapa_responsavel">
+                        <option value="">Sem responsável</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">{{ usuario.get_full_name|default:usuario.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="etapa-descricao">
+                    <textarea name="etapa_descricao" placeholder="Descrição da etapa"></textarea>
+                </div>
+            `;
+            
+            container.appendChild(etapaDiv);
+            etapaCounter++;
+            atualizarOrdens();
+        }
+
+        function removerEtapa(btn) {
+            if (confirm('Tem certeza que deseja remover esta etapa?')) {
+                btn.closest('.etapa-item').remove();
+                atualizarOrdens();
+            }
+        }
+
+        function atualizarOrdens() {
+            const etapas = document.querySelectorAll('.etapa-item');
+            const ordensMap = new Map();
+            
+            // Agrupar etapas por ordem
+            etapas.forEach((etapa) => {
+                const ordemInput = etapa.querySelector('input[name="etapa_ordem"]');
+                if (ordemInput) {
+                    const ordem = parseInt(ordemInput.value) || 1;
+                    if (!ordensMap.has(ordem)) {
+                        ordensMap.set(ordem, []);
+                    }
+                    ordensMap.get(ordem).push(etapa);
+                }
+            });
+            
+            // Atualizar visualização para mostrar etapas paralelas
+            etapas.forEach((etapa) => {
+                const ordemInput = etapa.querySelector('input[name="etapa_ordem"]');
+                const header = etapa.querySelector('h3');
+                if (ordemInput && header) {
+                    const ordem = parseInt(ordemInput.value) || 1;
+                    const etapasMesmaOrdem = ordensMap.get(ordem) || [];
+                    const isParalela = etapasMesmaOrdem.length > 1;
+                    
+                    let headerText = `<i class="fas fa-step-forward"></i> Etapa ${ordem}`;
+                    if (isParalela) {
+                        headerText += ` <span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 8px; font-size: 10px; margin-left: 5px;"><i class="fas fa-sync-alt"></i> Paralela</span>`;
+                    }
+                    header.innerHTML = headerText;
+                    
+                    // Destacar visualmente etapas paralelas
+                    if (isParalela) {
+                        etapa.style.borderLeft = '4px solid #3b82f6';
+                        etapa.style.background = '#f0f9ff';
+                    } else {
+                        etapa.style.borderLeft = '4px solid #8b5cf6';
+                        etapa.style.background = '#f9fafb';
+                    }
+                }
+            });
+        }
+        
+        // Atualizar quando ordem é alterada
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('etapas-container');
+            if (container) {
+                container.addEventListener('change', function(e) {
+                    if (e.target.name === 'etapa_ordem') {
+                        atualizarOrdens();
+                    }
+                });
+            }
+            // Inicializar visualização
+            atualizarOrdens();
+        });
+
+        document.getElementById('processoForm').addEventListener('submit', function(e) {
+            const etapas = [];
+            const etapaItems = document.querySelectorAll('.etapa-item');
+            
+            etapaItems.forEach((item, index) => {
+                const nome = item.querySelector('input[name="etapa_nome"]').value.trim();
+                const ordem = item.querySelector('input[name="etapa_ordem"]').value;
+                const tempo = item.querySelector('input[name="etapa_tempo"]').value;
+                const responsavel = item.querySelector('select[name="etapa_responsavel"]').value;
+                const descricao = item.querySelector('textarea[name="etapa_descricao"]').value.trim();
+                
+                if (nome) {
+                    etapas.push({
+                        nome: nome,
+                        ordem: parseInt(ordem),
+                        tempo_estimado: parseFloat(tempo) || 0,
+                        responsavel: responsavel || null,
+                        descricao: descricao
+                    });
+                }
+            });
+            
+            document.getElementById('etapas_json').value = JSON.stringify(etapas);
+        });
+
+        // Inicializar contador se houver etapas existentes
+        {% if processo %}
+        etapaCounter = {{ processo.etapas.count|add:1 }};
+        {% endif %}
+    </script>
+</body>
+</html>
+

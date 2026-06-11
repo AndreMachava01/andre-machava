@@ -1,0 +1,68 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{# Shell para relatórios de stock (documentos sem filtro de período) #}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block title %}{% block report_page_title %}Relatório de stock{% endblock %}{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    <nav class="breadcrumb-modern stock-no-print" aria-label="Navegação">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:relatorios' %}">Relatórios</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{% block report_breadcrumb %}Documento{% endblock %}</span>
+    </nav>
+
+    <div class="page-header stock-no-print">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas {% block report_icon %}fa-file-alt{% endblock %}" aria-hidden="true"></i>
+                    {% block report_heading %}Relatório{% endblock %}
+                </h1>
+                <p class="page-subtitle">{% block report_subtitle %}Gerado em {{ data_relatorio|date:"d/m/Y H:i" }}{% endblock %}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:relatorios' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Relatórios
+                </a>
+                <a href="{% url 'stock:main' %}" class="btn btn-outline">
+                    <i class="fas fa-warehouse" aria-hidden="true"></i> Stock
+                </a>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% block report_toolbar %}{% endblock %}
+
+    <div class="stock-doc-print stock-doc-print--report">
+        <header class="stock-doc-print__header">
+            <div>
+                <h2 class="stock-doc-print__title">{% block report_doc_title %}RELATÓRIO{% endblock %}</h2>
+                <p class="stock-doc-print__code">{% block report_code_prefix %}REL{% endblock %}-{{ data_relatorio|date:"YmdHis" }}</p>
+            </div>
+            <div class="stock-doc-print__date">
+                <div><strong>Data:</strong> {{ data_relatorio|date:"d/m/Y H:i" }}</div>
+                <div><strong>Gerado por:</strong> {{ user.get_full_name|default:user.username }}</div>
+            </div>
+        </header>
+
+        {% block report_meta %}{% endblock %}
+
+        {% block report_content %}{% endblock %}
+
+        <footer class="stock-doc-print__footer">
+            <p>Documento gerado em {{ data_relatorio|date:"d/m/Y H:i" }}</p>
+            <p>{% block report_footer_note %}Relatório de stock — Conception{% endblock %}</p>
+        </footer>
+    </div>
+</div>
+{% endblock %}

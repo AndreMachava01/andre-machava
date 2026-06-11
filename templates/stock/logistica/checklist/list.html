@@ -1,608 +1,255 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Checklists de Viaturas{% endblock %}
+{% block title %}Checklists de viaturas{% endblock %}
 
-{% block extra_style %}
-<style>
-    body {
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-family: var(--font-primary);
-    }
-
-    .modern-container {
-        background: var(--surface-dark);
-        border-radius: 20px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-        padding: 0;
-        overflow: hidden;
-        height: calc(100vh - 20px);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .header-section {
-        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-dark) 100%);
-        padding: var(--space-6);
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .header-content h1 {
-        font-size: var(--text-3xl);
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-    }
-
-    .header-content p {
-        margin: var(--space-2) 0 0 0;
-        opacity: 0.9;
-        font-size: var(--text-sm);
-    }
-
-    .header-actions {
-        display: flex;
-        gap: var(--space-3);
-    }
-
-    .btn-modern {
-        padding: var(--space-3) var(--space-5);
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: var(--text-sm);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-    }
-
-    .btn-primary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        backdrop-filter: blur(10px);
-    }
-
-    .btn-primary:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-    }
-
-    .content-section {
-        flex: 1;
-        padding: var(--space-6);
-        overflow-y: auto;
-    }
-
-    .filters-card {
-        background: var(--surface-medium);
-        border-radius: 16px;
-        padding: var(--space-5);
-        margin-bottom: var(--space-6);
-        border: 1px solid var(--border-color);
-    }
-
-    .filters-title {
-        font-size: var(--text-lg);
-        font-weight: 600;
-        margin-bottom: var(--space-4);
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-    }
-
-    .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--space-4);
-        margin-bottom: var(--space-4);
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .form-label {
-        font-weight: 600;
-        margin-bottom: var(--space-2);
-        color: var(--text-secondary);
-        font-size: var(--text-sm);
-    }
-
-    .form-control {
-        padding: var(--space-3);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background: var(--surface-dark);
-        color: var(--text-primary);
-        font-size: var(--text-sm);
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    }
-
-    .filters-actions {
-        display: flex;
-        gap: var(--space-3);
-        justify-content: flex-end;
-    }
-
-    .btn-filter {
-        background: var(--accent-primary);
-        color: white;
-    }
-
-    .btn-clear {
-        background: var(--surface-light);
-        color: var(--text-secondary);
-    }
-
-    .btn-filter:hover, .btn-clear:hover {
-        transform: translateY(-1px);
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: var(--space-4);
-        margin-bottom: var(--space-6);
-    }
-
-    .stat-card {
-        background: var(--surface-medium);
-        border-radius: 12px;
-        padding: var(--space-4);
-        text-align: center;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-number {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        color: var(--accent-primary);
-        margin-bottom: var(--space-1);
-    }
-
-    .stat-label {
-        font-size: var(--text-xs);
-        color: var(--text-tertiary);
-        font-weight: 500;
-    }
-
-    .checklist-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: var(--space-5);
-    }
-
-    .checklist-card {
-        background: var(--surface-medium);
-        border-radius: 16px;
-        padding: var(--space-5);
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .checklist-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        border-color: var(--accent-primary);
-    }
-
-    .checklist-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-4);
-    }
-
-    .checklist-code {
-        font-size: var(--text-lg);
-        font-weight: 700;
-        color: var(--accent-primary);
-    }
-
-    .checklist-type {
-        background: var(--surface-light);
-        color: var(--text-secondary);
-        padding: var(--space-1) var(--space-2);
-        border-radius: 6px;
-        font-size: var(--text-xs);
-        font-weight: 500;
-    }
-
-    .checklist-details {
-        margin-bottom: var(--space-4);
-    }
-
-    .detail-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: var(--space-2);
-        font-size: var(--text-sm);
-    }
-
-    .detail-label {
-        color: var(--text-tertiary);
-        font-weight: 500;
-    }
-
-    .detail-value {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    .pontuacao-section {
-        text-align: center;
-        margin-bottom: var(--space-4);
-        padding: var(--space-4);
-        background: var(--surface-dark);
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
-    }
-
-    .pontuacao-valor {
-        font-size: var(--text-3xl);
-        font-weight: 700;
-        color: var(--accent-primary);
-        margin-bottom: var(--space-1);
-    }
-
-    .pontuacao-label {
-        font-size: var(--text-xs);
-        color: var(--text-tertiary);
-    }
-
-    .checklist-actions {
-        display: flex;
-        gap: var(--space-2);
-    }
-
-    .btn-action {
-        flex: 1;
-        padding: var(--space-2) var(--space-3);
-        border: none;
-        border-radius: 8px;
-        font-size: var(--text-xs);
-        cursor: pointer;
-        text-decoration: none;
-        text-align: center;
-        transition: all 0.2s ease;
-        font-weight: 600;
-    }
-
-    .btn-detail {
-        background: var(--accent-primary);
-        color: white;
-    }
-
-    .btn-print {
-        background: var(--accent-success);
-        color: white;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-1px);
-        opacity: 0.9;
-    }
-
-    .status-badge {
-        position: absolute;
-        top: var(--space-4);
-        right: var(--space-4);
-        padding: var(--space-1) var(--space-3);
-        border-radius: 20px;
-        font-size: var(--text-xs);
-        font-weight: 600;
-    }
-
-    .status-aprovado {
-        background: rgba(16, 185, 129, 0.2);
-        color: var(--accent-success);
-        border: 1px solid var(--accent-success);
-    }
-
-    .status-reprovado {
-        background: rgba(239, 68, 68, 0.2);
-        color: var(--accent-danger);
-        border: 1px solid var(--accent-danger);
-    }
-
-    .status-condicional {
-        background: rgba(245, 158, 11, 0.2);
-        color: var(--accent-warning);
-        border: 1px solid var(--accent-warning);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: var(--space-16) var(--space-5);
-        color: var(--text-tertiary);
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        margin-bottom: var(--space-5);
-        color: var(--text-muted);
-    }
-
-    .empty-state h3 {
-        margin-bottom: var(--space-3);
-        color: var(--text-secondary);
-        font-size: var(--text-xl);
-    }
-
-    .empty-state p {
-        margin-bottom: var(--space-5);
-        font-size: var(--text-sm);
-    }
-
-    .btn-create {
-        background: var(--accent-primary);
-        color: white;
-        padding: var(--space-3) var(--space-6);
-        border: none;
-        border-radius: 12px;
-        font-size: var(--text-sm);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-create:hover {
-        background: var(--accent-primary-dark);
-        transform: translateY(-2px);
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: center;
-        margin-top: var(--space-6);
-        gap: var(--space-2);
-    }
-
-    .page-link {
-        padding: var(--space-2) var(--space-3);
-        background: var(--surface-medium);
-        color: var(--text-secondary);
-        text-decoration: none;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-    }
-
-    .page-link:hover {
-        background: var(--accent-primary);
-        color: white;
-        border-color: var(--accent-primary);
-    }
-
-    .page-item.active .page-link {
-        background: var(--accent-primary);
-        color: white;
-        border-color: var(--accent-primary);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="modern-container">
-    <!-- Header -->
-    <div class="header-section">
-        <div class="header-content">
-            <h1>
-                <i class="fas fa-clipboard-check"></i>
-                Checklists de Viaturas
-            </h1>
-            <p>Avaliação do estado das viaturas internas</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'stock:logistica:main' %}" class="btn-modern btn-secondary">
-                <i class="fas fa-arrow-left"></i> Voltar à Logística
-            </a>
-            <a href="{% url 'stock:logistica:dashboard' %}" class="btn-modern btn-secondary">
-                <i class="fas fa-chart-line"></i> Dashboard de Logística
-            </a>
-            <a href="{% url 'stock:logistica:checklist_print_blank' %}" target="_blank" class="btn-modern btn-primary">
-                <i class="fas fa-file-alt"></i>Imprimir em Branco
-            </a>
-            <a href="{% url 'stock:logistica:checklist_create' %}" class="btn-modern btn-primary">
-                <i class="fas fa-plus"></i>Novo Checklist
-            </a>
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Checklists' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                    Checklists de viaturas
+                </h1>
+                <p class="page-subtitle">Inspecções e estado dos veículos internos</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:viaturas_list' %}" class="btn btn-outline">
+                    <i class="fas fa-car" aria-hidden="true"></i> Viaturas
+                </a>
+                <a href="{% url 'stock:logistica:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Logística
+                </a>
+                <a href="{% url 'stock:logistica:checklist_print_blank' %}" target="_blank" rel="noopener" class="btn btn-outline">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i> Imprimir em branco
+                </a>
+                <a href="{% url 'stock:logistica:checklist_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Novo checklist
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Content -->
-    <div class="content-section">
-        <!-- Filtros -->
-        <div class="filters-card">
-            <div class="filters-title">
-                <i class="fas fa-filter"></i>
-                Filtros de Busca
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
             </div>
-            
-            <form method="GET" class="filter-form">
-                <div class="filters-grid">
-                    <div class="form-group">
-                        <label for="veiculo" class="form-label">Veículo</label>
-                        <select name="veiculo" id="veiculo" class="form-control">
-                            <option value="">Todos os veículos</option>
-                            {% for veiculo in veiculos %}
-                            <option value="{{ veiculo.id }}" {% if filtros.veiculo_id == veiculo.id|stringformat:"s" %}selected{% endif %}>
-                                {{ veiculo.nome }} ({{ veiculo.placa }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tipo" class="form-label">Tipo</label>
-                        <select name="tipo" id="tipo" class="form-control">
-                            <option value="">Todos os tipos</option>
-                            {% for tipo_value, tipo_label in tipos %}
-                            <option value="{{ tipo_value }}" {% if filtros.tipo == tipo_value %}selected{% endif %}>
-                                {{ tipo_label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-control">
-                            <option value="">Todos os status</option>
-                            {% for status_value, status_label in status_choices %}
-                            <option value="{{ status_value }}" {% if filtros.status == status_value %}selected{% endif %}>
-                                {{ status_label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="data_inicio" class="form-label">Data Início</label>
-                        <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ filtros.data_inicio }}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="data_fim" class="form-label">Data Fim</label>
-                        <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ filtros.data_fim }}">
-                    </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.aprovados|default:"0" }}</div>
+                <div class="stat-label">Aprovados</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-times-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.reprovados|default:"0" }}</div>
+                <div class="stat-label">Reprovados</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.condicional|default:"0" }}</div>
+                <div class="stat-label">Com condições</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-checklist">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-checklist" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, veículo, motorista, local...">
                 </div>
-                
-                <div class="filters-actions">
-                    <button type="submit" class="btn-modern btn-filter">
-                        <i class="fas fa-search"></i>Filtrar
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-veiculo-checklist">Veículo</label>
+                <select id="filtro-veiculo-checklist" name="veiculo" class="form-select" title="Filtrar por veículo">
+                    <option value="">Todos</option>
+                    {% for veiculo in veiculos %}
+                    <option value="{{ veiculo.id }}" {% if veiculo_id == veiculo.id|stringformat:"s" %}selected{% endif %}>
+                        {{ veiculo.nome }}{% if veiculo.placa %} — {{ veiculo.placa }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo-checklist">Tipo</label>
+                <select id="filtro-tipo-checklist" name="tipo" class="form-select" title="Tipo de inspecção">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_choices %}
+                    <option value="{{ value }}" {% if tipo == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-checklist">Resultado</label>
+                <select id="filtro-status-checklist" name="status" class="form-select" title="Resultado final">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-checklist">De</label>
+                <input type="date" id="filtro-data-inicio-checklist" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-checklist">Até</label>
+                <input type="date" id="filtro-data-fim-checklist" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
                     </button>
-                    <a href="{% url 'stock:logistica:checklist_list' %}" class="btn-modern btn-clear">
-                        <i class="fas fa-times"></i>Limpar
+                    {% if has_filters %}
+                    <a href="{% url 'stock:logistica:checklist_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
                     </a>
+                    {% endif %}
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
+    </div>
 
-        <!-- Estatísticas -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ page_obj.paginator.count|default:"0" }}</div>
-                <div class="stat-label">Total de Checklists</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ page_obj|length }}</div>
-                <div class="stat-label">Nesta Página</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ page_obj.paginator.num_pages|default:"1" }}</div>
-                <div class="stat-label">Páginas</div>
-            </div>
-        </div>
-
-        <!-- Lista de Checklists -->
+    <div class="table-container">
         {% if page_obj %}
-        <div class="checklist-grid">
-            {% for checklist in page_obj %}
-            <div class="checklist-card">
-                <span class="status-badge status-{{ checklist.status_final|lower }}">
-                    {{ checklist.get_status_final_display }}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list" aria-hidden="true"></i>
+                Checklists
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
                 </span>
-                
-                <div class="checklist-header">
-                    <div class="checklist-code">{{ checklist.codigo }}</div>
-                    <div class="checklist-type">{{ checklist.get_tipo_display }}</div>
-                </div>
-                
-                <div class="checklist-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Veículo:</span>
-                        <span class="detail-value">{{ checklist.veiculo.nome }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Inspetor:</span>
-                        <span class="detail-value">{{ checklist.inspetor.get_full_name|default:checklist.inspetor.username }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Data:</span>
-                        <span class="detail-value">{{ checklist.data_inspecao|date:"d/m/Y H:i" }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Quilometragem:</span>
-                        <span class="detail-value">{{ checklist.quilometragem|floatformat:0 }} km</span>
-                    </div>
-                </div>
-                
-                <div class="pontuacao-section">
-                    <div class="pontuacao-valor">{{ checklist.get_pontuacao_total }}%</div>
-                    <div class="pontuacao-label">Pontuação</div>
-                </div>
-                
-                <div class="checklist-actions">
-                    <a href="{% url 'stock:logistica:checklist_detail' checklist.id %}" class="btn-action btn-detail">
-                        <i class="fas fa-eye"></i>Ver
-                    </a>
-                    <a href="{% url 'stock:logistica:checklist_print' checklist.id %}" class="btn-action btn-print" target="_blank">
-                        <i class="fas fa-print"></i>Imprimir
-                    </a>
-                </div>
             </div>
-            {% endfor %}
         </div>
 
-        
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Veículo</th>
+                        <th>Inspetor</th>
+                        <th>Data</th>
+                        <th class="text-center">Km</th>
+                        <th class="text-center">Pontuação</th>
+                        <th>Resultado</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for checklist in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ checklist.codigo }}</strong></td>
+                        <td>
+                            <span class="type-badge type-checklist-{{ checklist.tipo|lower }}">
+                                {{ checklist.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ checklist.veiculo.nome }}</div>
+                            {% if checklist.veiculo.placa %}
+                            <div class="cell-tertiary cell-tertiary--sm cell-placa">{{ checklist.veiculo.placa }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ checklist.inspetor.get_full_name|default:checklist.inspetor.username }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ checklist.motorista }}</div>
+                        </td>
+                        <td>
+                            <div>{{ checklist.data_inspecao|date:"d/m/Y" }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ checklist.data_inspecao|time:"H:i" }}</div>
+                        </td>
+                        <td class="text-center">{{ checklist.quilometragem|default:"0" }}</td>
+                        <td class="text-center">
+                            <strong>{{ checklist.get_pontuacao_total }}%</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge status-checklist-{{ checklist.status_final|lower }}">
+                                {{ checklist.get_status_final_display }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:logistica:checklist_detail' checklist.id %}"
+                                   class="btn-action primary" title="Ver detalhes"
+                                   aria-label="Ver checklist {{ checklist.codigo }}">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'stock:logistica:checklist_print' checklist.id %}"
+                                   class="btn-action secondary" title="Imprimir" target="_blank" rel="noopener"
+                                   aria-label="Imprimir {{ checklist.codigo }}">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_id %}&veiculo={{ veiculo_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if veiculo_id %}&veiculo={{ veiculo_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
 
         {% else %}
-        <!-- Estado vazio -->
-        <div class="empty-state">
-            <i class="fas fa-clipboard-check"></i>
+        <div class="no-data">
+            <i class="fas fa-clipboard-check" aria-hidden="true"></i>
             <h3>Nenhum checklist encontrado</h3>
-            <p>Não há checklists de viaturas que correspondam aos filtros selecionados.</p>
-            <a href="{% url 'stock:logistica:checklist_create' %}" class="btn-create">
-                <i class="fas fa-plus"></i>Criar Primeiro Checklist
+            <p>Não há checklists que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:logistica:checklist_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Criar checklist
             </a>
         </div>
         {% endif %}
     </div>
 </div>
-
-<script>
-// Animate cards on load
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.checklist-card, .stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-</script>
 {% endblock %}

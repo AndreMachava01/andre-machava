@@ -1,0 +1,138 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Compras externas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:requisicoes:list' %}">Requisições</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Compras externas</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-store"></i> Compras externas</h1>
+                <p class="page-subtitle">Requisições de compra a fornecedores externos</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="stock-actions-row">
+        <a href="{% url 'stock:requisicoes:list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar às requisições
+        </a>
+        <a href="{% url 'stock:requisicoes:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus" aria-hidden="true"></i> Nova requisição
+        </a>
+    </div>
+
+    <div class="search-filters stock-search-filters">
+        <form method="get" action="{% url 'stock:requisicoes:compra_externa_list' %}">
+            <div class="filter-group">
+                <label class="filter-label" for="status">Status</label>
+                <select name="status" id="status" class="form-select" aria-label="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for status_value, status_label in status_choices %}
+                    <option value="{{ status_value }}" {% if current_status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search" aria-hidden="true"></i> Filtrar
+                </button>
+                {% if current_status %}
+                <a href="{% url 'stock:requisicoes:compra_externa_list' %}" class="btn-clear">
+                    <i class="fas fa-times" aria-hidden="true"></i> Limpar
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {% if requisicoes %}
+    <div class="stats stock-stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{% if requisicoes.paginator %}{{ requisicoes.paginator.count }}{% else %}{{ requisicoes|length }}{% endif %}</div>
+            <div class="stat-label">Total</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-wrapper stock-table-scroll">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Sucursal</th>
+                        <th>Status</th>
+                        <th>Itens</th>
+                        <th>Valor</th>
+                        <th>Criado por</th>
+                        <th>Data</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for requisicao in requisicoes %}
+                    <tr>
+                        <td><strong>{{ requisicao.codigo }}</strong></td>
+                        <td>{{ requisicao.sucursal_solicitante.nome|default:"—" }}</td>
+                        <td>{{ requisicao.get_status_display }}</td>
+                        <td>{{ requisicao.itens.count }}</td>
+                        <td>{{ requisicao.valor_total|floatformat:2 }} MT</td>
+                        <td>{{ requisicao.criado_por.get_full_name|default:requisicao.criado_por.username|default:"—" }}</td>
+                        <td>{{ requisicao.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:requisicoes:compra_externa_detail' id=requisicao.id %}" class="btn-action success" title="Ver" aria-label="Ver {{ requisicao.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                                {% if requisicao.status == 'PENDENTE' %}
+                                <a href="{% url 'stock:requisicoes:compra_externa_approve' id=requisicao.id %}" class="btn-action secondary" title="Aprovar" aria-label="Aprovar {{ requisicao.codigo }}">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                </a>
+                                {% elif requisicao.status == 'APROVADA' %}
+                                <a href="{% url 'stock:requisicoes:compra_externa_create_order' id=requisicao.id %}" class="btn-action secondary" title="Criar ordem" aria-label="Criar ordem {{ requisicao.codigo }}">
+                                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if requisicoes.has_other_pages %}
+    <nav class="pagination-modern" aria-label="Paginação">
+        {% if requisicoes.has_previous %}
+        <a href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}" class="page-btn" aria-label="Primeira">«</a>
+        <a href="?page={{ requisicoes.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" class="page-btn" aria-label="Anterior">‹</a>
+        {% endif %}
+        <span class="page-info">Página {{ requisicoes.number }} de {{ requisicoes.paginator.num_pages }}</span>
+        {% if requisicoes.has_next %}
+        <a href="?page={{ requisicoes.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" class="page-btn" aria-label="Seguinte">›</a>
+        <a href="?page={{ requisicoes.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}" class="page-btn" aria-label="Última">»</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <p>Nenhuma requisição de compra externa encontrada.</p>
+        <a href="{% url 'stock:requisicoes:create' %}" class="btn btn-primary">Criar primeira requisição</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

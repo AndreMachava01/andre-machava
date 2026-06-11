@@ -1,0 +1,204 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converter Proposta em Orçamento - {{ proposta.codigo }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-success { background: #b45309; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .info-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; margin-bottom: 20px; }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .info-box p { margin: 4px 0; font-size: 13px; color: #6b7280; }
+        .success-box { padding: 16px; border-radius: 8px; border: 1px solid #a7f3d0; background: #d1fae5; margin-bottom: 20px; }
+        .success-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #065f46; display: flex; align-items: center; gap: 8px; }
+        .success-box p { margin: 4px 0; font-size: 13px; color: #047857; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+        .info-item { padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f9fafb; }
+        .info-item h4 { margin: 0 0 8px 0; font-size: 14px; color: #374151; }
+        .info-item p { margin: 4px 0; font-size: 13px; color: #6b7280; }
+        .info-item strong { color: #111827; }
+        .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .timeline { margin: 20px 0; }
+        .timeline-item { display: flex; gap: 12px; margin-bottom: 16px; }
+        .timeline-marker { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; flex-shrink: 0; }
+        .timeline-item.completed .timeline-marker { background: #b45309; }
+        .timeline-item.current .timeline-marker { background: #b45309; }
+        .timeline-item.pending .timeline-marker { background: #9ca3af; }
+        .timeline-content { flex: 1; padding-top: 4px; }
+        .timeline-content h4 { margin: 0 0 4px 0; font-size: 15px; color: #374151; }
+        .timeline-content p { margin: 0; font-size: 13px; color: #6b7280; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-aprovacao { background: #d1fae5; color: #059669; }
+        .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; }
+        .alert-info { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-exchange-alt"></i> Converter Proposta em Orçamento</h1>
+                <p>{{ proposta.codigo }} - {{ proposta.titulo }}</p>
+            </div>
+            <a href="{% url 'producao:proposta_tecnica_detail' proposta.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        <div class="success-box">
+            <h3><i class="fas fa-check-circle"></i> Proposta Aprovada!</h3>
+            <p>Esta proposta está no estágio de Aprovação e está pronta para ser convertida em um orçamento de serviços.</p>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <h4><i class="fas fa-info-circle"></i> Informações da Proposta</h4>
+                <p><strong>Código:</strong> {{ proposta.codigo }}</p>
+                <p><strong>Título:</strong> {{ proposta.titulo }}</p>
+                <p><strong>Cliente:</strong> {{ proposta.cliente.nome }}</p>
+                <p><strong>Responsável:</strong> {{ proposta.responsavel.get_full_name|default:"-" }}</p>
+                <p><strong>Estágio:</strong> <span class="badge badge-aprovacao">{{ proposta.get_estagio_atual_display }}</span></p>
+            </div>
+            
+            <div class="info-item">
+                <h4><i class="fas fa-file-invoice"></i> Dados do Orçamento</h4>
+                <p><strong>Valor Total:</strong> 
+                    {% if proposta.valor_levantamento_previsto %}
+                        {{ proposta.valor_levantamento_previsto|floatformat:2 }} MT
+                    {% else %}
+                        A definir
+                    {% endif %}
+                </p>
+                <p><strong>Data Agendada:</strong> 
+                    {% if proposta.data_inicio_prevista %}
+                        {{ proposta.data_inicio_prevista|date:"d/m/Y" }}
+                    {% else %}
+                        A definir
+                    {% endif %}
+                </p>
+                <p><strong>Status Inicial:</strong> Orçamento</p>
+                <p><strong>Adiantamento:</strong> 
+                    {% if proposta.valor_levantamento_previsto %}
+                        <span style="color: #b45309;"><i class="fas fa-check"></i> Sim ({{ proposta.valor_levantamento_previsto|floatformat:2 }} MT)</span>
+                    {% else %}
+                        <span style="color: #6b7280;"><i class="fas fa-times"></i> Não</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        {% if proposta.escopo %}
+        <div class="info-box">
+            <h3><i class="fas fa-file-alt"></i> Escopo que será Transferido</h3>
+            <div style="padding: 12px; background: white; border-radius: 4px; border: 1px solid #e5e7eb;">
+                {{ proposta.escopo|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Fluxo do Processo -->
+        <div style="margin-bottom: 24px;">
+            <h3 style="color: #b45309; margin: 0 0 16px 0; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+                <i class="fas fa-sitemap"></i> Fluxo do Processo
+            </h3>
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-marker">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Proposta Criada</h4>
+                        <p>{{ proposta.data_solicitacao|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+                <div class="timeline-item completed">
+                    <div class="timeline-marker">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Proposta Aprovada</h4>
+                        <p>Estágio: Aprovação</p>
+                    </div>
+                </div>
+                <div class="timeline-item current">
+                    <div class="timeline-marker">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Conversão em Orçamento</h4>
+                        <p>Ação atual</p>
+                    </div>
+                </div>
+                <div class="timeline-item pending">
+                    <div class="timeline-marker">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Orçamento Ativo</h4>
+                        <p>Próximo passo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>O que acontecerá após a conversão:</strong>
+                <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                    <li>Será criado um novo orçamento de serviço com os dados da proposta</li>
+                    <li>A proposta será marcada como concluída e vinculada ao orçamento</li>
+                    {% if proposta.valor_levantamento_previsto %}
+                    <li>Será gerado automaticamente um registro de adiantamento financeiro</li>
+                    <li>Você poderá emitir recibos de levantamento</li>
+                    {% endif %}
+                    <li>O orçamento poderá ser editado e gerenciado normalmente</li>
+                </ul>
+            </div>
+
+            {% if proposta.valor_levantamento_previsto %}
+            <div class="alert alert-warning">
+                <i class="fas fa-money-bill-wave"></i>
+                <strong>Integração Financeira:</strong>
+                <p style="margin: 8px 0 0 0;">Será criado automaticamente um registro de adiantamento em <strong>Finanças → Contas a Receber</strong> no valor de {{ proposta.valor_levantamento_previsto|floatformat:2 }} MT.</p>
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <a href="{% url 'producao:proposta_tecnica_detail' proposta.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-exchange-alt"></i> Confirmar Conversão
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Confirmar antes de submeter
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const confirmMessage = `Confirma a conversão da proposta {{ proposta.codigo }} em orçamento?\n\n` +
+                `Esta ação criará um novo orçamento e marcará a proposta como concluída.`;
+                
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

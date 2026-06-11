@@ -1,0 +1,25 @@
+{% comment %}
+BOTÕES DE NAVEGAÇÃO
+Template específico para botões de navegação (Voltar, Próximo, Anterior, etc.)
+
+Parâmetros:
+- navigation: lista de botões de navegação
+- position: posição dos botões (top, bottom, both)
+- class: classes CSS adicionais (opcional)
+{% endcomment %}
+
+{% load static %}
+
+{% if position == 'top' or position == 'both' %}
+<div class="navigation-top{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=navigation layout='horizontal' %}
+</div>
+{% endif %}
+
+{% if position == 'bottom' or position == 'both' %}
+<div class="navigation-bottom{% if class %} {{ class }}{% endif %}">
+    {% include 'components/button_group_unified.html' with buttons=navigation layout='horizontal' %}
+</div>
+{% endif %}
+
+

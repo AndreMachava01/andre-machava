@@ -1,0 +1,87 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{% if regiao %}Editar {{ regiao.codigo }}{% else %}Nova região{% endif %}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:masterdata:regioes_list' as regioes_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Regiões' breadcrumb_section_url=regioes_list_url breadcrumb_current=regiao.codigo|default:'Nova região' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-{% if regiao %}edit{% else %}plus{% endif %}" aria-hidden="true"></i>
+                    {% if regiao %}Editar região{% else %}Nova região{% endif %}
+                </h1>
+                {% if regiao %}<p class="page-subtitle">{{ regiao.codigo }}</p>{% endif %}
+            </div>
+            <div class="header-actions">
+                {% if regiao %}
+                <a href="{% url 'stock:masterdata:regiao_detail' regiao.id %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+                {% else %}
+                <a href="{% url 'stock:masterdata:regioes_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if not regiao %}
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        O <strong>código</strong> (ex.: REG0001) é gerado automaticamente ao guardar.
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Identificação e localização</h2></div>
+            <div class="card-body">
+                {% if regiao %}
+                <div class="form-field stock-u-mb-16">
+                    <span class="form-label">Código</span>
+                    <p class="info-value"><code>{{ regiao.codigo }}</code> <span class="form-hint">(não editável)</span></p>
+                </div>
+                {% endif %}
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="nome">Nome *</label>
+                        <input type="text" id="nome" name="nome" class="form-control" required maxlength="100" value="{{ regiao.nome|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="provincia">Província *</label>
+                        <input type="text" id="provincia" name="provincia" class="form-control" required maxlength="50" value="{{ regiao.provincia|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="distrito">Distrito</label>
+                        <input type="text" id="distrito" name="distrito" class="form-control" maxlength="50" value="{{ regiao.distrito|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="latitude_centro">Latitude</label>
+                        <input type="number" id="latitude_centro" name="latitude_centro" class="form-control" step="0.000001" value="{{ regiao.latitude_centro|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="longitude_centro">Longitude</label>
+                        <input type="number" id="longitude_centro" name="longitude_centro" class="form-control" step="0.000001" value="{{ regiao.longitude_centro|default:'' }}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="prioridade">Prioridade</label>
+                        <input type="number" id="prioridade" name="prioridade" class="form-control" value="{{ regiao.prioridade|default:1 }}" min="1">
+                    </div>
+                </div>
+                {% if regiao %}
+                <label class="form-check stock-u-mt-16">
+                    <input type="checkbox" name="ativo" {% if regiao.ativo %}checked{% endif %}> Região activa
+                </label>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
+            <a href="{% if regiao %}{% url 'stock:masterdata:regiao_detail' regiao.id %}{% else %}{% url 'stock:masterdata:regioes_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

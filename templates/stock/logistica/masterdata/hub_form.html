@@ -1,0 +1,139 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{% if hub %}Editar {{ hub.codigo }}{% else %}Novo hub{% endif %}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:masterdata:hubs_list' as hubs_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Hubs' breadcrumb_section_url=hubs_list_url breadcrumb_current=hub.codigo|default:'Novo hub' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-{% if hub %}edit{% else %}plus{% endif %}" aria-hidden="true"></i> {% if hub %}Editar hub{% else %}Novo hub logístico{% endif %}</h1>
+                {% if hub %}<p class="page-subtitle">{{ hub.codigo }}</p>{% endif %}
+            </div>
+            <div class="header-actions">
+                <a href="{% if hub %}{% url 'stock:masterdata:hub_detail' hub.id %}{% else %}{% url 'stock:masterdata:hubs_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    {% if not hub %}
+    <div class="alert alert-info stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        O <strong>código</strong> (ex.: HUB0001) é gerado automaticamente ao guardar.
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Identificação</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="nome">Nome *</label>
+                        <input type="text" id="nome" name="nome" class="form-control" required maxlength="100" value="{{ hub.nome|default:'' }}">
+                        <p class="form-hint">Designação comercial ou operacional do ponto.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="tipo">Tipo *</label>
+                        <select id="tipo" name="tipo" class="form-select" required>
+                            {% for val, label in tipo_choices %}
+                            <option value="{{ val }}" {% if hub.tipo == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Origem: recolha inicial. Destino: entrega final. Consolidação/distribuição: operações intermédias.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="regiao">Região *</label>
+                        <select id="regiao" name="regiao" class="form-select" required>
+                            <option value="">Seleccionar...</option>
+                            {% for r in regioes %}
+                            <option value="{{ r.id }}" {% if hub.regiao_id == r.id %}selected{% endif %}>{{ r.nome }} ({{ r.codigo }})</option>
+                            {% endfor %}
+                        </select>
+                        <p class="form-hint">Região geográfica à qual o hub está associado.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Localização</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field form-field--full">
+                        <label class="form-label" for="endereco">Endereço *</label>
+                        <textarea id="endereco" name="endereco" class="form-control" required rows="2">{{ hub.endereco|default:'' }}</textarea>
+                        <p class="form-hint">Morada completa para referência operacional e documentos.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="cidade">Cidade *</label>
+                        <input type="text" id="cidade" name="cidade" class="form-control" required maxlength="50" value="{{ hub.cidade|default:'' }}">
+                        <p class="form-hint">Cidade ou localidade principal.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="latitude">Latitude *</label>
+                        <input type="number" id="latitude" name="latitude" class="form-control" required step="0.000001" value="{{ hub.latitude|default:'' }}">
+                        <p class="form-hint">Coordenada GPS. Necessária para cálculo de distâncias e rotas.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="longitude">Longitude *</label>
+                        <input type="number" id="longitude" name="longitude" class="form-control" required step="0.000001" value="{{ hub.longitude|default:'' }}">
+                        <p class="form-hint">Par com a latitude. Verifique no mapa antes de guardar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header"><h2 class="card-title">Capacidade e contacto</h2></div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-label" for="capacidade_maxima_m3">Capacidade (m³)</label>
+                        <input type="number" id="capacidade_maxima_m3" name="capacidade_maxima_m3" class="form-control" step="0.01" min="0" value="{{ hub.capacidade_maxima_m3|default:'' }}">
+                        <p class="form-hint">Volume máximo armazenável no hub. Opcional.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="capacidade_maxima_kg">Capacidade (kg)</label>
+                        <input type="number" id="capacidade_maxima_kg" name="capacidade_maxima_kg" class="form-control" step="0.01" min="0" value="{{ hub.capacidade_maxima_kg|default:'' }}">
+                        <p class="form-hint">Peso máximo suportado. Opcional.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone" class="form-control" maxlength="20" value="{{ hub.telefone|default:'' }}">
+                        <p class="form-hint">Contacto do hub para operações no terreno.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ hub.email|default:'' }}">
+                        <p class="form-hint">Email de contacto ou notificações.</p>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="responsavel">Responsável</label>
+                        <input type="text" id="responsavel" name="responsavel" class="form-control" maxlength="100" value="{{ hub.responsavel|default:'' }}">
+                        <p class="form-hint">Pessoa responsável pelo hub no dia-a-dia.</p>
+                    </div>
+                </div>
+                <label class="form-check stock-u-mt-16">
+                    <input type="checkbox" name="funcionamento_24h" {% if hub.funcionamento_24h %}checked{% endif %}> Funcionamento 24 horas
+                </label>
+                {% if hub %}
+                <label class="form-check stock-u-mt-8">
+                    <input type="checkbox" name="ativo" {% if hub.ativo %}checked{% endif %}> Hub activo
+                </label>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Guardar</button>
+            <a href="{% if hub %}{% url 'stock:masterdata:hub_detail' hub.id %}{% else %}{% url 'stock:masterdata:hubs_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

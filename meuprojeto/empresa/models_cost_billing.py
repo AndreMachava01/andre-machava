@@ -191,7 +191,7 @@ class CustoLogistico(models.Model):
         ordering = ['-data_custo', '-data_criacao']
     
     def __str__(self):
-        return f"{self.codigo} - {self.tipo_custo.nome} - R$ {self.valor}"
+        return f"{self.codigo} - {self.tipo_custo.nome} - {self.valor} MT"
     
     def save(self, *args, **kwargs):
         if not self.codigo:
@@ -283,7 +283,7 @@ class RateioCusto(models.Model):
         unique_together = ['custo_logistico', 'centro_custo_destino']
     
     def __str__(self):
-        return f"{self.codigo} - {self.centro_custo_destino.nome} - R$ {self.valor_rateado}"
+        return f"{self.codigo} - {self.centro_custo_destino.nome} - {self.valor_rateado} MT"
     
     def save(self, *args, **kwargs):
         if not self.codigo:
@@ -369,7 +369,7 @@ class FaturamentoFrete(models.Model):
         ordering = ['-data_emissao', '-numero_fatura']
     
     def __str__(self):
-        return f"{self.numero_fatura} - {self.cliente_nome} - R$ {self.valor_liquido}"
+        return f"{self.numero_fatura} - {self.cliente_nome} - {self.valor_liquido} MT"
     
     def save(self, *args, **kwargs):
         if not self.numero_fatura:
@@ -429,7 +429,7 @@ class ItemFaturamento(models.Model):
         unique_together = ['faturamento', 'rastreamento_entrega']
     
     def __str__(self):
-        return f"{self.faturamento.numero_fatura} - {self.descricao} - R$ {self.valor_total}"
+        return f"{self.faturamento.numero_fatura} - {self.descricao} - {self.valor_total} MT"
     
     def save(self, *args, **kwargs):
         # Calcular valor total automaticamente

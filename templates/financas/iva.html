@@ -1,0 +1,92 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; }
+        td.num { text-align: right; }
+        .total-row { font-weight: 700; background: #fffbeb; border-top: 2px solid #b45309; }
+        .info { font-size: 13px; color: #6b7280; margin-top: 12px; }
+        .cabecalho-empresa { width: 100%; margin-bottom: 16px; border-collapse: collapse; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; }
+        .cabecalho-empresa .cel-logo { width: 72px; vertical-align: top; padding-right: 12px; }
+        .cabecalho-empresa .logo-empresa { max-width: 70px; max-height: 56px; display: block; object-fit: contain; }
+        .cabecalho-empresa .cel-dados { vertical-align: top; font-size: 13px; line-height: 1.4; color: #374151; }
+        .cabecalho-empresa .nome-empresa { font-weight: bold; font-size: 15px; color: #b45309; margin-bottom: 4px; }
+        .cabecalho-empresa .dados-linha { margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table class="cabecalho-empresa">
+            <tr>
+                <td class="cel-logo">{% if logo_url %}<img src="{{ logo_url }}" alt="" class="logo-empresa">{% endif %}</td>
+                <td class="cel-dados">
+                    <div class="nome-empresa">{{ dados_empresa.nome|default:"—" }}</div>
+                    {% if dados_empresa.nuit %}<div class="dados-linha">NUIT: {{ dados_empresa.nuit }}</div>{% endif %}
+                    {% if dados_empresa.endereco %}<div class="dados-linha">{{ dados_empresa.endereco }}</div>{% endif %}
+                    {% if dados_empresa.telefone %}<div class="dados-linha">Tel: {{ dados_empresa.telefone }}</div>{% endif %}
+                    {% if dados_empresa.email %}<div class="dados-linha">Email: {{ dados_empresa.email }}</div>{% endif %}
+                </td>
+            </tr>
+        </table>
+        <div class="header">
+            <h1><i class="fas fa-percent"></i> {{ title }}</h1>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'financas:iva' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&format=csv" class="btn btn-primary">Exportar CSV</a>
+                <a href="{% url 'financas:iva' %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&format=xlsx" class="btn btn-primary">Exportar Excel</a>
+                <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </div>
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>De:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                <label>Até:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+                <button type="submit" class="btn btn-primary">Aplicar</button>
+            </form>
+        </div>
+        <p><strong>Taxa IVA configurada:</strong> {{ taxa_pct|floatformat:0 }}%</p>
+        <table>
+            <thead>
+                <tr><th>Conceito</th><th class="num">Base (MT)</th><th class="num">IVA (MT)</th><th class="num">Total (MT)</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Prestação de Serviços (ordens OS – receitas)</td>
+                    <td class="num">{{ base_vendas|floatformat:2 }}</td>
+                    <td class="num">{{ iva_vendas|floatformat:2 }}</td>
+                    <td class="num">{{ total_vendas|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Compras (IVA dedutível)</td>
+                    <td class="num">{{ base_compras|floatformat:2 }}</td>
+                    <td class="num">({{ iva_compras|floatformat:2 }})</td>
+                    <td class="num">{{ total_compras|floatformat:2 }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>IVA a pagar (estimado)</td>
+                    <td class="num">—</td>
+                    <td class="num">{{ iva_a_pagar|floatformat:2 }}</td>
+                    <td class="num">—</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="info">Valores estimados assumindo que totais de vendas e compras incluem IVA à taxa configurada. Para declaração fiscal use os valores oficiais dos documentos.</p>
+    </div>
+</body>
+</html>

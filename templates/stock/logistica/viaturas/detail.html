@@ -1,566 +1,345 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}{{ viatura.nome }} - Detalhes{% endblock %}
+{% block title %}{{ viatura.nome }} — Viatura{% endblock %}
 
-{% block extra_style %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    body {
-        background: #1f2937;
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: white;
-    }
-
-    .page-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 10px;
-        padding: 0;
-        overflow: hidden;
-        min-height: calc(100vh - 20px);
-    }
-
-    .page-header {
-        background: var(--purple-gradient);
-        padding: 20px 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-
-    .page-header button,
-    .page-header a {
-        pointer-events: auto !important;
-        z-index: 1001 !important;
-        position: relative !important;
-    }
-
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin: 0;
-        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-subtitle {
-        font-size: 1.1rem;
-        margin: 10px 0 0 0;
-        opacity: 0.9;
-        position: relative;
-        z-index: 2;
-    }
-
-    .page-content {
-        padding: 30px;
-        background: #1f2937;
-    }
-
-    /* Cards de informação */
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 25px;
-        margin-bottom: 30px;
-    }
-
-    .info-card {
-        background: #374151;
-        border-radius: 16px;
-        border: 1px solid #4b5563;
-        padding: 25px;
-        box-shadow: var(--shadow-light);
-        transition: all 0.3s ease;
-    }
-
-    .info-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-        border-color: #06b6d4;
-    }
-
-    .info-card h3 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #f9fafb;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 1px solid #4b5563;
-        padding-bottom: 15px;
-    }
-
-    .info-card h3 i {
-        color: #06b6d4;
-    }
-
-    .info-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #4b5563;
-    }
-
-    .info-item:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-size: 0.9rem;
-        color: #9ca3af;
-        font-weight: 500;
-    }
-
-    .info-value {
-        font-size: 1rem;
-        color: #f9fafb;
-        font-weight: 600;
-        text-align: right;
-    }
-
-    /* Status badges */
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: white;
-        text-align: center;
-    }
-
-    .status-badge.status-active {
-        background: var(--success-gradient);
-    }
-
-    .status-badge.status-warning {
-        background: var(--warning-gradient);
-    }
-
-    .status-badge.status-inactive {
-        background: var(--danger-gradient);
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 1;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: baseline;
-        border-radius: 4px;
-    }
-
-    .badge-info {
-        color: #fff;
-        background-color: #06b6d4;
-    }
-
-    /* Stats grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .summary-card {
-        background: #374151;
-        border-radius: 12px;
-        border: 1px solid #4b5563;
-        padding: 20px;
-        text-align: center;
-        box-shadow: var(--shadow-light);
-        transition: all 0.3s ease;
-    }
-
-    .summary-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .summary-card .icon {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
-        color: #06b6d4;
-    }
-
-    .summary-card .number {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #f9fafb;
-        margin-bottom: 5px;
-    }
-
-    .summary-card .label {
-        font-size: 0.9rem;
-        color: #9ca3af;
-        font-weight: 500;
-    }
-
-    /* Botões */
-    .btn {
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: var(--cyan-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-secondary {
-        background: #4b5563;
-        color: #f9fafb;
-        border: 1px solid #6b7280;
-    }
-
-    .btn-secondary:hover {
-        background: #6b7280;
-        transform: translateY(-2px);
-    }
-
-    .btn-danger {
-        background: var(--danger-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .page-container {
-            margin: 5px;
-            min-height: calc(100vh - 10px);
-        }
-        
-        .page-header {
-            padding: 15px 20px;
-        }
-        
-        .page-title {
-            font-size: 1.5rem;
-        }
-        
-        .page-subtitle {
-            font-size: 0.85rem;
-        }
-
-        .page-content {
-            padding: 20px;
-        }
-
-        .info-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="page-container">
-    <!-- Header -->
+<div class="container stock-page">
+    {% url 'stock:logistica:viaturas_list' as viaturas_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Viaturas internas' breadcrumb_section_url=viaturas_url breadcrumb_current=viatura.codigo %}
+
     <div class="page-header">
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-car"></i>
+                    <i class="fas fa-car" aria-hidden="true"></i>
                     {{ viatura.nome }}
                 </h1>
                 <p class="page-subtitle">
-                    Detalhes da viatura interna da empresa
+                    {{ viatura.codigo }} — {{ viatura.get_tipo_display }}
+                    {% if viatura.placa %} · {{ viatura.placa }}{% endif %}
                 </p>
             </div>
-            <div style="display: flex; gap: 15px; align-items: center; position: relative; z-index: 1000;">
-                <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
-                    <i class="fas fa-edit"></i>
-                    Editar
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:viaturas_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
                 </a>
-                <a href="{% url 'stock:logistica:viaturas_list' %}" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar
+                <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit" aria-hidden="true"></i> Editar
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Content -->
-    <div class="page-content">
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="summary-card">
-                <div class="icon">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
-                <div class="number">{{ viatura.quilometragem_atual|default:"0" }}</div>
-                <div class="label">Quilometragem Atual</div>
-            </div>
-            <div class="summary-card">
-                <div class="icon">
-                    <i class="fas fa-weight"></i>
-                </div>
-                <div class="number">{{ viatura.capacidade_kg|default:"N/A" }}</div>
-                <div class="label">Capacidade (kg)</div>
-            </div>
-            <div class="summary-card">
-                <div class="icon">
-                    <i class="fas fa-calendar"></i>
-                </div>
-                <div class="number">{{ viatura.ano_fabricacao|default:"N/A" }}</div>
-                <div class="label">Ano de Fabricação</div>
-            </div>
-            <div class="summary-card">
-                <div class="icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="number">{{ viatura.prazo_entrega_padrao|default:"N/A" }}</div>
-                <div class="label">Prazo Padrão (dias)</div>
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-tasks"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total_operacoes|default:"0" }}</div>
+                <div class="stat-label">Operações</div>
             </div>
         </div>
-
-        <!-- Informações da Viatura -->
-        <div class="info-grid">
-            <div class="info-card">
-                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
-                <div class="info-item">
-                    <span class="info-label">Código</span>
-                    <span class="info-value">{{ viatura.codigo }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Nome</span>
-                    <span class="info-value">{{ viatura.nome }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Categoria</span>
-                    <span class="info-value">
-                        <span class="badge badge-info">{{ viatura.categoria_veiculo }}</span>
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Placa</span>
-                    <span class="info-value">{{ viatura.placa }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Marca</span>
-                    <span class="info-value">{{ viatura.marca }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Modelo</span>
-                    <span class="info-value">{{ viatura.modelo }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Ano de Fabricação</span>
-                    <span class="info-value">{{ viatura.ano_fabricacao }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Status</span>
-                    <span class="info-value">
-                        {% if viatura.status == 'ATIVA' %}
-                            <span class="status-badge status-active">{{ viatura.get_status_display }}</span>
-                        {% elif viatura.status == 'MANUTENCAO' %}
-                            <span class="status-badge status-warning">{{ viatura.get_status_display }}</span>
-                        {% else %}
-                            <span class="status-badge status-inactive">{{ viatura.get_status_display }}</span>
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Ativa</span>
-                    <span class="info-value">
-                        {% if viatura.ativa %}
-                            <i class="fas fa-check-circle" style="color: #10b981;"></i> Sim
-                        {% else %}
-                            <i class="fas fa-times-circle" style="color: #ef4444;"></i> Não
-                        {% endif %}
-                    </span>
-                </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-hourglass-half"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.operacoes_em_curso|default:"0" }}</div>
+                <div class="stat-label">Em curso</div>
             </div>
-
-            <div class="info-card">
-                <h3><i class="fas fa-user"></i> Motorista Responsável</h3>
-                <div class="info-item">
-                    <span class="info-label">Nome do Motorista</span>
-                    <span class="info-value">{{ viatura.motorista_responsavel }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Telefone</span>
-                    <span class="info-value">{{ viatura.telefone_motorista }}</span>
-                </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.operacoes_concluidas|default:"0" }}</div>
+                <div class="stat-label">Concluídas</div>
             </div>
-
-            <div class="info-card">
-                <h3><i class="fas fa-cogs"></i> Especificações Técnicas</h3>
-                <div class="info-item">
-                    <span class="info-label">Capacidade</span>
-                    <span class="info-value">{{ viatura.capacidade_kg|default:"N/A" }} kg</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Quilometragem Atual</span>
-                    <span class="info-value">{{ viatura.quilometragem_atual|default:"0" }} km</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Próxima Revisão</span>
-                    <span class="info-value">
-                        {% if viatura.proxima_revisao %}
-                            {{ viatura.proxima_revisao|date:"d/m/Y" }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </span>
-                </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-shipping-fast"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total_entregas|default:"0" }}</div>
+                <div class="stat-label">Rastreamentos</div>
             </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-tachometer-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ viatura.quilometragem_atual|default:"0" }}</div>
+                <div class="stat-label">Km actual</div>
+            </div>
+        </div>
+    </div>
 
-            <div class="info-card">
-                <h3><i class="fas fa-dollar-sign"></i> Custos e Prazos</h3>
-                <div class="info-item">
-                    <span class="info-label">Prazo de Entrega Padrão</span>
-                    <span class="info-value">{{ viatura.prazo_entrega_padrao|default:"N/A" }} dias</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Custo por Kg</span>
-                    <span class="info-value">
-                        {% if viatura.custo_por_kg %}
-                            {{ viatura.custo_por_kg }} MT/kg
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Custo Fixo</span>
-                    <span class="info-value">
-                        {% if viatura.custo_fixo %}
-                            {{ viatura.custo_fixo }} MT
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </span>
+    <div class="detail-cards-grid stock-u-mb-24">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Identificação</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Código</span>
+                        <div class="cell-primary">{{ viatura.codigo }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Status</span>
+                        <span class="status-badge status-{{ viatura.status|lower }}">{{ viatura.get_status_display }}</span>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Uso</span>
+                        <span class="type-badge type-{{ viatura.tipo|lower }}">{{ viatura.get_tipo_display }}</span>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Categoria</span>
+                        <div>{{ categoria_display }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Placa</span>
+                        <div><span class="cell-placa">{{ viatura.placa|default:"—" }}</span></div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Marca / modelo</span>
+                        <div>{{ viatura.marca|default:"—" }} {{ viatura.modelo }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Ano</span>
+                        <div>{{ viatura.ano_fabricacao|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Registo</span>
+                        <div>
+                            {% if viatura.ativa %}
+                            <span class="stock-text-success">Ativa no sistema</span>
+                            {% else %}
+                            <span class="stock-text-danger">Inactiva</span>
+                            {% endif %}
+                            · {{ viatura.data_cadastro|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Observações -->
-        {% if viatura.observacoes %}
-        <div class="info-card">
-            <h3><i class="fas fa-sticky-note"></i> Observações</h3>
-            <p style="color: #d1d5db; line-height: 1.6; margin: 0;">{{ viatura.observacoes }}</p>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-building" aria-hidden="true"></i> Sucursal</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Sucursal</span>
+                        <div>{{ viatura.sucursal.nome|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Cidade</span>
+                        <div>{{ viatura.sucursal.cidade|default:"—" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-user" aria-hidden="true"></i> Motorista</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Responsável</span>
+                        <div>{{ viatura.motorista_responsavel|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Telefone</span>
+                        <div>{{ viatura.telefone_motorista|default:"—" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-cogs" aria-hidden="true"></i> Técnico</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Capacidade</span>
+                        <div>{% if viatura.capacidade_kg %}{{ viatura.capacidade_kg }} kg{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Quilometragem</span>
+                        <div>{{ viatura.quilometragem_atual|default:"0" }} km</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Próxima revisão</span>
+                        <div>{% if viatura.proxima_revisao %}{{ viatura.proxima_revisao|date:"d/m/Y" }}{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Prazo padrão</span>
+                        <div>{{ viatura.prazo_entrega_padrao|default:"—" }} dias</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-coins" aria-hidden="true"></i> Tarifas</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Custo fixo</span>
+                        <div>{{ viatura.custo_fixo|floatformat:2 }} MT</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Por kg</span>
+                        <div>{{ viatura.custo_por_kg|floatformat:2 }} MT/kg</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Por km</span>
+                        <div>{{ viatura.custo_por_km|floatformat:2 }} MT/km</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Franquia volume</span>
+                        <div>{{ viatura.volume_m3_franquia }} m³</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Franquia peso</span>
+                        <div>{{ viatura.peso_kg_franquia }} kg</div>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <span class="form-label">Suplemento</span>
+                        <div>
+                            {{ viatura.percentual_suplemento_carga }}% quando volume &gt; {{ viatura.volume_m3_franquia }} m³
+                            ou peso &gt; {{ viatura.peso_kg_franquia }} kg
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if viatura.observacoes %}
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-sticky-note" aria-hidden="true"></i> Observações</h2>
+        </div>
+        <div class="card-body">
+            <p class="stock-detail-obs">{{ viatura.observacoes }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-history" aria-hidden="true"></i>
+                Operações recentes
+            </h3>
+        </div>
+
+        {% if operacoes_recentes %}
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Operação</th>
+                        <th>Tipo</th>
+                        <th>Origem → destino</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in operacoes_recentes %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ op.codigo_operacao }}</strong></td>
+                        <td>{{ op.get_tipo_operacao_display }}</td>
+                        <td>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ op.origem_operacao }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">→ {{ op.destino_operacao }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ op.status|lower }}">{{ op.get_status_display }}</span>
+                        </td>
+                        <td>{{ op.data_notificacao|date:"d/m/Y H:i" }}</td>
+                        <td class="col-actions">
+                            <a href="{% url 'stock:logistica:operacao_detail' op.id %}"
+                               class="btn-action primary" title="Ver operação"
+                               aria-label="Ver operação {{ op.codigo_operacao }}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-tasks" aria-hidden="true"></i>
+            <h3>Nenhuma operação registada</h3>
+            <p>Esta viatura ainda não foi atribuída a operações logísticas.</p>
         </div>
         {% endif %}
+    </div>
 
-        <!-- Botões de Ação -->
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
-            <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" class="btn btn-primary">
-                <i class="fas fa-edit"></i>
-                Editar Viatura
-            </a>
-            <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
-                <i class="fas fa-trash"></i>
-                Excluir Viatura
-            </button>
-            <a href="{% url 'stock:logistica:viaturas_list' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Voltar para Lista
-            </a>
-        </div>
+    <div class="stock-detail-actions-row stock-u-mt-24">
+        <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" class="btn btn-primary">
+            <i class="fas fa-edit" aria-hidden="true"></i> Editar viatura
+        </a>
+        <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
+            <i class="fas fa-trash" aria-hidden="true"></i> Excluir
+        </button>
     </div>
 </div>
 
-<!-- Modal de confirmação de exclusão -->
-<div id="modalExclusao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
-    <div style="background: #374151; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid #4b5563; box-shadow: var(--shadow-heavy);">
-        <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
-            Confirmar Exclusão
+<div id="modalExclusao" class="stock-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalExclusaoTitle" hidden>
+    <div class="stock-modal-panel">
+        <h3 id="modalExclusaoTitle" class="stock-modal-panel__title">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            Confirmar exclusão
         </h3>
-        <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.6;">
+        <p class="stock-modal-panel__body">
             Tem certeza que deseja excluir a viatura <strong>{{ viatura.nome }}</strong>?
             <br><br>
-            <span style="color: #f59e0b; font-weight: 600;">Esta ação não pode ser desfeita!</span>
+            <span class="stock-modal-panel__warn">Esta ação não pode ser desfeita.</span>
         </p>
-        <div style="display: flex; gap: 15px; justify-content: flex-end;">
-            <button type="button" onclick="fecharModal()" style="background: #4b5563; color: #f9fafb; border: 1px solid #6b7280; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Cancelar
-            </button>
-            <form method="POST" action="{% url 'stock:logistica:viatura_delete' viatura.id %}" style="display: inline;">
+        <div class="stock-modal-panel__actions">
+            <button type="button" class="stock-modal-btn-cancel" onclick="fecharModal()">Cancelar</button>
+            <form method="post" action="{% url 'stock:logistica:viatura_delete' viatura.id %}" class="stock-modal-form-inline">
                 {% csrf_token %}
-                <button type="submit" style="background: var(--danger-gradient); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-trash"></i>
-                    Excluir
+                <button type="submit" class="stock-modal-btn-danger">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Excluir
                 </button>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+{{ block.super }}
 <script>
 function confirmarExclusao() {
-    document.getElementById('modalExclusao').style.display = 'flex';
+    const modal = document.getElementById('modalExclusao');
+    modal.hidden = false;
+    modal.classList.add('is-open');
 }
 
 function fecharModal() {
-    document.getElementById('modalExclusao').style.display = 'none';
+    const modal = document.getElementById('modalExclusao');
+    modal.classList.remove('is-open');
+    modal.hidden = true;
 }
+
+document.getElementById('modalExclusao').addEventListener('click', function (e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
 </script>
 {% endblock %}
-

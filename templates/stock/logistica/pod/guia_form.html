@@ -3,31 +3,12 @@
 
 {% block title %}{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Guia de Remessa{% endblock %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/">
-            <i class="fas fa-warehouse"></i>
-            Stock
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/stock/logistica/">
-            <i class="fas fa-truck"></i>
-            Logística
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="{% url 'stock:pod:guias_list' %}">Guias de Remessa</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Guia</span>
-    </nav>
+<div class="container stock-page">
+    {% url 'stock:pod:guias_list' as guias_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Guias POD' breadcrumb_section_url=guias_list_url breadcrumb_current=form.instance.pk|yesno:'Editar Guia,Nova Guia' %}
 
     <!-- Page Header -->
     <div class="page-header">

@@ -1,0 +1,51 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Eliminar tipo de movimento{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:tipos_movimento' %}">Tipos de movimento</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>Eliminar</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-trash"></i> Eliminar tipo de movimento</h1>
+                <p class="page-subtitle">Esta ação não pode ser desfeita.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-card-narrow">
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <strong>Atenção:</strong> confirme que deseja eliminar este tipo de movimento.
+            </div>
+            <div class="info-row"><span class="info-label">Nome</span><span class="info-value">{{ tipo.nome }}</span></div>
+            <div class="info-row"><span class="info-label">Código</span><span class="info-value">{{ tipo.codigo }}</span></div>
+            <div class="info-row"><span class="info-label">Descrição</span><span class="info-value">{{ tipo.descricao|default:"—" }}</span></div>
+            <div class="info-row">
+                <span class="info-label">Efeito</span>
+                <span class="info-value">{% if tipo.aumenta_estoque %}Entrada{% else %}Saída{% endif %}</span>
+            </div>
+            <form method="post" class="form-actions stock-form-actions-mt">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-danger-solid">
+                    Confirmar eliminação
+                </button>
+                <a href="{% url 'stock:tipos_movimento' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

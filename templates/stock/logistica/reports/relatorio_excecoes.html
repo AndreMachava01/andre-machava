@@ -1,0 +1,85 @@
+{% extends 'stock/includes/report_logistica_shell.html' %}
+
+{% block report_page_title %}Exceções logísticas{% endblock %}
+{% block report_breadcrumb %}Exceções{% endblock %}
+{% block report_icon %}fa-exclamation-triangle{% endblock %}
+{% block report_heading %}Exceções logísticas{% endblock %}
+{% block report_doc_title %}RELATÓRIO DE EXCEÇÕES LOGÍSTICAS{% endblock %}
+{% block report_code_prefix %}EXC{% endblock %}
+
+{% block report_content %}
+{% if dados.mensagem %}
+<div class="stock-report-empty">
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
+    <p>{{ dados.mensagem }}</p>
+</div>
+{% else %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Resumo</h3>
+<div class="stock-report-kpi-grid">
+    <div class="stock-report-kpi stock-report-kpi--danger">
+        <div class="stock-report-kpi__label">Total exceções</div>
+        <div class="stock-report-kpi__value">{{ dados.total_excecoes|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--success">
+        <div class="stock-report-kpi__label">Resolvidas</div>
+        <div class="stock-report-kpi__value">{{ dados.resolvidas|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi stock-report-kpi--warning">
+        <div class="stock-report-kpi__label">Pendentes</div>
+        <div class="stock-report-kpi__value">{{ dados.pendentes|default:0 }}</div>
+    </div>
+    <div class="stock-report-kpi {% if taxa_resolucao >= 90 %}stock-report-kpi--success{% elif taxa_resolucao >= 70 %}stock-report-kpi--warning{% else %}stock-report-kpi--danger{% endif %}">
+        <div class="stock-report-kpi__label">Taxa resolução</div>
+        <div class="stock-report-kpi__value">{{ taxa_resolucao|default:0|floatformat:2 }}%</div>
+    </div>
+</div>
+
+{% if dados.por_tipo %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-tag" aria-hidden="true"></i> Por tipo</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th class="text-center">Qtd.</th>
+                <th class="text-center">%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.por_tipo %}
+            <tr>
+                <td><strong>{{ item.tipo_excecao__nome|default:"N/A" }}</strong></td>
+                <td class="text-center">{{ item.count|default:0 }}</td>
+                <td class="text-center">
+                    {% if dados.total_excecoes > 0 %}{% widthratio item.count dados.total_excecoes 100 %}%{% else %}0%{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if dados.por_prioridade %}
+<h3 class="stock-doc-print__section-title"><i class="fas fa-flag" aria-hidden="true"></i> Por prioridade</h3>
+<div class="stock-report-table-wrap">
+    <table class="table table-striped stock-report-table">
+        <thead>
+            <tr>
+                <th>Prioridade</th>
+                <th class="text-center">Qtd.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados.por_prioridade %}
+            <tr>
+                <td><strong>{{ item.prioridade }}</strong></td>
+                <td class="text-center">{{ item.count|default:0 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Tendências - Sistema Conception</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .control-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .stat-card.success {
+            border-left-color: #28a745;
+        }
+        
+        .stat-card.danger {
+            border-left-color: #dc3545;
+        }
+        
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f59e0b;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.success .stat-number {
+            color: #28a745;
+        }
+        
+        .stat-card.danger .stat-number {
+            color: #dc3545;
+        }
+        
+        .stat-card.info .stat-number {
+            color: #17a2b8;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-description {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        
+        .summary-card h4 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .summary-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gráfico de Tendências</h1>
+            <p>Análise temporal dos valores de entrada e saída de estoque</p>
+        </div>
+
+        <div class="actions">
+            <a href="/stock/dashboard/" class="btn btn-primary">Voltar ao Dashboard</a>
+            <a href="/stock/" class="btn btn-secondary">Voltar ao Stock</a>
+            <a href="/stock/movimentos/" class="btn btn-info">Ver Movimentos</a>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="dias">Período (dias):</label>
+                <select id="dias">
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="15">Últimos 15 dias</option>
+                    <option value="30" selected>Últimos 30 dias</option>
+                    <option value="60">Últimos 60 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button type="button" onclick="loadChartData()" class="btn btn-primary">Atualizar Gráfico</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Carregando dados do gráfico...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p>Erro ao carregar dados do gráfico. Tente novamente.</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-entradas">0</div>
+                    <div class="stat-label">Total Entradas</div>
+                    <div class="stat-description">Valor em MT</div>
+                </div>
+                
+                <div class="stat-card danger">
+                    <div class="stat-number" id="total-saidas">0</div>
+                    <div class="stat-label">Total Saídas</div>
+                    <div class="stat-description">Valor em MT</div>
+                </div>
+                
+                <div class="stat-card info">
+                    <div class="stat-number" id="saldo-liquido">0</div>
+                    <div class="stat-label">Saldo Líquido</div>
+                    <div class="stat-description">Entradas - Saídas</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-number" id="periodo-dias">30</div>
+                    <div class="stat-label">Período</div>
+                    <div class="stat-description">Dias analisados</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>📈 Tendências de Valor (MT)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="tendenciasChart"></canvas>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h4>📊 Resumo de Entradas</h4>
+                    <div id="entradas-summary">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>📉 Resumo de Saídas</h4>
+                    <div id="saidas-summary">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty">
+                <p><strong>📈 Gráfico de Tendências</strong></p>
+                <p>Análise temporal dos valores de entrada e saída de estoque.</p>
+                <p>Use os controles acima para ajustar o período de análise.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        
+        // Carregar dados do gráfico
+        async function loadChartData() {
+            try {
+                const dias = document.getElementById('dias').value;
+                const url = `/stock/dashboard/chart-tendencias/?dias=${dias}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar loading e mostrar conteúdo
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Calcular estatísticas
+                const entradaData = data.datasets[0]?.data || [];
+                const saidaData = data.datasets[1]?.data || [];
+                
+                const totalEntradas = entradaData.reduce((sum, val) => sum + val, 0);
+                const totalSaidas = saidaData.reduce((sum, val) => sum + val, 0);
+                const saldoLiquido = totalEntradas - totalSaidas;
+                
+                // Preencher estatísticas
+                document.getElementById('total-entradas').textContent = totalEntradas.toLocaleString('pt-PT');
+                document.getElementById('total-saidas').textContent = totalSaidas.toLocaleString('pt-PT');
+                document.getElementById('saldo-liquido').textContent = saldoLiquido.toLocaleString('pt-PT');
+                document.getElementById('periodo-dias').textContent = dias;
+                
+                // Criar ou atualizar gráfico
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                const ctx = document.getElementById('tendenciasChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: data.datasets || []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Tendências de Valor por Dia'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Valor (MT)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data'
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+                
+                // Preencher resumos
+                const maxEntrada = Math.max(...entradaData);
+                const maxSaida = Math.max(...saidaData);
+                const avgEntrada = totalEntradas / entradaData.filter(v => v > 0).length || 0;
+                const avgSaida = totalSaidas / saidaData.filter(v => v > 0).length || 0;
+                
+                document.getElementById('entradas-summary').innerHTML = `
+                    <div class="summary-item">
+                        <span class="summary-label">Valor Máximo:</span>
+                        <span class="summary-value">${maxEntrada.toLocaleString('pt-PT')} MT</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Valor Médio:</span>
+                        <span class="summary-value">${avgEntrada.toLocaleString('pt-PT')} MT</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Dias com Movimento:</span>
+                        <span class="summary-value">${entradaData.filter(v => v > 0).length}</span>
+                    </div>
+                `;
+                
+                document.getElementById('saidas-summary').innerHTML = `
+                    <div class="summary-item">
+                        <span class="summary-label">Valor Máximo:</span>
+                        <span class="summary-value">${maxSaida.toLocaleString('pt-PT')} MT</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Valor Médio:</span>
+                        <span class="summary-value">${avgSaida.toLocaleString('pt-PT')} MT</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Dias com Movimento:</span>
+                        <span class="summary-value">${saidaData.filter(v => v > 0).length}</span>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do gráfico:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('dias').addEventListener('change', loadChartData);
+        
+        // Carregar dados quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadChartData);
+    </script>
+</body>
+</html>

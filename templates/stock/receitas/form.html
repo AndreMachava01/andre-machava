@@ -1,0 +1,658 @@
+{% extends 'base_admin.html' %}
+{% load humanize static %}
+
+{% block title %}{% if receita %}Editar{% else %}Adicionar{% endif %} receita{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container receita-form-wrap">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:receitas' %}">Receitas</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{% if receita %}Editar{% else %}Nova{% endif %}</span>
+    </nav>
+    <div class="receita-form-header">
+        <h1 class="page-title">
+            <i class="fas fa-book" aria-hidden="true"></i>
+            {% if receita %}Editar receita{% else %}Adicionar receita{% endif %}
+        </h1>
+    </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="msg-error" role="alert">{{ message }}</div>
+                {% elif message.tags == 'warning' %}
+                <div class="msg-warning" role="alert">{{ message }}</div>
+                {% else %}
+                <div class="msg-success" role="status">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% if receita %}{% url 'stock:receita_edit' receita.id %}{% else %}{% url 'stock:receita_add' %}{% endif %}" id="receitaForm" enctype="multipart/form-data" 
+              data-materiais='[{% for material in materiais %}{"id":{{ material.id }},"nome":"{{ material.nome|escapejs }}","codigo":"{{ material.codigo|escapejs }}","unidade":"{{ material.unidade_medida|escapejs }}","preco_custo":{{ material.preco_custo|floatformat:2 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
+              {% if receita and receita.itens.all %}data-itens-existentes='[{% for item in receita.itens.all %}{"item_id":{{ item.material.id }},"item_nome":"{{ item.material.nome|escapejs }}","item_codigo":"{{ item.material.codigo|escapejs }}","quantidade":{{ item.quantidade }},"unidade":"{{ item.unidade_medida|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'{% endif %}>
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="form-group">
+                <label for="nome">Nome <span class="required">*</span></label>
+                <input type="text" id="nome" name="nome" required value="{% if receita %}{{ receita.nome }}{% endif %}">
+            </div>
+
+            <div class="form-row">
+                {% if receita %}
+                <div class="form-group">
+                    <label for="codigo">Código</label>
+                    <input type="text" id="codigo" name="codigo" value="{{ receita.codigo }}" readonly class="input-readonly">
+                    <small class="form-hint">
+                        <i class="fas fa-info-circle"></i> Código gerado automaticamente (não editável)
+                    </small>
+                </div>
+                {% else %}
+                <div class="form-group stock-u-hidden">
+                    <input type="hidden" id="codigo" name="codigo" value="">
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="versao">Versão</label>
+                    <input type="text" id="versao" name="versao" value="{% if receita %}{{ receita.versao }}{% else %}1.0{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="produto">Produto Produzido <span class="required">*</span></label>
+                <select id="produto" name="produto" required>
+                    <option value="">Selecione o produto</option>
+                    {% for produto in produtos %}
+                        <option value="{{ produto.id }}" {% if receita %}{% if receita.produto_id == produto.id %}selected{% endif %}{% endif %}>
+                            {{ produto.nome }} ({{ produto.codigo }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao">{% if receita %}{{ receita.descricao }}{% endif %}</textarea>
+            </div>
+
+            <!-- Documentos PDF -->
+            <div class="form-row">
+                <!-- Plano de Corte -->
+                <div class="form-group">
+                    <label for="plano_corte_pdf">
+                        <i class="fas fa-file-pdf"></i> Plano de Corte (PDF)
+                    </label>
+                    <input type="file" id="plano_corte_pdf" name="plano_corte_pdf" accept=".pdf,application/pdf" class="file-input">
+                    <small class="form-hint form-hint-block">
+                        <i class="fas fa-info-circle"></i> Opcional: Carregue o plano de corte (PDF, máximo 10MB)
+                    </small>
+                    {% if receita and receita.plano_corte_pdf %}
+                    <div class="pdf-current-box">
+                        <div class="pdf-current-row">
+                            <i class="fas fa-file-pdf pdf-icon" aria-hidden="true"></i>
+                            <div class="pdf-current-body">
+                                <div class="pdf-current-title">Documento atual:</div>
+                                <a href="{{ receita.plano_corte_pdf.url }}" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                                    <i class="fas fa-external-link-alt" aria-hidden="true"></i> {{ receita.plano_corte_pdf.name|slice:"30:" }}
+                                </a>
+                            </div>
+                            <label class="pdf-remove-label">
+                                <input type="checkbox" name="plano_corte_pdf_clear" value="1">
+                                Remover
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Projeto da Receita -->
+                <div class="form-group">
+                    <label for="documento_pdf">
+                        <i class="fas fa-file-pdf"></i> Projeto da Receita (PDF)
+                    </label>
+                    <input type="file" id="documento_pdf" name="documento_pdf" accept=".pdf,application/pdf" class="file-input">
+                    <small class="form-hint form-hint-block">
+                        <i class="fas fa-info-circle"></i> Opcional: Carregue especificações técnicas, desenhos ou outros documentos relacionados à receita (PDF, máximo 10MB)
+                    </small>
+                    {% if receita and receita.documento_pdf %}
+                    <div class="pdf-current-box">
+                        <div class="pdf-current-row">
+                            <i class="fas fa-file-pdf pdf-icon" aria-hidden="true"></i>
+                            <div class="pdf-current-body">
+                                <div class="pdf-current-title">Documento atual:</div>
+                                <a href="{{ receita.documento_pdf.url }}" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                                    <i class="fas fa-external-link-alt" aria-hidden="true"></i> {{ receita.documento_pdf.name|slice:"30:" }}
+                                </a>
+                            </div>
+                            <label class="pdf-remove-label">
+                                <input type="checkbox" name="documento_pdf_clear" value="1">
+                                Remover
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rendimento e Produção -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="rendimento">Rendimento <span class="required">*</span></label>
+                    <input type="number" id="rendimento" name="rendimento" min="1" required value="{% if receita %}{{ receita.rendimento }}{% else %}1{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="unidade_rendimento">Unidade de Rendimento <span class="required">*</span></label>
+                    <select id="unidade_rendimento" name="unidade_rendimento" required>
+                        <option value="">Selecione a unidade</option>
+                        {% for unidade_val, unidade_label in unidades %}
+                            <option value="{{ unidade_val }}" {% if receita %}{% if receita.unidade_rendimento == unidade_val %}selected{% endif %}{% else %}{% if unidade_val == 'UN' %}selected{% endif %}{% endif %}>
+                                {{ unidade_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tempo_producao_horas">Tempo de Produção (horas)</label>
+                    <input type="number" id="tempo_producao_horas" name="tempo_producao_horas" step="0.01" min="0" value="{% if receita %}{{ receita.tempo_producao_horas }}{% else %}0{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        {% for status_val, status_label in status_choices %}
+                            <option value="{{ status_val }}" {% if receita %}{% if receita.status == status_val %}selected{% endif %}{% else %}{% if status_val == 'ATIVA' %}selected{% endif %}{% endif %}>
+                                {{ status_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Itens da Receita (usando modelo Item unificado) -->
+            <div class="itens-section">
+                <h3 class="itens-section-title">
+                    <i class="fas fa-boxes" aria-hidden="true"></i> Itens da Receita
+                </h3>
+                <div class="itens-info-box">
+                    <p>
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Nota:</strong> As receitas são definições de planejamento. Você pode definir os itens necessários mesmo que não estejam em stock.
+                    </p>
+                </div>
+                
+                <div class="itens-form">
+                    <div class="form-group item-search-wrap">
+                        <label for="item_search" class="item-search-label">
+                            <i class="fas fa-search" aria-hidden="true"></i> Buscar item
+                        </label>
+                        <input type="text" id="item_search" class="item-search-input" placeholder="Digite para buscar por nome ou código..." autocomplete="off">
+                        <i class="fas fa-search item-search-icon" aria-hidden="true"></i>
+                        <div id="item_search_results" class="item-search-results" role="listbox" aria-label="Resultados da pesquisa"></div>
+                    </div>
+                    <div class="form-group item-select-hidden">
+                        <label class="sr-only" for="item_select">Item da receita</label>
+                        <select id="item_select" title="Item da receita" aria-label="Item da receita">
+                            <option value="">Selecione um item</option>
+                            {% for material in materiais %}
+                                <option value="{{ material.id }}" data-nome="{{ material.nome }}" data-codigo="{{ material.codigo }}" data-unidade="{{ material.unidade_medida }}">
+                                    {{ material.nome }} ({{ material.codigo }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="item_quantidade" step="0.001" min="0.001" placeholder="Quantidade">
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="item_unidade">Unidade de medida do item</label>
+                        <select id="item_unidade" title="Unidade de medida do item" aria-label="Unidade de medida do item">
+                            <option value="">Unidade</option>
+                            {% for unidade_val, unidade_label in unidades %}
+                                <option value="{{ unidade_val }}">{{ unidade_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-sm btn-add-item-full" id="addItemBtn">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="itens-list" id="itensList">
+                    {% if receita and receita.itens.all %}
+                        {% for item in receita.itens.all %}
+                        <div class="item-row" data-item-id="{{ item.material.id }}">
+                            <div>
+                                <strong>{{ item.material.nome }}</strong>
+                                <div class="text-muted">{{ item.material.codigo }}</div>
+                            </div>
+                            <div><strong>{{ item.quantidade|floatformat:3 }}</strong></div>
+                            <div><span class="text-muted">{{ item.get_unidade_medida_display }}</span></div>
+                            <div>
+                                <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover item" aria-label="Remover item da receita">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Nenhum item adicionado</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <input type="hidden" name="itens_receita" id="itens_receita" value="[]">
+                
+                <!-- Cálculo de Custo -->
+                <div class="custo-panel">
+                    <h4>
+                        <i class="fas fa-calculator" aria-hidden="true"></i> Cálculo de Custo
+                    </h4>
+                    <div class="custo-grid">
+                        <div>
+                            <div class="custo-label">Custo Total do Lote:</div>
+                            <div class="custo-value-primary">
+                                <span id="custoTotal">0.00</span> MT
+                            </div>
+                        </div>
+                        <div>
+                            <div class="custo-label">Custo por Produto:</div>
+                            <div class="custo-value-success">
+                                <span id="custoPorProduto">0.00</span> MT
+                            </div>
+                        </div>
+                    </div>
+                    {% if receita %}
+                    <div class="custo-produto-box">
+                        <div class="custo-label">Preço de Custo Atual do Produto:</div>
+                        <div class="custo-produto-value">
+                            {{ receita.produto.preco_custo|floatformat:2 }} MT
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="custo-note">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        <strong>Nota:</strong> O preço de custo do produto será atualizado automaticamente com base no custo calculado pela receita quando você salvar.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes">{% if receita %}{{ receita.observacoes }}{% endif %}</textarea>
+            </div>
+
+            <!-- Ações -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Salvar Receita
+                </button>
+                <a href="{% url 'stock:receitas' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const itensAdicionados = [];
+            const itemSelect = document.getElementById('item_select');
+            const itemSearch = document.getElementById('item_search');
+            const itemSearchResults = document.getElementById('item_search_results');
+            const itemQuantidade = document.getElementById('item_quantidade');
+            const itemUnidade = document.getElementById('item_unidade');
+            const addItemBtn = document.getElementById('addItemBtn');
+            const itensList = document.getElementById('itensList');
+            const itensReceitaInput = document.getElementById('itens_receita');
+
+            // Armazenar todos os itens disponíveis
+            const receitaForm = document.getElementById('receitaForm');
+            const todosItens = JSON.parse(receitaForm.getAttribute('data-materiais') || '[]');
+
+            // Item selecionado atualmente
+            let itemSelecionado = null;
+            
+            // Índice do item destacado na lista (para navegação por teclado)
+            let highlightedIndex = -1;
+
+            function showSearchResults(show) {
+                itemSearchResults.classList.toggle('is-open', show);
+            }
+
+            function clearSearchHighlights() {
+                itemSearchResults.querySelectorAll('.item-search-option').forEach(opt => {
+                    opt.classList.remove('is-highlighted');
+                });
+            }
+
+            function setHighlightedOption(index) {
+                const options = itemSearchResults.querySelectorAll('.item-search-option');
+                clearSearchHighlights();
+                if (index >= 0 && options[index]) {
+                    options[index].classList.add('is-highlighted');
+                }
+            }
+
+            // Carregar itens existentes da receita
+            const itensExistentesJson = receitaForm.getAttribute('data-itens-existentes');
+            if (itensExistentesJson) {
+                const itensExistentes = JSON.parse(itensExistentesJson);
+                itensAdicionados.push(...itensExistentes);
+            }
+
+            // Função para filtrar itens
+            function filtrarItens(termo) {
+                const termoLower = termo.toLowerCase().trim();
+                if (!termoLower) {
+                    showSearchResults(false);
+                    itemSelecionado = null;
+                    return;
+                }
+
+                const itensFiltrados = todosItens.filter(item => {
+                    const nomeMatch = item.nome.toLowerCase().includes(termoLower);
+                    const codigoMatch = item.codigo.toLowerCase().includes(termoLower);
+                    return nomeMatch || codigoMatch;
+                });
+
+                if (itensFiltrados.length === 0) {
+                    itemSearchResults.innerHTML = '<div class="item-search-empty">Nenhum item encontrado</div>';
+                    showSearchResults(true);
+                    itemSelecionado = null;
+                    return;
+                }
+
+                // Limitar a 20 resultados para melhor performance
+                const itensLimitados = itensFiltrados.slice(0, 20);
+                
+                itemSearchResults.innerHTML = itensLimitados.map(item => `
+                    <div class="item-search-option" role="option"
+                         data-id="${item.id}"
+                         data-nome="${item.nome}"
+                         data-codigo="${item.codigo}"
+                         data-unidade="${item.unidade}">
+                        <div class="item-search-option-title">${item.nome}</div>
+                        <div class="item-search-option-code">${item.codigo}</div>
+                    </div>
+                `).join('');
+
+                highlightedIndex = -1;
+                itemSearchResults.querySelectorAll('.item-search-option').forEach((option, idx) => {
+                    option.addEventListener('mouseenter', function() {
+                        highlightedIndex = idx;
+                        setHighlightedOption(idx);
+                    });
+                    option.addEventListener('click', function() {
+                        itemSelecionado = {
+                            id: parseInt(this.dataset.id, 10),
+                            nome: this.dataset.nome,
+                            codigo: this.dataset.codigo,
+                            unidade: this.dataset.unidade
+                        };
+                        itemSearch.value = `${itemSelecionado.nome} (${itemSelecionado.codigo})`;
+                        itemUnidade.value = itemSelecionado.unidade;
+                        showSearchResults(false);
+                        itemQuantidade.focus();
+                    });
+                });
+
+                showSearchResults(true);
+            }
+
+            // Filtro dinâmico ao digitar
+            let searchTimeout;
+            itemSearch.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                highlightedIndex = -1;
+                searchTimeout = setTimeout(() => {
+                    filtrarItens(this.value);
+                }, 200);
+            });
+
+            // Navegação por teclado
+            itemSearch.addEventListener('keydown', function(e) {
+                const options = itemSearchResults.querySelectorAll('.item-search-option');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (options.length > 0) {
+                        highlightedIndex = (highlightedIndex + 1) % options.length;
+                        setHighlightedOption(highlightedIndex);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (options.length > 0) {
+                        highlightedIndex = highlightedIndex <= 0 ? options.length - 1 : highlightedIndex - 1;
+                        setHighlightedOption(highlightedIndex);
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && options[highlightedIndex]) {
+                        options[highlightedIndex].click();
+                    } else if (options.length === 1) {
+                        options[0].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    showSearchResults(false);
+                    highlightedIndex = -1;
+                }
+            });
+
+            // Fechar resultados ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!itemSearch.contains(e.target) && !itemSearchResults.contains(e.target)) {
+                    showSearchResults(false);
+                    highlightedIndex = -1;
+                }
+            });
+
+            // Auto-completar unidade quando item é selecionado (mantido para compatibilidade)
+            itemSelect.addEventListener('change', function() {
+                const option = this.options[this.selectedIndex];
+                if (option.value) {
+                    itemUnidade.value = option.dataset.unidade || '';
+                }
+            });
+
+            // Adicionar item
+            function adicionarItem() {
+                // Usar item selecionado do filtro dinâmico ou do select (compatibilidade)
+                let itemId, itemNome, itemCodigo;
+                
+                if (itemSelecionado) {
+                    itemId = itemSelecionado.id;
+                    itemNome = itemSelecionado.nome;
+                    itemCodigo = itemSelecionado.codigo;
+                } else {
+                    itemId = itemSelect.value;
+                    const option = itemSelect.options[itemSelect.selectedIndex];
+                    if (option && option.value) {
+                        itemNome = option.dataset.nome || '';
+                        itemCodigo = option.dataset.codigo || '';
+                    }
+                }
+
+                const quantidade = itemQuantidade.value;
+                const unidade = itemUnidade.value;
+
+                if (!itemId) {
+                    alert('Por favor, selecione um item.');
+                    itemSearch.focus();
+                    return;
+                }
+
+                // Normalizar quantidade (suporta vírgula ou ponto)
+                const quantidadeNormalizada = quantidade.toString().replace(',', '.');
+                const quantidadeFloat = parseFloat(quantidadeNormalizada);
+
+                if (!quantidade || isNaN(quantidadeFloat) || quantidadeFloat <= 0) {
+                    alert('Por favor, informe uma quantidade válida.');
+                    return;
+                }
+
+                if (!unidade) {
+                    alert('Por favor, selecione uma unidade.');
+                    return;
+                }
+
+                const itemIdInt = parseInt(itemId, 10);
+                
+                // Verificar se já existe
+                const existe = itensAdicionados.find(i => i.item_id === itemIdInt);
+                
+                if (existe) {
+                    if (confirm('Este item já foi adicionado. Deseja atualizar a quantidade?')) {
+                        existe.quantidade = quantidadeFloat;
+                        existe.unidade = unidade;
+                    } else {
+                        return;
+                    }
+                } else {
+                    itensAdicionados.push({
+                        item_id: itemIdInt,
+                        item_nome: itemNome || '',
+                        item_codigo: itemCodigo || '',
+                        quantidade: quantidadeFloat,
+                        unidade: unidade
+                    });
+                }
+
+                atualizarLista();
+                limparFormulario();
+            }
+
+            // Adicionar event listener ao botão
+            addItemBtn.addEventListener('click', adicionarItem);
+
+            // Remover item
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-item')) {
+                    const row = e.target.closest('.item-row');
+                    const itemId = parseInt(row.dataset.itemId);
+                    
+                    if (confirm('Deseja remover este item?')) {
+                        const index = itensAdicionados.findIndex(i => i.item_id === itemId);
+                        if (index > -1) {
+                            itensAdicionados.splice(index, 1);
+                            atualizarLista();
+                        }
+                    }
+                }
+            });
+
+            // Atualizar lista visual e campo hidden
+            function atualizarLista() {
+                if (itensAdicionados.length === 0) {
+                    itensList.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum item adicionado</p></div>';
+                } else {
+                    itensList.innerHTML = itensAdicionados.map(i => `
+                        <div class="item-row" data-item-id="${i.item_id}">
+                            <div>
+                                <strong>${i.item_nome}</strong>
+                                <div class="text-muted">${i.item_codigo}</div>
+                            </div>
+                            <div><strong>${i.quantidade.toFixed(3)}</strong></div>
+                            <div><span class="text-muted">${i.unidade}</span></div>
+                            <div>
+                                <button type="button" class="btn btn-danger btn-sm remove-item" title="Remover item" aria-label="Remover item da receita">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Atualizar campo hidden com JSON
+                const itensParaEnviar = itensAdicionados.map(i => ({
+                    material_id: i.item_id,
+                    quantidade: i.quantidade,
+                    unidade: i.unidade
+                }));
+
+                itensReceitaInput.value = JSON.stringify(itensParaEnviar);
+            }
+
+            // Limpar formulário
+            function limparFormulario() {
+                itemSelect.value = '';
+                itemSearch.value = '';
+                itemQuantidade.value = '';
+                itemUnidade.value = '';
+                itemSelecionado = null;
+                itemSearchResults.style.display = 'none';
+            }
+
+            // Calcular e exibir custo da receita
+            function calcularCustoReceita() {
+                if (itensAdicionados.length === 0) {
+                    document.getElementById('custoTotal').textContent = '0.00';
+                    document.getElementById('custoPorProduto').textContent = '0.00';
+                    return;
+                }
+                
+                // Criar objeto de lookup para preços
+                const precosPorId = {};
+                todosItens.forEach(item => {
+                    precosPorId[item.id] = item.preco_custo || 0;
+                });
+                
+                let custoTotal = 0;
+                itensAdicionados.forEach(item => {
+                    const preco = precosPorId[item.item_id] || 0;
+                    custoTotal += parseFloat(item.quantidade) * parseFloat(preco);
+                });
+                
+                const rendimento = parseFloat(document.getElementById('rendimento').value) || 1;
+                const custoPorProduto = rendimento > 0 ? custoTotal / rendimento : 0;
+                
+                document.getElementById('custoTotal').textContent = custoTotal.toFixed(2);
+                document.getElementById('custoPorProduto').textContent = custoPorProduto.toFixed(2);
+            }
+            
+            // Sobrescrever atualizarLista para também calcular custo
+            const originalAtualizarLista = atualizarLista;
+            atualizarLista = function() {
+                originalAtualizarLista();
+                calcularCustoReceita();
+            };
+            
+            // Atualizar custo quando rendimento mudar
+            const rendimentoInput = document.getElementById('rendimento');
+            if (rendimentoInput) {
+                rendimentoInput.addEventListener('input', calcularCustoReceita);
+            }
+
+            // Validação antes de enviar
+            document.getElementById('receitaForm').addEventListener('submit', function(e) {
+                atualizarLista();
+                
+                if (itensAdicionados.length === 0) {
+                    if (!confirm('Nenhum item foi adicionado. Deseja continuar mesmo assim?')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // Inicializar
+            atualizarLista();
+            calcularCustoReceita();
+        });
+    </script>
+{% endblock %}

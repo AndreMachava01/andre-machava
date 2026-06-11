@@ -1,0 +1,64 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Executar {{ relatorio.nome }}{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:observability:relatorio_detail' relatorio.id as relatorio_detail_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section=relatorio.codigo breadcrumb_section_url=relatorio_detail_url breadcrumb_current='Executar' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-play" aria-hidden="true"></i>
+                    Executar relatório
+                </h1>
+                <p class="page-subtitle">{{ relatorio.nome }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:observability:relatorio_detail' relatorio.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stock-u-mb-24">
+        <div class="card-body">
+            <form method="post" class="stock-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="formato">Formato de exportação</label>
+                    <select id="formato" name="formato" class="form-select">
+                        {% for value, label in formato_choices %}
+                        <option value="{{ value }}" {% if relatorio.formato_padrao == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="form-hint">O ficheiro será gerado no formato seleccionado.</p>
+                </div>
+
+                {% if metricas_disponiveis %}
+                <div class="form-group stock-u-mt-16">
+                    <label>Métricas disponíveis no sistema</label>
+                    <div class="stock-list-hint" role="list">
+                        {% for m in metricas_disponiveis %}
+                        <div class="stock-list-hint__item" role="listitem">{{ m.codigo }} — {{ m.nome }}</div>
+                        {% endfor %}
+                    </div>
+                    <p class="form-hint">Os filtros avançados podem ser configurados nos parâmetros do relatório.</p>
+                </div>
+                {% endif %}
+
+                <div class="form-actions stock-u-mt-24">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play" aria-hidden="true"></i> Iniciar execução
+                    </button>
+                    <a href="{% url 'stock:observability:relatorio_detail' relatorio.id %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

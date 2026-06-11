@@ -1,0 +1,202 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Alocação em Lote{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:allocation:dashboard' as allocation_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Alocação' breadcrumb_section_url=allocation_dashboard_url breadcrumb_current='Alocação em lote' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-layer-group" aria-hidden="true"></i>
+                    Alocação em Lote
+                </h1>
+                <p class="page-subtitle">Seleccione rastreamentos sem transporte atribuído para alocação automática</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:allocation:criteria_config' %}" class="btn btn-secondary">
+                    <i class="fas fa-cog" aria-hidden="true"></i> Critérios
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="batch-allocation-form">
+        {% csrf_token %}
+
+        <div class="card stock-u-mb-24">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-truck" aria-hidden="true"></i>
+                    Rastreamentos disponíveis
+                </h2>
+                <div class="card-actions">
+                    {% if page_obj %}
+                    <label class="form-check form-check--inline">
+                        <input type="checkbox" id="select-all-rastreamentos" class="form-check-input">
+                        Seleccionar todos
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="text-center stock-table-col--select">
+                                    <span class="sr-only">Seleccionar</span>
+                                </th>
+                                <th>Código</th>
+                                <th>Destinatário</th>
+                                <th>Destino</th>
+                                <th>Peso</th>
+                                <th>Criado em</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rastreamento in page_obj %}
+                            <tr>
+                                <td class="text-center">
+                                    <label class="sr-only" for="rast-batch-{{ rastreamento.id }}">Seleccionar {{ rastreamento.codigo_rastreamento }}</label>
+                                    <input type="checkbox" id="rast-batch-{{ rastreamento.id }}" name="rastreamentos_ids" value="{{ rastreamento.id }}"
+                                           class="form-check-input rastreamento-checkbox"
+                                           aria-label="Seleccionar {{ rastreamento.codigo_rastreamento }}">
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ rastreamento.codigo_rastreamento }}</span>
+                                </td>
+                                <td>{{ rastreamento.destinatario_nome }}</td>
+                                <td>{{ rastreamento.cidade_entrega }}, {{ rastreamento.provincia_entrega }}</td>
+                                <td>
+                                    {% if rastreamento.peso_total %}
+                                        {{ rastreamento.peso_total|floatformat:2 }} kg
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ rastreamento.data_criacao|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'stock:allocation:single' rastreamento.id %}" class="btn-action secondary"
+                                       title="Alocar individualmente" aria-label="Alocar {{ rastreamento.codigo_rastreamento }}">
+                                        <i class="fas fa-robot" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if page_obj.has_other_pages %}
+                <div class="pagination stock-u-mt-16">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                    </a>
+                    {% endif %}
+                    <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">
+                        Seguinte <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3" aria-hidden="true"></i>
+                    <p>Não há rastreamentos pendentes de alocação.</p>
+                    <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">Voltar ao dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if page_obj %}
+        <div class="card stock-u-mb-24">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-cogs" aria-hidden="true"></i>
+                    Opções de execução
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <label class="form-check">
+                            <input type="checkbox" name="usar_criterios_personalizados" class="form-check-input"
+                                   id="usar-criterios-personalizados">
+                            Usar critérios personalizados (abaixo)
+                        </label>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-check">
+                            <input type="checkbox" name="aplicar_alocacoes" class="form-check-input" checked>
+                            Aplicar alocações automaticamente após cálculo
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="criterios-personalizados" hidden>
+            {% include 'stock/logistica/allocation/_criteria_fields.html' with criteria=criteria_atual %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-executar-lote">
+                <i class="fas fa-play" aria-hidden="true"></i>
+                Executar alocação em lote
+            </button>
+            <a href="{% url 'stock:allocation:dashboard' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const selectAll = document.getElementById('select-all-rastreamentos');
+    const checkboxes = document.querySelectorAll('.rastreamento-checkbox');
+    const criteriosToggle = document.getElementById('usar-criterios-personalizados');
+    const criteriosPanel = document.getElementById('criterios-personalizados');
+    const form = document.getElementById('batch-allocation-form');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
+        });
+    }
+
+    if (criteriosToggle && criteriosPanel) {
+        criteriosToggle.addEventListener('change', function () {
+            criteriosPanel.hidden = !criteriosToggle.checked;
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const selected = document.querySelectorAll('.rastreamento-checkbox:checked');
+            if (!selected.length) {
+                e.preventDefault();
+                alert('Seleccione pelo menos um rastreamento.');
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

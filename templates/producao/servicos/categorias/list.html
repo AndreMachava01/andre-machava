@@ -1,0 +1,443 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias de Serviços - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'empresa/css/producao-servicos.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #b45309;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #92400e;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-edit {
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #b45309;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            background: #b45309;
+            color: white;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+        }
+        
+        .section-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .search-filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .search-filters form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .search-filters input,
+        .search-filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-filters input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-tags"></i>
+                Categorias de Serviços
+            </h1>
+            <p>Gerencie as categorias para organizar seus serviços</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="ps-alert ps-alert-error">
+                    {{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div class="ps-alert ps-alert-warning">
+                    {{ message }}
+                </div>
+                {% else %}
+                <div class="ps-alert ps-alert-success">
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_principais|default:"0" }}</div>
+                <div class="stat-label">Categorias Principais</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_subcategorias|default:"0" }}</div>
+                <div class="stat-label">Subcategorias</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_principais|add:total_subcategorias|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'producao:servicos_categoria_add' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Nova Categoria
+            </a>
+            <a href="{% url 'producao:servicos_list' %}" class="btn btn-secondary">
+                <i class="fas fa-concierge-bell"></i> Catálogo de Serviços
+            </a>
+            <a href="{% url 'producao:main' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Voltar à Produção
+            </a>
+        </div>
+
+        <div class="search-filters">
+            <form method="get">
+                <input type="text" name="q" placeholder="Buscar categoria..." value="{{ search_query }}" autocomplete="off">
+                <select name="status">
+                    <option value="">Todos os Status</option>
+                    <option value="ativa" {% if status == 'ativa' %}selected{% endif %}>Ativa</option>
+                    <option value="inativa" {% if status == 'inativa' %}selected{% endif %}>Inativa</option>
+                </select>
+                <select name="order_by">
+                    <option value="nome" {% if order_by == 'nome' or not order_by %}selected{% endif %}>Nome A-Z</option>
+                    <option value="-nome" {% if order_by == '-nome' %}selected{% endif %}>Nome Z-A</option>
+                </select>
+                {% if search_query or status %}
+                <a href="{% url 'producao:servicos_categorias' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-folder"></i> Categorias Principais</h2>
+                <span class="count">{{ total_principais }}</span>
+            </div>
+            {% if categorias_principais %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Status</th>
+                            <th>Subcategorias</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias_principais %}
+                        <tr>
+                            <td><strong>{{ categoria.codigo }}</strong></td>
+                            <td><strong>{{ categoria.nome }}</strong></td>
+                            <td>{{ categoria.descricao|truncatewords:10|default:"—" }}</td>
+                            <td>
+                                {% if categoria.ativa %}
+                                <span class="badge badge-success">Ativa</span>
+                                {% else %}
+                                <span class="badge badge-danger">Inativa</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ categoria.subcategorias.count }}</td>
+                            <td>
+                                <a href="{% url 'producao:servicos_categoria_edit' categoria.id %}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form method="POST" action="{% url 'producao:servicos_categoria_delete' categoria.id %}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty">
+                <i class="fas fa-folder-open" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                <p>Nenhuma categoria principal encontrada.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-folder-open"></i> Subcategorias</h2>
+                <span class="count">{{ total_subcategorias }}</span>
+            </div>
+            {% if categorias_subcategorias %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Categoria Pai</th>
+                            <th>Descrição</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias_subcategorias %}
+                        <tr>
+                            <td>{{ categoria.codigo }}</td>
+                            <td>{{ categoria.nome }}</td>
+                            <td><strong>{{ categoria.categoria_pai.nome }}</strong></td>
+                            <td>{{ categoria.descricao|truncatewords:10|default:"—" }}</td>
+                            <td>
+                                {% if categoria.ativa %}
+                                <span class="badge badge-success">Ativa</span>
+                                {% else %}
+                                <span class="badge badge-danger">Inativa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'producao:servicos_categoria_edit' categoria.id %}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form method="POST" action="{% url 'producao:servicos_categoria_delete' categoria.id %}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty">
+                <i class="fas fa-folder-open" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                <p>Nenhuma subcategoria encontrada.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,124 +1,258 @@
 {% extends "base_admin.html" %}
 {% load static %}
 
-{% block title %}Detalhes do Rastreamento - {{ rastreamento.codigo_rastreamento }}{% endblock %}
+{% block title %}Rastreamento — {{ rastreamento.codigo_rastreamento }}{% endblock %}
 
-{% block extra_style %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
-    .page-container { background: #1f2937; border: 1px solid #4b5563; border-radius: 16px; margin: 10px; overflow: hidden; box-shadow: var(--shadow-medium); }
-    .page-header { background: var(--purple-gradient); padding: 18px 24px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
-    .page-title { margin: 0; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .header-actions { display: flex; gap: 10px; }
-    .btn { padding: 10px 16px; border-radius: 8px; border: none; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-secondary { background: #4b5563; color: #f9fafb; border: 1px solid #6b7280; }
-    .btn-primary { background: var(--primary-gradient); color: #fff; }
-    .page-content { background: #111827; padding: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 16px; box-shadow: var(--shadow-light); }
-    .card h3 { margin: 0 0 12px; color: #f3f4f6; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .item { display: grid; grid-template-columns: 140px 1fr; gap: 10px; margin-bottom: 10px; color: #e5e7eb; }
-    .item .label { color: #9ca3af; font-weight: 600; }
-    .status-badge { padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; background: #4b5563; color: #fff; }
-    .timeline { display: grid; gap: 12px; }
-    .timeline-item { border-left: 3px solid #8b5cf6; padding-left: 12px; }
-    .timeline-header { display: flex; justify-content: space-between; color: #e5e7eb; font-weight: 600; }
-    .timeline-description { color: #d1d5db; }
-    .muted { color: #9ca3af; }
-    @media print { .header-actions { display: none; } .page-container { border: none; margin: 0; border-radius: 0; } }
-    </style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<div class="page-container">
+<div class="container stock-page">
+    {% url 'stock:logistica:rastreamento_list' as rastreamento_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Rastreamentos' breadcrumb_section_url=rastreamento_url breadcrumb_current=rastreamento.codigo_rastreamento %}
+
     <div class="page-header">
-        <h1 class="page-title"><i class="fas fa-shipping-fast"></i> {{ rastreamento.codigo_rastreamento }}</h1>
-        <div class="header-actions">
-            <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
-            <a href="{% url 'stock:logistica:operacoes_list' %}" class="btn btn-primary"><i class="fas fa-tasks"></i> Operações</a>
-        </div>
-    </div>
-    <div class="page-content">
-        <div class="grid">
-            <div class="card">
-                <h3><i class="fas fa-info-circle"></i> Informações Gerais</h3>
-                <div class="item"><div class="label">Código:</div><div><strong>{{ rastreamento.codigo_rastreamento }}</strong></div></div>
-                <div class="item"><div class="label">Status:</div><div><span class="status-badge">{{ rastreamento.get_status_atual_display }}</span></div></div>
-                <div class="item"><div class="label">Transportadora:</div><div>{{ rastreamento.transportadora.nome|default:"-" }}</div></div>
-                <div class="item"><div class="label">Criado em:</div><div>{{ rastreamento.data_criacao|date:"d/m/Y H:i" }}</div></div>
-                <div class="item"><div class="label">Criado por:</div><div>{{ rastreamento.criado_por.username|default:"Sistema" }}</div></div>
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-shipping-fast" aria-hidden="true"></i>
+                    {{ rastreamento.codigo_rastreamento }}
+                </h1>
+                <p class="page-subtitle">
+                    {{ rastreamento.destinatario_nome }} — {{ rastreamento.cidade_entrega }}
+                </p>
             </div>
-
-            <div class="card">
-                <h3><i class="fas fa-user"></i> Destinatário</h3>
-                <div class="item"><div class="label">Nome:</div><div>{{ rastreamento.destinatario_nome }}</div></div>
-                <div class="item"><div class="label">Telefone:</div><div>{{ rastreamento.destinatario_telefone|default:"-" }}</div></div>
-                <div class="item"><div class="label">Endereço:</div><div>{{ rastreamento.endereco_entrega }}</div></div>
-                <div class="item"><div class="label">Cidade:</div><div>{{ rastreamento.cidade_entrega }}</div></div>
-                <div class="item"><div class="label">Província:</div><div>{{ rastreamento.provincia_entrega }}</div></div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-box"></i> Envio</h3>
-                <div class="item"><div class="label">Peso Total:</div><div>{{ rastreamento.peso_total|default:"-" }} kg</div></div>
-                <div class="item"><div class="label">Valor Declarado:</div><div>{{ rastreamento.valor_declarado|default:"-" }} MT</div></div>
-                <div class="item"><div class="label">Custo Envio:</div><div>{{ rastreamento.custo_envio|default:"-" }} MT</div></div>
-                <div class="item"><div class="label">Prevista:</div><div>{{ rastreamento.data_entrega_prevista|date:"d/m/Y H:i"|default:"-" }}</div></div>
-                <div class="item"><div class="label">Coleta:</div><div>{{ rastreamento.data_coleta|date:"d/m/Y H:i"|default:"-" }}</div></div>
-                <div class="item"><div class="label">Entrega:</div><div>{{ rastreamento.data_entrega_realizada|date:"d/m/Y H:i"|default:"-" }}</div></div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-file-alt"></i> Documento de Origem</h3>
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:rastreamento_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 {% if rastreamento.transferencia %}
-                <div class="item"><div class="label">Tipo:</div><div>Transferência</div></div>
-                <div class="item"><div class="label">Código:</div><div>{{ rastreamento.transferencia.codigo }}</div></div>
-                <div class="item"><div class="label">Origem:</div><div>{{ rastreamento.transferencia.sucursal_origem.nome }}</div></div>
-                <div class="item"><div class="label">Destino:</div><div>{{ rastreamento.transferencia.sucursal_destino.nome }}</div></div>
+                    {% with operacao=rastreamento.transferencia.notificacao_logistica_unificada %}
+                    {% if operacao %}
+                    <a href="{% url 'stock:logistica:operacao_detail' operacao.id %}" class="btn btn-primary">
+                        <i class="fas fa-tasks" aria-hidden="true"></i> Ver operação
+                    </a>
+                    {% endif %}
+                    {% endwith %}
                 {% elif rastreamento.ordem_compra %}
-                <div class="item"><div class="label">Tipo:</div><div>Ordem de Compra</div></div>
-                <div class="item"><div class="label">Código:</div><div>{{ rastreamento.ordem_compra.codigo }}</div></div>
-                <div class="item"><div class="label">Fornecedor:</div><div>{{ rastreamento.ordem_compra.fornecedor.nome|default:"-" }}</div></div>
-                <div class="item"><div class="label">Destino:</div><div>{{ rastreamento.ordem_compra.sucursal_destino.nome }}</div></div>
-                {% else %}
-                <div class="item"><div class="label">Estado:</div><div class="muted">Sem documento de origem</div></div>
+                    {% with operacao=rastreamento.ordem_compra.notificacao_logistica_unificada %}
+                    {% if operacao %}
+                    <a href="{% url 'stock:logistica:operacao_detail' operacao.id %}" class="btn btn-primary">
+                        <i class="fas fa-tasks" aria-hidden="true"></i> Ver operação
+                    </a>
+                    {% endif %}
+                    {% endwith %}
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        {% if rastreamento.observacoes %}
-        <div class="card" style="margin-top:16px;">
-            <h3><i class="fas fa-sticky-note"></i> Observações</h3>
-            <div class="muted">{{ rastreamento.observacoes }}</div>
-        </div>
-        {% endif %}
-
-        <div class="card" style="margin-top:16px;">
-            <h3><i class="fas fa-history"></i> Histórico de Eventos</h3>
-            {% if eventos %}
-            <div class="timeline">
-                {% for evento in eventos %}
-                <div class="timeline-item">
-                    <div class="timeline-header">
-                        <span>{{ evento.get_tipo_evento_display }}</span>
-                        <span class="muted">{{ evento.data_evento|date:"d/m/Y H:i" }}</span>
-                    </div>
-                    <div class="timeline-description">{{ evento.descricao }}</div>
-                    {% if evento.localizacao %}<div class="muted"><i class="fas fa-map-marker-alt"></i> {{ evento.localizacao }}</div>{% endif %}
-                    {% if evento.usuario %}<div class="muted"><i class="fas fa-user"></i> {{ evento.usuario.username }}</div>{% endif %}
-                </div>
-                {% endfor %}
+    <div class="detail-cards-grid stock-u-mb-24">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Informações gerais</h2>
             </div>
-            {% else %}
-            <div class="muted">Nenhum evento registado.</div>
-            {% endif %}
-            <!-- eventos são gerados pelas ações da operação -->
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Código</span>
+                        <div class="cell-primary">{{ rastreamento.codigo_rastreamento }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Status</span>
+                        <span class="status-badge status-{{ rastreamento.status_atual|lower }}">{{ rastreamento.get_status_atual_display }}</span>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Transporte</span>
+                        <div>
+                            {% if rastreamento.transportadora %}
+                                {{ rastreamento.transportadora.nome }}
+                                <span class="cell-muted">(Transportadora)</span>
+                            {% elif rastreamento.veiculo_interno %}
+                                {{ rastreamento.veiculo_interno.nome }} — {{ rastreamento.veiculo_interno.placa }}
+                                <span class="cell-muted">(Veículo interno)</span>
+                            {% else %}
+                                <span class="stock-text-muted-sub">Não definido</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Tipo de transporte</span>
+                        <div>{{ rastreamento.tipo_transporte }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Criado em</span>
+                        <div>{{ rastreamento.data_criacao|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Criado por</span>
+                        <div>{{ rastreamento.criado_por.get_full_name|default:rastreamento.criado_por.username|default:"Sistema" }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-user" aria-hidden="true"></i> Destinatário</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Nome</span>
+                        <div>{{ rastreamento.destinatario_nome }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Telefone</span>
+                        <div>{{ rastreamento.destinatario_telefone|default:"—" }}</div>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <span class="form-label">Endereço</span>
+                        <div>{{ rastreamento.endereco_entrega }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Cidade</span>
+                        <div>{{ rastreamento.cidade_entrega }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Província</span>
+                        <div>{{ rastreamento.provincia_entrega }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-box" aria-hidden="true"></i> Envio</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Distância</span>
+                        <div>{% if rastreamento.distancia_km %}{{ rastreamento.distancia_km|floatformat:1 }} km{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Peso total</span>
+                        <div>{% if rastreamento.peso_total %}{{ rastreamento.peso_total }} kg{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Dimensões</span>
+                        <div>
+                            {% if rastreamento.comprimento_cm and rastreamento.largura_cm and rastreamento.altura_cm %}
+                            {{ rastreamento.comprimento_cm|floatformat:1 }} ×
+                            {{ rastreamento.largura_cm|floatformat:1 }} ×
+                            {{ rastreamento.altura_cm|floatformat:1 }} cm
+                            {% else %}—{% endif %}
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Valor declarado</span>
+                        <div>{% if rastreamento.valor_declarado %}{{ rastreamento.valor_declarado|floatformat:2 }} MT{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Custo de envio</span>
+                        <div>{% if rastreamento.custo_envio %}{{ rastreamento.custo_envio|floatformat:2 }} MT{% else %}—{% endif %}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Entrega prevista</span>
+                        <div>{{ rastreamento.data_entrega_prevista|date:"d/m/Y H:i"|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Coleta</span>
+                        <div>{{ rastreamento.data_coleta|date:"d/m/Y H:i"|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Entrega realizada</span>
+                        <div>{{ rastreamento.data_entrega_realizada|date:"d/m/Y H:i"|default:"—" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-file-alt" aria-hidden="true"></i> Documento de origem</h2>
+            </div>
+            <div class="card-body">
+                {% if rastreamento.transferencia %}
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Tipo</span>
+                        <div><span class="badge badge-info">Transferência</span></div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Código</span>
+                        <div class="cell-primary">{{ rastreamento.transferencia.codigo }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Origem</span>
+                        <div>{{ rastreamento.transferencia.sucursal_origem.nome }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Destino</span>
+                        <div>{{ rastreamento.transferencia.sucursal_destino.nome }}</div>
+                    </div>
+                </div>
+                {% elif rastreamento.ordem_compra %}
+                <div class="form-grid form-grid--2">
+                    <div class="form-field">
+                        <span class="form-label">Tipo</span>
+                        <div><span class="badge badge-success">Ordem de compra</span></div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Código</span>
+                        <div class="cell-primary">{{ rastreamento.ordem_compra.codigo }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Fornecedor</span>
+                        <div>{{ rastreamento.ordem_compra.fornecedor.nome|default:"—" }}</div>
+                    </div>
+                    <div class="form-field">
+                        <span class="form-label">Destino</span>
+                        <div>{{ rastreamento.ordem_compra.sucursal_destino.nome }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="stock-text-muted-sub">Sem documento de origem associado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if rastreamento.observacoes %}
+    <div class="info-card stock-u-mb-24">
+        <h3><i class="fas fa-sticky-note" aria-hidden="true"></i> Observações</h3>
+        <p class="stock-detail-obs">{{ rastreamento.observacoes|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <div class="info-card">
+        <h3><i class="fas fa-history" aria-hidden="true"></i> Histórico de eventos</h3>
+        {% if eventos %}
+        <div class="info-grid stock-info-grid--stack">
+            {% for evento in eventos %}
+            <div class="info-item stock-logistica-event">
+                <span class="badge stock-logistica-event__badge">{{ evento.get_tipo_evento_display }}</span>
+                <div>
+                    <div class="info-label">{{ evento.data_evento|date:"d/m/Y H:i" }}</div>
+                    <div class="info-value stock-logistica-event__desc">{{ evento.descricao|default:"—" }}</div>
+                    {% if evento.localizacao %}
+                    <div class="stock-text-muted-sub">
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ evento.localizacao }}
+                    </div>
+                    {% endif %}
+                    {% if evento.usuario %}
+                    <div class="stock-text-muted-sub">
+                        <i class="fas fa-user" aria-hidden="true"></i> {{ evento.usuario.get_full_name|default:evento.usuario.username }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="stock-text-muted-sub">Nenhum evento registado.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

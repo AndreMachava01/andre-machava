@@ -1,0 +1,63 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar recebimento - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #059669; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { color: #059669; margin: 0; font-size: 20px; }
+        .detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-label { font-weight: 600; width: 140px; color: #334155; }
+        .detail-value { flex: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .actions { margin-top: 24px; display: flex; gap: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-check-circle"></i> Confirmar recebimento</h1>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Cliente:</span>
+            <span class="detail-value">{{ pendente.credor }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Descrição:</span>
+            <span class="detail-value">{{ pendente.descricao }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Valor:</span>
+            <span class="detail-value"><strong>{{ pendente.valor|floatformat:2 }} MT</strong></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Data vencimento:</span>
+            <span class="detail-value">{{ pendente.data_vencimento|date:"d/m/Y"|default:"—" }}</span>
+        </div>
+        {% if pendente.url_origem %}
+        <div class="detail-row">
+            <span class="detail-label">Documento:</span>
+            <span class="detail-value"><a href="{{ pendente.url_origem }}" target="_blank">Ver contrato / origem</a></span>
+        </div>
+        {% endif %}
+
+        <p style="margin-top: 20px; color: #6b7280; font-size: 13px;">Ao confirmar, serão criados os lançamentos em Finanças (Débito 22 Clientes + Crédito 71.01 Receitas – Prestação de Serviços / ordens de serviço OS).</p>
+
+        <form method="post" style="margin-top: 20px;">
+            {% csrf_token %}
+            <div class="actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Confirmar recebimento</button>
+                <a href="{% url 'financas:contas_receber' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

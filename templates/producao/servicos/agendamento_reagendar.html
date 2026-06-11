@@ -1,0 +1,172 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reagendar Serviço - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #b45309;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #b45309;
+            box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
+        }
+        .info-box {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #b45309;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            color: #1f2937;
+        }
+        .info-box strong {
+            color: #b45309;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #b45309;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                Reagendar Serviço
+            </h1>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Código:</strong> {{ ordem.codigo|formatar_codigo_ordem }}</p>
+            <p><strong>Cliente:</strong> {{ ordem.cliente.nome|default:ordem.nome_cliente_pagamento|default:"N/A" }}</p>
+            {% if ordem.data_agendada %}
+            <p><strong>Data Atual:</strong> {{ ordem.data_agendada|date:"d/m/Y H:i" }}</p>
+            {% endif %}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="data_agendada">
+                    <i class="fas fa-calendar"></i> Nova Data
+                </label>
+                <input type="date" id="data_agendada" name="data_agendada" required 
+                       value="{% if ordem.data_agendada %}{{ ordem.data_agendada|date:'Y-m-d' }}{% endif %}">
+            </div>
+
+            <div class="form-group">
+                <label for="hora_agendada">
+                    <i class="fas fa-clock"></i> Nova Hora
+                </label>
+                <input type="time" id="hora_agendada" name="hora_agendada" required 
+                       value="{% if ordem.data_agendada %}{{ ordem.data_agendada|time:'H:i' }}{% else %}09:00{% endif %}">
+            </div>
+
+            <div class="form-group">
+                <label for="responsavel">
+                    <i class="fas fa-user-tie"></i> Responsável
+                </label>
+                <select id="responsavel" name="responsavel">
+                    <option value="">-- Manter atual --</option>
+                    {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}" {% if ordem.responsavel and ordem.responsavel.id == usuario.id %}selected{% endif %}>
+                        {{ usuario.get_full_name|default:usuario.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <a href="{% url 'producao:servico_agendamento_detail' ordem.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Confirmar Reagendamento
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

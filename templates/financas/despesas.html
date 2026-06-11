@@ -1,0 +1,116 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .filter-row { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .total-row { font-weight: 700; background: #fffbeb; }
+        .link-cell a { color: #b45309; text-decoration: none; }
+        .link-cell a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-arrow-up"></i> {{ title }}</h1>
+            <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label>De:</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                <label>Até:</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+                <label>Origem:</label>
+                <select name="origem">
+                    <option value="">Todas</option>
+                    <option value="Compras" {% if origem_filter == 'Compras' %}selected{% endif %}>Compras</option>
+                    <option value="RH" {% if origem_filter == 'RH' %}selected{% endif %}>RH</option>
+                    <option value="Logística" {% if origem_filter == 'Logística' %}selected{% endif %}>Logística</option>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+            </form>
+        </div>
+
+        {% if origem_filter == 'RH' %}
+        <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px;">
+            <strong>Desdobramento das despesas RH:</strong><br>
+            Folha (total encargos, mês ref. no período): <strong>{{ despesas_rh_folha|floatformat:2 }} MT</strong> &nbsp;|&nbsp;
+            Treinamentos concluídos: <strong>{{ despesas_rh_treinamento|floatformat:2 }} MT</strong> &nbsp;|&nbsp;
+            Empreitadas (trabalhos por tarefa concluídos): <strong>{{ despesas_rh_empreitada|floatformat:2 }} MT</strong>
+            &nbsp;→&nbsp; <strong>Total = {{ total|floatformat:2 }} MT</strong>.<br>
+            <span style="color: #92400e; font-size: 12px;">Os <strong>adiantamentos</strong> (parcelas à assinatura de empreitada) confirmados em Finanças <strong>não entram neste total</strong>; geram lançamentos 62.03+33 e aparecem em Movimentos / Contas a pagar.</span>
+        </div>
+        {% if adiantamentos_rh %}
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 16px; color: #92400e; margin-bottom: 8px;">Adiantamentos empreitada (parcelas à assinatura) confirmados no período</h3>
+            <table>
+                <thead>
+                    <tr><th>Data</th><th>Descrição / Beneficiário</th><th class="num">Valor (MT)</th></tr>
+                </thead>
+                <tbody>
+                    {% for a in adiantamentos_rh %}
+                    <tr>
+                        <td>{{ a.data|date:"d/m/Y"|default:"—" }}</td>
+                        <td>{{ a.descricao }} — {{ a.beneficiario }}</td>
+                        <td class="num">{{ a.valor|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    {% if origem_filter == 'RH' %}<th>Tipo</th>{% endif %}
+                    <th>Origem</th>
+                    <th>Descrição</th>
+                    <th class="num">Valor (MT)</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in lista %}
+                <tr>
+                    <td>{{ d.data|date:"d/m/Y"|default:"—" }}</td>
+                    {% if origem_filter == 'RH' %}<td>{{ d.subtipo_rh|default:"—" }}</td>{% endif %}
+                    <td>{{ d.origem }}</td>
+                    <td>{{ d.descricao }}</td>
+                    <td class="num">{{ d.valor|floatformat:2 }}</td>
+                    <td class="link-cell"><a href="{{ d.url }}">{{ d.url_label }}</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="{% if origem_filter == 'RH' %}6{% else %}5{% endif %}" style="text-align:center;padding:24px;color:#6b7280;">Nenhuma despesa no período.</td></tr>
+                {% endfor %}
+                {% if lista %}
+                <tr class="total-row">
+                    <td colspan="{% if origem_filter == 'RH' %}4{% else %}3{% endif %}">Total</td>
+                    <td class="num">{{ total|floatformat:2 }}</td>
+                    <td></td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

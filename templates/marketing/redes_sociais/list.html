@@ -1,0 +1,91 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-form input, .filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        tr:hover { background: #f9fafb; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-rascunho { background: #e5e7eb; color: #4b5563; }
+        .badge-agendada { background: #dbeafe; color: #1e40af; }
+        .badge-publicada { background: #d1fae5; color: #047857; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .texto-curto { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .actions { display: flex; gap: 8px; }
+        .msg-success { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #d1fae5; color: #065f46; }
+        .header-actions { display: flex; gap: 10px; }
+        .filter-input-search { min-width: 180px; }
+        .table-empty-cell { text-align: center; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-share-alt"></i> {{ title }}</h1>
+            <div class="header-actions">
+                <a href="{% url 'marketing:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'marketing:redes_sociais_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Nova Publicação</a>
+            </div>
+        </div>
+        {% if messages %}{% for m in messages %}<div class="msg-success">{{ m }}</div>{% endfor %}{% endif %}
+        <form method="get" class="filter-form">
+            <input type="text" name="q" value="{{ search }}" placeholder="Pesquisar..." class="filter-input-search" aria-label="Pesquisar">
+            <input type="text" name="canal" value="{{ canal_filter }}" placeholder="Canal" aria-label="Canal">
+            <select name="estado" id="filter_estado" aria-label="Filtrar por estado">
+                <option value="">Todos</option>
+                {% for cod, nome in estado_choices %}
+                <option value="{{ cod }}" {% if estado_filter == cod %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Canal</th>
+                    <th>Texto</th>
+                    <th>Campanha</th>
+                    <th>Estado</th>
+                    <th>Data agendada</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in publicacoes %}
+                <tr>
+                    <td>{{ p.canal }}</td>
+                    <td class="texto-curto" title="{{ p.texto }}">{{ p.texto|truncatewords:10 }}</td>
+                    <td>{{ p.campanha.nome|default:"-" }}</td>
+                    <td><span class="badge badge-{{ p.estado|slugify }}">{{ p.get_estado_display }}</span></td>
+                    <td>{{ p.data_agendada|date:"d/m/Y H:i"|default:"-" }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'marketing:redes_sociais_detail' p.pk %}" class="btn btn-secondary btn-sm" aria-label="Ver publicação"><i class="fas fa-eye" aria-hidden="true"></i></a>
+                            <a href="{% url 'marketing:redes_sociais_edit' p.pk %}" class="btn btn-primary btn-sm" aria-label="Editar publicação"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="table-empty-cell">Nenhuma publicação encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

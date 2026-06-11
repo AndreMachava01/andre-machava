@@ -1,0 +1,84 @@
+<div class="form-section">
+    <h5><i class="fas fa-info-circle" aria-hidden="true"></i> Identificação</h5>
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label for="veiculo" class="form-label required-field">Veículo</label>
+            <select name="veiculo" id="veiculo" class="form-control" required>
+                <option value="">Selecione um veículo</option>
+                {% for veiculo in veiculos %}
+                <option value="{{ veiculo.id }}">{{ veiculo.nome }} ({{ veiculo.placa }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="tipo" class="form-label required-field">Tipo de inspecção</label>
+            <select name="tipo" id="tipo" class="form-control" required>
+                <option value="">Selecione o tipo</option>
+                {% for tipo_value, tipo_label in tipos %}
+                <option value="{{ tipo_value }}">{{ tipo_label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="motorista" class="form-label required-field">Motorista</label>
+            <input type="text" name="motorista" id="motorista" class="form-control" required placeholder="Nome do motorista presente">
+        </div>
+        <div class="form-field">
+            <label for="local_inspecao" class="form-label required-field">Local da inspecção</label>
+            <input type="text" name="local_inspecao" id="local_inspecao" class="form-control" required placeholder="Local onde foi realizada a inspecção">
+        </div>
+        <div class="form-field">
+            <label for="quilometragem" class="form-label required-field">Quilometragem</label>
+            <input type="number" name="quilometragem" id="quilometragem" class="form-control" required min="0" placeholder="Quilometragem actual">
+            <p class="form-text">Quilometragem no momento da inspecção</p>
+        </div>
+        <div class="form-field">
+            <span class="form-label">Inspetor</span>
+            <p class="form-control-plaintext stock-u-mb-0">{{ request.user.get_full_name|default:request.user.username }}</p>
+            <p class="form-text">Registado automaticamente com o utilizador actual</p>
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5><i class="fas fa-list-check" aria-hidden="true"></i> Itens de verificação</h5>
+    <p class="form-text stock-u-mb-16">Marque os itens verificados como conformes. Itens desmarcados serão considerados com problema.</p>
+
+    <div class="stock-checklist-form__catalog">
+        {% for categoria in categorias_checklist %}
+        <div class="stock-checklist-form__category">
+            <h6 class="stock-checklist-form__category-title">
+                <i class="fas {{ categoria.icone }}" aria-hidden="true"></i>
+                {{ categoria.nome }}
+            </h6>
+            <div class="stock-checklist-form__items">
+                {% for cod, rotulo in categoria.itens %}
+                <div class="form-check stock-checklist-form__item">
+                    <input type="checkbox"
+                           class="form-check-input js-checklist-item"
+                           name="{{ cod }}"
+                           id="{{ cod }}"
+                           checked>
+                    <label class="form-check-label" for="{{ cod }}">{{ rotulo }}</label>
+                    <span class="stock-checklist-form__status stock-checklist-form__status--ok js-checklist-status" aria-hidden="true">OK</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h5><i class="fas fa-comment-alt" aria-hidden="true"></i> Observações e recomendações</h5>
+    <div class="form-grid form-grid--2">
+        <div class="form-field">
+            <label for="observacoes" class="form-label">Observações</label>
+            <textarea name="observacoes" id="observacoes" rows="4" class="form-control" placeholder="Observações sobre a inspecção…"></textarea>
+        </div>
+        <div class="form-field">
+            <label for="recomendacoes" class="form-label">Recomendações</label>
+            <textarea name="recomendacoes" id="recomendacoes" rows="4" class="form-control" placeholder="Recomendações para manutenção…"></textarea>
+        </div>
+    </div>
+</div>

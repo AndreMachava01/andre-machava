@@ -1,0 +1,418 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRP - Planejamento de Necessidades - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left h1 {
+            color: #8b5cf6;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #8b5cf6;
+        }
+        .stat-box.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        .stat-box.danger {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin-bottom: 5px;
+        }
+        .stat-box.success .stat-number {
+            color: #065f46;
+        }
+        .stat-box.danger .stat-number {
+            color: #991b1b;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .report-section {
+            margin-bottom: 30px;
+        }
+        .report-section h3 {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        table thead {
+            background: #8b5cf6;
+            color: white;
+        }
+        table thead th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .ordens-list {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        .ordens-list li {
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .stock-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-calculator"></i>
+                    MRP - Planejamento de Necessidades
+                </h1>
+                <p>Cálculo de necessidades de materiais para produção</p>
+            </div>
+            <div>
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_ordens|default:0 }}</div>
+                <div class="stat-label">Ordens Analisadas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ total_materiais|default:0 }}</div>
+                <div class="stat-label">Materiais Necessários</div>
+            </div>
+            <div class="stat-box success">
+                <div class="stat-number">{{ materiais_com_stock|default:0 }}</div>
+                <div class="stat-label">Com Stock Suficiente</div>
+            </div>
+            <div class="stat-box danger">
+                <div class="stat-number">{{ materiais_sem_stock|default:0 }}</div>
+                <div class="stat-label">Stock Insuficiente</div>
+            </div>
+        </div>
+
+        <!-- Materiais com Stock Insuficiente -->
+        {% if materiais_insuficientes %}
+        <div class="report-section">
+            <h3 style="border-bottom-color: #ef4444;">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Materiais com Stock Insuficiente
+            </h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Código</th>
+                            <th>Quantidade Necessária</th>
+                            <th>Stock Disponível</th>
+                            <th>Faltante</th>
+                            <th>Ordens</th>
+                            <th>Stock por Sucursal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dados in materiais_insuficientes %}
+                        <tr>
+                            <td><strong>{{ dados.material.nome }}</strong></td>
+                            <td>{{ dados.material.codigo|default:"N/A" }}</td>
+                            <td>{{ dados.quantidade_total|floatformat:3|intcomma }} {{ dados.material.get_unidade_medida_display|default:dados.material.unidade_medida|default:"UN" }}</td>
+                            <td>
+                                <span class="badge badge-warning">
+                                    {{ dados.stock_total|floatformat:3|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">
+                                    {{ dados.faltante|floatformat:3|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <ul class="ordens-list">
+                                    {% for ordem_info in dados.ordens %}
+                                    <li>
+                                        <a href="{% if ordem_info.ordem.fase_atual == 'FASE1_CRIACAO' %}{% url 'producao:ordem_fase1' ordem_info.ordem.id %}{% elif ordem_info.ordem.fase_atual == 'FASE2_EXECUCAO' %}{% url 'producao:ordem_fase2' ordem_info.ordem.id %}{% else %}{% url 'producao:ordem_detail' ordem_info.ordem.id %}{% endif %}" style="color: #8b5cf6; text-decoration: none;">
+                                            {{ ordem_info.ordem.codigo }}
+                                        </a>
+                                        : {{ ordem_info.quantidade|floatformat:3|intcomma }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                {% for sucursal_id, stock_info in dados.stock_por_sucursal.items %}
+                                <div class="stock-info">
+                                    <strong>{{ stock_info.sucursal.nome }}:</strong> 
+                                    {{ stock_info.stock|floatformat:3|intcomma }}
+                                </div>
+                                {% empty %}
+                                <span style="color: #9ca3af;">Nenhum stock</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Materiais com Stock Suficiente -->
+        {% if materiais_suficientes %}
+        <div class="report-section">
+            <h3 style="border-bottom-color: #10b981;">
+                <i class="fas fa-check-circle" style="color: #10b981;"></i> Materiais com Stock Suficiente
+            </h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Código</th>
+                            <th>Quantidade Necessária</th>
+                            <th>Stock Disponível</th>
+                            <th>Ordens</th>
+                            <th>Stock por Sucursal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dados in materiais_suficientes %}
+                        <tr>
+                            <td><strong>{{ dados.material.nome }}</strong></td>
+                            <td>{{ dados.material.codigo|default:"N/A" }}</td>
+                            <td>{{ dados.quantidade_total|floatformat:3|intcomma }} {{ dados.material.get_unidade_medida_display|default:dados.material.unidade_medida|default:"UN" }}</td>
+                            <td>
+                                <span class="badge badge-success">
+                                    {{ dados.stock_total|floatformat:3|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <ul class="ordens-list">
+                                    {% for ordem_info in dados.ordens %}
+                                    <li>
+                                        <a href="{% if ordem_info.ordem.fase_atual == 'FASE1_CRIACAO' %}{% url 'producao:ordem_fase1' ordem_info.ordem.id %}{% elif ordem_info.ordem.fase_atual == 'FASE2_EXECUCAO' %}{% url 'producao:ordem_fase2' ordem_info.ordem.id %}{% else %}{% url 'producao:ordem_detail' ordem_info.ordem.id %}{% endif %}" style="color: #8b5cf6; text-decoration: none;">
+                                            {{ ordem_info.ordem.codigo }}
+                                        </a>
+                                        : {{ ordem_info.quantidade|floatformat:3|intcomma }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                {% for sucursal_id, stock_info in dados.stock_por_sucursal.items %}
+                                <div class="stock-info">
+                                    <strong>{{ stock_info.sucursal.nome }}:</strong> 
+                                    {{ stock_info.stock|floatformat:3|intcomma }}
+                                </div>
+                                {% empty %}
+                                <span style="color: #9ca3af;">Nenhum stock</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Ordens Analisadas -->
+        {% if ordens_mrp %}
+        <div class="report-section">
+            <h3>
+                <i class="fas fa-clipboard-list"></i> Ordens Analisadas
+            </h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Receita</th>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Fase</th>
+                            <th>Sucursal</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ordem in ordens_mrp %}
+                        <tr>
+                            <td><strong>{{ ordem.codigo }}</strong></td>
+                            <td>{{ ordem.receita.nome|default:"N/A" }}</td>
+                            <td>{{ ordem.receita.produto.nome|default:"N/A" }}</td>
+                            <td>{{ ordem.quantidade }}</td>
+                            <td>
+                                {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                    <span class="badge badge-warning">Fase 1</span>
+                                {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                    <span class="badge badge-success">Fase 2</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ordem.sucursal.nome }}</td>
+                            <td>
+                                {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                    <a href="{% url 'producao:ordem_fase1' ordem.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                    <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not materiais_insuficientes and not materiais_suficientes %}
+        <div class="report-section">
+            <div class="empty-state">
+                <i class="fas fa-info-circle"></i>
+                <h3>Nenhuma ordem para análise</h3>
+                <p>Não há ordens aprovadas ou em execução para calcular necessidades de materiais.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

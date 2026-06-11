@@ -1,0 +1,100 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 640px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; color: #374151; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .actions { margin-top: 24px; display: flex; gap: 10px; }
+        .msg-error { padding: 12px; margin-bottom: 15px; border-radius: 6px; background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .required-mark { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bullhorn"></i> {{ title }}</h1>
+            <a href="{% url 'marketing:campanha_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg-error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="nome">Nome <span class="required-mark">*</span></label>
+                <input type="text" id="nome" name="nome" value="{{ campanha.nome|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição e objetivos</label>
+                <textarea id="descricao" name="descricao">{{ campanha.descricao|default:'' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado">
+                    {% for cod, nome in estado_choices %}
+                        <option value="{{ cod }}" {% if campanha.estado == cod %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="data_inicio">Data início</label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ campanha.data_inicio|date:'Y-m-d'|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="data_fim">Data fim</label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ campanha.data_fim|date:'Y-m-d'|default:'' }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="orcamento">Orçamento (MT)</label>
+                    <input type="text" id="orcamento" name="orcamento" value="{% if campanha.orcamento %}{{ campanha.orcamento|floatformat:2 }}{% endif %}" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="canal">Canal principal</label>
+                    <input type="text" id="canal" name="canal" value="{{ campanha.canal|default:'' }}" placeholder="Ex: Redes sociais, Email">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="responsavel">Responsável</label>
+                <select id="responsavel" name="responsavel">
+                    <option value="">-- Nenhum --</option>
+                    {% for u in usuarios %}
+                        <option value="{{ u.id }}" {% if campanha.responsavel_id == u.id %}selected{% endif %}>
+                            {{ u.get_full_name|default:u.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes">{{ campanha.observacoes|default:'' }}</textarea>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{% url 'marketing:campanha_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

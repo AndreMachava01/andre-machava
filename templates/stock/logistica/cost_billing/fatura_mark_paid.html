@@ -1,0 +1,49 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Marcar fatura paga{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:cost_billing:fatura_detail' fatura.id as fatura_detail_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Marcar como paga' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-check" aria-hidden="true"></i> Marcar fatura como paga</h1>
+                <p class="page-subtitle">{{ fatura.numero_fatura }} — {{ fatura.valor_liquido|floatformat:2 }} MT</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ fatura_detail_url }}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <div class="card stock-u-mb-24">
+            <div class="card-body">
+                <div class="form-field">
+                    <label class="form-label" for="data_pagamento">Data de pagamento</label>
+                    <input type="date" id="data_pagamento" name="data_pagamento" class="form-control">
+                    <p class="form-hint">Deixe em branco para usar a data de hoje.</p>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success"><i class="fas fa-check" aria-hidden="true"></i> Confirmar pagamento</button>
+            <a href="{{ fatura_detail_url }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const input = document.getElementById('data_pagamento');
+    if (input && !input.value) input.value = new Date().toISOString().slice(0, 10);
+})();
+</script>
+{% endblock %}

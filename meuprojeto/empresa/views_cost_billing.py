@@ -20,7 +20,12 @@ from .models_cost_billing import (
     FaturamentoFrete, ItemFaturamento, ConfiguracaoFaturamento
 )
 from .models_stock import RastreamentoEntrega
-from .services.cost_billing_service import CostBillingService
+from .services.cost_billing_service import (
+    CostBillingService,
+    STATUS_RASTREAMENTO_FATURAVEL,
+    rotulo_documento_origem,
+    cliente_dados_de_rastreamento,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,36 +34,35 @@ logger = logging.getLogger(__name__)
 @require_stock_access
 def cost_billing_dashboard(request):
     """Dashboard de custos e faturamento."""
-    hoje = timezone.now().date()
-    
-    # Estatísticas gerais
     cost_service = CostBillingService()
     stats_custos = cost_service.obter_estatisticas_custos()
     stats_faturamento = cost_service.obter_estatisticas_faturamento()
-    
-    # Custos pendentes de aprovação
+
     custos_pendentes = CustoLogistico.objects.filter(
         status='PENDENTE'
-    ).order_by('-data_criacao')[:10]
-    
-    # Faturas pendentes de pagamento
+    ).select_related('tipo_custo', 'centro_custo').order_by('-data_criacao')[:10]
+
     faturas_pendentes = FaturamentoFrete.objects.filter(
         status__in=['ENVIADO', 'VENCIDO']
     ).order_by('-data_emissao')[:10]
-    
-    # Custos recentes
+
     custos_recentes = CustoLogistico.objects.filter(
         data_criacao__gte=timezone.now() - timedelta(days=7)
-    ).order_by('-data_criacao')[:10]
-    
+    ).select_related('tipo_custo', 'centro_custo').order_by('-data_criacao')[:10]
+
     context = {
         'stats_custos': stats_custos,
         'stats_faturamento': stats_faturamento,
         'custos_pendentes': custos_pendentes,
         'faturas_pendentes': faturas_pendentes,
         'custos_recentes': custos_recentes,
+        'total_custos_pendentes': stats_custos.get('custos_pendentes', 0),
+        'total_faturas_pendentes': (
+            stats_faturamento.get('faturas_pendentes', 0)
+            + stats_faturamento.get('faturas_vencidas', 0)
+        ),
     }
-    
+
     return render(request, 'stock/logistica/cost_billing/dashboard.html', context)
 
 
@@ -110,7 +114,16 @@ def custos_list(request):
     status_choices = CustoLogistico.STATUS_CHOICES
     tipos_custo = TipoCusto.objects.filter(ativo=True)
     centros_custo = CentroCusto.objects.filter(ativo=True)
-    
+    has_filters = bool(search or status or tipo_custo or centro_custo or data_inicio or data_fim)
+
+    stats_qs = CustoLogistico.objects.all()
+    stats = {
+        'total': stats_qs.count(),
+        'pendentes': stats_qs.filter(status='PENDENTE').count(),
+        'aprovados': stats_qs.filter(status='APROVADO').count(),
+        'valor_total': stats_qs.aggregate(total=Sum('valor'))['total'] or Decimal('0.00'),
+    }
+
     context = {
         'page_obj': page_obj,
         'search': search,
@@ -122,6 +135,8 @@ def custos_list(request):
         'status_choices': status_choices,
         'tipos_custo': tipos_custo,
         'centros_custo': centros_custo,
+        'has_filters': has_filters,
+        'stats': stats,
     }
     
     return render(request, 'stock/logistica/cost_billing/custos_list.html', context)
@@ -131,14 +146,30 @@ def custos_list(request):
 @require_stock_access
 def custo_detail(request, custo_id):
     """Detalhes de um custo logístico."""
-    custo = get_object_or_404(CustoLogistico, id=custo_id)
+    custo = get_object_or_404(
+        CustoLogistico.objects.select_related(
+            'tipo_custo', 'centro_custo', 'rastreamento_entrega', 'criado_por', 'aprovado_por'
+        ),
+        id=custo_id,
+    )
     
     # Rateios relacionados
-    rateios = custo.rateios.all().order_by('-data_criacao')
+    rateios = custo.rateios.select_related('centro_custo_destino').order_by('-data_criacao')
+
+    pendente_financas = None
+    try:
+        from .models_financas import PendenteContaPagar
+        pendente_financas = PendenteContaPagar.objects.filter(
+            origem_tipo='LOGISTICA',
+            origem_id=custo.id,
+        ).order_by('-data_criacao').first()
+    except Exception:
+        pass
     
     context = {
         'custo': custo,
         'rateios': rateios,
+        'pendente_financas': pendente_financas,
     }
     
     return render(request, 'stock/logistica/cost_billing/custo_detail.html', context)
@@ -172,16 +203,18 @@ def custo_create(request):
             messages.error(request, f'Erro ao criar custo: {str(e)}')
     
     # GET - mostrar formulário
+    cost_service.garantir_catalogo()
     tipos_custo = TipoCusto.objects.filter(ativo=True)
     centros_custo = CentroCusto.objects.filter(ativo=True)
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL', 'EM_TRANSITO']
-    ).order_by('-data_criacao')
+        status_atual__in=['ENTREGUE', 'EM_TRANSITO', 'EM_DISTRIBUICAO', 'COLETADO', 'PREPARANDO']
+    ).order_by('-data_criacao')[:100]
     
     context = {
         'tipos_custo': tipos_custo,
         'centros_custo': centros_custo,
         'rastreamentos': rastreamentos,
+        'catalogo_vazio': not tipos_custo.exists() or not centros_custo.exists(),
     }
     
     return render(request, 'stock/logistica/cost_billing/custo_form.html', context)
@@ -284,6 +317,9 @@ def rateio_create(request, custo_id):
     
     # GET - mostrar formulário
     centros_custo = CentroCusto.objects.filter(ativo=True)
+    if not centros_custo.exists():
+        CostBillingService().garantir_catalogo()
+        centros_custo = CentroCusto.objects.filter(ativo=True)
     
     context = {
         'custo': custo,
@@ -329,7 +365,17 @@ def faturas_list(request):
     
     # Opções para filtros
     status_choices = FaturamentoFrete.STATUS_CHOICES
-    
+    has_filters = bool(search or status or data_inicio or data_fim)
+
+    stats_qs = FaturamentoFrete.objects.all()
+    stats = {
+        'total': stats_qs.count(),
+        'pagas': stats_qs.filter(status='PAGO').count(),
+        'pendentes': stats_qs.filter(status='ENVIADO').count(),
+        'vencidas': stats_qs.filter(status='VENCIDO').count(),
+        'valor_total': stats_qs.aggregate(total=Sum('valor_liquido'))['total'] or Decimal('0.00'),
+    }
+
     context = {
         'page_obj': page_obj,
         'search': search,
@@ -337,6 +383,8 @@ def faturas_list(request):
         'data_inicio': data_inicio,
         'data_fim': data_fim,
         'status_choices': status_choices,
+        'has_filters': has_filters,
+        'stats': stats,
     }
     
     return render(request, 'stock/logistica/cost_billing/faturas_list.html', context)
@@ -346,17 +394,52 @@ def faturas_list(request):
 @require_stock_access
 def fatura_detail(request, fatura_id):
     """Detalhes de uma fatura de frete."""
-    fatura = get_object_or_404(FaturamentoFrete, id=fatura_id)
+    fatura = get_object_or_404(
+        FaturamentoFrete.objects.select_related('emitido_por'),
+        id=fatura_id,
+    )
     
     # Itens da fatura
-    itens = fatura.itens.all().order_by('data_servico')
+    itens = fatura.itens.select_related('rastreamento_entrega').order_by('data_servico')
+
+    pendente_financas = None
+    try:
+        from .models_financas import PendenteContaReceber
+        pendente_financas = PendenteContaReceber.objects.filter(
+            origem_tipo='LOGISTICA',
+            origem_id=fatura.id,
+        ).order_by('-data_criacao').first()
+    except Exception:
+        pass
     
     context = {
         'fatura': fatura,
         'itens': itens,
+        'pendente_financas': pendente_financas,
     }
     
     return render(request, 'stock/logistica/cost_billing/fatura_detail.html', context)
+
+
+@login_required
+@require_stock_access
+def fatura_print(request, fatura_id):
+    """Versão imprimível da fatura de frete."""
+    from .models_base import DadosEmpresa
+
+    fatura = get_object_or_404(
+        FaturamentoFrete.objects.select_related('emitido_por'),
+        id=fatura_id,
+    )
+    itens = fatura.itens.select_related('rastreamento_entrega').order_by('data_servico')
+    dados_empresa = DadosEmpresa.objects.filter(is_sede=True).first()
+
+    context = {
+        'fatura': fatura,
+        'itens': itens,
+        'dados_empresa': dados_empresa,
+    }
+    return render(request, 'stock/logistica/cost_billing/fatura_print.html', context)
 
 
 @login_required
@@ -367,56 +450,107 @@ def fatura_create(request):
     
     if request.method == 'POST':
         try:
-            # Processar dados do cliente
-            cliente_dados = {
-                'nome': request.POST.get('cliente_nome'),
-                'documento': request.POST.get('cliente_documento'),
-                'endereco': request.POST.get('cliente_endereco'),
-                'email': request.POST.get('cliente_email', '')
-            }
-            
-            # Processar rastreamentos selecionados
             rastreamentos_ids = request.POST.getlist('rastreamentos_ids')
             if not rastreamentos_ids:
                 raise ValueError("Nenhum rastreamento selecionado")
-            
-            # Processar período
+
             periodo_inicio = datetime.strptime(request.POST.get('periodo_inicio'), '%Y-%m-%d').date()
             periodo_fim = datetime.strptime(request.POST.get('periodo_fim'), '%Y-%m-%d').date()
-            
-            # Processar desconto
             desconto_percentual = Decimal(request.POST.get('desconto_percentual', '0.00'))
-            
-            fatura = cost_service.gerar_faturamento_frete(
-                cliente_dados=cliente_dados,
+
+            faturas = cost_service.gerar_faturamentos_frete(
                 rastreamentos_ids=rastreamentos_ids,
                 periodo_inicio=periodo_inicio,
                 periodo_fim=periodo_fim,
                 emitido_por_id=request.user.id,
                 observacoes=request.POST.get('observacoes', ''),
-                desconto_percentual=desconto_percentual
+                desconto_percentual=desconto_percentual,
             )
-            
-            messages.success(request, 'Fatura de frete gerada com sucesso!')
-            return redirect('stock:cost_billing:fatura_detail', fatura_id=fatura.id)
-            
+
+            if len(faturas) == 1:
+                messages.success(request, 'Fatura de frete gerada com sucesso!')
+                return redirect('stock:cost_billing:fatura_detail', fatura_id=faturas[0].id)
+
+            numeros = ', '.join(f.numero_fatura for f in faturas)
+            messages.success(
+                request,
+                f'{len(faturas)} faturas geradas (uma por documento de origem): {numeros}.',
+            )
+            return redirect('stock:cost_billing:faturas_list')
+
         except Exception as e:
             logger.error(f"Erro ao criar fatura: {e}")
             messages.error(request, f'Erro ao criar fatura: {str(e)}')
-    
-    # GET - mostrar formulário
-    # Rastreamentos elegíveis para faturamento
-    rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['ENTREGUE', 'ENTREGUE_PARCIAL'],
-        custo_estimado__gt=0
+
+    rastreamentos_qs = RastreamentoEntrega.objects.filter(
+        status_atual__in=STATUS_RASTREAMENTO_FATURAVEL,
+        custo_envio__gt=0,
+    ).select_related(
+        'transferencia',
+        'ordem_compra__sucursal_destino__empresa_sede',
+        'transferencia__sucursal_destino__empresa_sede',
+    ).annotate(
+        qtd_faturas=Count('itens_faturamento'),
+    ).filter(
+        qtd_faturas=0,
     ).order_by('-data_criacao')
-    
+
+    rastreamentos = []
+    for r in rastreamentos_qs:
+        cliente = cliente_dados_de_rastreamento(r)
+        rastreamentos.append({
+            'obj': r,
+            'documento_origem': rotulo_documento_origem(r),
+            'cliente_nome': cliente['nome'],
+            'cliente_documento': cliente['documento'],
+        })
+
     context = {
         'rastreamentos': rastreamentos,
         'config': cost_service.config_padrao,
     }
     
     return render(request, 'stock/logistica/cost_billing/fatura_form.html', context)
+
+
+@login_required
+@require_stock_access
+@require_http_methods(['POST'])
+def fatura_sync_financas(request, fatura_id):
+    """Regista ou actualiza a fatura em Contas a receber (Finanças)."""
+    fatura = get_object_or_404(FaturamentoFrete, id=fatura_id)
+    if fatura.status not in ('ENVIADO', 'VENCIDO'):
+        messages.error(request, 'Só faturas enviadas ou vencidas podem ser registadas em Finanças.')
+        return redirect('stock:cost_billing:fatura_detail', fatura_id=fatura_id)
+    try:
+        from .services.logistica_financas_sync import criar_ou_actualizar_pendente_receber_fatura
+        pendente = criar_ou_actualizar_pendente_receber_fatura(fatura)
+        if pendente:
+            messages.success(request, 'Fatura registada em Contas a receber (Finanças).')
+        else:
+            messages.info(request, 'Esta fatura já está contabilizada ou não tem valor a receber.')
+    except Exception as e:
+        logger.error(f"Erro ao sincronizar fatura com Finanças: {e}")
+        messages.error(request, f'Erro ao registar em Finanças: {str(e)}')
+    return redirect('stock:cost_billing:fatura_detail', fatura_id=fatura_id)
+
+
+@login_required
+@require_stock_access
+@require_http_methods(['POST'])
+def fatura_recalcular(request, fatura_id):
+    """Recalcula itens e totais a partir do custo_envio actual dos rastreamentos."""
+    try:
+        cost_service = CostBillingService()
+        fatura = cost_service.recalcular_faturamento_frete(fatura_id)
+        messages.success(
+            request,
+            f'Fatura recalculada com sucesso. Novo total líquido: {fatura.valor_liquido:.2f} MT.',
+        )
+    except Exception as e:
+        logger.error(f"Erro ao recalcular fatura: {e}")
+        messages.error(request, f'Erro ao recalcular fatura: {str(e)}')
+    return redirect('stock:cost_billing:fatura_detail', fatura_id=fatura_id)
 
 
 @login_required

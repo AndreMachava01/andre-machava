@@ -46,7 +46,7 @@ def integrations_dashboard(request):
         'eventos_sincronizados': EventoRastreamento.objects.filter(
             data_evento__gte=timezone.now() - timedelta(hours=24)
         ).count(),
-        'transportadoras_ativas': Transportadora.objects.filter(ativo=True).count(),
+        'transportadoras_ativas': Transportadora.objects.filter(ativa=True).count(),
     }
     
     # Rastreamentos recentes
@@ -238,7 +238,7 @@ def solicitar_coleta(request):
             messages.error(request, f'Erro ao solicitar coleta: {str(e)}')
     
     # GET - mostrar formulário
-    transportadoras = Transportadora.objects.filter(ativo=True).order_by('nome')
+    transportadoras = Transportadora.objects.filter(ativa=True).order_by('nome')
     
     context = {
         'transportadoras': transportadoras,

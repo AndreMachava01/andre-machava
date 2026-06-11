@@ -3,13 +3,13 @@ from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, F, Count
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.db import transaction
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ def requisicoes_list(request):
         'sucursal_id': sucursal_id,
     }
     
-    return render(request, 'stock/requisicoes/list.html', context)
+    return render(request, 'stock/requisicoes/main.html', context)
 
 
 @login_required
@@ -604,7 +604,9 @@ def ordem_compra_confirm_tipo(request, id):
                     status='PENDENTE',
                     prioridade=prioridade,
                     observacoes=f'Coleta da ordem de compra {ordem_compra.codigo} - Fornecedor: {ordem_compra.fornecedor.nome}',
-                    usuario_notificacao=request.user
+                    usuario_notificacao=request.user,
+                    motorista_operacao='',
+                    telefone_motorista_operacao='',
                 )
                 
                 messages.success(request, f'Ordem de compra {ordem_compra.codigo} confirmada para COLETA! Notificação criada para logística.')
@@ -2292,7 +2294,9 @@ def requisicao_transfer_stock(request, id):
                     status='PENDENTE',
                     prioridade=prioridade,
                     usuario_notificacao=request.user,
-                    observacoes=f'Transferência automática da requisição {requisicao.codigo}'
+                    observacoes=f'Transferência automática da requisição {requisicao.codigo}',
+                    motorista_operacao='',
+                    telefone_motorista_operacao='',
                 )
                 logger.info(f"Notificação criada: {notificacao.id} ✓")
             else:

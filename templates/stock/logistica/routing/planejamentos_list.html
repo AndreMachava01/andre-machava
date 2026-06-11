@@ -1,0 +1,247 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Planejamentos de entrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:routing:dashboard' as routing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Roteirização' breadcrumb_section_url=routing_dashboard_url breadcrumb_current='Planejamentos' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                    Planejamentos de entrega
+                </h1>
+                <p class="page-subtitle">Agendamento de entregas por zona, janela e prioridade</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:routing:otimizar_rotas' %}" class="btn btn-outline">
+                    <i class="fas fa-route" aria-hidden="true"></i> Otimizar rotas
+                </a>
+                <a href="{% url 'stock:routing:planejamento_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Novo planejamento
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.pendentes|default:"0" }}</div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.agendadas|default:"0" }}</div>
+                <div class="stat-label">Agendadas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-shipping-fast"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.em_rota|default:"0" }}</div>
+                <div class="stat-label">Em rota</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-planejamentos">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-planejamentos" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, endereço, cidade, contacto...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-planejamentos">Status</label>
+                <select id="filtro-status-planejamentos" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-prioridade-planejamentos">Prioridade</label>
+                <select id="filtro-prioridade-planejamentos" name="prioridade" class="form-select" title="Filtrar por prioridade">
+                    <option value="">Todas</option>
+                    {% for value, label in prioridade_choices %}
+                    <option value="{{ value }}" {% if prioridade == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-planejamentos">De</label>
+                <input type="date" id="filtro-data-inicio-planejamentos" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-planejamentos">Até</label>
+                <input type="date" id="filtro-data-fim-planejamentos" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                Planejamentos
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Destino</th>
+                        <th>Zona</th>
+                        <th>Data / janela</th>
+                        <th>Prioridade</th>
+                        <th>Status</th>
+                        <th>Rota</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ item.codigo }}</strong></td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ item.contato_nome }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ item.cidade }}, {{ item.provincia }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ item.endereco_completo|truncatechars:50 }}</div>
+                        </td>
+                        <td>{{ item.zona_entrega.nome|default:"—" }}</td>
+                        <td>
+                            <div>{{ item.data_entrega_preferida|date:"d/m/Y" }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                {{ item.janela_inicio|time:"H:i" }} — {{ item.janela_fim|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if item.prioridade == 'URGENTE' %}danger{% elif item.prioridade == 'ALTA' %}warning{% elif item.prioridade == 'NORMAL' %}primary{% else %}secondary{% endif %}">
+                                {{ item.get_prioridade_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if item.status == 'ENTREGUE' %}success{% elif item.status == 'PENDENTE' %}warning{% elif item.status == 'AGENDADA' %}info{% elif item.status == 'EM_ROTA' %}primary{% elif item.status == 'CANCELADA' %}danger{% else %}secondary{% endif %}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if item.rota_atribuida %}
+                            <a href="{% url 'stock:routing:rota_detail' item.rota_atribuida.id %}" class="cell-primary">
+                                {{ item.rota_atribuida.codigo }}
+                            </a>
+                            {% else %}
+                            <span class="stock-text-placeholder">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                {% if item.rastreamento_entrega %}
+                                <a href="{% url 'stock:logistica:rastreamento_detail' item.rastreamento_entrega.id %}"
+                                   class="btn-action primary" title="Ver rastreamento"
+                                   aria-label="Ver rastreamento {{ item.rastreamento_entrega.codigo_rastreamento }}">
+                                    <i class="fas fa-truck" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                                {% if item.rota_atribuida %}
+                                <a href="{% url 'stock:routing:rota_detail' item.rota_atribuida.id %}"
+                                   class="btn-action secondary" title="Ver rota"
+                                   aria-label="Ver rota {{ item.rota_atribuida.codigo }}">
+                                    <i class="fas fa-route" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if prioridade %}&prioridade={{ prioridade }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <h3>Nenhum planejamento encontrado</h3>
+            <p>Não há planejamentos que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:routing:planejamento_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Novo planejamento
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

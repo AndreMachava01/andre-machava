@@ -1,798 +1,333 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Meios Circulantes Internos{% endblock %}
+{% block title %}Viaturas internas{% endblock %}
 
-{% block extra_style %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-        --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-        --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-medium: 0 10px 15px rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    body {
-        background: #1f2937;
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: white;
-    }
-
-    .page-container {
-        background: #374151;
-        border-radius: 20px;
-        border: 1px solid #4b5563;
-        box-shadow: var(--shadow-medium);
-        margin: 10px;
-        padding: 0;
-        overflow: hidden;
-        min-height: calc(100vh - 20px);
-    }
-
-    .page-header {
-        background: var(--purple-gradient);
-        padding: 20px 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-
-    .page-header button,
-    .page-header a {
-        pointer-events: auto !important;
-        z-index: 1001 !important;
-        position: relative !important;
-    }
-
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin: 0;
-        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-subtitle {
-        font-size: 1.1rem;
-        margin: 10px 0 0 0;
-        opacity: 0.9;
-        position: relative;
-        z-index: 2;
-    }
-
-    .page-content {
-        padding: 30px;
-        background: #1f2937;
-    }
-
-    /* Filtros */
-    .filters-section {
-        background: #374151;
-        border-radius: 16px;
-        padding: 25px;
-        margin-bottom: 30px;
-        border: 1px solid #4b5563;
-    }
-
-    .filters-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #f9fafb;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .filters-title i {
-        color: #06b6d4;
-    }
-
-    .filter-form {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
-        gap: 20px;
-        align-items: end;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .filter-group label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #d1d5db;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .filter-group input,
-    .filter-group select {
-        background: #1f2937;
-        border: 1px solid #4b5563;
-        border-radius: 8px;
-        padding: 12px 16px;
-        color: #f9fafb;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-
-    .filter-group input:focus,
-    .filter-group select:focus {
-        outline: none;
-        border-color: #06b6d4;
-        box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
-    }
-
-    .filter-actions {
-        display: flex;
-        gap: 12px;
-    }
-
-    .btn {
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: var(--cyan-gradient);
-        color: white;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
-    }
-
-    .btn-secondary {
-        background: #4b5563;
-        color: #f9fafb;
-        border: 1px solid #6b7280;
-    }
-
-    .btn-secondary:hover {
-        background: #6b7280;
-        transform: translateY(-2px);
-    }
-
-    /* Tabela */
-    .table-container {
-        background: #374151;
-        border-radius: 16px;
-        border: 1px solid #4b5563;
-        overflow: hidden;
-        box-shadow: var(--shadow-medium);
-    }
-
-    .table-header {
-        background: #1f2937;
-        padding: 20px 25px;
-        border-bottom: 1px solid #4b5563;
-    }
-
-    .table-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #f9fafb;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 0;
-    }
-
-    .table-title i {
-        color: #06b6d4;
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        color: #d1d5db;
-    }
-
-    .table thead th {
-        background: #1f2937;
-        padding: 15px 25px;
-        text-align: left;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #9ca3af;
-        border-bottom: 1px solid #4b5563;
-    }
-
-    .table tbody td {
-        padding: 15px 25px;
-        border-bottom: 1px solid #374151;
-        vertical-align: middle;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .table tbody tr:hover {
-        background: #374151;
-    }
-
-    .cell-primary {
-        font-weight: 600;
-        color: #f9fafb;
-        font-size: 0.95rem;
-    }
-
-    .cell-secondary {
-        color: #9ca3af;
-        font-size: 0.85rem;
-    }
-
-    .cell-tertiary {
-        color: #6b7280;
-        font-size: 0.75rem;
-    }
-
-    .cell-actions {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-start;
-        align-items: center;
-    }
-
-    .btn-action {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        font-size: 0.9rem;
-        color: white;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        box-shadow: var(--shadow-light);
-    }
-
-    .btn-action i {
-        font-size: 0.9rem;
-    }
-
-    .btn-action.primary {
-        background: var(--info-gradient);
-    }
-
-    .btn-action.primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-    }
-
-    .btn-action.secondary {
-        background: var(--warning-gradient);
-    }
-
-    .btn-action.secondary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
-    }
-
-    .btn-action.danger {
-        background: var(--danger-gradient);
-    }
-
-    .btn-action.danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
-    }
-
-    /* Status badges */
-    .status-badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: white;
-        text-align: center;
-    }
-
-    .status-badge.status-active {
-        background-color: #10b981;
-    }
-
-    .status-badge.status-warning {
-        background-color: #f59e0b;
-    }
-
-    .status-badge.status-inactive {
-        background-color: #ef4444;
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 1;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: baseline;
-        border-radius: 4px;
-    }
-
-    .badge-info {
-        color: #fff;
-        background-color: #06b6d4;
-    }
-
-    /* Paginação */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        padding: 20px;
-        background: #4b5563;
-    }
-
-    .pagination a {
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 16px;
-        background: #374151;
-        color: #d1d5db;
-        text-decoration: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: 1px solid #4b5563;
-    }
-
-    .pagination a:hover {
-        background: #06b6d4;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-light);
-    }
-
-    .pagination .current {
-        background: var(--cyan-gradient);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    /* Estado vazio */
-    .no-data {
-        text-align: center;
-        padding: 60px 20px;
-        color: #9ca3af;
-    }
-
-    .no-data i {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.5;
-        color: #6b7280;
-    }
-
-    .no-data h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #d1d5db;
-    }
-
-    .no-data p {
-        font-size: 1rem;
-        color: #9ca3af;
-        margin-bottom: 30px;
-    }
-
-    /* Responsividade */
-    @media (max-width: 1200px) {
-        .filter-form {
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        
-        .table {
-            min-width: 1000px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .page-container {
-            margin: 5px;
-            min-height: calc(100vh - 10px);
-        }
-        
-        .page-header {
-            padding: 15px 20px;
-        }
-        
-        .page-title {
-            font-size: 1.5rem;
-        }
-        
-        .page-subtitle {
-            font-size: 0.85rem;
-        }
-
-        .page-content {
-            padding: 20px;
-        }
-
-        .filter-form {
-            grid-template-columns: 1fr;
-        }
-
-        .table thead th,
-        .table tbody td {
-            padding: 8px 12px;
-            font-size: 0.9rem;
-        }
-        
-        .table {
-            min-width: 800px;
-        }
-        
-        .cell-primary {
-            font-size: 0.9rem;
-        }
-        
-        .cell-tertiary {
-            font-size: 0.75rem;
-        }
-
-        .table .cell-primary,
-        .table .cell-secondary,
-        .table .cell-tertiary {
-            font-size: 0.8rem;
-        }
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
 
 {% block content %}
-<!-- Botões de Navegação -->
-<div class="navigation-buttons" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-    <a href="/stock/logistica/" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; background: var(--purple-gradient); color: white; border: none;">
-        <i class="fas fa-arrow-left"></i>
-        Voltar à Logística
-    </a>
-    <a href="/stock/" class="btn btn-outline-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
-        <i class="fas fa-warehouse"></i>
-        Stock Principal
-    </a>
-    <a href="/dashboard/" class="btn btn-outline-secondary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; border: 1px solid #6b7280; color: #d1d5db;">
-        <i class="fas fa-home"></i>
-        Dashboard
-    </a>
-</div>
+<div class="container stock-page">
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_current='Viaturas internas' %}
 
-<!-- Breadcrumb -->
-<div style="background: #374151; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-    <nav style="display: flex; align-items: center; gap: 8px;">
-        <a href="/dashboard/" style="color: #06b6d4; text-decoration: none;">Dashboard</a>
-        <span style="color: #6b7280;">›</span>
-        <a href="/stock/" style="color: #06b6d4; text-decoration: none;">Stock</a>
-        <span style="color: #6b7280;">›</span>
-        <a href="/stock/logistica/" style="color: #06b6d4; text-decoration: none;">Logística</a>
-        <span style="color: #6b7280;">›</span>
-        <span style="color: white; font-weight: 600;">Viaturas Internas</span>
-    </nav>
-</div>
-<div class="page-container">
-    <!-- Header -->
     <div class="page-header">
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="page-header-content">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-car"></i>
-                    Meios Circulantes Internos
+                    <i class="fas fa-car" aria-hidden="true"></i>
+                    Viaturas internas
                 </h1>
-                <p class="page-subtitle">
-                    Gestão de viaturas para entregas e executivo
-                </p>
+                <p class="page-subtitle">Meios circulantes da empresa — entregas e executivo</p>
             </div>
-            <div style="display: flex; gap: 15px; align-items: center; position: relative; z-index: 1000;">
-                <a href="{% url 'stock:logistica:viatura_create' %}" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; position: relative; z-index: 1001;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
-                    <i class="fas fa-plus"></i>
-                    Nova Viatura
+            <div class="header-actions">
+                <a href="{% url 'stock:logistica:transportadoras_list' %}" class="btn btn-outline">
+                    <i class="fas fa-truck" aria-hidden="true"></i> Transportadoras
+                </a>
+                <a href="{% url 'stock:logistica:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Logística
+                </a>
+                <a href="{% url 'stock:logistica:viatura_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova viatura
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Content -->
-    <div class="page-content">
-        <!-- Filtros -->
-        <div class="filters-section">
-            <h3 class="filters-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </h3>
-            <form method="GET" class="filter-form">
-                <div class="filter-group">
-                    <label for="search">Pesquisar</label>
-                    <input type="text" id="search" name="search" value="{{ search }}" placeholder="Nome, código, placa, motorista...">
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-car"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.ativas|default:"0" }}</div>
+                <div class="stat-label">Ativas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-shipping-fast"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.entregas|default:"0" }}</div>
+                <div class="stat-label">Entregas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-user-tie"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.executivo|default:"0" }}</div>
+                <div class="stat-label">Executivo</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--danger">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-wrench"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.manutencao|default:"0" }}</div>
+                <div class="stat-label">Em manutenção</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-viatura">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-viatura" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Nome, código, placa, motorista...">
                 </div>
-                <div class="filter-group">
-                    <label for="status">Status</label>
-                    <select id="status" name="status">
-                        <option value="">Todos</option>
-                        {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="tipo_viatura">Tipo de Viatura</label>
-                    <select id="tipo_viatura" name="tipo_viatura">
-                        <option value="">Todos</option>
-                        {% for value, label in tipo_viatura_choices %}
-                            <option value="{{ value }}" {% if tipo_viatura == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="categoria">Categoria</label>
-                    <select id="categoria" name="categoria">
-                        <option value="">Todas</option>
-                        {% for value, label in categoria_choices %}
-                            <option value="{{ value }}" {% if categoria == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="sucursal">Sucursal</label>
-                    <select id="sucursal" name="sucursal">
-                        <option value="">Todas</option>
-                        {% for sucursal in sucursais %}
-                            <option value="{{ sucursal.id }}" {% if sucursal_filter == sucursal.id|stringformat:"s" %}selected{% endif %}>{{ sucursal.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-viatura">Status</label>
+                <select id="filtro-status-viatura" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-tipo-viatura">Uso</label>
+                <select id="filtro-tipo-viatura" name="tipo_viatura" class="form-select" title="Entregas ou executivo">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_viatura_choices %}
+                    <option value="{{ value }}" {% if tipo_viatura == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-categoria-viatura">Categoria</label>
+                <select id="filtro-categoria-viatura" name="categoria" class="form-select" title="Categoria do veículo">
+                    <option value="">Todas</option>
+                    {% for value, label in categoria_choices %}
+                    <option value="{{ value }}" {% if categoria == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-sucursal-viatura">Sucursal</label>
+                <select id="filtro-sucursal-viatura" name="sucursal" class="form-select" title="Filtrar por sucursal">
+                    <option value="">Todas</option>
+                    {% for sucursal in sucursais %}
+                    <option value="{{ sucursal.id }}" {% if sucursal_filter == sucursal.id|stringformat:"s" %}selected{% endif %}>{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
                 <div class="filter-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Aplicar
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
                     </button>
-                    <a href="{% url 'stock:logistica:viaturas_list' %}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Limpar
+                    {% if has_filters %}
+                    <a href="{% url 'stock:logistica:viaturas_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
                     </a>
+                    {% endif %}
                 </div>
-            </form>
-        </div>
-
-        <!-- Lista de Viaturas -->
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i class="fas fa-car"></i>
-                    Viaturas da Empresa ({{ page_obj.paginator.count }})
-                </h3>
             </div>
-            
-            {% if page_obj %}
-            <div class="table-wrapper">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th style="width: 80px;">Código</th>
-                            <th style="width: 200px;">Veículo</th>
-                            <th style="width: 120px;">Tipo</th>
-                            <th style="width: 120px;">Categoria</th>
-                            <th style="width: 150px;">Sucursal</th>
-                            <th style="width: 100px;">Placa</th>
-                            <th style="width: 180px;">Motorista</th>
-                            <th style="width: 100px;">Status</th>
-                            <th style="width: 120px;">Quilometragem</th>
-                            <th style="width: 120px;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for viatura in page_obj %}
-                        <tr>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 600; color: #06b6d4;">{{ viatura.codigo }}</div>
-                            </td>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 600;">{{ viatura.nome }}</div>
-                                <div class="cell-tertiary" style="font-size: 0.85rem;">{{ viatura.marca }} {{ viatura.modelo }}</div>
-                            </td>
-                            <td>
-                                {% if viatura.tipo == 'VIATURA_INTERNA_ENTREGA' %}
-                                    <span class="badge badge-success">Entregas</span>
-                                {% elif viatura.tipo == 'VIATURA_INTERNA_EXECUTIVO' %}
-                                    <span class="badge badge-warning">Executivo</span>
-                                {% else %}
-                                    <span class="badge badge-info">{{ viatura.get_tipo_display }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge badge-info">{{ viatura.categoria_veiculo }}</span>
-                            </td>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 500;">{{ viatura.sucursal.nome|default:"N/A" }}</div>
-                                {% if viatura.sucursal %}
-                                    <div class="cell-tertiary" style="font-size: 0.8rem; color: #9ca3af;">{{ viatura.sucursal.cidade }}</div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 600; font-family: monospace; background: rgba(6, 182, 212, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;">{{ viatura.placa }}</div>
-                            </td>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 500;">{{ viatura.motorista_responsavel }}</div>
-                                <div class="cell-tertiary" style="font-size: 0.8rem; color: #9ca3af;">
-                                    <i class="fas fa-phone" style="margin-right: 4px;"></i>{{ viatura.telefone_motorista|default:"Telefone não cadastrado" }}
-                                </div>
-                            </td>
-                            <td>
-                                {% if viatura.status == 'ATIVA' %}
-                                    <span class="status-badge status-active">{{ viatura.get_status_display }}</span>
-                                {% elif viatura.status == 'MANUTENCAO' %}
-                                    <span class="status-badge status-warning">{{ viatura.get_status_display }}</span>
-                                {% else %}
-                                    <span class="status-badge status-inactive">{{ viatura.get_status_display }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="cell-primary" style="font-weight: 600;">
-                                    <i class="fas fa-tachometer-alt" style="margin-right: 6px; color: #06b6d4;"></i>{{ viatura.quilometragem_atual|default:"0" }} km
-                                </div>
-                                {% if viatura.proxima_revisao %}
-                                    <div class="cell-tertiary" style="font-size: 0.8rem; color: #f59e0b;">
-                                        <i class="fas fa-calendar" style="margin-right: 4px;"></i>Revisão: {{ viatura.proxima_revisao|date:"d/m/Y" }}
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="cell-actions">
-                                    <a href="{% url 'stock:logistica:viatura_detail' viatura.id %}" 
-                                       class="btn-action primary" title="Ver detalhes">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}" 
-                                       class="btn-action secondary" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn-action danger" 
-                                            data-id="{{ viatura.id }}" 
-                                            data-nome="{{ viatura.nome }}" 
-                                            onclick="confirmarExclusao(this)" 
-                                            title="Excluir">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        </form>
+    </div>
 
-            <!-- Paginação -->
-            {% if page_obj.has_other_pages %}
-            <div class="pagination">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">&laquo; Primeira</a>
-                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">Anterior</a>
-                {% endif %}
-
-                <span class="current">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list" aria-hidden="true"></i>
+                Viaturas
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
                 </span>
+            </div>
+        </div>
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">Próxima</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">Última &raquo;</a>
-                {% endif %}
-            </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Viatura</th>
+                        <th>Uso / categoria</th>
+                        <th>Sucursal</th>
+                        <th>Motorista</th>
+                        <th>Estado</th>
+                        <th>Tarifas</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for viatura in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ viatura.codigo }}</strong></td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ viatura.nome }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                {{ viatura.marca }} {{ viatura.modelo }} · <span class="cell-placa">{{ viatura.placa }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="type-badge type-{{ viatura.tipo|lower }}">
+                                {{ viatura.get_tipo_display }}
+                            </span>
+                            <div class="cell-tertiary cell-tertiary--sm">{{ viatura.categoria_veiculo }}</div>
+                        </td>
+                        <td>
+                            {% if viatura.sucursal %}
+                            <div>{{ viatura.sucursal.nome }}</div>
+                            {% if viatura.sucursal.cidade %}
+                            <div class="cell-tertiary cell-tertiary--sm">{{ viatura.sucursal.cidade }}</div>
+                            {% endif %}
+                            {% else %}
+                            <span class="stock-text-placeholder">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ viatura.motorista_responsavel|default:"—" }}</div>
+                            {% if viatura.telefone_motorista %}
+                            <div class="cell-tertiary cell-tertiary--sm">{{ viatura.telefone_motorista }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ viatura.status|lower }}">
+                                {{ viatura.get_status_display }}
+                            </span>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                                {{ viatura.quilometragem_atual|default:"0" }} km
+                            </div>
+                            {% if viatura.proxima_revisao %}
+                            <div class="cell-tertiary cell-tertiary--sm stock-text-muted-sub">
+                                Revisão: {{ viatura.proxima_revisao|date:"d/m/Y" }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                Fixo: {{ viatura.custo_fixo|floatformat:2 }} MT
+                            </div>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                Kg: {{ viatura.custo_por_kg|floatformat:2 }} · Km: {{ viatura.custo_por_km|floatformat:2 }}
+                            </div>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:logistica:viatura_detail' viatura.id %}"
+                                   class="btn-action primary" title="Ver detalhes"
+                                   aria-label="Ver {{ viatura.codigo }}">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'stock:logistica:viatura_edit' viatura.id %}"
+                                   class="btn-action secondary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn-action danger"
+                                        data-id="{{ viatura.id }}"
+                                        data-nome="{{ viatura.nome }}"
+                                        onclick="confirmarExclusao(this)"
+                                        title="Excluir"
+                                        aria-label="Excluir {{ viatura.nome }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if tipo_viatura %}&tipo_viatura={{ tipo_viatura }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
             {% endif %}
-            {% else %}
-            <div class="no-data" style="text-align: center; padding: 60px 20px; background: #374151; border-radius: 16px; border: 1px solid #4b5563;">
-                <div style="font-size: 4rem; color: #6b7280; margin-bottom: 20px;">
-                    <i class="fas fa-car"></i>
-                </div>
-                <h3 style="color: #f9fafb; margin-bottom: 15px; font-size: 1.5rem;">Nenhuma viatura encontrada</h3>
-                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 1rem;">Não há viaturas internas cadastradas no sistema.</p>
-                <a href="{% url 'stock:logistica:viatura_create' %}" style="background: var(--cyan-gradient); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <i class="fas fa-plus"></i>
-                    Cadastrar Primeira Viatura
-                </a>
-            </div>
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if categoria %}&categoria={{ categoria }}{% endif %}{% if tipo_viatura %}&tipo_viatura={{ tipo_viatura }}{% endif %}{% if sucursal_filter %}&sucursal={{ sucursal_filter }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
             {% endif %}
         </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-car" aria-hidden="true"></i>
+            <h3>Nenhuma viatura encontrada</h3>
+            <p>Não há viaturas que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:logistica:viatura_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Cadastrar viatura
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Modal de confirmação de exclusão -->
-<div id="modalExclusao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
-    <div style="background: #374151; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid #4b5563; box-shadow: var(--shadow-heavy);">
-        <h3 style="color: #f9fafb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
-            Confirmar Exclusão
+<div id="modalExclusao" class="stock-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalExclusaoTitle" hidden>
+    <div class="stock-modal-panel">
+        <h3 id="modalExclusaoTitle" class="stock-modal-panel__title">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            Confirmar exclusão
         </h3>
-        <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.6;">
+        <p class="stock-modal-panel__body">
             Tem certeza que deseja excluir a viatura <strong id="nomeViatura"></strong>?
             <br><br>
-            <span style="color: #f59e0b; font-weight: 600;">Esta ação não pode ser desfeita!</span>
+            <span class="stock-modal-panel__warn">Esta ação não pode ser desfeita.</span>
         </p>
-        <div style="display: flex; gap: 15px; justify-content: flex-end;">
-            <button type="button" onclick="fecharModal()" style="background: #4b5563; color: #f9fafb; border: 1px solid #6b7280; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Cancelar
-            </button>
-            <form id="formExclusao" method="POST" style="display: inline;">
+        <div class="stock-modal-panel__actions">
+            <button type="button" class="stock-modal-btn-cancel" onclick="fecharModal()">Cancelar</button>
+            <form id="formExclusao" method="post" class="stock-modal-form-inline">
                 {% csrf_token %}
-                <button type="submit" style="background: var(--danger-gradient); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-trash"></i>
-                    Excluir
+                <button type="submit" class="stock-modal-btn-danger">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Excluir
                 </button>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+{{ block.super }}
 <script>
 function confirmarExclusao(button) {
     const id = button.getAttribute('data-id');
     const nome = button.getAttribute('data-nome');
-    
-    document.getElementById('nomeViatura').innerText = nome;
-    document.getElementById('formExclusao').action = `/stock/logistica/viaturas/${id}/delete/`;
-    document.getElementById('modalExclusao').style.display = 'flex';
+    document.getElementById('nomeViatura').textContent = nome;
+    document.getElementById('formExclusao').action = "{% url 'stock:logistica:viatura_delete' 0 %}".replace('/0/', '/' + id + '/');
+    const modal = document.getElementById('modalExclusao');
+    modal.hidden = false;
+    modal.classList.add('is-open');
 }
 
 function fecharModal() {
-    document.getElementById('modalExclusao').style.display = 'none';
+    const modal = document.getElementById('modalExclusao');
+    modal.classList.remove('is-open');
+    modal.hidden = true;
 }
+
+document.getElementById('modalExclusao').addEventListener('click', function (e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
 </script>
 {% endblock %}

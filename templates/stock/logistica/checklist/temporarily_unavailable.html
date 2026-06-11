@@ -1,0 +1,40 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}{{ titulo }} - Temporariamente Indisponível{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 40px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">🚧</div>
+        <h1 style="color: #333; margin: 0 0 10px 0; font-size: 28px;">{{ titulo }}</h1>
+        <h2 style="color: #667eea; margin: 0; font-size: 20px; font-weight: normal;">Temporariamente Indisponível</h2>
+    </div>
+    
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
+        <p style="margin: 0 0 10px 0; font-size: 16px; color: #856404; font-weight: 500;">
+            {{ mensagem }}
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #856404;">
+            {{ detalhes }}
+        </p>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 30px;">
+        <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">O que está acontecendo?</h3>
+        <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+            <li>O módulo está sendo atualizado para integrar com o novo sistema de Transportadoras</li>
+            <li>A funcionalidade de checklist será restaurada em breve</li>
+            <li>Os dados existentes estão seguros e serão preservados</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center;">
+        <a href="{% url 'stock:main' %}" style="display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; transition: background 0.3s;">
+            ← Voltar para Stock Principal
+        </a>
+    </div>
+</div>
+{% endblock %}
+

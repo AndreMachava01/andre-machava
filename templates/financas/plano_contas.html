@@ -1,0 +1,62 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Finanças - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+        .btn-secondary { background: #6c757d; color: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        .empty { text-align: center; padding: 32px; color: #6b7280; }
+        .admin-link { font-size: 13px; color: #b45309; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-list-alt"></i> {{ title }}</h1>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'financas:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="/admin/empresa/conta/" class="btn btn-secondary" target="_blank">Editar no Admin</a>
+            </div>
+        </div>
+        <p style="color:#6b7280;margin-bottom:16px;">Contas activas do plano. Para criar ou editar contas utilize o <a href="/admin/empresa/conta/" class="admin-link">Admin</a>.</p>
+        {% if contas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Conta pai</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contas %}
+                <tr>
+                    <td>{{ c.codigo }}</td>
+                    <td>{{ c.nome }}</td>
+                    <td>{{ c.get_tipo_display }}</td>
+                    <td>{% if c.conta_pai %}{{ c.conta_pai.codigo }} - {{ c.conta_pai.nome }}{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">
+            <p>Nenhuma conta configurada.</p>
+            <p><a href="/admin/empresa/conta/add/">Criar contas no Admin</a></p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

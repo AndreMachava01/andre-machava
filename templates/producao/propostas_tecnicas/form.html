@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if proposta %}Editar Proposta Técnica{% elif modo_levantamento %}Novo Levantamento em Obra{% else %}Nova Proposta Técnica{% endif %} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #374151; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; 
+            box-sizing: border-box; 
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+            outline: none; border-color: #b45309; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1); 
+        }
+        .help-text { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .info-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; margin-bottom: 20px; }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #374151; display: flex; align-items: center; gap: 8px; }
+        .info-box p { margin: 4px 0; font-size: 13px; color: #6b7280; }
+        .feature-banner {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 4px solid #0ea5e9;
+            background: #f0f9ff;
+            color: #0c4a6e;
+            font-size: 13px;
+        }
+        .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .required { color: #dc2626; }
+        .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        
+        /* Estilos para autocomplete de clientes */
+        .cliente-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .suggestion-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .form-group[style*="flex: 2"] {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-clipboard-list"></i> {% if proposta %}Editar Proposta Técnica{% elif modo_levantamento %}Novo Levantamento em Obra{% else %}Nova Proposta Técnica{% endif %}</h1>
+                <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">
+                    {% if proposta %}
+                        Modifique os dados da proposta técnica
+                    {% elif modo_levantamento %}
+                        Registe um novo levantamento técnico em obra de construção civil
+                    {% else %}
+                        Preencha os dados para criar uma nova proposta técnica
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'producao:propostas_tecnicas' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% if modo_levantamento and not proposta %}
+        <div class="feature-banner">
+            <strong>Nova funcionalidade:</strong> este ecrã é dedicado à abertura de levantamentos em obras.
+            Preencha cliente, escopo, duração e responsável para iniciar o processo técnico.
+        </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-box">
+            <h3><i class="fas fa-info-circle"></i> Informações Importantes</h3>
+            <p><strong>Código:</strong> Será gerado automaticamente no formato PT2026XXXX</p>
+            <p><strong>Estágios:</strong> Levantamento → Análise Técnica → Elaboração → Apresentação → Aprovação → Concluído</p>
+            <p><strong>Status:</strong> Atualizado automaticamente com base nas datas e estágio</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #b45309; margin: 0 0 16px 0; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-info-circle"></i> Informações Básicas
+                </h3>
+                
+                <div class="form-group">
+                    <label for="titulo">{% if modo_levantamento and not proposta %}Título do Levantamento{% else %}Título da Proposta{% endif %} <span class="required">*</span></label>
+                    <input type="text" name="titulo" id="titulo" value="{% if proposta %}{{ proposta.titulo }}{% endif %}" required>
+                    <div class="help-text">{% if modo_levantamento and not proposta %}Nome descritivo para identificar o levantamento técnico{% else %}Nome descritivo para identificar a proposta técnica{% endif %}</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="nome_cliente_personalizado">Cliente <span class="required">*</span></label>
+                        <input type="text" id="nome_cliente_personalizado" name="nome_cliente_personalizado" 
+                               value="{% if proposta %}{% if proposta.nome_cliente_personalizado %}{{ proposta.nome_cliente_personalizado }}{% elif proposta.cliente %}{{ proposta.cliente.nome }}{% endif %}{% endif %}" 
+                               placeholder="Nome do Cliente *" required autocomplete="off" aria-label="Nome do cliente">
+                        <input type="hidden" id="cliente_id_hidden" name="cliente" value="{% if proposta %}{% if proposta.cliente %}{{ proposta.cliente.id }}{% endif %}{% endif %}">
+                        <div id="cliente-suggestions" class="cliente-suggestions"></div>
+                        <div class="help-text">Digite para buscar clientes cadastrados ou insira um nome personalizado</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nuit_cliente_personalizado">NUIT</label>
+                        <input type="text" id="nuit_cliente_personalizado" name="nuit_cliente_personalizado" 
+                               value="{% if proposta %}{% if proposta.nuit_cliente_personalizado %}{{ proposta.nuit_cliente_personalizado }}{% elif proposta.cliente and proposta.cliente.nuit %}{{ proposta.cliente.nuit }}{% endif %}{% endif %}" 
+                               placeholder="NUIT (Ex: 123456789)" pattern="[0-9]{9}" maxlength="9" aria-label="NUIT do cliente">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefone_cliente_personalizado">Telefone</label>
+                        <input type="text" id="telefone_cliente_personalizado" name="telefone_cliente_personalizado" 
+                               value="{% if proposta %}{% if proposta.telefone_cliente_personalizado %}{{ proposta.telefone_cliente_personalizado }}{% elif proposta.cliente and proposta.cliente.telefone %}{{ proposta.cliente.telefone }}{% endif %}{% endif %}" 
+                               placeholder="Telefone/Contato" aria-label="Telefone do cliente">
+                    </div>
+                </div>
+
+                <!-- Informação da Sucursal Automática -->
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Sucursal:</strong> 
+                    {% if request.user.perfil_usuario.sucursal %}
+                        {{ request.user.perfil_usuario.sucursal.nome }}
+                    {% elif request.user.funcionario.sucursal %}
+                        {{ request.user.funcionario.sucursal.nome }}
+                    {% else %}
+                        Não definida para o usuário atual
+                    {% endif %}
+                    <br><small>A sucursal é atribuída automaticamente baseada no seu perfil de usuário.</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="responsavel">Responsável Técnico</label>
+                        <select name="responsavel" id="responsavel">
+                            <option value="">Selecione um responsável...</option>
+                            {% for responsavel in responsaveis %}
+                            <option value="{{ responsavel.id }}" 
+                                    {% if proposta and proposta.responsavel and proposta.responsavel.id == responsavel.id %}selected{% endif %}
+                                    data-categoria="{% if responsavel.funcionario and responsavel.funcionario.cargo %}{{ responsavel.funcionario.cargo.categoria }}{% else %}OP{% endif %}">
+                                {{ responsavel.get_full_name|default:responsavel.username }}
+                                {% if responsavel.funcionario and responsavel.funcionario.cargo %}
+                                    ({{ responsavel.funcionario.cargo.get_categoria_display }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="data_solicitacao">Data da Solicitação</label>
+                        <input type="date" name="data_solicitacao" id="data_solicitacao" 
+                               value="{% if proposta and proposta.data_solicitacao %}{{ proposta.data_solicitacao|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escopo e Detalhes -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #b45309; margin: 0 0 16px 0; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-file-alt"></i> Escopo e Detalhes
+                </h3>
+                
+                <div class="form-group">
+                    <label for="escopo">{% if modo_levantamento and not proposta %}Escopo do Levantamento{% else %}Escopo do Serviço{% endif %}</label>
+                    <textarea name="escopo" id="escopo" placeholder="Descreva detalhadamente o escopo do serviço técnico...">{% if proposta %}{{ proposta.escopo }}{% endif %}</textarea>
+                    <div class="help-text">{% if modo_levantamento and not proposta %}Descrição detalhada do levantamento a executar na obra{% else %}Descrição detalhada dos serviços técnicos a serem executados{% endif %}</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea name="observacoes" id="observacoes" placeholder="Observações adicionais...">{% if proposta %}{{ proposta.observacoes }}{% endif %}</textarea>
+                    <div class="help-text">Informações complementares importantes</div>
+                </div>
+            </div>
+
+            <!-- Planeamento -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #b45309; margin: 0 0 16px 0; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+                    <i class="fas fa-calendar"></i> Planeamento
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="data_inicio_prevista">Data Início Prevista</label>
+                        <input type="date" name="data_inicio_prevista" id="data_inicio_prevista" 
+                               value="{% if proposta and proposta.data_inicio_prevista %}{{ proposta.data_inicio_prevista|date:'Y-m-d' }}{% endif %}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_fim_prevista">Data Fim Prevista</label>
+                        <input type="date" name="data_fim_prevista" id="data_fim_prevista" 
+                               value="{% if proposta and proposta.data_fim_prevista %}{{ proposta.data_fim_prevista|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="duracao_prevista_horas">Duração Prevista (horas)</label>
+                        <input type="number" name="duracao_prevista_horas" id="duracao_prevista_horas" 
+                               step="0.5" min="0" value="{% if proposta and proposta.duracao_prevista_horas %}{{ proposta.duracao_prevista_horas|stringformat:".2f" }}{% endif %}">
+                        <div class="help-text">Tempo estimado em horas para execução</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="valor_levantamento_previsto">Valor Levantamento (MT)</label>
+                        <input type="number" name="valor_levantamento_previsto" id="valor_levantamento_previsto" 
+                               step="0.01" min="0" value="{% if proposta and proposta.valor_levantamento_previsto %}{{ proposta.valor_levantamento_previsto|stringformat:".2f" }}{% endif %}" readonly>
+                        <div class="help-text">Valor calculado automaticamente: Duração × Taxa horária (MT 500/hora)</div>
+                        <button type="button" id="btn-alterar-valor" onclick="alternarModoValor()" style="margin-top: 5px; padding: 4px 8px; font-size: 12px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            [Editar] Definir valor manualmente
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'producao:propostas_tecnicas' %}" class="btn btn-secondary">
+                    [X] Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    [✓] {% if proposta %}Salvar Alterações{% elif modo_levantamento %}Criar Levantamento{% else %}Criar Proposta{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript funcional para cálculo e modo manual
+        function calcularValorAutomaticamente() {
+            var duracaoInput = document.getElementById('duracao_prevista_horas');
+            var valorInput = document.getElementById('valor_levantamento_previsto');
+            
+            if (duracaoInput && valorInput && valorInput.readOnly) {
+                var duracao = parseFloat(duracaoInput.value) || 0;
+                var taxa = 500; // Taxa padrão MT/hora
+                var valor = duracao * taxa;
+                valorInput.value = valor.toFixed(2);
+            }
+        }
+        
+        function alternarModoValor() {
+            var valorInput = document.getElementById('valor_levantamento_previsto');
+            var button = document.getElementById('btn-alterar-valor');
+            
+            if (valorInput.readOnly) {
+                // Mudar para modo manual
+                valorInput.readOnly = false;
+                valorInput.style.backgroundColor = '#fff';
+                button.textContent = '[Calculadora] Usar cálculo automático';
+                button.style.background = '#b45309';
+            } else {
+                // Mudar para modo automático
+                valorInput.readOnly = true;
+                valorInput.style.backgroundColor = '#f3f4f6';
+                button.textContent = '[Editar] Definir valor manualmente';
+                button.style.background = '#6b7280';
+                calcularValorAutomaticamente(); // Recalcular
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var duracaoInput = document.getElementById('duracao_prevista_horas');
+            
+            // Adicionar evento para cálculo automático
+            if (duracaoInput) {
+                duracaoInput.addEventListener('input', calcularValorAutomaticamente);
+            }
+            
+            // Não calcular automaticamente ao carregar se já houver valor
+            // Isso preserva os valores existentes das propostas
+        });
+    </script>
+
+    <script>
+        // Dados dos clientes para autocomplete
+        const clientesData = [
+            {% for cliente in clientes %}
+            {
+                id: {{ cliente.id }},
+                nome: "{{ cliente.nome|escapejs }}",
+                nuit: "{% if cliente.nuit %}{{ cliente.nuit|escapejs }}{% endif %}",
+                telefone: "{% if cliente.telefone %}{{ cliente.telefone|escapejs }}{% endif %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        let currentSuggestions = [];
+        let selectedClienteIndex = -1;
+        let isSelectingCliente = false;
+
+        // Função de autocomplete
+        function filtrarClientes(termo) {
+            if (!termo || termo.length < 2) return [];
+            termo = termo.toLowerCase();
+            return clientesData.filter(cliente => 
+                cliente.nome.toLowerCase().includes(termo) ||
+                (cliente.telefone && cliente.telefone.includes(termo)) ||
+                (cliente.nuit && cliente.nuit.includes(termo))
+            );
+        }
+
+        function mostrarSugestoes(sugestoes) {
+            const suggestionsDiv = document.getElementById('cliente-suggestions');
+            if (!suggestionsDiv) return;
+            
+            if (sugestoes.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            suggestionsDiv.innerHTML = '';
+            sugestoes.forEach((cliente, index) => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `<strong>${cliente.nome}</strong>${
+                    cliente.telefone ? '<br><small style="color: #666;">Tel: ' + cliente.telefone + '</small>' : ''
+                }${
+                    cliente.nuit ? '<br><small style="color: #666;">NUIT: ' + cliente.nuit + '</small>' : ''
+                }`;
+                
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selecionarCliente(cliente);
+                });
+                
+                item.addEventListener('mouseenter', () => {
+                    selectedClienteIndex = index;
+                    atualizarSelecao();
+                });
+                
+                suggestionsDiv.appendChild(item);
+            });
+            suggestionsDiv.style.display = 'block';
+        }
+
+        function selecionarCliente(cliente) {
+            isSelectingCliente = true;
+            const nomeInput = document.getElementById('nome_cliente_personalizado');
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            const nuitInput = document.getElementById('nuit_cliente_personalizado');
+            const telefoneInput = document.getElementById('telefone_cliente_personalizado');
+            const suggestionsDiv = document.getElementById('cliente-suggestions');
+
+            if (clienteIdHidden) clienteIdHidden.value = cliente.id;
+            if (nomeInput) nomeInput.value = cliente.nome;
+            if (nuitInput) nuitInput.value = cliente.nuit || '';
+            if (telefoneInput) telefoneInput.value = cliente.telefone || '';
+
+            if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+            currentSuggestions = [];
+            selectedClienteIndex = -1;
+            
+            setTimeout(() => {
+                isSelectingCliente = false;
+            }, 200);
+        }
+
+        function limparSelecaoCliente() {
+            const clienteIdHidden = document.getElementById('cliente_id_hidden');
+            if (clienteIdHidden) clienteIdHidden.value = '';
+        }
+
+        function atualizarSelecao() {
+            const items = document.querySelectorAll('.suggestion-item');
+            items.forEach((item, index) => {
+                if (index === selectedClienteIndex) {
+                    item.style.backgroundColor = '#e3f2fd';
+                } else {
+                    item.style.backgroundColor = '';
+                }
+            });
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const nomeInput = document.getElementById('nome_cliente_personalizado');
+            const suggestionsDiv = document.getElementById('cliente-suggestions');
+            
+            if (nomeInput) {
+                nomeInput.addEventListener('input', function() {
+                    if (isSelectingCliente) return;
+                    
+                    const termo = this.value.trim();
+                    limparSelecaoCliente();
+                    
+                    if (termo.length >= 2) {
+                        currentSuggestions = filtrarClientes(termo);
+                        mostrarSugestoes(currentSuggestions);
+                    } else {
+                        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                        currentSuggestions = [];
+                    }
+                });
+
+                nomeInput.addEventListener('keydown', function(e) {
+                    const suggestionsDiv = document.getElementById('cliente-suggestions');
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (selectedClienteIndex < currentSuggestions.length - 1) {
+                            selectedClienteIndex++;
+                            atualizarSelecao();
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (selectedClienteIndex > 0) {
+                            selectedClienteIndex--;
+                            atualizarSelecao();
+                        }
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (selectedClienteIndex >= 0 && currentSuggestions[selectedClienteIndex]) {
+                            selecionarCliente(currentSuggestions[selectedClienteIndex]);
+                        }
+                    } else if (e.key === 'Escape') {
+                        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                        selectedClienteIndex = -1;
+                    }
+                });
+
+                nomeInput.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                    }, 200);
+                });
+            }
+
+            // Fechar sugestões ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.form-group[style*="flex: 2"]')) {
+                    const suggestionsDiv = document.getElementById('cliente-suggestions');
+                    if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Auto-fill data fim se data início for selecionada
+        document.getElementById('data_inicio_prevista').addEventListener('change', function() {
+            const dataInicio = new Date(this.value);
+            if (dataInicio && !document.getElementById('data_fim_prevista').value) {
+                // Adicionar 7 dias por padrão
+                dataInicio.setDate(dataInicio.getDate() + 7);
+                const dataFim = dataInicio.toISOString().split('T')[0];
+                document.getElementById('data_fim_prevista').value = dataFim;
+            }
+        });
+    </script>
+</body>
+</html>

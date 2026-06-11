@@ -1,0 +1,236 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Nova reentrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:exceptions:reentregas_list' as reentregas_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Reentregas' breadcrumb_section_url=reentregas_list_url breadcrumb_current='Nova reentrega' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Nova reentrega
+                </h1>
+                <p class="page-subtitle">Agendar nova tentativa após falha de entrega</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:exceptions:reentregas_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="post" novalidate id="reentrega-form">
+            {% csrf_token %}
+
+            <div id="reentrega-resultado" class="stock-u-mb-24" hidden></div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-truck" aria-hidden="true"></i> Rastreamento original</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="rastreamento_id">Rastreamento *</label>
+                            <select id="rastreamento_id" name="rastreamento_id" class="form-select" required>
+                                <option value="">Selecione o rastreamento...</option>
+                                {% for r in rastreamentos %}
+                                <option value="{{ r.id }}"
+                                        {% if rastreamento_selecionado == r.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ r.codigo_rastreamento }} — {{ r.destinatario_nome }} ({{ r.get_status_atual_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Envios em trânsito, distribuição ou devolvidos após tentativa falhada.</p>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="excecao_id">Exceção relacionada</label>
+                            <select id="excecao_id" name="excecao_id" class="form-select">
+                                <option value="">Nenhuma</option>
+                                {% for ex in excecoes %}
+                                <option value="{{ ex.id }}"
+                                        {% if excecao_selecionada == ex.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ ex.codigo }} — {{ ex.tipo_excecao.nome }} ({{ ex.get_status_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Nova tentativa</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="motivo_tentativa_anterior">Motivo da tentativa anterior *</label>
+                            <textarea id="motivo_tentativa_anterior" name="motivo_tentativa_anterior" class="form-control" rows="3" required
+                                      placeholder="Porque falhou a entrega anterior?"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="nova_data_entrega">Nova data de entrega *</label>
+                            <input type="date" id="nova_data_entrega" name="nova_data_entrega" class="form-control" required
+                                   value="{{ data_padrao|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="custo_reentrega">Custo adicional (MT)</label>
+                            <input type="number" id="custo_reentrega" name="custo_reentrega" class="form-control"
+                                   step="0.01" min="0" placeholder="Opcional">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="nova_janela_inicio">Início da janela *</label>
+                            <input type="time" id="nova_janela_inicio" name="nova_janela_inicio" class="form-control" required
+                                   value="08:00">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="nova_janela_fim">Fim da janela *</label>
+                            <input type="time" id="nova_janela_fim" name="nova_janela_fim" class="form-control" required
+                                   value="18:00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-sticky-note" aria-hidden="true"></i> Observações</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="instrucoes_especiais">Instruções especiais</label>
+                            <textarea id="instrucoes_especiais" name="instrucoes_especiais" class="form-control" rows="2"
+                                      placeholder="Acesso ao local, contacto no destino, etc."></textarea>
+                        </div>
+                        <div class="form-field form-field--full">
+                            <label class="form-label" for="observacoes">Observações</label>
+                            <textarea id="observacoes" name="observacoes" class="form-control" rows="2"
+                                      placeholder="Informação adicional para a equipa..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:exceptions:reentregas_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times" aria-hidden="true"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-info" id="btn-criar-reentrega">
+                    <i class="fas fa-save" aria-hidden="true"></i> Agendar reentrega
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    const form = document.getElementById('reentrega-form');
+    const resultado = document.getElementById('reentrega-resultado');
+    const btn = document.getElementById('btn-criar-reentrega');
+    if (!form) return;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const listaUrl = '{% url "stock:exceptions:reentregas_list" %}?status=AGENDADA';
+
+    function showResult(html, type) {
+        resultado.hidden = false;
+        resultado.className = 'stock-u-mb-24 alert alert-' + (type || 'info');
+        resultado.innerHTML = html;
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const rastreamentoId = document.getElementById('rastreamento_id').value;
+        const motivo = document.getElementById('motivo_tentativa_anterior').value.trim();
+        const novaData = document.getElementById('nova_data_entrega').value;
+        const janelaInicio = document.getElementById('nova_janela_inicio').value;
+        const janelaFim = document.getElementById('nova_janela_fim').value;
+
+        if (!rastreamentoId || !motivo || !novaData || !janelaInicio || !janelaFim) {
+            showResult('<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Preencha os campos obrigatórios.', 'warning');
+            return;
+        }
+
+        if (janelaFim <= janelaInicio) {
+            showResult('<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> A janela de fim deve ser posterior ao início.', 'warning');
+            return;
+        }
+
+        const payload = {
+            rastreamento_id: parseInt(rastreamentoId, 10),
+            motivo_tentativa_anterior: motivo,
+            nova_data_entrega: novaData,
+            nova_janela_inicio: janelaInicio,
+            nova_janela_fim: janelaFim,
+            observacoes: document.getElementById('observacoes').value.trim(),
+            instrucoes_especiais: document.getElementById('instrucoes_especiais').value.trim(),
+        };
+
+        const excecaoVal = document.getElementById('excecao_id').value;
+        if (excecaoVal) payload.excecao_id = parseInt(excecaoVal, 10);
+
+        const custoVal = document.getElementById('custo_reentrega').value;
+        if (custoVal) payload.custo_reentrega = custoVal;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> A guardar...';
+        resultado.hidden = true;
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                showResult(
+                    '<i class="fas fa-check-circle" aria-hidden="true"></i> Reentrega <strong>' +
+                    (data.codigo || '') + '</strong> agendada com sucesso. ' +
+                    '<a href="' + listaUrl + '" class="btn btn-sm btn-info stock-u-ml-8">Ver reentregas</a>',
+                    'success'
+                );
+                form.reset();
+                document.getElementById('nova_data_entrega').value = '{{ data_padrao|date:"Y-m-d" }}';
+                document.getElementById('nova_janela_inicio').value = '08:00';
+                document.getElementById('nova_janela_fim').value = '18:00';
+            } else {
+                showResult(
+                    '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> ' +
+                    (data.error || 'Não foi possível agendar a reentrega.'),
+                    'warning'
+                );
+            }
+        })
+        .catch(function () {
+            showResult('<i class="fas fa-times-circle" aria-hidden="true"></i> Erro de comunicação com o servidor.', 'danger');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save" aria-hidden="true"></i> Agendar reentrega';
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -72,65 +72,66 @@ def tipos_excecao_list(request):
 @require_stock_access
 def excecoes_list(request):
     """Lista de exceções logísticas."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    prioridade = request.GET.get('prioridade', '')
-    tipo_codigo = request.GET.get('tipo_codigo', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    prioridade = request.GET.get('prioridade', '').strip()
+    tipo_codigo = request.GET.get('tipo_codigo', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     excecoes = ExcecaoLogistica.objects.select_related(
-        'tipo_excecao', 'rastreamento_entrega', 'planejamento_entrega', 'rota'
+        'tipo_excecao', 'rastreamento_entrega', 'reportado_por',
     )
-    
+
     if search:
         excecoes = excecoes.filter(
-            Q(codigo__icontains=search) |
-            Q(descricao__icontains=search) |
-            Q(local_ocorrencia__icontains=search) |
-            Q(observacoes__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(descricao__icontains=search)
+            | Q(local_ocorrencia__icontains=search)
+            | Q(observacoes__icontains=search),
         )
-    
+
     if status:
         excecoes = excecoes.filter(status=status)
-    
+
     if prioridade:
         excecoes = excecoes.filter(prioridade=prioridade)
-    
+
     if tipo_codigo:
         excecoes = excecoes.filter(tipo_excecao__codigo=tipo_codigo)
-    
+
     if data_inicio:
         excecoes = excecoes.filter(data_ocorrencia__date__gte=data_inicio)
-    
+
     if data_fim:
         excecoes = excecoes.filter(data_ocorrencia__date__lte=data_fim)
-    
+
     excecoes = excecoes.order_by('-data_ocorrencia', 'prioridade')
-    
-    # Paginação
-    paginator = Paginator(excecoes, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = ExcecaoLogistica.STATUS_CHOICES
-    prioridade_choices = ExcecaoLogistica.PRIORIDADE_CHOICES
-    tipos_excecao = TipoExcecao.objects.filter(ativo=True).order_by('nome')
-    
+
+    stats = {
+        'total': excecoes.count(),
+        'abertas': excecoes.filter(status='ABERTA').count(),
+        'em_analise': excecoes.filter(status='EM_ANALISE').count(),
+        'resolvidas': excecoes.filter(status='RESOLVIDA').count(),
+    }
+
     context = {
-        'page_obj': page_obj,
+        'page_obj': Paginator(excecoes, 20).get_page(request.GET.get('page')),
+        'stats': stats,
         'search': search,
         'status': status,
         'prioridade': prioridade,
         'tipo_codigo': tipo_codigo,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
-        'prioridade_choices': prioridade_choices,
-        'tipos_excecao': tipos_excecao,
+        'status_choices': ExcecaoLogistica.STATUS_CHOICES,
+        'prioridade_choices': ExcecaoLogistica.PRIORIDADE_CHOICES,
+        'tipos_excecao': TipoExcecao.objects.filter(ativo=True).order_by('nome'),
+        'has_filters': bool(
+            search or status or prioridade or tipo_codigo or data_inicio or data_fim,
+        ),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/excecoes_list.html', context)
 
 
@@ -193,18 +194,20 @@ def excecao_create(request):
             logger.error(f"Erro ao criar exceção: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
     
-    # GET - mostrar formulário
     tipos_excecao = TipoExcecao.objects.filter(ativo=True).order_by('nome')
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['EM_TRANSITO', 'EM_DISTRIBUICAO', 'TENTATIVA_ENTREGA']
-    ).select_related('transportadora', 'veiculo_interno')
-    
+        status_atual__in=['PREPARANDO', 'COLETADO', 'EM_TRANSITO', 'EM_DISTRIBUICAO'],
+    ).select_related('transportadora', 'veiculo_interno').order_by('-data_coleta')
+
+    rastreamento_selecionado = request.GET.get('rastreamento_id', '').strip()
+
     context = {
         'tipos_excecao': tipos_excecao,
         'rastreamentos': rastreamentos,
         'prioridade_choices': ExcecaoLogistica.PRIORIDADE_CHOICES,
+        'rastreamento_selecionado': rastreamento_selecionado,
     }
-    
+
     return render(request, 'stock/logistica/exceptions/excecao_form.html', context)
 
 
@@ -288,57 +291,59 @@ def concluir_acao_excecao(request, acao_id):
 @require_stock_access
 def devolucoes_list(request):
     """Lista de devoluções logísticas."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    motivo = request.GET.get('motivo', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    motivo = request.GET.get('motivo', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     devolucoes = DevolucaoLogistica.objects.select_related(
-        'rastreamento_original', 'excecao_relacionada', 'aprovado_por'
+        'rastreamento_original', 'excecao_relacionada', 'aprovado_por',
     )
-    
+
     if search:
         devolucoes = devolucoes.filter(
-            Q(codigo__icontains=search) |
-            Q(solicitado_por__icontains=search) |
-            Q(descricao_motivo__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(solicitado_por__icontains=search)
+            | Q(descricao_motivo__icontains=search),
         )
-    
+
     if status:
         devolucoes = devolucoes.filter(status=status)
-    
+
     if motivo:
         devolucoes = devolucoes.filter(motivo=motivo)
-    
+
     if data_inicio:
         devolucoes = devolucoes.filter(data_solicitacao__date__gte=data_inicio)
-    
+
     if data_fim:
         devolucoes = devolucoes.filter(data_solicitacao__date__lte=data_fim)
-    
+
     devolucoes = devolucoes.order_by('-data_solicitacao')
-    
-    # Paginação
-    paginator = Paginator(devolucoes, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = DevolucaoLogistica.STATUS_CHOICES
-    motivo_choices = DevolucaoLogistica.MOTIVO_CHOICES
-    
+
+    stats = {
+        'total': devolucoes.count(),
+        'solicitadas': devolucoes.filter(status='SOLICITADA').count(),
+        'em_processo': devolucoes.filter(
+            status__in=['APROVADA', 'EM_COLETA', 'COLETADA', 'EM_TRANSITO'],
+        ).count(),
+        'recebidas': devolucoes.filter(status='RECEBIDA').count(),
+    }
+
     context = {
-        'page_obj': page_obj,
+        'page_obj': Paginator(devolucoes, 20).get_page(request.GET.get('page')),
+        'stats': stats,
         'search': search,
         'status': status,
         'motivo': motivo,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
-        'motivo_choices': motivo_choices,
+        'status_choices': DevolucaoLogistica.STATUS_CHOICES,
+        'motivo_choices': DevolucaoLogistica.MOTIVO_CHOICES,
+        'has_filters': bool(search or status or motivo or data_inicio or data_fim),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/devolucoes_list.html', context)
 
 
@@ -372,21 +377,22 @@ def devolucao_create(request):
             logger.error(f"Erro ao criar devolução: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
     
-    # GET - mostrar formulário
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['ENTREGUE', 'TENTATIVA_ENTREGA']
-    ).select_related('transportadora', 'veiculo_interno')
-    
+        status_atual__in=['ENTREGUE', 'DEVOLVIDO'],
+    ).select_related('transportadora', 'veiculo_interno').order_by('-data_entrega_realizada')
+
     excecoes = ExcecaoLogistica.objects.filter(
-        status__in=['ABERTA', 'EM_ANALISE']
-    ).order_by('-data_ocorrencia')
-    
+        status__in=['ABERTA', 'EM_ANALISE'],
+    ).select_related('tipo_excecao').order_by('-data_ocorrencia')
+
     context = {
         'rastreamentos': rastreamentos,
         'excecoes': excecoes,
         'motivo_choices': DevolucaoLogistica.MOTIVO_CHOICES,
+        'rastreamento_selecionado': request.GET.get('rastreamento_id', '').strip(),
+        'excecao_selecionada': request.GET.get('excecao_id', '').strip(),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/devolucao_form.html', context)
 
 
@@ -431,50 +437,51 @@ def aprovar_devolucao(request, devolucao_id):
 @require_stock_access
 def reentregas_list(request):
     """Lista de reentregas."""
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+
     reentregas = Reentrega.objects.select_related(
-        'rastreamento_original', 'excecao_relacionada', 'agendado_por'
+        'rastreamento_original', 'excecao_relacionada', 'agendado_por',
     )
-    
+
     if search:
         reentregas = reentregas.filter(
-            Q(codigo__icontains=search) |
-            Q(motivo_tentativa_anterior__icontains=search) |
-            Q(observacoes__icontains=search)
+            Q(codigo__icontains=search)
+            | Q(motivo_tentativa_anterior__icontains=search)
+            | Q(observacoes__icontains=search),
         )
-    
+
     if status:
         reentregas = reentregas.filter(status=status)
-    
+
     if data_inicio:
         reentregas = reentregas.filter(nova_data_entrega__gte=data_inicio)
-    
+
     if data_fim:
         reentregas = reentregas.filter(nova_data_entrega__lte=data_fim)
-    
+
     reentregas = reentregas.order_by('-data_agendamento')
-    
-    # Paginação
-    paginator = Paginator(reentregas, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Opções para filtros
-    status_choices = Reentrega.STATUS_CHOICES
-    
+
+    stats = {
+        'total': reentregas.count(),
+        'agendadas': reentregas.filter(status='AGENDADA').count(),
+        'em_andamento': reentregas.filter(status='EM_ANDAMENTO').count(),
+        'concluidas': reentregas.filter(status='CONCLUIDA').count(),
+    }
+
     context = {
-        'page_obj': page_obj,
+        'page_obj': Paginator(reentregas, 20).get_page(request.GET.get('page')),
+        'stats': stats,
         'search': search,
         'status': status,
         'data_inicio': data_inicio,
         'data_fim': data_fim,
-        'status_choices': status_choices,
+        'status_choices': Reentrega.STATUS_CHOICES,
+        'has_filters': bool(search or status or data_inicio or data_fim),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/reentregas_list.html', context)
 
 
@@ -510,20 +517,22 @@ def reentrega_create(request):
             logger.error(f"Erro ao criar reentrega: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
     
-    # GET - mostrar formulário
     rastreamentos = RastreamentoEntrega.objects.filter(
-        status_atual__in=['TENTATIVA_ENTREGA', 'PROBLEMA']
-    ).select_related('transportadora', 'veiculo_interno')
-    
+        status_atual__in=['EM_TRANSITO', 'EM_DISTRIBUICAO', 'DEVOLVIDO'],
+    ).select_related('transportadora', 'veiculo_interno').order_by('-data_coleta')
+
     excecoes = ExcecaoLogistica.objects.filter(
-        status__in=['ABERTA', 'EM_ANALISE']
-    ).order_by('-data_ocorrencia')
-    
+        status__in=['ABERTA', 'EM_ANALISE'],
+    ).select_related('tipo_excecao').order_by('-data_ocorrencia')
+
     context = {
         'rastreamentos': rastreamentos,
         'excecoes': excecoes,
+        'data_padrao': timezone.now().date() + timedelta(days=1),
+        'rastreamento_selecionado': request.GET.get('rastreamento_id', '').strip(),
+        'excecao_selecionada': request.GET.get('excecao_id', '').strip(),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/reentrega_form.html', context)
 
 
@@ -536,39 +545,41 @@ def reentrega_create(request):
 def dashboard_excecoes(request):
     """Dashboard de exceções logísticas."""
     hoje = timezone.now().date()
-    
-    # Estatísticas gerais
+    limite_24h = timezone.now() - timedelta(days=1)
+
     exception_service = ExceptionService()
     stats = exception_service.obter_estatisticas_excecoes()
-    
-    # Exceções críticas (pendentes há mais de 24h)
-    excecoes_criticas = exception_service.obter_excecoes_pendentes(
+
+    excecoes_criticas_qs = exception_service.obter_excecoes_pendentes(
         prioridade='CRITICA',
-        dias_atraso=1
+        dias_atraso=1,
     )
-    
-    # Exceções recentes (últimas 24h)
+    excecoes_criticas = excecoes_criticas_qs[:5]
+
     excecoes_recentes = ExcecaoLogistica.objects.filter(
-        data_ocorrencia__gte=timezone.now() - timedelta(days=1)
-    ).order_by('-data_ocorrencia')[:10]
-    
-    # Devoluções pendentes
-    devolucoes_pendentes = DevolucaoLogistica.objects.filter(
-        status='SOLICITADA'
-    ).order_by('-data_solicitacao')[:5]
-    
-    # Reentregas agendadas
-    reentregas_agendadas = Reentrega.objects.filter(
+        data_ocorrencia__gte=limite_24h,
+    ).select_related('tipo_excecao').order_by('-data_ocorrencia')[:10]
+
+    devolucoes_pendentes_qs = DevolucaoLogistica.objects.filter(
+        status='SOLICITADA',
+    ).order_by('-data_solicitacao')
+    devolucoes_pendentes = devolucoes_pendentes_qs[:5]
+
+    reentregas_agendadas_qs = Reentrega.objects.filter(
         status='AGENDADA',
-        nova_data_entrega__gte=hoje
-    ).order_by('nova_data_entrega')[:5]
-    
+        nova_data_entrega__gte=hoje,
+    ).order_by('nova_data_entrega')
+    reentregas_agendadas = reentregas_agendadas_qs[:5]
+
     context = {
         'stats': stats,
         'excecoes_criticas': excecoes_criticas,
+        'total_excecoes_criticas': len(excecoes_criticas_qs),
         'excecoes_recentes': excecoes_recentes,
         'devolucoes_pendentes': devolucoes_pendentes,
+        'total_devolucoes_pendentes': devolucoes_pendentes_qs.count(),
         'reentregas_agendadas': reentregas_agendadas,
+        'total_reentregas_agendadas': reentregas_agendadas_qs.count(),
     }
-    
+
     return render(request, 'stock/logistica/exceptions/dashboard.html', context)

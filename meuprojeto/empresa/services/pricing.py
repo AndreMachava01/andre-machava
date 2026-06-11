@@ -36,29 +36,35 @@ def calculate_quote(
     items: List[PricingItem],
     origem_provincia: Optional[str] = None,
     destino_provincia: Optional[str] = None,
+    distancia_km: Optional[float] = None,
     currency: str = 'MZN',
     fuel_surcharge_pct: float = 0.0,
     tolls_flat: float = 0.0,
     insurance_pct: float = 0.0,
 ) -> PricingResult:
     """
-    Cálculo básico de frete usando campos já existentes em Transportadora:
-      - custo_fixo + custo_por_kg * peso_efetivo (soma dos itens)
+    Cálculo de frete para transportadora externa:
+      - custo_fixo + custo_por_kg * peso_efetivo + custo_por_km * distancia_km
       - adicionais: combustível (%), pedágios (flat), seguro (%)
       - prazo: usa prazo_entrega_padrao; se origem == destino, reduz 1 dia (mínimo 1)
-
-    Este serviço é intencionalmente simples (sem modelos de tabela). Posteriormente,
-    pode ser estendido para consumir tabelas de tarifa/SLA.
     """
     total_effective_weight = 0.0
     declared_total = 0.0
+    peso_real_total = 0.0
+    peso_volumetrico_total = 0.0
     for it in items:
-        total_effective_weight += _effective_weight_kg(it)
+        volumetric = _volumetric_weight_kg(it.length_cm, it.width_cm, it.height_cm)
+        effective = _effective_weight_kg(it)
+        total_effective_weight += effective
+        peso_real_total += max(0.0, it.weight_kg or 0.0)
+        peso_volumetrico_total += volumetric
         declared_total += max(0.0, it.declared_value or 0.0)
 
-    base_cost = float(getattr(transportadora, 'custo_fixo', 0) or 0) + (
-        float(getattr(transportadora, 'custo_por_kg', 0) or 0) * total_effective_weight
-    )
+    distancia = max(0.0, float(distancia_km or 0))
+    custo_fixo = float(getattr(transportadora, 'custo_fixo', 0) or 0)
+    custo_peso = float(getattr(transportadora, 'custo_por_kg', 0) or 0) * total_effective_weight
+    custo_distancia = float(getattr(transportadora, 'custo_por_km', 0) or 0) * distancia
+    base_cost = custo_fixo + custo_peso + custo_distancia
 
     fuel = base_cost * max(0.0, fuel_surcharge_pct)
     tolls = max(0.0, tolls_flat)
@@ -75,12 +81,47 @@ def calculate_quote(
         currency=currency,
         estimated_days=prazo,
         breakdown={
+            'custo_fixo': round(custo_fixo, 2),
+            'custo_peso': round(custo_peso, 2),
+            'custo_distancia': round(custo_distancia, 2),
             'base_cost': round(base_cost, 2),
             'fuel_surcharge': round(fuel, 2),
             'tolls': round(tolls, 2),
             'insurance': round(insurance, 2),
             'weight_kg': round(total_effective_weight, 3),
+            'peso_real_kg': round(peso_real_total, 3),
+            'peso_volumetrico_kg': round(peso_volumetrico_total, 3),
+            'distancia_km': round(distancia, 3),
             'declared_total': round(declared_total, 2),
+        },
+    )
+
+
+def calculate_freight_veiculo_interno(
+    *,
+    veiculo,
+    distancia_km: float,
+    peso_kg: float = 1.0,
+    custo_fixo_entrega: float = 20.0,
+    currency: str = 'MZN',
+) -> PricingResult:
+    """Frete para frota interna: custo por km + custo fixo por entrega."""
+    distancia = max(0.0, float(distancia_km or 0))
+    custo_km = float(getattr(veiculo, 'custo_por_km', 0) or 0)
+    custo_distancia = custo_km * distancia
+    custo_fixo = max(0.0, float(custo_fixo_entrega))
+    total_cost = custo_distancia + custo_fixo
+
+    return PricingResult(
+        total_cost=round(total_cost, 2),
+        currency=currency,
+        estimated_days=1,
+        breakdown={
+            'custo_distancia': round(custo_distancia, 2),
+            'custo_fixo_entrega': round(custo_fixo, 2),
+            'distancia_km': round(distancia, 3),
+            'custo_por_km': round(custo_km, 2),
+            'weight_kg': round(max(0.0, peso_kg), 3),
         },
     )
 

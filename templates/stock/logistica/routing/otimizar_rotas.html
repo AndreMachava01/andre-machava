@@ -1,0 +1,216 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Otimizar rotas{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-form-page">
+    {% url 'stock:routing:dashboard' as routing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Roteirização' breadcrumb_section_url=routing_dashboard_url breadcrumb_current='Otimizar rotas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    Otimizar rotas
+                </h1>
+                <p class="page-subtitle">Gerar rotas a partir dos planejamentos pendentes para uma data</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:routing:rotas_list' %}" class="btn btn-outline">
+                    <i class="fas fa-list" aria-hidden="true"></i> Rotas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="kpi-planejamentos">{{ stats.planejamentos_pendentes|default:"0" }}</div>
+                <div class="stat-label">Planej. pendentes (data)</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-car"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.veiculos_disponiveis|default:"0" }}</div>
+                <div class="stat-label">Veículos activos</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-map"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.zonas_ativas|default:"0" }}</div>
+                <div class="stat-label">Zonas activas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form id="otimizar-rotas-form" novalidate>
+            {% csrf_token %}
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-calendar-day" aria-hidden="true"></i> Data de otimização</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field">
+                            <label class="form-label" for="data_otimizacao">Data *</label>
+                            <input type="date" id="data_otimizacao" name="data" class="form-control" required
+                                   value="{{ data_padrao|date:'Y-m-d' }}">
+                            <p class="form-hint">Serão considerados planejamentos com status pendente nesta data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-car" aria-hidden="true"></i> Veículos</h2>
+                </div>
+                <div class="card-body">
+                    {% if veiculos %}
+                    <p class="form-hint stock-u-mb-16">Deixe todos desmarcados para usar todos os veículos activos disponíveis.</p>
+                    <div class="form-grid form-grid--2 stock-routing-checklist">
+                        {% for veiculo in veiculos %}
+                        <label class="stock-routing-check">
+                            <input type="checkbox" name="veiculos_ids" value="{{ veiculo.id }}" checked>
+                            <span>
+                                <strong>{{ veiculo.nome }}</strong>
+                                {% if veiculo.placa %}<span class="cell-tertiary cell-tertiary--sm"> — {{ veiculo.placa }}</span>{% endif %}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-data stock-routing-inline-empty">
+                        <p>Nenhum veículo interno activo disponível.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card stock-u-mb-24">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Zonas de entrega</h2>
+                </div>
+                <div class="card-body">
+                    {% if zonas %}
+                    <p class="form-hint stock-u-mb-16">Deixe todas desmarcadas para incluir todas as zonas activas.</p>
+                    <div class="form-grid form-grid--2 stock-routing-checklist">
+                        {% for zona in zonas %}
+                        <label class="stock-routing-check">
+                            <input type="checkbox" name="zonas_ids" value="{{ zona.id }}">
+                            <span>
+                                <strong>{{ zona.nome }}</strong>
+                                <span class="cell-tertiary cell-tertiary--sm"> — {{ zona.cidade }}, {{ zona.provincia }}</span>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-data stock-routing-inline-empty">
+                        <p>Nenhuma zona de entrega activa. Configure zonas antes de optimizar.</p>
+                        <a href="{% url 'stock:routing:zonas_list' %}" class="btn btn-outline btn-sm">Ver zonas</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="otimizar-resultado" class="stock-u-mb-24" hidden></div>
+
+            <div class="form-actions-row is-split">
+                <a href="{% url 'stock:routing:planejamentos_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planejamentos
+                </a>
+                <button type="submit" class="btn btn-primary" id="btn-otimizar" {% if not veiculos %}disabled{% endif %}>
+                    <i class="fas fa-magic" aria-hidden="true"></i> Executar otimização
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    const form = document.getElementById('otimizar-rotas-form');
+    const resultado = document.getElementById('otimizar-resultado');
+    const btn = document.getElementById('btn-otimizar');
+    if (!form) return;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    function checkedValues(name) {
+        return Array.from(form.querySelectorAll('input[name="' + name + '"]:checked'))
+            .map(function (el) { return parseInt(el.value, 10); })
+            .filter(function (n) { return !isNaN(n); });
+    }
+
+    function showResult(html, type) {
+        resultado.hidden = false;
+        resultado.className = 'stock-u-mb-24 alert alert-' + (type || 'info');
+        resultado.innerHTML = html;
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = document.getElementById('data_otimizacao').value;
+        if (!data) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> A optimizar...';
+        resultado.hidden = true;
+
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                data: data,
+                veiculos_ids: checkedValues('veiculos_ids'),
+                zonas_ids: checkedValues('zonas_ids'),
+            }),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (payload) {
+            if (payload.success) {
+                showResult(
+                    '<i class="fas fa-check-circle" aria-hidden="true"></i> ' +
+                    (payload.message || 'Rotas criadas com sucesso.') +
+                    ' <a href="{% url "stock:routing:rotas_list" %}" class="btn btn-sm btn-primary stock-u-ml-8">Ver rotas</a>',
+                    'success'
+                );
+            } else {
+                showResult(
+                    '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> ' +
+                    (payload.error || payload.message || 'Não foi possível optimizar as rotas.'),
+                    'warning'
+                );
+            }
+        })
+        .catch(function () {
+            showResult('<i class="fas fa-times-circle" aria-hidden="true"></i> Erro de comunicação com o servidor.', 'danger');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic" aria-hidden="true"></i> Executar otimização';
+        });
+    });
+})();
+</script>
+{% endblock %}

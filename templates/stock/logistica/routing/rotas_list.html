@@ -1,0 +1,229 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Rotas de entrega{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:routing:dashboard' as routing_dashboard_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Roteirização' breadcrumb_section_url=routing_dashboard_url breadcrumb_current='Rotas' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    Rotas de entrega
+                </h1>
+                <p class="page-subtitle">Rotas planejadas com paradas, veículo e motorista</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:routing:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+                <a href="{% url 'stock:routing:otimizar_rotas' %}" class="btn btn-primary">
+                    <i class="fas fa-magic" aria-hidden="true"></i> Otimizar rotas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid stock-dash-kpi-grid stock-u-mb-24">
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--purple">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-list"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.total|default:"0" }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--blue">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-calendar"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.planejadas|default:"0" }}</div>
+                <div class="stat-label">Planejadas</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--amber">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-truck"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.em_execucao|default:"0" }}</div>
+                <div class="stat-label">Em execução</div>
+            </div>
+        </div>
+        <div class="stat-card stock-dash-kpi stock-dash-kpi--green">
+            <div class="stock-dash-kpi__icon" aria-hidden="true"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats.concluidas|default:"0" }}</div>
+                <div class="stat-label">Concluídas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter" aria-hidden="true"></i>
+            Filtros de busca
+        </h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-pesquisa-rotas">Pesquisar</label>
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon" aria-hidden="true"></i>
+                    <input type="text" id="filtro-pesquisa-rotas" name="search" value="{{ search }}"
+                           class="form-control" placeholder="Código, nome, descrição...">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-status-rotas">Status</label>
+                <select id="filtro-status-rotas" name="status" class="form-select" title="Filtrar por status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-inicio-rotas">De</label>
+                <input type="date" id="filtro-data-inicio-rotas" name="data_inicio" class="form-control"
+                       value="{{ data_inicio }}" title="Data inicial">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="filtro-data-fim-rotas">Até</label>
+                <input type="date" id="filtro-data-fim-rotas" name="data_fim" class="form-control"
+                       value="{{ data_fim }}" title="Data final">
+            </div>
+
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Buscar
+                    </button>
+                    {% if has_filters %}
+                    <a href="{% url 'stock:routing:rotas_list' %}" class="btn-clear">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                        Limpar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if page_obj %}
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-route" aria-hidden="true"></i>
+                Rotas
+            </h3>
+            <div class="table-actions">
+                <span class="page-info">
+                    Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Rota</th>
+                        <th>Origem</th>
+                        <th>Data / horário</th>
+                        <th class="text-center">Paradas</th>
+                        <th>Recursos</th>
+                        <th>Status</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rota in page_obj %}
+                    <tr>
+                        <td><strong class="cell-primary">{{ rota.codigo }}</strong></td>
+                        <td>
+                            <div class="cell-primary cell-primary--strong">{{ rota.nome }}</div>
+                            {% if rota.descricao %}
+                            <div class="cell-tertiary cell-tertiary--sm">{{ rota.descricao|truncatechars:50 }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ rota.zona_origem.nome }}</td>
+                        <td>
+                            <div>{{ rota.data_planejada|date:"d/m/Y" }}</div>
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                {{ rota.hora_inicio_prevista|time:"H:i" }} — {{ rota.hora_fim_prevista|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td class="text-center">{{ rota.paradas.all|length }}</td>
+                        <td>
+                            {% if rota.veiculo_interno %}
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                <i class="fas fa-truck" aria-hidden="true"></i>
+                                {{ rota.veiculo_interno.codigo|default:rota.veiculo_interno.placa }}
+                            </div>
+                            {% endif %}
+                            {% if rota.motorista %}
+                            <div class="cell-tertiary cell-tertiary--sm">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                {{ rota.motorista.get_full_name|default:rota.motorista.username }}
+                            </div>
+                            {% endif %}
+                            {% if not rota.veiculo_interno and not rota.motorista %}
+                            <span class="stock-text-placeholder">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if rota.status == 'CONCLUIDA' %}success{% elif rota.status == 'PLANEJADA' %}info{% elif rota.status == 'EM_EXECUCAO' %}warning{% elif rota.status == 'CANCELADA' %}danger{% else %}secondary{% endif %}">
+                                {{ rota.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="cell-actions">
+                                <a href="{% url 'stock:routing:rota_detail' rota.id %}" class="btn-action primary"
+                                   title="Ver rota" aria-label="Ver rota {{ rota.codigo }}">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+            </a>
+            {% endif %}
+            <span class="current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}">
+                Próxima <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-route" aria-hidden="true"></i>
+            <h3>Nenhuma rota encontrada</h3>
+            <p>Não há rotas que correspondam aos filtros aplicados.</p>
+            <a href="{% url 'stock:routing:otimizar_rotas' %}" class="btn btn-primary">
+                <i class="fas fa-magic" aria-hidden="true"></i> Otimizar rotas
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

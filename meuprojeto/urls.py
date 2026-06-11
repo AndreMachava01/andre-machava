@@ -40,6 +40,10 @@ urlpatterns = [
     path('demo/', demo_view, name='demo'),
     path('stock/', include('meuprojeto.empresa.urls_stock')),
     path('rh/', include('meuprojeto.empresa.urls_rh')),
+    path('vendas/', include('meuprojeto.empresa.urls_vendas')),
+    path('producao/', include('meuprojeto.empresa.urls_producao')),
+    path('marketing/', include('meuprojeto.empresa.urls_marketing')),
+    path('financas/', include('meuprojeto.empresa.urls_financas')),
     # Fallback para /favicon.ico
     path('favicon.ico', lambda request: redirect(static('admin/img/icon-yes.svg'))),
 ]

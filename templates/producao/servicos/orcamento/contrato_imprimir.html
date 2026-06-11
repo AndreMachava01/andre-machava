@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load humanize %}
+{% load codigo_filters %}
+    <title>Contrato de Prestação de Serviços - {{ ordem.codigo|formatar_codigo_ordem }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .signature {
+            margin-top: 40px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 0 auto 5px;
+        }
+        
+        .signatures-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #b45309;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #b45309;
+            margin: 0 0 10px 0;
+        }
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #b45309;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 18px;
+        }
+        .signature {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 300px;
+            margin: 40px auto 10px;
+        }
+        .signature p {
+            margin: 5px 0;
+        }
+        .print-actions {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-print, .btn-back {
+            background: #b45309;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-print:hover, .btn-back:hover {
+            background: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-actions no-print">
+        <button onclick="window.print()" class="btn-print">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <a href="{% url 'producao:servico_orcamento_detail' ordem.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="header">
+        <h1>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
+        <p>Nº {{ ordem.codigo|formatar_codigo_ordem }}</p>
+        <p>Data: {{ ordem.data_criacao|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="content">
+        <div class="section">
+            <h2>IDENTIFICAÇÃO DAS PARTES</h2>
+            <p><strong>CONTRATANTE:</strong> 
+                {% if ordem.cliente %}
+                    {{ ordem.cliente.nome }}, 
+                    {% if ordem.cliente.nuit %}
+                        NUIT: {{ ordem.cliente.nuit }}, 
+                    {% endif %}
+                    {% if ordem.cliente.telefone %}
+                        Telefone: {{ ordem.cliente.telefone }}
+                    {% endif %}
+                {% else %}
+                    {{ ordem.nome_cliente_pagamento|default:"Cliente não registado" }}
+                    {% if ordem.nuit_cliente_pagamento %}
+                        , NUIT: {{ ordem.nuit_cliente_pagamento }}
+                    {% endif %}
+                    {% if ordem.contato_cliente_pagamento %}
+                        , Contato: {{ ordem.contato_cliente_pagamento }}
+                    {% endif %}
+                {% endif %}
+            </p>
+            <p><strong>CONTRATADA:</strong> {{ dados_empresa.nome|default:"Empresa" }}, NUIT: {{ dados_empresa.nuit|default:"N/A" }}</p>
+        </div>
+
+        <div class="section">
+            <h2>OBJETO DO CONTRATO</h2>
+            <p>O presente contrato tem como objeto a prestação dos seguintes serviços:</p>
+            <ul>
+                <li>
+                    {% for servico in servicos_orcamento %}
+                        {{ servico.quantidade|floatformat:0 }} {% if servico.servico %}{{ servico.servico.unidade_medida|unidade_empirica }}{% else %}un{% endif %} x {{ servico.servico.nome }} - {{ servico.valor_total|floatformat:2|intcomma }} MT{% if not forloop.last or transportes %}<br>{% endif %}
+                    {% endfor %}
+                    {% if transportes %}
+                        {% for transporte in transportes %}
+                            Transporte: {{ transporte.transportadora.nome }} - {{ transporte.valor_frete|floatformat:2|intcomma }} MT{% if not forloop.last %}<br>{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>VALOR TOTAL</h2>
+            <p>O valor total dos serviços contratados é de <strong>{{ valor_final|floatformat:2|intcomma }} MT</strong> ({{ valor_por_extenso }}), já incluindo IVA à taxa de {{ taxa_iva_percentual }}%.</p>
+        </div>
+
+        <div class="section">
+            <h2>PRAZO DE EXECUÇÃO</h2>
+            <p>Os serviços serão executados no prazo acordado de acordo com o orçamento aprovado.</p>
+        </div>
+
+        <div class="section">
+            <h2>CONDIÇÕES GERAIS</h2>
+            <ol>
+                <li>O pagamento deverá ser efetuado conforme acordado no orçamento.</li>
+                <li>O não cumprimento das condições de pagamento poderá acarretar a suspensão dos serviços.</li>
+                <li>Quaisquer alterações neste contrato deverão ser feitas por escrito e assinadas por ambas as partes.</li>
+                <li>Este contrato está sujeito à legislação em vigor em Moçambique.</li>
+            </ol>
+        </div>
+
+        <div class="signature">
+            <p>Maputo, {{ data_atual|date:"d" }} de {{ data_atual|date:"F" }} de {{ data_atual|date:"Y" }}</p>
+            
+            <div class="signatures-container">
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <p>_________________________________</p>
+                    <p>Contratante</p>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <p>_________________________________</p>
+                    <p>Contratada</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Forçar impressão se o parâmetro print=1 estiver na URL
+        if (window.location.search.includes('print=1')) {
+            window.print();
+        }
+    </script>
+</body>
+</html>

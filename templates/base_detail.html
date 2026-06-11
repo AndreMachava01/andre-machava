@@ -1,0 +1,36 @@
+{% extends "base_list.html" %}
+
+
+{% block title %}Detalhes do {{ entity_name|title }}{% endblock %}
+
+{% block extra_style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-modern">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url "dashboard" %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url breadcrumb_url %}">{{ breadcrumb_title }}</a></li>
+            <li class="breadcrumb-item active">{{ object_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    
+{% include "includes/header.html" with
+    title="{{ object_name }}"
+    subtitle="{{ page_subtitle }}"
+    icon="fas fa-{{ header_icon }}"
+%}    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+        {% block detail_cards %}
+        <!-- Cards específicos da entidade serão inseridos aqui -->
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

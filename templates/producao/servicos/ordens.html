@@ -1,0 +1,150 @@
+{% load humanize %}
+{% load codigo_filters %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordens de Serviço - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #b45309; margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-box { padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fffbeb; border-left: 4px solid #b45309; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #92400e; }
+        .stat-box .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .filter-row { margin-bottom: 20px; }
+        .filter-row input, .filter-row select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin: 0 4px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #fffbeb; color: #92400e; font-weight: 600; }
+        td.num { text-align: right; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-pendente { background: #fef3c7; color: #92400e; }
+        .badge-em-andamento { background: #dbeafe; color: #1e40af; }
+        .badge-concluida { background: #d1fae5; color: #065f46; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .link-cell a { color: #b45309; text-decoration: none; margin-right: 10px; }
+        .link-cell a:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+        .empty-state h3 { color: #374151; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-clipboard-check"></i> Ordens de Serviço</h1>
+                <p>Gerenciamento de ordens de serviço</p>
+            </div>
+            <a href="{% url 'producao:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+            <a href="{% url 'producao:servico_ordem_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Nova Ordem</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div style="padding:12px;margin-bottom:15px;border-radius:6px;background:#fee2e2;color:#991b1b;border-left:4px solid #ef4444;">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="num">{{ total_ordens|default:0|intcomma }}</div>
+                <div class="lbl">Total</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ordens_pendentes|default:0|intcomma }}</div>
+                <div class="lbl">Pendentes</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ordens_em_andamento|default:0|intcomma }}</div>
+                <div class="lbl">Em Andamento</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ordens_concluidas|default:0|intcomma }}</div>
+                <div class="lbl">Concluídas</div>
+            </div>
+            <div class="stat-box">
+                <div class="num">{{ ordens_canceladas|default:0|intcomma }}</div>
+                <div class="lbl">Canceladas</div>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <form method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" name="q" placeholder="Buscar..." value="{{ search_query }}">
+                <select name="status">
+                    <option value="">Todos</option>
+                    <option value="PENDENTE" {% if status_filter == 'PENDENTE' %}selected{% endif %}>Pendente</option>
+                    <option value="EM_ANDAMENTO" {% if status_filter == 'EM_ANDAMENTO' %}selected{% endif %}>Em Andamento</option>
+                    <option value="CONCLUIDA" {% if status_filter == 'CONCLUIDA' %}selected{% endif %}>Concluída</option>
+                    <option value="CANCELADA" {% if status_filter == 'CANCELADA' %}selected{% endif %}>Cancelada</option>
+                </select>
+                <select name="servico">
+                    <option value="">Todos os Serviços</option>
+                    {% for servico in servicos %}
+                    <option value="{{ servico.id }}" {% if servico_id == servico.id|stringformat:"s" %}selected{% endif %}>{{ servico.nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Aplicar</button>
+                {% if search_query or status_filter or servico_id %}
+                <a href="{% url 'producao:servicos_ordens' %}" class="btn btn-secondary">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if ordens %}
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Serviço</th>
+                        <th>Cliente</th>
+                        <th>Data Agendada</th>
+                        <th>Status</th>
+                        <th class="num">Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ordem in ordens %}
+                    <tr>
+                        <td><strong>{{ ordem.codigo|formatar_codigo_ordem }}</strong></td>
+                        <td>
+                            {% if ordem.servicos_orcamento.all %}
+                                {% for servico_orc in ordem.servicos_orcamento.all|slice:":1" %}
+                                    {{ servico_orc.servico.nome }}{% if ordem.servicos_orcamento.count > 1 %} (+{{ ordem.servicos_orcamento.count|add:"-1" }}){% endif %}
+                                {% endfor %}
+                            {% elif ordem.servico %}{{ ordem.servico.nome }}{% else %}—{% endif %}
+                        </td>
+                        <td>{% if ordem.cliente %}{{ ordem.cliente.nome }}{% elif ordem.nome_cliente_pagamento %}{{ ordem.nome_cliente_pagamento }}{% else %}—{% endif %}</td>
+                        <td>{{ ordem.data_agendada|date:"d/m/Y H:i" }}</td>
+                        <td><span class="badge badge-{{ ordem.status|lower }}">{{ ordem.get_status_display }}</span></td>
+                        <td class="num">{{ ordem.valor_total|floatformat:2 }} MT</td>
+                        <td class="link-cell">
+                            <a href="{% url 'producao:servico_ordem_detail' ordem.id %}">Ver</a>
+                            <a href="{% url 'producao:servico_ordem_edit' ordem.id %}">Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>Nenhuma ordem encontrada. {% if search_query or status_filter or servico_id %}Ajuste os filtros.{% else %}<a href="{% url 'producao:servico_ordem_add' %}" class="btn btn-primary" style="margin-top:10px;">Criar primeira ordem</a>{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

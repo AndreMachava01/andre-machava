@@ -26,7 +26,7 @@ class AllocationCriteria:
     def __init__(self, 
                  priorizar_custo: bool = True,
                  priorizar_sla: bool = False,
-                 peso_custo: float = 0.7,
+                 peso_custo: float = 0.4,
                  peso_sla: float = 0.3,
                  peso_capacidade: float = 0.2,
                  peso_disponibilidade: float = 0.1,
@@ -341,23 +341,35 @@ class AutoAllocationService:
     def _calcular_custo_veiculo_interno(self, 
                                        veiculo: VeiculoInterno, 
                                        rastreamento: RastreamentoEntrega) -> Decimal:
-        """Calcula custo estimado para veículo interno."""
-        # Custo base por km
-        custo_por_km = Decimal('0.50')  # Valor padrão
-        
-        # Distância estimada (simplificado)
-        distancia_estimada = Decimal('50.00')  # km
-        
-        # Custo de combustível
-        custo_combustivel = distancia_estimada * custo_por_km
-        
-        # Custo de motorista (proporcional)
-        custo_motorista = Decimal('20.00')  # Valor fixo por entrega
-        
-        # Custo de manutenção (proporcional)
-        custo_manutencao = Decimal('5.00')  # Valor fixo por entrega
-        
-        return custo_combustivel + custo_motorista + custo_manutencao
+        """Calcula custo estimado para veículo interno com base na distância."""
+        from ..services.freight_service import calcular_distancia_km, resolver_coordenadas
+
+        origem = resolver_coordenadas(
+            label=rastreamento.destinatario_nome,
+            cidade=rastreamento.cidade_entrega,
+            provincia=rastreamento.provincia_entrega,
+            endereco=rastreamento.endereco_entrega,
+        )
+        if rastreamento.transportadora:
+            ref = rastreamento.transportadora
+            destino = resolver_coordenadas(ref.nome, ref.cidade or '', ref.provincia or '', ref.endereco or '')
+        elif rastreamento.veiculo_interno:
+            ref = rastreamento.veiculo_interno
+            destino = resolver_coordenadas(ref.nome, '', '', '')
+        else:
+            destino = origem
+
+        distancia_km = float(calcular_distancia_km(
+            origem.latitude, origem.longitude,
+            destino.latitude, destino.longitude,
+        ))
+        from ..services.pricing import calculate_freight_veiculo_interno
+        resultado = calculate_freight_veiculo_interno(
+            veiculo=veiculo,
+            distancia_km=distancia_km,
+            peso_kg=float(rastreamento.peso_total or 1.0),
+        )
+        return Decimal(str(resultado.total_cost))
     
     def _calcular_sla_veiculo_interno(self, 
                                     veiculo: VeiculoInterno, 
@@ -415,7 +427,7 @@ class AutoAllocationService:
         motivo_parts = []
         
         if criteria.priorizar_custo:
-            motivo_parts.append(f"Custo: R$ {opcao['custo']:.2f}")
+            motivo_parts.append(f"Custo: {opcao['custo']:.2f} MT")
         
         if criteria.priorizar_sla:
             motivo_parts.append(f"SLA: {opcao['sla_dias']} dias")
@@ -441,21 +453,17 @@ class AutoAllocationService:
             if resultado.opcao_recomendada == 'VEICULO_INTERNO':
                 rastreamento.veiculo_interno_id = resultado.opcao_id
                 rastreamento.transportadora = None
-                rastreamento.tipo_transporte = 'INTERNO'
             else:
                 rastreamento.transportadora_id = resultado.opcao_id
                 rastreamento.veiculo_interno = None
-                rastreamento.tipo_transporte = 'EXTERNO'
             
-            rastreamento.custo_estimado = resultado.custo_estimado
-            rastreamento.sla_estimado_dias = resultado.sla_estimado_dias
-            rastreamento.data_atualizacao = timezone.now()
+            rastreamento.custo_envio = resultado.custo_estimado
             rastreamento.save()
             
             # Criar evento de rastreamento
             EventoRastreamento.objects.create(
                 rastreamento=rastreamento,
-                tipo_evento='ALOCADO',
+                tipo_evento='OBSERVACAO',
                 descricao=f"Alocação automática: {resultado.opcao_recomendada} "
                          f"(pontuação: {resultado.pontuacao:.2f}) - {resultado.motivo}",
                 localizacao="Sistema de Alocação",
@@ -542,22 +550,18 @@ class AutoAllocationService:
             'custo_medio_veiculo_interno': queryset.filter(
                 veiculo_interno__isnull=False
             ).aggregate(
-                custo_medio=Avg('custo_estimado')
+                custo_medio=Avg('custo_envio')
             )['custo_medio'] or Decimal('0.00'),
             'custo_medio_transportadora': queryset.filter(
                 transportadora__isnull=False
             ).aggregate(
-                custo_medio=Avg('custo_estimado')
+                custo_medio=Avg('custo_envio')
             )['custo_medio'] or Decimal('0.00'),
-            'sla_medio_veiculo_interno': queryset.filter(
-                veiculo_interno__isnull=False
-            ).aggregate(
-                sla_medio=Avg('sla_estimado_dias')
-            )['sla_medio'] or 0,
+            'sla_medio_veiculo_interno': 1,
             'sla_medio_transportadora': queryset.filter(
                 transportadora__isnull=False
             ).aggregate(
-                sla_medio=Avg('sla_estimado_dias')
+                sla_medio=Avg('transportadora__prazo_entrega_padrao')
             )['sla_medio'] or 0,
         }
         

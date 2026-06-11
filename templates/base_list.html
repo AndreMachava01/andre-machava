@@ -1,0 +1,198 @@
+{% extends "base_with_header.html" %}
+{% load static %}
+
+{% comment %}
+SISTEMA UNIFICADO DE LISTAS - TEMPLATE BASE
+Este template serve como base para todas as listas do sistema
+Uso: {% extends "base_list.html" %}
+
+Variáveis esperadas no contexto:
+- page_title: Título da página
+- page_subtitle: Subtítulo da página (opcional)
+- page_icon: Ícone para o cabeçalho (opcional)
+- header_actions: Lista de ações para o cabeçalho (opcional)
+- stats_cards: Lista de cards de estatísticas (opcional)
+- filters: Lista de filtros (opcional)
+- table_title: Título da tabela
+- table_columns: Lista de colunas da tabela
+- page_obj: Objeto de paginação
+- module_name: Nome do módulo (para o título da página)
+{% endcomment %}
+
+{% block title %}{{ page_title|default:"Lista" }} - {{ module_name|default:"Sistema" }}{% endblock %}
+
+{% block page_content %}
+    <!-- Statistics Cards -->
+    {% if stats_cards %}
+    <div class="stats-grid">
+        {% for stat in stats_cards %}
+        <div class="stats-card">
+            <div class="stats-content">
+                <div class="stats-value">{{ stat.value }}</div>
+                <div class="stats-label">{{ stat.label }}</div>
+            </div>
+            <div class="stats-icon">
+                <i class="fas fa-{{ stat.icon }}"></i>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Filters Section -->
+    {% if filters %}
+    <div class="filters-section">
+        <h3 class="filters-title">
+            <i class="fas fa-filter"></i>
+            Filtros de Busca
+        </h3>
+        <form method="post" class="filters-row"action="." method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post"action="."method="post">{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}{% csrf_token %}
+            {% for filter in filters %}
+            <div class="filter-group">
+                <label class="filter-label">{{ filter.label }}</label>
+                {% if filter.type == 'text' %}
+                    <div class="table-search">
+                        <i class="fas fa-search table-search-icon"></i>
+                        <input type="text" name="{{ filter.name }}" value="{{ filter.value|default:'' }}" 
+                               class="form-control" placeholder="{{ filter.placeholder }}">
+                    </div>
+                {% elif filter.type == 'select' %}
+                    <select name="{{ filter.name }}" class="form-select" title="{{ filter.label }}">
+                        {% for option in filter.options %}
+                            <option value="{{ option.value }}" {% if filter.value == option.value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação" class="btn btn btn-primary btn-responsive btn-responsive" id="btn-{{ forloop.counter|default:"1" }}" aria-label="Botão de ação" title="Clique para executar ação" title="Clique para executar ação">
+                    <i class="fas fa-search"></i>
+                    Filtrar
+                </button>
+                <a href="#" class="btn btn btn btn btn btn btn btn-secondary btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                    <i class="fas fa-times"></i>
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                {{ table_title|default:"Lista de Itens" }}
+            </h3>
+            <div class="table-actions">
+                {% for action in table_actions %}
+                    <a href="#" class="btn btn-sm {{ action.class }} btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive">
+                        {% if action.icon %}<i class="fas fa-{{ action.icon }}"></i>{% endif %}
+                        {{ action.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% for column in table_columns %}
+                        <th>{{ column.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        {% for column in table_columns %}
+                        <td>
+                            {% if column.type == 'code' %}
+                                <div class="cell-code">{{ item.nome|default:item.codigo|default:"N/A" }}</div>
+                                {% if column.subfield %}
+                                    <div class="cell-tertiary">{{ item.descricao|default:"-" }}</div>
+                                {% endif %}
+                            {% elif column.type == 'name' %}
+                                <div class="cell-primary">{{ item.nome|default:item.nome_completo|default:"N/A" }}</div>
+                                {% if column.subfield %}
+                                    <div class="cell-tertiary" title="{{ item.descricao|default:item.email|default:'' }}">
+                                        {{ item.descricao|default:item.email|default:''|truncatechars:50 }}
+                                    </div>
+                                {% endif %}
+                            {% elif column.type == 'badge' %}
+                                <span class="badge badge-{{ column.badge_class|default:'secondary' }}">
+                                    {{ item.status|default:item.tipo|default:"N/A" }}
+                                </span>
+                            {% elif column.type == 'status' %}
+                                {{ item.status|default:"N/A" }}
+                            {% elif column.type == 'actions' %}
+                                <div class="cell-actions" title="Ações para este item">
+                                    {% for action in column.actions %}
+                                        <a href="#" class="btn-action-sm {{ action.class }} btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="{{ action.title }}">
+                                            <i class="fas fa-{{ action.icon }}"></i>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="cell-primary">{{ item.nome|default:item.codigo|default:"N/A" }}</div>
+                            {% endif %}
+{{ ... }}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Página seguinte">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="#" class="page-btn btn-responsive -responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive btn-responsive" title="Última página">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{{ ... }}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Scripts unificados para listas
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit filters on change
+    const filterSelects = document.querySelectorAll('.filters-section select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Confirm delete actions
+    const deleteButtons = document.querySelectorAll('a[href*="delete"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('Tem certeza que deseja excluir este item?')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Adiciona título às ações da tabela
+    document.querySelectorAll('.cell-actions a').forEach(link => {
+        if (!link.getAttribute('title')) {
+            const icon = link.querySelector('i');
+            if (icon) {
+                const action = icon.className.replace('fas fa-', '');
+                link.setAttribute('title', action.charAt(0).toUpperCase() + action.slice(1));
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

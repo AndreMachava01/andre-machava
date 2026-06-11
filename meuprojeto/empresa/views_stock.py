@@ -2,6 +2,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, F, Count, Case, When, IntegerField
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.core.exceptions import ValidationError
 from django.contrib import messages
@@ -18,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 from .models_stock import (
     CategoriaProduto, Fornecedor, Receita, ItemReceita,
-    StockItem, TipoMovimentoStock, MovimentoItem, FornecedorProduto,
-    Item, MovimentoItem
+    StockItem, TipoMovimentoStock, MovimentoItem, MovimentoStock, FornecedorProduto,
+    Item,
 )
 from .models_base import Sucursal
 from .decorators import require_stock_access, require_sucursal_access, get_user_sucursais
@@ -28,18 +29,89 @@ from .decorators import require_stock_access, require_sucursal_access, get_user_
 # HELPER FUNCTIONS
 # =============================================================================
 
-def get_chart_data_for_entity(entity_model, status_field='status', categoria_field='categoria'):
+def queryset_produtos_fisicos():
+    """
+    Produtos geridos em Stock (mercadoria).
+    Exclui produto_tipo=SERVICO — serviços pertencem a Produção/Vendas, não a stock físico.
+    """
+    return Item.objects.filter(tipo='PRODUTO').exclude(produto_tipo='SERVICO')
+
+
+def queryset_materiais():
+    """Materiais geridos em Stock."""
+    return Item.objects.filter(tipo='MATERIAL')
+
+
+TIPOS_CATEGORIA_STOCK_FORM = (
+    ('PRODUTO', 'Produto'),
+    ('MATERIAL', 'Material'),
+    ('AMBOS', 'Produto e Material'),
+)
+
+
+def queryset_categorias_stock():
+    """Categorias do módulo Stock (produtos/materiais; exclui categorias de serviços)."""
+    return CategoriaProduto.objects.filter(
+        Q(tipo='PRODUTO') | Q(tipo='MATERIAL') | Q(tipo='AMBOS') | Q(tipo='TODOS')
+    )
+
+
+def tipos_categoria_stock_form(categoria=None):
+    """Tipos permitidos no formulário de categorias de Stock."""
+    tipos = list(TIPOS_CATEGORIA_STOCK_FORM)
+    if categoria and categoria.tipo == 'TODOS':
+        tipos.append(('TODOS', 'Todos (Produto, Material e Serviço)'))
+    return tipos
+
+
+def parse_decimal_post(value, field_label='valor'):
+    """Converte string POST (ponto ou vírgula) em Decimal."""
+    if value is None or str(value).strip() == '':
+        raise ValidationError(f'{field_label} é obrigatório.')
+    normalized = str(value).strip().replace(',', '.')
+    try:
+        amount = Decimal(normalized)
+    except InvalidOperation as exc:
+        raise ValidationError(f'{field_label} inválido.') from exc
+    if amount <= 0:
+        raise ValidationError(f'{field_label} deve ser maior que zero.')
+    return amount
+
+
+def parse_positive_int_post(value, field_label='valor', allow_zero=False):
+    """Converte string POST em inteiro positivo."""
+    if value is None or str(value).strip() == '':
+        raise ValidationError(f'{field_label} é obrigatório.')
+    try:
+        amount = int(str(value).strip())
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f'{field_label} inválido.') from exc
+    if allow_zero:
+        if amount < 0:
+            raise ValidationError(f'{field_label} não pode ser negativo.')
+    elif amount <= 0:
+        raise ValidationError(f'{field_label} deve ser maior que zero.')
+    return amount
+
+
+def get_chart_data_for_entity(
+    entity_model,
+    queryset=None,
+    status_field='status',
+    categoria_field='categoria',
+):
     """Helper function to get chart data for any entity (Produto, Material, etc.)"""
     try:
+        qs = queryset if queryset is not None else entity_model.objects.all()
         # Status data
-        ativos = entity_model.objects.filter(**{status_field: 'ATIVO'}).count()
-        inativos = entity_model.objects.filter(**{status_field: 'INATIVO'}).count()
-        pendentes = entity_model.objects.filter(**{status_field: 'PENDENTE'}).count()
+        ativos = qs.filter(**{status_field: 'ATIVO'}).count()
+        inativos = qs.filter(**{status_field: 'INATIVO'}).count()
+        pendentes = qs.filter(**{status_field: 'PENDENTE'}).count()
         
         # Estoque baixo (if applicable)
         estoque_baixo = 0
         if hasattr(entity_model, 'quantidade_atual') and hasattr(entity_model, 'estoque_minimo'):
-            estoque_baixo = entity_model.objects.filter(
+            estoque_baixo = qs.filter(
                 quantidade_atual__lte=F('estoque_minimo')
             ).count()
         
@@ -64,7 +136,7 @@ def get_chart_data_for_entity(entity_model, status_field='status', categoria_fie
             'inativos': inativos,
             'pendentes': pendentes,
             'estoque_baixo': estoque_baixo,
-            'categorias_count': CategoriaProduto.objects.filter(ativa=True).count(),
+            'categorias_count': queryset_categorias_stock().filter(ativa=True).count(),
             'categorias_labels': categorias_labels,
             'categorias_data': categorias_data,
         }
@@ -126,7 +198,7 @@ def stock_main(request):
 
         context = {
             # Contadores principais - estatísticas gerais
-            'total_produtos': Item.objects.filter(status='ATIVO', tipo='PRODUTO').count(),
+            'total_produtos': queryset_produtos_fisicos().filter(status='ATIVO').count(),
             'total_materiais': Item.objects.filter(status='ATIVO', tipo='MATERIAL').count(),
             'total_fornecedores': Fornecedor.objects.filter(status='ATIVO').count(),
             'total_movimentos': MovimentoItem.objects.filter(data_movimento__gte=data_limite).count(),
@@ -137,7 +209,7 @@ def stock_main(request):
             
             # Dados adicionais para contexto
             'total_receitas': Receita.objects.filter(status='ATIVA').count(),
-            'total_categorias': CategoriaProduto.objects.filter(ativa=True).count(),
+            'total_categorias': queryset_categorias_stock().filter(ativa=True).count(),
             'sucursais': sucursais_permitidas,
             'produtos_baixo_estoque': StockItem.objects.select_related('item').filter(
                 item__tipo='PRODUTO',
@@ -164,15 +236,21 @@ def stock_main(request):
 
 @login_required
 def stock_categorias(request):
-    """Lista de categorias de produtos com filtros e paginação"""
+    """Lista de categorias de produtos/materiais (exclui categorias de serviços)."""
     try:
         # Parâmetros de busca e filtro
         search_query = request.GET.get('q', '').strip()
         tipo = request.GET.get('tipo')
         status = request.GET.get('status')
 
-        # Query base com otimizações
-        categorias = CategoriaProduto.objects.select_related('categoria_pai').all()
+        # Query base — apenas categorias de stock
+        categorias = queryset_categorias_stock().select_related('categoria_pai').annotate(
+            produtos_count=Count(
+                'itens',
+                filter=Q(itens__tipo='PRODUTO') & ~Q(itens__produto_tipo='SERVICO'),
+            ),
+            materiais_count=Count('itens', filter=Q(itens__tipo='MATERIAL')),
+        )
 
         # Aplicar filtros
         if search_query:
@@ -186,9 +264,9 @@ def stock_categorias(request):
             categorias = categorias.filter(tipo=tipo)
         
         if status:
-            if status == 'ativa':
+            if status == 'ATIVO':
                 categorias = categorias.filter(ativa=True)
-            elif status == 'inativa':
+            elif status == 'INATIVO':
                 categorias = categorias.filter(ativa=False)
 
         # Ordenação
@@ -204,13 +282,41 @@ def stock_categorias(request):
             'search_query': search_query,
             'tipo': tipo,
             'status': status,
-            'tipos': CategoriaProduto.TIPO_CHOICES,
+            'tipos': TIPOS_CATEGORIA_STOCK_FORM,
+            'categorias_ativas': queryset_categorias_stock().filter(ativa=True).count(),
+            'total_produtos': queryset_produtos_fisicos().count(),
+            'total_materiais': queryset_materiais().count(),
         }
         return render(request, 'stock/categorias/main.html', context)
     except Exception as e:
         logger.error(f"Erro ao listar categorias: {e}")
         messages.error(request, 'Erro ao carregar lista de categorias.')
         return render(request, 'stock/categorias/main.html', {'page_obj': None})
+
+@login_required
+def stock_categoria_detail(request, id):
+    """Detalhes da categoria (apenas produtos físicos e materiais de Stock)."""
+    categoria = get_object_or_404(
+        queryset_categorias_stock().select_related('categoria_pai'),
+        id=id,
+    )
+    produtos = categoria.itens.filter(tipo='PRODUTO').exclude(produto_tipo='SERVICO').order_by('nome')
+    materiais = categoria.itens.filter(tipo='MATERIAL').order_by('nome')
+    produtos_count = produtos.count()
+    materiais_count = materiais.count()
+
+    context = {
+        'categoria': categoria,
+        'subcategorias': queryset_categorias_stock().filter(
+            categoria_pai=categoria,
+        ).order_by('nome'),
+        'produtos': produtos[:20],
+        'materiais': materiais[:20],
+        'produtos_count': produtos_count,
+        'materiais_count': materiais_count,
+        'total_itens': produtos_count + materiais_count,
+    }
+    return render(request, 'stock/categorias/detail.html', context)
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -235,12 +341,19 @@ def stock_categoria_add(request):
         if len(codigo) > 20:
             messages.error(request, 'Código deve ter no máximo 20 caracteres.')
             return redirect('stock:categoria_add')
+
+        if tipo == 'SERVICO' or tipo not in {t[0] for t in TIPOS_CATEGORIA_STOCK_FORM}:
+            messages.error(request, 'Tipo inválido. Use Produto, Material ou Produto e Material.')
+            return redirect('stock:categoria_add')
         
         try:
             with transaction.atomic():
                 categoria_pai = None
                 if categoria_pai_id:
-                    categoria_pai = CategoriaProduto.objects.get(id=categoria_pai_id)
+                    categoria_pai = get_object_or_404(
+                        queryset_categorias_stock().filter(ativa=True),
+                        id=categoria_pai_id,
+                    )
                 
                 CategoriaProduto.objects.create(
                     nome=nome,
@@ -258,8 +371,8 @@ def stock_categoria_add(request):
             messages.error(request, f'Erro ao adicionar categoria: {str(e)}')
     
     context = {
-        'categorias_pai': CategoriaProduto.objects.filter(ativa=True),
-        'tipos': CategoriaProduto.TIPO_CHOICES,
+        'categorias_pai': queryset_categorias_stock().filter(ativa=True, categoria_pai__isnull=True),
+        'tipos': tipos_categoria_stock_form(),
     }
     return render(request, 'stock/categorias/form.html', context)
 
@@ -267,7 +380,7 @@ def stock_categoria_add(request):
 @require_http_methods(["GET", "POST"])
 def stock_categoria_edit(request, id):
     """Editar categoria"""
-    categoria = get_object_or_404(CategoriaProduto, id=id)
+    categoria = get_object_or_404(queryset_categorias_stock(), id=id)
     
     if request.method == 'POST':
         nome = request.POST.get('nome', '').strip()
@@ -288,6 +401,11 @@ def stock_categoria_edit(request, id):
         if len(codigo) > 20:
             messages.error(request, 'Código deve ter no máximo 20 caracteres.')
             return redirect('stock:categoria_edit', id=id)
+
+        tipos_permitidos = {t[0] for t in tipos_categoria_stock_form(categoria)}
+        if tipo == 'SERVICO' or tipo not in tipos_permitidos:
+            messages.error(request, 'Tipo inválido para categorias de stock.')
+            return redirect('stock:categoria_edit', id=id)
         
         try:
             with transaction.atomic():
@@ -298,7 +416,10 @@ def stock_categoria_edit(request, id):
                 categoria.categoria_pai = None
                 
                 if categoria_pai_id:
-                    categoria.categoria_pai = CategoriaProduto.objects.get(id=categoria_pai_id)
+                    categoria.categoria_pai = get_object_or_404(
+                        queryset_categorias_stock().filter(ativa=True).exclude(id=id),
+                        id=categoria_pai_id,
+                    )
                 
                 categoria.save()
                 messages.success(request, 'Categoria atualizada com sucesso.')
@@ -311,8 +432,8 @@ def stock_categoria_edit(request, id):
     
     context = {
         'categoria': categoria,
-        'categorias_pai': CategoriaProduto.objects.filter(ativa=True).exclude(id=id),
-        'tipos': CategoriaProduto.TIPO_CHOICES,
+        'categorias_pai': queryset_categorias_stock().filter(ativa=True).exclude(id=id),
+        'tipos': tipos_categoria_stock_form(categoria),
     }
     return render(request, 'stock/categorias/form.html', context)
 
@@ -320,14 +441,14 @@ def stock_categoria_edit(request, id):
 @require_http_methods(["GET", "POST"])
 def stock_categoria_delete(request, id):
     """Excluir categoria"""
-    categoria = get_object_or_404(CategoriaProduto, id=id)
+    categoria = get_object_or_404(queryset_categorias_stock(), id=id)
     
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 # Verificar se há produtos/materiais usando esta categoria
-                produtos_count = categoria.produtos.count()
-                materiais_count = categoria.materiais.count()
+                produtos_count = categoria.itens.filter(tipo='PRODUTO').exclude(produto_tipo='SERVICO').count()
+                materiais_count = categoria.itens.filter(tipo='MATERIAL').count()
                 
                 if produtos_count > 0 or materiais_count > 0:
                     messages.error(
@@ -343,7 +464,11 @@ def stock_categoria_delete(request, id):
             messages.error(request, f'Erro ao excluir categoria: {str(e)}')
         return redirect('stock:categorias')
     
-    context = {'categoria': categoria}
+    context = {
+        'categoria': categoria,
+        'produtos_count': categoria.itens.filter(tipo='PRODUTO').exclude(produto_tipo='SERVICO').count(),
+        'materiais_count': categoria.itens.filter(tipo='MATERIAL').count(),
+    }
     return render(request, 'stock/categorias/delete.html', context)
 
 # =============================================================================
@@ -366,6 +491,7 @@ def stock_fornecedores(request):
         if search_query:
             fornecedores = fornecedores.filter(
                 Q(nome__icontains=search_query) |
+                Q(codigo__icontains=search_query) |
                 Q(nuit__icontains=search_query) |
                 Q(email__icontains=search_query) |
                 Q(telefone__icontains=search_query)
@@ -576,9 +702,12 @@ def stock_fornecedor_produtos(request, id):
     """Produtos de um fornecedor"""
     try:
         fornecedor = get_object_or_404(Fornecedor, id=id)
-        produtos = FornecedorProduto.objects.filter(
-            fornecedor=fornecedor
-        ).select_related('item').order_by('item__nome')
+        produtos = (
+            FornecedorProduto.objects.filter(fornecedor=fornecedor)
+            .select_related('produto', 'material')
+            .annotate(item_nome=Coalesce(F('produto__nome'), F('material__nome')))
+            .order_by('item_nome')
+        )
         
         context = {
             'fornecedor': fornecedor,
@@ -600,12 +729,19 @@ def stock_fornecedor_associar_produto(request, id):
         if request.method == 'POST':
             produto_id = request.POST.get('produto')
             material_id = request.POST.get('material')
-            preco_fornecedor = request.POST.get('preco_fornecedor')
-            prazo_entrega = request.POST.get('prazo_entrega')
-            
-            if (produto_id or material_id) and preco_fornecedor and prazo_entrega:
+            preco_raw = request.POST.get('preco_fornecedor')
+            prazo_raw = request.POST.get('prazo_entrega')
+
+            try:
+                preco_fornecedor = parse_decimal_post(preco_raw, 'Preço do fornecedor')
+                prazo_entrega = parse_positive_int_post(prazo_raw, 'Prazo de entrega', allow_zero=True)
+            except ValidationError as exc:
+                messages.error(request, exc.message)
+                return redirect('stock:fornecedor_associar_produto', id=id)
+
+            if produto_id or material_id:
                 if produto_id:
-                    item = get_object_or_404(Item, id=produto_id, tipo='PRODUTO')
+                    item = get_object_or_404(queryset_produtos_fisicos(), id=produto_id)
                     item_tipo = 'produto'
                 else:
                     item = get_object_or_404(Item, id=material_id, tipo='MATERIAL')
@@ -642,13 +778,13 @@ def stock_fornecedor_associar_produto(request, id):
                 messages.success(request, f'{item_tipo.title()} {item.nome} associado com sucesso!')
                 return redirect('stock:fornecedor_produtos', id=id)
             else:
-                messages.error(request, 'Todos os campos são obrigatórios.')
+                messages.error(request, 'Selecione um produto ou material.')
         
         # Buscar produtos e materiais não associados a este fornecedor
         produtos_associados = FornecedorProduto.objects.filter(fornecedor=fornecedor, produto__isnull=False).values_list('produto_id', flat=True)
         materiais_associados = FornecedorProduto.objects.filter(fornecedor=fornecedor, material__isnull=False).values_list('material_id', flat=True)
         
-        produtos_disponiveis = Item.objects.filter(tipo='PRODUTO').exclude(id__in=produtos_associados).order_by('nome')
+        produtos_disponiveis = queryset_produtos_fisicos().exclude(id__in=produtos_associados).order_by('nome')
         materiais_disponiveis = Item.objects.filter(tipo='MATERIAL').exclude(id__in=materiais_associados).order_by('nome')
         
         context = {
@@ -671,20 +807,23 @@ def stock_fornecedor_editar_associacao(request, id, associacao_id):
         associacao = get_object_or_404(FornecedorProduto, id=associacao_id, fornecedor=fornecedor)
         
         if request.method == 'POST':
-            preco_fornecedor = request.POST.get('preco_fornecedor')
-            prazo_entrega = request.POST.get('prazo_entrega')
+            preco_raw = request.POST.get('preco_fornecedor')
+            prazo_raw = request.POST.get('prazo_entrega')
             ativo = request.POST.get('ativo') == 'on'
-            
-            if preco_fornecedor and prazo_entrega:
+
+            try:
+                preco_fornecedor = parse_decimal_post(preco_raw, 'Preço do fornecedor')
+                prazo_entrega = parse_positive_int_post(prazo_raw, 'Prazo de entrega', allow_zero=True)
+            except ValidationError as exc:
+                messages.error(request, exc.message)
+            else:
                 associacao.preco_fornecedor = preco_fornecedor
                 associacao.prazo_entrega = prazo_entrega
                 associacao.ativo = ativo
                 associacao.save()
-                
+
                 messages.success(request, f'{associacao.tipo_item} {associacao.item.nome} atualizado com sucesso!')
                 return redirect('stock:fornecedor_produtos', id=id)
-            else:
-                messages.error(request, 'Todos os campos são obrigatórios.')
         
         context = {
             'fornecedor': fornecedor,
@@ -729,8 +868,8 @@ def stock_produtos(request):
         status = request.GET.get('status')
         tipo = request.GET.get('tipo')
 
-        # Query base com otimizações - usando modelo unificado Item
-        produtos = Item.objects.filter(tipo='PRODUTO').select_related('categoria')
+        # Query base — apenas produtos físicos (não serviços)
+        produtos = queryset_produtos_fisicos().select_related('categoria')
 
         # Aplicar filtros
         if search_query:
@@ -748,7 +887,7 @@ def stock_produtos(request):
             produtos = produtos.filter(status=status)
         
         if tipo:
-            produtos = produtos.filter(tipo=tipo)
+            produtos = produtos.filter(produto_tipo=tipo)
 
         # Ordenação
         produtos = produtos.order_by('nome')
@@ -765,8 +904,7 @@ def stock_produtos(request):
             stocks = StockItem.objects.filter(item=produto)
             produto.quantidade_atual = sum(float(stock.quantidade_atual) for stock in stocks)
         
-        # Dados para charts usando helper function
-        chart_data = get_chart_data_for_entity(Item)
+        chart_data = get_chart_data_for_entity(Item, queryset=queryset_produtos_fisicos())
         
         context = {
             'page_obj': page_obj,
@@ -778,7 +916,7 @@ def stock_produtos(request):
                 Q(tipo='PRODUTO') | Q(tipo='AMBOS') | Q(tipo='TODOS')
             ),
             'status_choices': Item.STATUS_CHOICES,
-            'tipos': Item.TIPO_CHOICES,
+            'tipos': Item.PRODUTO_TIPO_CHOICES,
             # Dados para charts usando helper function
             'produtos_ativos': chart_data['ativos'],
             'produtos_inativos': chart_data['inativos'],
@@ -865,7 +1003,7 @@ def stock_produto_add(request):
 def stock_produto_edit(request, id):
     """Editar produto"""
     from .models_stock import Item
-    produto = get_object_or_404(Item, id=id, tipo='PRODUTO')
+    produto = get_object_or_404(queryset_produtos_fisicos(), id=id)
     
     if request.method == 'POST':
         # Obter dados do formulário
@@ -876,6 +1014,7 @@ def stock_produto_edit(request, id):
         tipo = request.POST.get('tipo')
         unidade_medida = request.POST.get('unidade_medida')
         preco_custo = request.POST.get('preco_custo', '').strip()
+        margem_lucro = request.POST.get('margem_lucro', '').strip()
         estoque_minimo = request.POST.get('estoque_minimo', 0)
         estoque_maximo = request.POST.get('estoque_maximo', 0)
         observacoes = request.POST.get('observacoes', '').strip()
@@ -892,6 +1031,8 @@ def stock_produto_edit(request, id):
         # Converter vírgula para ponto
         if preco_custo and ',' in preco_custo:
             preco_custo = preco_custo.replace(',', '.')
+        if margem_lucro and ',' in margem_lucro:
+            margem_lucro = margem_lucro.replace(',', '.')
         
         # Validar preço
         try:
@@ -900,6 +1041,15 @@ def stock_produto_edit(request, id):
                 erros.append('Preço deve ser maior que zero')
         except (ValueError, TypeError):
             erros.append('Preço inválido')
+        
+        margem_decimal = None
+        if margem_lucro:
+            try:
+                margem_decimal = Decimal(margem_lucro)
+                if margem_decimal < 0:
+                    erros.append('Margem de lucro não pode ser negativa')
+            except (ValueError, TypeError):
+                erros.append('Margem de lucro inválida')
         
         if erros:
             for erro in erros:
@@ -916,6 +1066,7 @@ def stock_produto_edit(request, id):
                 produto.tipo = tipo
                 produto.unidade_medida = unidade_medida
                 produto.preco_custo = preco_decimal
+                produto.margem_lucro = margem_decimal
                 produto.estoque_minimo = int(estoque_minimo)
                 produto.estoque_maximo = int(estoque_maximo)
                 produto.status = request.POST.get('status', 'ATIVO')
@@ -932,7 +1083,9 @@ def stock_produto_edit(request, id):
     # GET - Mostrar formulário
     context = {
         'produto': produto,
-        'categorias': CategoriaProduto.objects.all(),
+        'categorias': queryset_categorias_stock().filter(ativa=True).filter(
+            Q(tipo='PRODUTO') | Q(tipo='AMBOS') | Q(tipo='TODOS')
+        ),
         'tipos': Item.TIPO_CHOICES,
         'status_choices': Item.STATUS_CHOICES,
         'unidades': Item.UNIDADE_CHOICES,
@@ -943,7 +1096,7 @@ def stock_produto_edit(request, id):
 @require_http_methods(["GET", "POST"])
 def stock_produto_delete(request, id):
     """Excluir produto"""
-    produto = get_object_or_404(Item, id=id, tipo='PRODUTO')
+    produto = get_object_or_404(queryset_produtos_fisicos(), id=id)
     
     if request.method == 'POST':
         try:
@@ -973,7 +1126,7 @@ def stock_produto_delete(request, id):
 def stock_produto_detail(request, id):
     """Detalhes do produto"""
     try:
-        produto = get_object_or_404(Item, id=id, tipo='PRODUTO')
+        produto = get_object_or_404(queryset_produtos_fisicos(), id=id)
         stocks_sucursais = StockItem.objects.filter(
             item=produto
         ).select_related('sucursal').order_by('sucursal__nome')
@@ -1002,7 +1155,7 @@ def stock_por_sucursal(request):
         sucursais_ids = [s.id for s in sucursais_permitidas]
         
         sucursais = sucursais_permitidas
-        produtos = Item.objects.filter(status='ATIVO', tipo='PRODUTO').order_by('nome')
+        produtos = queryset_produtos_fisicos().filter(status='ATIVO').order_by('nome')
         
         # Filtrar por sucursal se especificada
         sucursal_id = request.GET.get('sucursal')
@@ -1016,9 +1169,9 @@ def stock_por_sucursal(request):
         if sucursal_id and int(sucursal_id) in sucursais_ids:
             stocks = stocks.filter(sucursal_id=sucursal_id)
         if produto_id:
-            stocks = stocks.filter(produto_id=produto_id)
+            stocks = stocks.filter(item_id=produto_id)
         
-        stocks = stocks.order_by('sucursal__nome', 'produto__nome')
+        stocks = stocks.order_by('sucursal__nome', 'item__nome')
         
         context = {
             'stocks': stocks,
@@ -1048,19 +1201,19 @@ def stock_sucursal_detail(request, sucursal_id):
         
         if search:
             stocks = stocks.filter(
-                Q(produto__nome__icontains=search) | 
-                Q(produto__codigo__icontains=search)
+                Q(item__nome__icontains=search) |
+                Q(item__codigo__icontains=search)
             )
         
         if status_estoque:
             if status_estoque == 'BAIXO':
-                stocks = stocks.filter(quantidade_atual__lte=F('produto__estoque_minimo'))
+                stocks = stocks.filter(quantidade_atual__lte=F('item__estoque_minimo'))
             elif status_estoque == 'ALTO':
-                stocks = stocks.filter(quantidade_atual__gte=F('produto__estoque_maximo'))
+                stocks = stocks.filter(quantidade_atual__gte=F('item__estoque_maximo'))
             elif status_estoque == 'NORMAL':
                 stocks = stocks.filter(
-                    quantidade_atual__gt=F('produto__estoque_minimo'),
-                    quantidade_atual__lt=F('produto__estoque_maximo')
+                    quantidade_atual__gt=F('item__estoque_minimo'),
+                    quantidade_atual__lt=F('item__estoque_maximo')
                 )
         
         paginator = Paginator(stocks, 20)
@@ -1084,7 +1237,7 @@ def stock_produto_sucursal(request, sucursal_id, produto_id):
     """Detalhes do stock de um produto em uma sucursal"""
     try:
         sucursal = get_object_or_404(Sucursal, id=sucursal_id)
-        produto = get_object_or_404(Item, id=produto_id, tipo='PRODUTO')
+        produto = get_object_or_404(queryset_produtos_fisicos(), id=produto_id)
         stock, created = StockItem.objects.get_or_create(
             item=produto,
             sucursal=sucursal,
@@ -1120,7 +1273,7 @@ def api_produtos_search(request):
         if len(query) < 2:
             return JsonResponse({'results': []})
         
-        produtos = Item.objects.filter(tipo='PRODUTO').filter(
+        produtos = queryset_produtos_fisicos().filter(
             Q(nome__icontains=query) | 
             Q(codigo__icontains=query) |
             Q(codigo_barras__icontains=query)
@@ -1152,7 +1305,8 @@ def api_fornecedores_search(request):
             return JsonResponse({'results': []})
         
         fornecedores = Fornecedor.objects.filter(
-            Q(nome__icontains=query) | 
+            Q(nome__icontains=query) |
+            Q(codigo__icontains=query) |
             Q(nuit__icontains=query)
         ).filter(status='ATIVO')[:10]
         
@@ -1160,7 +1314,8 @@ def api_fornecedores_search(request):
         for fornecedor in fornecedores:
             results.append({
                 'id': fornecedor.id,
-                'text': f"{fornecedor.nome} ({fornecedor.nuit})",
+                'text': f"{fornecedor.codigo} — {fornecedor.nome}",
+                'codigo': fornecedor.codigo,
                 'nome': fornecedor.nome,
                 'nuit': fornecedor.nuit,
                 'tipo': fornecedor.get_tipo_display(),
@@ -1492,7 +1647,7 @@ def stock_movimento_add(request):
                 tipo_movimento = TipoMovimentoStock.objects.get(id=tipo_movimento_id)
                 
                 if tipo_item == 'produto':
-                    produto = Item.objects.get(id=produto_id, tipo='PRODUTO')
+                    produto = queryset_produtos_fisicos().get(id=produto_id)
                     
                     # Verificar se há estoque suficiente para saída
                     if not tipo_movimento.aumenta_estoque:
@@ -1547,7 +1702,7 @@ def stock_movimento_add(request):
             messages.error(request, f'Erro ao registrar movimentação: {str(e)}')
     
     context = {
-        'produtos': Item.objects.filter(status='ATIVO', tipo='PRODUTO').order_by('nome'),
+        'produtos': queryset_produtos_fisicos().filter(status='ATIVO').order_by('nome'),
         'materiais': Item.objects.filter(status='ATIVO', tipo='MATERIAL').order_by('nome'),
         'sucursais': sucursais_permitidas,
         'tipos_movimento': TipoMovimentoStock.objects.filter(ativo=True).order_by('nome'),
@@ -1751,7 +1906,7 @@ def stock_relatorios(request):
     from django.db.models import Q, F
     
     # Estatísticas para o dashboard
-    total_produtos = Item.objects.filter(tipo='PRODUTO', status='ATIVO').count()
+    total_produtos = queryset_produtos_fisicos().filter(status='ATIVO').count()
     total_materiais = Item.objects.filter(tipo='MATERIAL', status='ATIVO').count()
     total_itens = total_produtos + total_materiais
     
@@ -1994,12 +2149,15 @@ def relatorio_estoque_atual(request):
         estoque_por_sucursal[sucursal_nome]['total_valor'] += item.valor_total
         estoque_por_sucursal[sucursal_nome]['total_itens'] += 1
     
+    valor_medio = (valor_total / total_itens) if total_itens else 0
+
     context = {
         'itens_stock': itens_stock,
         'estoque_por_sucursal': estoque_por_sucursal,
         'total_itens': total_itens,
         'total_sucursais': total_sucursais,
         'valor_total': valor_total,
+        'valor_medio': valor_medio,
         'data_relatorio': timezone.now(),
     }
     
@@ -2228,7 +2386,9 @@ def stock_material_edit(request, id):
     # GET - Mostrar formulário
     context = {
         'material': material,
-        'categorias': CategoriaProduto.objects.all(),
+        'categorias': queryset_categorias_stock().filter(ativa=True).filter(
+            Q(tipo='MATERIAL') | Q(tipo='AMBOS') | Q(tipo='TODOS')
+        ),
         'tipos': Item.TIPO_CHOICES,
         'status_choices': Item.STATUS_CHOICES,
         'unidades': Item.UNIDADE_CHOICES,
@@ -2328,7 +2488,7 @@ def stock_receitas(request):
             'search_query': search_query,
             'produto_id': produto_id,
             'status': status,
-            'produtos': Item.objects.filter(status='ATIVO', tipo='PRODUTO'),
+            'produtos': queryset_produtos_fisicos().filter(status='ATIVO'),
             'status_choices': Receita.STATUS_CHOICES,
         }
         return render(request, 'stock/receitas/main.html', context)
@@ -2364,7 +2524,7 @@ def stock_receita_add(request):
         
         try:
             with transaction.atomic():
-                produto = Item.objects.get(id=produto_id, tipo='PRODUTO')
+                produto = queryset_produtos_fisicos().get(id=produto_id)
                 
                 # Criar receita
                 receita = Receita(
@@ -2414,7 +2574,7 @@ def stock_receita_add(request):
             messages.error(request, f'Erro ao adicionar receita: {str(e)}')
     
     context = {
-        'produtos': Item.objects.filter(status='ATIVO', tipo='PRODUTO'),
+        'produtos': queryset_produtos_fisicos().filter(status='ATIVO'),
         'materiais': Item.objects.filter(status='ATIVO', tipo='MATERIAL'),
         'materiais_json': json.dumps([{
             'id': m.id,
@@ -2461,7 +2621,7 @@ def stock_receita_edit(request, id):
                 receita.codigo = codigo
                 receita.descricao = descricao
                 receita.versao = versao
-                receita.produto = Item.objects.get(id=produto_id, tipo='PRODUTO')
+                receita.produto = queryset_produtos_fisicos().get(id=produto_id)
                 if rendimento:
                     receita.rendimento = int(rendimento)
                 receita.unidade_rendimento = unidade_rendimento
@@ -2510,7 +2670,7 @@ def stock_receita_edit(request, id):
     
     context = {
         'receita': receita,
-        'produtos': Item.objects.filter(status='ATIVO', tipo='PRODUTO'),
+        'produtos': queryset_produtos_fisicos().filter(status='ATIVO'),
         'materiais': Item.objects.filter(status='ATIVO', tipo='MATERIAL'),
         'materiais_json': json.dumps([{
             'id': m.id,

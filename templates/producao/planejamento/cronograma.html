@@ -1,0 +1,544 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma de Produção - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            color: #8b5cf6;
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-left p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-box {
+            background: #f5f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #8b5cf6;
+        }
+        
+        .stat-box.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .stat-box.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .stat-box.info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #8b5cf6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box.success .stat-number {
+            color: #065f46;
+        }
+        
+        .stat-box.warning .stat-number {
+            color: #92400e;
+        }
+        
+        .stat-box.info .stat-number {
+            color: #1e40af;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .filters {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        
+        .report-section {
+            margin-bottom: 30px;
+        }
+        
+        .report-section h3 {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .table thead {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-fase1 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-fase2 {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-fase3 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-finalizada {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-link {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+        
+        .pagination {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #374151;
+        }
+        
+        .pagination .current {
+            background: #8b5cf6;
+            color: white;
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-calendar-check"></i>
+                    Cronograma de Produção
+                </h1>
+                <p>Programação e cronograma de ordens de produção</p>
+            </div>
+            <div class="actions">
+                <a href="{% url 'producao:main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_ordens|default:0|intcomma }}</div>
+                <div class="stat-label">Total de Ordens</div>
+            </div>
+            <div class="stat-box info">
+                <div class="stat-number">{{ ordens_em_producao|default:0|intcomma }}</div>
+                <div class="stat-label">Em Produção</div>
+            </div>
+            <div class="stat-box warning">
+                <div class="stat-number">{{ ordens_pendentes|default:0|intcomma }}</div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+            <div class="stat-box success">
+                <div class="stat-number">{{ ordens_finalizadas|default:0|intcomma }}</div>
+                <div class="stat-label">Finalizadas</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <form method="get" class="filters">
+            <div class="filter-group">
+                <label>Buscar</label>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Código, receita ou produto...">
+            </div>
+            <div class="filter-group">
+                <label>Fase</label>
+                <select name="fase">
+                    <option value="">Todas as Fases</option>
+                    <option value="FASE1_CRIACAO" {% if fase_filter == 'FASE1_CRIACAO' %}selected{% endif %}>Fase 1: Criação</option>
+                    <option value="FASE2_EXECUCAO" {% if fase_filter == 'FASE2_EXECUCAO' %}selected{% endif %}>Fase 2: Execução</option>
+                    <option value="FASE3_FINALIZACAO" {% if fase_filter == 'FASE3_FINALIZACAO' %}selected{% endif %}>Fase 3: Finalização</option>
+                    <option value="FINALIZADA" {% if fase_filter == 'FINALIZADA' %}selected{% endif %}>Finalizada</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Prioridade</label>
+                <select name="prioridade">
+                    <option value="">Todas as Prioridades</option>
+                    <option value="URGENTE" {% if prioridade_filter == 'URGENTE' %}selected{% endif %}>Urgente</option>
+                    <option value="ALTA" {% if prioridade_filter == 'ALTA' %}selected{% endif %}>Alta</option>
+                    <option value="NORMAL" {% if prioridade_filter == 'NORMAL' %}selected{% endif %}>Normal</option>
+                    <option value="BAIXA" {% if prioridade_filter == 'BAIXA' %}selected{% endif %}>Baixa</option>
+                </select>
+            </div>
+            <div class="filter-group" style="flex: 0 0 auto;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn" style="background: #8b5cf6; color: white;">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+            </div>
+            {% if search_query or fase_filter or prioridade_filter %}
+            <div class="filter-group" style="flex: 0 0 auto;">
+                <label>&nbsp;</label>
+                <a href="{% url 'producao:planejamento_cronograma' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+            </div>
+            {% endif %}
+        </form>
+
+        <!-- Cronograma por Período -->
+        <div class="report-section">
+            <h3>
+                <i class="fas fa-calendar-day"></i> Hoje ({{ hoje|date:"d/m/Y" }})
+            </h3>
+            {% if ordens_hoje %}
+            <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Receita</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Fase</th>
+                        <th>Prioridade</th>
+                        <th>Data Criação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ordem in ordens_hoje %}
+                    <tr>
+                        <td><strong>{{ ordem.codigo }}</strong></td>
+                        <td>{{ ordem.receita.nome|default:"N/A" }}</td>
+                        <td>{{ ordem.receita.produto.nome|default:"N/A" }}</td>
+                        <td>{{ ordem.quantidade }}</td>
+                        <td>
+                            {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                <span class="badge badge-fase1">Fase 1</span>
+                            {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                <span class="badge badge-fase2">Fase 2</span>
+                            {% elif ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                                <span class="badge badge-fase3">Fase 3</span>
+                            {% elif ordem.fase_atual == 'FINALIZADA' %}
+                                <span class="badge badge-finalizada">Finalizada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ordem.prioridade == 'URGENTE' %}
+                                <span style="color: #ef4444; font-weight: 600;">{{ ordem.get_prioridade_display }}</span>
+                            {% elif ordem.prioridade == 'ALTA' %}
+                                <span style="color: #f59e0b; font-weight: 600;">{{ ordem.get_prioridade_display }}</span>
+                            {% else %}
+                                {{ ordem.get_prioridade_display }}
+                            {% endif %}
+                        </td>
+                        <td>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                <a href="{% url 'producao:ordem_fase1' ordem.id %}" class="btn-link">Ver</a>
+                            {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn-link">Ver</a>
+                            {% elif ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                                <a href="{% url 'producao:ordem_fase3' ordem.id %}" class="btn-link">Ver</a>
+                            {% else %}
+                                <a href="{% url 'producao:ordem_detail' ordem.id %}" class="btn-link">Ver</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}
+            <p style="color: #6b7280; text-align: center; padding: 20px;">Nenhuma ordem para hoje</p>
+            {% endif %}
+        </div>
+
+        <!-- Todas as Ordens -->
+        <div class="report-section">
+            <h3>
+                <i class="fas fa-list"></i> Todas as Ordens
+            </h3>
+            {% if page_obj %}
+            <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Receita</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Fase</th>
+                        <th>Prioridade</th>
+                        <th>Data Criação</th>
+                        <th>Sucursal</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ordem in page_obj %}
+                    <tr>
+                        <td><strong>{{ ordem.codigo }}</strong></td>
+                        <td>{{ ordem.receita.nome|default:"N/A" }}</td>
+                        <td>{{ ordem.receita.produto.nome|default:"N/A" }}</td>
+                        <td>{{ ordem.quantidade }}</td>
+                        <td>
+                            {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                <span class="badge badge-fase1">Fase 1</span>
+                            {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                <span class="badge badge-fase2">Fase 2</span>
+                            {% elif ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                                <span class="badge badge-fase3">Fase 3</span>
+                            {% elif ordem.fase_atual == 'FINALIZADA' %}
+                                <span class="badge badge-finalizada">Finalizada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ordem.prioridade == 'URGENTE' %}
+                                <span style="color: #ef4444; font-weight: 600;">{{ ordem.get_prioridade_display }}</span>
+                            {% elif ordem.prioridade == 'ALTA' %}
+                                <span style="color: #f59e0b; font-weight: 600;">{{ ordem.get_prioridade_display }}</span>
+                            {% else %}
+                                {{ ordem.get_prioridade_display }}
+                            {% endif %}
+                        </td>
+                        <td>{{ ordem.data_criacao|date:"d/m/Y H:i" }}</td>
+                        <td>{{ ordem.sucursal.nome }}</td>
+                        <td>
+                            {% if ordem.fase_atual == 'FASE1_CRIACAO' %}
+                                <a href="{% url 'producao:ordem_fase1' ordem.id %}" class="btn-link">Ver</a>
+                            {% elif ordem.fase_atual == 'FASE2_EXECUCAO' %}
+                                <a href="{% url 'producao:ordem_fase2' ordem.id %}" class="btn-link">Ver</a>
+                            {% elif ordem.fase_atual == 'FASE3_FINALIZACAO' %}
+                                <a href="{% url 'producao:ordem_fase3' ordem.id %}" class="btn-link">Ver</a>
+                            {% else %}
+                                <a href="{% url 'producao:ordem_detail' ordem.id %}" class="btn-link">Ver</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if fase_filter %}&fase={{ fase_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if fase_filter %}&fase={{ fase_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+                {% endif %}
+                
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if fase_filter %}&fase={{ fase_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if fase_filter %}&fase={{ fase_filter }}{% endif %}{% if prioridade_filter %}&prioridade={{ prioridade_filter }}{% endif %}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <p style="color: #6b7280; text-align: center; padding: 20px;">Nenhuma ordem encontrada</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

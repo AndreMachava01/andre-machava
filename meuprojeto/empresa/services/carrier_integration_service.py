@@ -86,7 +86,7 @@ class CorreiosClient(CarrierClient):
                 return QuoteResponse(
                     success=True,
                     quotes=quotes,
-                    currency='BRL',
+                    currency='MZN',
                     raw_response=data
                 )
             else:
@@ -281,7 +281,7 @@ class DHLClient(CarrierClient):
                 'width': request.width_cm,
                 'height': request.height_cm,
                 'declaredValue': request.declared_value,
-                'currency': 'BRL'
+                'currency': 'MZN'
             }
             
             response = self.session.post(
@@ -307,7 +307,7 @@ class DHLClient(CarrierClient):
                 return QuoteResponse(
                     success=True,
                     quotes=quotes,
-                    currency='BRL',
+                    currency='MZN',
                     raw_response=data
                 )
             else:
@@ -488,7 +488,7 @@ class LocalCarrierClient(CarrierClient):
                 'width_cm': request.width_cm,
                 'height_cm': request.height_cm,
                 'declared_value': request.declared_value,
-                'currency': 'BRL'
+                'currency': 'MZN'
             }
             
             response = self.session.post(
@@ -514,7 +514,7 @@ class LocalCarrierClient(CarrierClient):
                 return QuoteResponse(
                     success=True,
                     quotes=quotes,
-                    currency='BRL',
+                    currency='MZN',
                     raw_response=data
                 )
             else:

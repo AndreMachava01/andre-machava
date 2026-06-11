@@ -1,0 +1,170 @@
+{% extends 'base_admin.html' %}
+{% load humanize static %}
+
+{% block title %}Receita {{ receita.codigo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    <nav class="breadcrumb-modern">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:main' %}">Stock</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <a href="{% url 'stock:receitas' %}">Receitas</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span>{{ receita.codigo }}</span>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-book"></i> {{ receita.nome }}</h1>
+                <p class="page-subtitle">{{ receita.codigo }} — {{ receita.get_status_display }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:receitas' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'stock:receita_edit' receita.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit" aria-hidden="true"></i> Editar
+                </a>
+                <a href="{% url 'stock:receita_delete' receita.id %}" class="btn btn-secondary"
+                   onclick="return confirm('Eliminar a receita «{{ receita.nome }}»?');">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Eliminar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-cards-grid">
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Geral</h2></div>
+            <div class="card-body">
+                <div class="info-row"><span class="info-label">Código</span><span class="info-value">{{ receita.codigo }}</span></div>
+                <div class="info-row"><span class="info-label">Versão</span><span class="info-value">{{ receita.versao }}</span></div>
+                <div class="info-row"><span class="info-label">Status</span><span class="info-value">{{ receita.get_status_display }}</span></div>
+                <div class="info-row"><span class="info-label">Produto</span><span class="info-value">{{ receita.produto.nome }}</span></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Produção</h2></div>
+            <div class="card-body">
+                <div class="info-row"><span class="info-label">Rendimento</span><span class="info-value">{{ receita.rendimento }} {{ receita.unidade_rendimento }}</span></div>
+                <div class="info-row"><span class="info-label">Tempo</span><span class="info-value">{{ receita.tempo_producao_horas }} h</span></div>
+                <div class="info-row"><span class="info-label">Custo total</span><span class="info-value"><strong>{{ receita.calcular_custo_total|floatformat:2 }} MT</strong></span></div>
+                {% if receita.rendimento > 0 %}
+                <div class="info-row"><span class="info-label">Custo / unidade</span><span class="info-value"><strong>{{ receita.calcular_custo_por_produto|floatformat:2 }} MT</strong></span></div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Datas</h2></div>
+            <div class="card-body">
+                <div class="info-row"><span class="info-label">Criação</span><span class="info-value">{{ receita.data_criacao|date:"d/m/Y H:i" }}</span></div>
+                <div class="info-row"><span class="info-label">Atualização</span><span class="info-value">{{ receita.data_atualizacao|date:"d/m/Y H:i" }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    {% if receita.descricao %}
+    <div class="card stock-u-mb-20">
+        <div class="card-header"><h2 class="card-title">Descrição</h2></div>
+        <div class="card-body">{{ receita.descricao|linebreaks }}</div>
+    </div>
+    {% endif %}
+
+    {% if receita.itens.exists and receita.produto.preco_custo != receita.calcular_custo_por_produto %}
+    <div class="alert alert-warning stock-u-mb-20" role="alert">
+        <strong>Sincronização:</strong> o preço de custo do produto ({{ receita.produto.preco_custo|floatformat:2 }} MT)
+        difere do calculado pela receita ({{ receita.calcular_custo_por_produto|floatformat:2 }} MT).
+        Edite a receita para actualizar o custo do produto.
+    </div>
+    {% elif receita.itens.exists %}
+    <div class="alert alert-info stock-u-mb-20" role="alert">
+        Preço de custo do produto sincronizado com a receita.
+    </div>
+    {% endif %}
+
+    <div class="table-container">
+        <div class="table-wrapper stock-table-scroll">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Código</th>
+                        <th class="text-end">Qtd.</th>
+                        <th>Unidade</th>
+                        <th class="text-end">Preço unit.</th>
+                        <th class="text-end">Custo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in receita.itens.all %}
+                    <tr>
+                        <td><strong>{{ item.material.nome }}</strong></td>
+                        <td>{{ item.material.codigo }}</td>
+                        <td class="text-end">{{ item.quantidade|floatformat:3 }}</td>
+                        <td>{{ item.get_unidade_medida_display }}</td>
+                        <td class="text-end">{{ item.material.preco_custo|floatformat:2 }} MT</td>
+                        <td class="text-end"><strong>{{ item.calcular_custo_item|floatformat:2 }} MT</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state stock-empty-inline">
+                                <p>Nenhum material nesta receita.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if receita.itens.all %}
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-end"><strong>Custo total da receita</strong></td>
+                        <td class="text-end"><strong>{{ receita.calcular_custo_total|floatformat:2 }} MT</strong></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    {% if receita.plano_corte_pdf or receita.documento_pdf %}
+    <div class="detail-cards-grid stock-detail-grid-mt">
+        {% if receita.plano_corte_pdf %}
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Plano de corte</h2></div>
+            <div class="card-body">
+                <a href="{{ receita.plano_corte_pdf.url }}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-file-pdf" aria-hidden="true"></i> Abrir PDF
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if receita.documento_pdf %}
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Projeto</h2></div>
+            <div class="card-body">
+                <a href="{{ receita.documento_pdf.url }}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt" aria-hidden="true"></i> Abrir PDF
+                </a>
+                <a href="{% url 'producao:receita_pdf' receita.id %}" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if receita.observacoes %}
+    <div class="card stock-detail-grid-mt">
+        <div class="card-header"><h2 class="card-title">Observações</h2></div>
+        <div class="card-body">{{ receita.observacoes|linebreaks }}</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

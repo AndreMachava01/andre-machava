@@ -1,0 +1,159 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Custo {{ custo.codigo }}{% endblock %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% url 'stock:cost_billing:custos_list' as custos_list_url %}
+    {% include 'stock/logistica/includes/_breadcrumb.html' with breadcrumb_section='Custos logísticos' breadcrumb_section_url=custos_list_url breadcrumb_current=custo.codigo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-receipt" aria-hidden="true"></i>
+                    {{ custo.codigo }}
+                </h1>
+                <p class="page-subtitle">{{ custo.descricao|truncatechars:80 }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Lista
+                </a>
+                {% if custo.status == 'PENDENTE' %}
+                <a href="{% url 'stock:cost_billing:custo_approve' custo.id %}" class="btn btn-success">
+                    <i class="fas fa-check" aria-hidden="true"></i> Aprovar
+                </a>
+                <a href="{% url 'stock:cost_billing:custo_reject' custo.id %}" class="btn btn-danger">
+                    <i class="fas fa-times" aria-hidden="true"></i> Rejeitar
+                </a>
+                {% elif custo.status == 'APROVADO' %}
+                <a href="{% url 'stock:cost_billing:rateio_create' custo.id %}" class="btn btn-primary">
+                    <i class="fas fa-divide" aria-hidden="true"></i> Rateio
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if pendente_financas %}
+    <div class="alert alert-{% if pendente_financas.estado == 'CONFIRMADO' %}success{% elif pendente_financas.estado == 'REJEITADO' %}danger{% else %}info{% endif %} stock-u-mb-24" role="status">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        <strong>Finanças:</strong> {{ pendente_financas.get_estado_display }}
+        — {{ pendente_financas.valor|floatformat:2 }} MT em Contas a pagar.
+        {% if pendente_financas.estado == 'PENDENTE' %}
+        Confirme o pagamento em <a href="{% url 'financas:contas_pagar' %}">Finanças → Contas a pagar</a>.
+        {% endif %}
+    </div>
+    {% elif custo.status == 'APROVADO' %}
+    <div class="alert alert-warning stock-u-mb-24" role="status">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        Aguardando registo em Contas a pagar (Finanças). Se não aparecer, aprove novamente ou contacte o financeiro.
+    </div>
+    {% endif %}
+
+    <div class="card stock-u-mb-24">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Detalhes</h2>
+            <span class="badge badge-{% if custo.status == 'APROVADO' %}success{% elif custo.status == 'PENDENTE' %}warning{% elif custo.status == 'REJEITADO' %}danger{% elif custo.status == 'RATEADO' %}info{% else %}secondary{% endif %}">
+                {{ custo.get_status_display }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-label">Tipo</span>
+                    <span class="info-value">{{ custo.tipo_custo.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Centro de custo</span>
+                    <span class="info-value">{{ custo.centro_custo.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor</span>
+                    <span class="info-value">{{ custo.valor|floatformat:2 }} MT</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data do custo</span>
+                    <span class="info-value">{{ custo.data_custo|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Período referência</span>
+                    <span class="info-value">{{ custo.periodo_referencia }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Documento</span>
+                    <span class="info-value">{{ custo.numero_documento|default:"—" }}</span>
+                </div>
+                {% if custo.rastreamento_entrega %}
+                <div class="info-item">
+                    <span class="info-label">Rastreamento</span>
+                    <span class="info-value">
+                        <a href="{% url 'stock:logistica:rastreamento_detail' custo.rastreamento_entrega.id %}">
+                            {{ custo.rastreamento_entrega.codigo_rastreamento }}
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+                {% if custo.criado_por %}
+                <div class="info-item">
+                    <span class="info-label">Criado por</span>
+                    <span class="info-value">{{ custo.criado_por.get_full_name|default:custo.criado_por.username }}</span>
+                </div>
+                {% endif %}
+                {% if custo.aprovado_por %}
+                <div class="info-item">
+                    <span class="info-label">Aprovado por</span>
+                    <span class="info-value">{{ custo.aprovado_por.get_full_name|default:custo.aprovado_por.username }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% if custo.observacoes_aprovacao %}
+            <p class="text-muted stock-u-mt-16"><strong>Observações:</strong> {{ custo.observacoes_aprovacao }}</p>
+            {% endif %}
+            {% if custo.arquivo_comprovante %}
+            <p class="stock-u-mt-16">
+                <a href="{{ custo.arquivo_comprovante.url }}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">
+                    <i class="fas fa-paperclip" aria-hidden="true"></i> Ver comprovante
+                </a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if rateios %}
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-divide" aria-hidden="true"></i> Rateios</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Centro destino</th>
+                        <th>Valor</th>
+                        <th>%</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rateio in rateios %}
+                    <tr>
+                        <td>{{ rateio.codigo }}</td>
+                        <td>{{ rateio.centro_custo_destino.nome }}</td>
+                        <td>{{ rateio.valor_rateado|floatformat:2 }} MT</td>
+                        <td>{{ rateio.percentual_rateio|floatformat:1 }}%</td>
+                        <td>{{ rateio.get_status_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

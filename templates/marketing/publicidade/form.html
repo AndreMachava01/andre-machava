@@ -1,0 +1,69 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 640px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { border-bottom: 2px solid #b45309; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #b45309; margin: 0; font-size: 24px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-primary { background: #b45309; color: white; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .actions { margin-top: 24px; display: flex; gap: 10px; }
+        .required-mark { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ad"></i> {{ title }}</h1>
+            <a href="{% url 'marketing:publicidade_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="campanha">Campanha</label>
+                <select id="campanha" name="campanha">
+                    <option value="">-- Nenhuma --</option>
+                    {% for c in campanhas %}
+                    <option value="{{ c.id }}" {% if investimento and investimento.campanha_id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="canal">Canal <span class="required-mark">*</span></label>
+                <input type="text" id="canal" name="canal" value="{% if investimento %}{{ investimento.canal }}{% endif %}" placeholder="Facebook Ads, Google..." required>
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" name="descricao" value="{% if investimento %}{{ investimento.descricao }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="valor">Valor (MT) <span class="required-mark">*</span></label>
+                <input type="text" id="valor" name="valor" value="{% if investimento %}{{ investimento.valor|floatformat:2 }}{% endif %}" required>
+            </div>
+            <div class="form-group">
+                <label for="data_investimento">Data <span class="required-mark">*</span></label>
+                <input type="date" id="data_investimento" name="data_investimento" value="{% if investimento %}{{ investimento.data_investimento|date:'Y-m-d' }}{% endif %}" required>
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes">{% if investimento %}{{ investimento.observacoes }}{% endif %}</textarea>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{% url 'marketing:publicidade_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
