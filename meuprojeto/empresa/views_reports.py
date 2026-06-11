@@ -21,7 +21,7 @@ from .models_stock import (
     NotificacaoLogisticaUnificada
 )
 from .models_pod import ProvaEntrega
-from .models_cost_billing import CustoLogistico, FaturamentoLogistico
+from .models_cost_billing import CustoLogistico, FaturamentoFrete
 from .models_routing import Rota, PlanejamentoEntrega
 from .models_exceptions import ExcecaoLogistica
 from .models_geolocation import CalculoDistancia
