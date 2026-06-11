@@ -1,0 +1,47 @@
+{% extends 'base_admin.html' %}
+
+{% block body_class %}stock-module{% endblock %}
+{% load static %}
+
+{% block title %}Alterar Status da Inscrição{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="nav-top">
+        <div class="nav-title">
+            <a href="{% url 'rh:treinamento_inscricoes' inscricao.treinamento.id %}" class="back-button">
+                <i class="fas fa-arrow-left"></i> Voltar às inscrições
+            </a>
+            <h1><i class="fas fa-exchange-alt"></i> Alterar Status da Inscrição</h1>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="info-box">
+            <p><strong>Funcionário:</strong> {{ inscricao.funcionario.nome_completo }}</p>
+            <p><strong>Treinamento:</strong> {{ inscricao.treinamento.nome }}</p>
+            <p><strong>Status actual:</strong> {{ inscricao.get_status_display }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="status">Novo status *</label>
+                <select id="status" name="status" required>
+                    {% for value, label in STATUS_CHOICES %}
+                    <option value="{{ value }}" {% if inscricao.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3">{{ inscricao.observacoes|default:'' }}</textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{% url 'rh:treinamento_inscricoes' inscricao.treinamento.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Eliminar benefício — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Eliminar benefício' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    Eliminar benefício
+                </h1>
+                <p class="page-subtitle">Folha de {{ folha.mes_referencia|date:"F Y" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_beneficios' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirmation-card stock-confirmation-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Confirmar eliminação</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <strong>Confirma a remoção deste benefício?</strong>
+                Esta acção não pode ser desfeita.
+            </div>
+            <table class="table table-borderless table-sm stock-u-mb-24">
+                <tbody>
+                    <tr>
+                        <th scope="row">Funcionário</th>
+                        <td><strong>{{ beneficio.funcionario_folha.funcionario.nome_completo }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Benefício</th>
+                        <td>{{ beneficio.beneficio.nome }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Valor aplicado</th>
+                        <td>{{ beneficio.valor|floatformat:2 }} MT</td>
+                    </tr>
+                </tbody>
+            </table>
+            <form method="post" class="form-actions">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Sim, eliminar
+                </button>
+                <a href="{% url 'rh:folha_beneficios' folha.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

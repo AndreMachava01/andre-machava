@@ -1,24 +1,14 @@
-{% extends 'base_admin.html' %}
+﻿{% extends 'base_admin.html' %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Critérios de Avaliação - RH{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/avaliacoes/">Avaliações</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Critérios</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Critérios de Avaliação' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -31,6 +21,9 @@
                 </p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 <a href="{% url 'rh:criterio_add' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     Novo Critério
@@ -43,46 +36,25 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-list-check"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_criterios|default:"0" }}</h3>
-                <p class="stat-label">Total de Critérios</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ total_criterios|default:"0" }}</div>
+            <div class="stat-label">Total de Critérios</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ criterios_ativos|default:"0" }}</h3>
-                <p class="stat-label">Critérios Ativos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ criterios_ativos|default:"0" }}</div>
+            <div class="stat-label">Critérios Ativos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-percentage"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ peso_total|default:"0" }}%</h3>
-                <p class="stat-label">Peso Total</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ peso_total|default:"0" }}%</div>
+            <div class="stat-label">Peso Total</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ media_peso|default:"0" }}%</h3>
-                <p class="stat-label">Peso Médio</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ media_peso|default:"0" }}%</div>
+            <div class="stat-label">Peso Médio</div>
         </div>
     </div>
     

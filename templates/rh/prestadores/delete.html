@@ -1,0 +1,35 @@
+﻿{% extends "base_admin.html" %}
+{% block title %}Eliminar Prestador - Sistema Conception{% endblock %}
+{% block extra_style %}
+<style>
+    body { margin: 0; padding: 20px; background: #f8f9fa; color: #1e293b; }
+    .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { border-bottom: 2px solid #dc3545; padding-bottom: 15px; margin-bottom: 20px; }
+    .header h1 { color: #0f172a; margin: 0; font-size: 22px; }
+    .warning { background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #991b1b; }
+    .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: 500; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-secondary { background: #64748b; color: white; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-trash"></i> Eliminar Prestador</h1>
+    </div>
+
+    <div class="warning">
+        Tem a certeza que deseja eliminar «{{ prestador.nome }}»?
+        Esta acção não pode ser desfeita.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a href="{% url 'rh:prestadores' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

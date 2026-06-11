@@ -10,13 +10,13 @@ def fix_requisicoes_sem_destino(apps, schema_editor):
     # Buscar requisições sem sucursal destino
     requisicoes_sem_destino = RequisicaoStock.objects.filter(sucursal_destino__isnull=True)
     
-    print(f"🔧 Corrigindo {requisicoes_sem_destino.count()} requisições sem sucursal destino...")
+    print(f"Corrigindo {requisicoes_sem_destino.count()} requisicoes sem sucursal destino...")
     
     # Obter todas as sucursais ativas
     sucursais = Sucursal.objects.filter(ativa=True)
     
     if not sucursais.exists():
-        print("❌ Nenhuma sucursal ativa encontrada!")
+        print("Nenhuma sucursal ativa encontrada!")
         return
     
     # Para cada requisição sem destino, atribuir uma sucursal diferente da origem
@@ -27,11 +27,11 @@ def fix_requisicoes_sem_destino(apps, schema_editor):
         if sucursal_destino:
             requisicao.sucursal_destino = sucursal_destino
             requisicao.save(update_fields=['sucursal_destino'])
-            print(f"✅ {requisicao.codigo}: {requisicao.sucursal_origem.nome} → {sucursal_destino.nome}")
+            print(f"OK {requisicao.codigo}: {requisicao.sucursal_origem.nome} -> {sucursal_destino.nome}")
         else:
-            print(f"❌ {requisicao.codigo}: Não foi possível encontrar sucursal destino")
+            print(f"ERRO {requisicao.codigo}: Nao foi possivel encontrar sucursal destino")
     
-    print("🎉 Correção concluída!")
+    print("Correcao concluida!")
 
 def reverse_fix_requisicoes_sem_destino(apps, schema_editor):
     """Reverter correção - definir sucursal destino como None"""
@@ -43,7 +43,7 @@ def reverse_fix_requisicoes_sem_destino(apps, schema_editor):
         requisicao.sucursal_destino = None
         requisicao.save(update_fields=['sucursal_destino'])
     
-    print("🔄 Correção revertida!")
+    print("Correcao revertida!")
 
 class Migration(migrations.Migration):
 

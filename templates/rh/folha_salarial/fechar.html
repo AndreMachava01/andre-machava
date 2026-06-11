@@ -1,0 +1,69 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Fechar folha — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Fechar folha' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    Fechar folha salarial
+                </h1>
+                <p class="page-subtitle">
+                    {{ folha.mes_referencia|date:"F Y" }} — {{ folha.get_status_display }}
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning stock-u-mb-24" role="alert">
+        <strong><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Atenção</strong>
+        Ao fechar a folha, os dados deixam de ser editáveis até reabertura excepcional.
+        Confirme que todos os cálculos, benefícios e descontos estão correctos.
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ folha.mes_referencia|date:"F Y" }}</div>
+            <div class="stat-label">Mês</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.get_status_display }}</div>
+            <div class="stat-label">Status</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.total_liquido|floatformat:2 }} MT</div>
+            <div class="stat-label">Total líquido</div>
+        </div>
+        </div>
+    </div>
+
+    <div class="form-container card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="observacoes">Observações do fecho (opcional)</label>
+                <textarea id="observacoes" name="observacoes" class="form-control" rows="3"
+                          placeholder="Observações sobre o fecho da folha..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-lock" aria-hidden="true"></i> Confirmar fecho
+                </button>
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

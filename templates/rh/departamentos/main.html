@@ -1,23 +1,15 @@
-{% extends "base_admin.html" %}
+﻿{% extends "base_admin.html" %}
 {% load static %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Gestão de Departamentos{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Departamentos</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Departamentos' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -42,49 +34,29 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-sitemap"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_departamentos|default:"0" }}</h3>
-                <p class="stat-label">Total de Departamentos</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ total_departamentos|default:"0" }}</div>
+            <div class="stat-label">Total de Departamentos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ departamentos_ativos|default:"0" }}</h3>
-                <p class="stat-label">Departamentos Ativos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ departamentos_ativos|default:"0" }}</div>
+            <div class="stat-label">Departamentos Ativos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ departamentos_inativos|default:"0" }}</h3>
-                <p class="stat-label">Departamentos Inativos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ departamentos_inativos|default:"0" }}</div>
+            <div class="stat-label">Departamentos Inativos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_funcionarios|default:"0" }}</h3>
-                <p class="stat-label">Funcionários Vinculados</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ total_funcionarios|default:"0" }}</div>
+            <div class="stat-label">Funcionários Vinculados</div>
         </div>
     </div>
     
+
     <!-- Filters Section -->
     <div class="filters-section">
         <h3 class="filters-title">
@@ -110,7 +82,13 @@
                 </select>
             </div>
             
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+            
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+            
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Filtrar
@@ -247,18 +225,5 @@ document.addEventListener('DOMContentLoaded', function() {
             this.form.submit();
         });
     });
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
 </script>
 {% endblock %}

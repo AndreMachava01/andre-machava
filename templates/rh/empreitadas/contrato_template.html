@@ -1,0 +1,211 @@
+﻿{% load humanize %}
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Empreitada — CEMP/{{ ano }}/{{ sequencia }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            @page { size: A4; margin: 1.8cm; }
+            body { margin: 0; padding: 0; background: #fff !important; }
+            .toolbar-documento { display: none !important; }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Crimson Pro", "Times New Roman", serif; background: #e8e6e1; color: #1a1a1a; font-size: 11pt; line-height: 1.6; padding: 0 0 40px 0; }
+        .toolbar-documento { background: #2c2c2c; color: #fff; padding: 10px 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .toolbar-documento a, .toolbar-documento button { color: #fff; text-decoration: none; font-size: 13px; padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: transparent; }
+        .toolbar-documento a:hover, .toolbar-documento button:hover { background: rgba(255,255,255,0.15); }
+        .doc-paper { max-width: 210mm; margin: 0 auto; background: #fff; padding: 22px 28px 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .doc-header { border-bottom: 1px solid #1a1a1a; padding-bottom: 14px; margin-bottom: 18px; }
+        .doc-header table { width: 100%; border-collapse: collapse; }
+        .doc-header td { vertical-align: top; border: none; padding: 0; }
+        .doc-logo-cell { width: 100px; padding-right: 18px; }
+        .doc-logo { max-width: 90px; max-height: 70px; display: block; }
+        .doc-empresa-nome { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+        .doc-empresa-detalhes { font-size: 9pt; color: #444; line-height: 1.45; }
+        .doc-titulo-block { text-align: right; }
+        .doc-titulo { font-size: 13pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 4px; }
+        .doc-numero { font-size: 11pt; font-weight: 600; margin-bottom: 2px; }
+        .doc-meta { font-size: 10pt; color: #444; }
+        .doc-partes { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 18px; padding: 14px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+        .doc-partes h3 { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; color: #333; font-weight: 600; }
+        .doc-partes p { margin: 3px 0; font-size: 10.5pt; }
+        .doc-partes .nome { font-weight: 700; }
+        .doc-preambulo { text-align: justify; margin-bottom: 18px; font-size: 10.5pt; }
+        .clausula { margin-bottom: 16px; }
+        .clausula-titulo { font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; color: #1a1a1a; }
+        .clausula p { margin: 6px 0; text-align: justify; font-size: 10.5pt; }
+        .clausula ol { margin: 6px 0 6px 22px; padding: 0; }
+        .clausula li { margin: 4px 0; text-align: justify; font-size: 10.5pt; }
+        .negrito { font-weight: 700; }
+        .sublinhado { text-decoration: underline; }
+        .doc-assinaturas { margin-top: 32px; padding-top: 20px; display: table; width: 100%; font-size: 10pt; }
+        .doc-assinaturas td { vertical-align: top; padding: 0 12px 0 0; }
+        .doc-assinaturas td:last-child { padding: 0 0 0 12px; text-align: right; }
+        .doc-assinaturas .linha-assinatura { border-top: 1px solid #1a1a1a; margin-top: 48px; width: 85%; min-height: 2px; }
+        .doc-assinaturas .rotulo { font-weight: 700; margin-top: 6px; text-transform: uppercase; font-size: 9pt; letter-spacing: 0.04em; }
+        .doc-assinaturas .nome { margin-top: 2px; }
+        .campo-manuscrito { display: inline-block; min-width: 8em; border-bottom: 1px solid #1a1a1a; }
+        .campo-manuscrito + small { font-size: 8pt; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="toolbar-documento">
+        {% if url_voltar %}
+        <a href="{{ url_voltar }}"><i class="fas fa-arrow-left"></i> Voltar</a>
+        {% endif %}
+        <button type="button" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        {% if url_gerar %}
+        <a href="{{ url_gerar }}"><i class="fas fa-file-pdf"></i> Gerar PDF</a>
+        {% endif %}
+    </div>
+
+    <div class="doc-paper">
+        <header class="doc-header">
+            <table>
+                <tr>
+                    <td class="doc-logo-cell">
+                        {% if dados_empresa.logo %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}{{ dados_empresa.logo }}" alt="" class="doc-logo">
+                        {% else %}
+                        <img src="{{ request.scheme }}://{{ request.get_host }}{{ MEDIA_URL }}logos_empresas/LOGO_DA_CONCEPTION.jpg" alt="" class="doc-logo">
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="doc-empresa-nome">{{ dados_empresa.nome|default:"Conception Lda" }}</div>
+                        <div class="doc-empresa-detalhes">
+                            {{ dados_empresa.endereco|default:"" }}<br>
+                            NUIT: {{ dados_empresa.nuit|default:"" }} | Tel: {{ dados_empresa.telefone|default:"" }}<br>
+                            Email: {{ dados_empresa.email|default:"" }}
+                        </div>
+                    </td>
+                    <td class="doc-titulo-block">
+                        <div class="doc-titulo">Contrato de Empreitada</div>
+                        <div class="doc-numero">N.º CEMP/{{ ano }}/{{ sequencia }}</div>
+                        <div class="doc-meta">Data: {{ data_contrato }}</div>
+                        <div class="doc-meta">Ref: {{ numero_ref }}</div>
+                    </td>
+                </tr>
+            </table>
+        </header>
+
+        <div class="doc-partes">
+            <div>
+                <h3>Contratante</h3>
+                <p class="nome">{{ nome_contratante }}</p>
+                {% if nuit_contratante %}<p>NUIT: {{ nuit_contratante }}</p>{% endif %}
+                {% if morada_contratante %}<p>{{ morada_contratante }}</p>{% endif %}
+                <p>Representante: {{ representante_contratante }}</p>
+            </div>
+            <div>
+                <h3>Contratada</h3>
+                <p class="nome">{{ nome_contratada }}</p>
+                {% if nuit_contratada %}<p>NUIT: {{ nuit_contratada }}</p>{% endif %}
+                {% if morada_contratada %}<p>{{ morada_contratada }}</p>{% endif %}
+                {% if contacto_contratada %}<p>Contacto: {{ contacto_contratada }}</p>{% endif %}
+                <p>Representante: {{ representante_contratada }}</p>
+            </div>
+        </div>
+
+        <p class="doc-preambulo">
+            Entre os abaixo assinados, de um lado o CONTRATANTE e, de outro, a CONTRATADA, foi celebrado o presente Contrato de Empreitada, que se rege pelas cláusulas e condições seguintes e pela legislação da República de Moçambique.
+        </p>
+
+        <div class="clausula">
+            <div class="clausula-titulo">1. Objecto do contrato</div>
+            <p>A CONTRATADA obriga-se a executar para o CONTRATANTE os seguintes trabalhos:</p>
+            {% if descricoes_trabalhos %}
+            <ol style="margin: 8px 0 8px 22px;">
+                {% for d in descricoes_trabalhos %}<li>{{ d }}</li>{% endfor %}
+            </ol>
+            {% else %}
+            <p><strong>{{ descricao_trabalho }}</strong></p>
+            {% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">2. Valor total e condições de pagamento</div>
+            <p><strong>2.1.</strong> O valor total dos trabalhos objecto do presente contrato é de <span class="negrito">{{ valor_total }} MT</span> (<span class="sublinhado">{{ valor_extenso }}</span>).</p>
+            <p><strong>2.2.</strong> {% if pagamento_parcelas_com_valores %}
+                O pagamento será efectuado em {{ pagamento_parcelas_com_valores|length }} parcelas, do seguinte modo:
+                <ol style="margin: 8px 0 8px 22px;">
+                    {% for p in pagamento_parcelas_com_valores %}<li>{{ p.texto }} — <span class="negrito">{{ p.valor }} MT</span></li>{% endfor %}
+                </ol>
+            {% elif clausula2_pagamento %}{{ clausula2_pagamento|safe }}{% else %}O pagamento será efectuado na conclusão dos trabalhos, mediante apresentação de fatura e respectiva aprovação pelo CONTRATANTE.{% endif %}</p>
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">3. Prazo de execução</div>
+            <p>{{ prazo_texto }}</p>
+            {% if incluir_clausula_suspensao_clima %}
+            <p style="margin-top: 10px;"><strong>3.2. Suspensão por condições climáticas</strong> — {{ clausula_suspensao_clima_texto }}</p>
+            {% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">4. Obrigações das partes</div>
+            <p><strong>Da CONTRATADA:</strong></p>
+            <ol type="a">
+                {% if obrigacao_contratada_1 %}<li>{{ obrigacao_contratada_1 }}</li>{% endif %}
+                {% if obrigacao_contratada_2 %}<li>{{ obrigacao_contratada_2 }}</li>{% endif %}
+                {% if obrigacao_contratada_3 %}<li>{{ obrigacao_contratada_3 }}</li>{% endif %}
+            </ol>
+            <p><strong>Do CONTRATANTE:</strong></p>
+            <ol type="a">
+                {% if obrigacao_contratante_1 %}<li>{{ obrigacao_contratante_1 }}</li>{% endif %}
+                {% if obrigacao_contratante_2 %}<li>{{ obrigacao_contratante_2 }}</li>{% endif %}
+                {% if obrigacao_contratante_3 %}<li>{{ obrigacao_contratante_3 }}</li>{% endif %}
+            </ol>
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">5. Garantia</div>
+            {% if clausula5_garantia %}{{ clausula5_garantia|safe }}{% elif config_contrato and config_contrato.clausula5_garantia %}{{ config_contrato.clausula5_garantia|safe }}{% else %}<p>{{ garantia_texto }}</p>{% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">6. Alterações</div>
+            {% if clausula6_alteracoes %}{{ clausula6_alteracoes|safe }}{% elif config_contrato and config_contrato.clausula6_alteracoes %}{{ config_contrato.clausula6_alteracoes|safe }}{% else %}<p>Qualquer alteração ao presente contrato só produzirá efeitos se formalizada por escrito e assinada por ambas as partes.</p>{% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">7. Rescisão</div>
+            {% if clausula7_rescisao %}{{ clausula7_rescisao|safe }}{% elif config_contrato and config_contrato.clausula7_rescisao %}{{ config_contrato.clausula7_rescisao|safe }}{% else %}
+            <p>O contrato pode ser rescindido por mútuo acordo, por incumprimento culposo de qualquer das obrigações ou por força maior, nos termos da lei. Em caso de rescisão por culpa do CONTRATANTE, será devido o valor correspondente aos trabalhos já executados, acrescido de 30% a título de despesas administrativas e lucros cessantes.</p>
+            {% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">8. Confidencialidade</div>
+            {% if clausula8_confidencialidade %}{{ clausula8_confidencialidade|safe }}{% elif config_contrato and config_contrato.clausula8_confidencialidade %}{{ config_contrato.clausula8_confidencialidade|safe }}{% else %}<p>As partes obrigam-se a manter sigilo sobre as informações trocadas no âmbito do presente contrato.</p>{% endif %}
+        </div>
+
+        <div class="clausula">
+            <div class="clausula-titulo">9. Legislação e foro</div>
+            {% if clausula9_foro %}{{ clausula9_foro|safe }}{% elif config_contrato and config_contrato.clausula9_foro %}{{ config_contrato.clausula9_foro|safe }}{% else %}<p>O presente contrato rege-se pela legislação da República de Moçambique. As partes elegem o foro dos Tribunais da Comarca de Maputo, com renúncia expressa a qualquer outro, por mais privilegiado que seja.</p>{% endif %}
+        </div>
+
+        <table class="doc-assinaturas">
+            <tr>
+                <td style="width: 48%;">
+                    <p>Maputo, <span class="campo-manuscrito"></span> <small>(data)</small></p>
+                    <div class="linha-assinatura"></div>
+                    <p class="rotulo">Contratante</p>
+                    <p class="nome">{{ nome_contratante }}</p>
+                </td>
+                <td style="width: 4%;"></td>
+                <td style="width: 48%;">
+                    <p>Maputo, <span class="campo-manuscrito"></span> <small>(data)</small></p>
+                    <div class="linha-assinatura" style="margin-left: auto;"></div>
+                    <p class="rotulo">Contratada</p>
+                    <p class="nome">{{ nome_contratada }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

@@ -11,11 +11,31 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "ALTER TABLE empresa_ordemcompra DROP CONSTRAINT empresa_ordemcompra_requisicao_compra_id_c9da4a92_fk_empresa_r;",
-            reverse_sql="-- Cannot reverse this operation"
+            """
+            ALTER TABLE empresa_ordemcompra
+            DROP CONSTRAINT IF EXISTS empresa_ordemcompra_requisicao_compra_id_c9da4a92_fk_empresa_r;
+            """,
+            reverse_sql="-- Cannot reverse this operation",
         ),
         migrations.RunSQL(
-            "ALTER TABLE empresa_ordemcompra ADD CONSTRAINT empresa_ordemcompra_requisicao_origem_id_fk_empresa_r FOREIGN KEY (requisicao_origem_id) REFERENCES empresa_requisicaocompraexterna(id) DEFERRABLE INITIALLY DEFERRED;",
-            reverse_sql="ALTER TABLE empresa_ordemcompra DROP CONSTRAINT empresa_ordemcompra_requisicao_origem_id_fk_empresa_r;"
+            """
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'empresa_ordemcompra_requisicao_origem_id_fk_empresa_r'
+                ) THEN
+                    ALTER TABLE empresa_ordemcompra
+                    ADD CONSTRAINT empresa_ordemcompra_requisicao_origem_id_fk_empresa_r
+                    FOREIGN KEY (requisicao_origem_id)
+                    REFERENCES empresa_requisicaocompraexterna(id)
+                    DEFERRABLE INITIALLY DEFERRED;
+                END IF;
+            END $$;
+            """,
+            reverse_sql="""
+            ALTER TABLE empresa_ordemcompra
+            DROP CONSTRAINT IF EXISTS empresa_ordemcompra_requisicao_origem_id_fk_empresa_r;
+            """,
         ),
     ]

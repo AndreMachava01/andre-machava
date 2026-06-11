@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Relatório PDF - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ec4899;
+        }
+        .header h1 {
+            color: #374151;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .rh-relatorio-fieldset {
+            border: none;
+            padding: 0;
+            margin: 0 0 20px;
+        }
+        .rh-relatorio-legend {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .rh-relatorio-radio-label {
+            margin-left: 16px;
+        }
+        .form-actions .btn-flex {
+            flex: 1;
+        }
+        .form-actions .btn-flex-center {
+            flex: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main class="container" role="main" aria-labelledby="titulo-gerar-relatorio">
+        <div class="action-buttons">
+            <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar aos Relatórios
+            </a>
+            <a href="{% url 'rh:main' %}" class="btn btn-secondary">
+                <i class="fas fa-users"></i> RH
+            </a>
+        </div>
+        
+        <div class="header">
+            <h1 id="titulo-gerar-relatorio"><i class="fas fa-file-pdf" aria-hidden="true"></i> Gerar Relatório PDF</h1>
+            <p>Selecione o tipo de relatório e configure os filtros</p>
+        </div>
+        
+        <div class="alert alert-info" id="nota-relatorios">
+            <i class="fas fa-info-circle" aria-hidden="true"></i> 
+            <strong>Nota:</strong> Este módulo permite gerar relatórios consolidados em PDF. 
+            Para relatórios individuais, acesse cada relatório específico e use o botão "Exportar PDF".
+        </div>
+        
+        <form method="post" aria-describedby="nota-relatorios">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="tipo_relatorio">Tipo de Relatório <span aria-hidden="true">*</span></label>
+                <select name="tipo_relatorio" id="tipo_relatorio" class="form-control" required aria-required="true">
+                    <option value="">Selecione o tipo de relatório</option>
+                    {% for valor, nome in tipos_relatorio %}
+                        <option value="{{ valor }}">{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Escolha qual relatório deseja gerar</div>
+            </div>
+            
+            <fieldset class="form-group rh-relatorio-fieldset">
+                <legend class="rh-relatorio-legend">Formato de saída</legend>
+                <label><input type="radio" name="formato" value="pdf" checked> PDF</label>
+                <label class="rh-relatorio-radio-label"><input type="radio" name="formato" value="html"> Visualizar (HTML)</label>
+            </fieldset>
+
+            <div class="form-group">
+                <label for="data_inicio">Data Início <span aria-hidden="true">*</span></label>
+                <input type="date" name="data_inicio" id="data_inicio" class="form-control" required aria-required="true">
+                <div class="help-text">Data inicial do período do relatório</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="data_fim">Data Fim <span aria-hidden="true">*</span></label>
+                <input type="date" name="data_fim" id="data_fim" class="form-control" required aria-required="true">
+                <div class="help-text">Data final do período do relatório</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sucursal">Sucursal (Opcional)</label>
+                <select name="sucursal" id="sucursal" class="form-control">
+                    <option value="">Todas as sucursais</option>
+                    {% for sucursal in sucursais %}
+                        <option value="{{ sucursal.id }}">{{ sucursal.nome }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">Filtrar por sucursal específica (opcional)</div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-flex">
+                    <i class="fas fa-file-pdf"></i> Gerar PDF
+                </button>
+                <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary btn-flex-center">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </main>
+    
+    <script>
+        // Preencher data fim com data de hoje por padrão
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const dataFim = document.getElementById('data_fim');
+            if (dataFim && !dataFim.value) {
+                dataFim.value = hoje;
+            }
+            
+            // Preencher data início com 30 dias atrás
+            const dataInicio = document.getElementById('data_inicio');
+            if (dataInicio && !dataInicio.value) {
+                const dataInicioDefault = new Date();
+                dataInicioDefault.setDate(dataInicioDefault.getDate() - 30);
+                dataInicio.value = dataInicioDefault.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>
+

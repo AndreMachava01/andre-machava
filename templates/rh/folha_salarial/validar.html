@@ -1,0 +1,237 @@
+﻿{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Validar Fechamento — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    .folha-validacao-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    .folha-validacao-card {
+        background: #fff;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 8px;
+        padding: 1.25rem;
+    }
+    .folha-validacao-card h3 {
+        margin: 0 0 1rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .folha-validacao-card.success { border-left: 4px solid #16a34a; }
+    .folha-validacao-card.error { border-left: 4px solid #dc2626; }
+    .folha-validacao-card.warning { border-left: 4px solid #d97706; }
+    .folha-validacao-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .folha-validacao-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .folha-validacao-list li:last-child { border-bottom: none; }
+    .folha-validacao-empty {
+        text-align: center;
+        color: #6b7280;
+        padding: 1rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Validar fechamento' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title" id="page-title-folha-validar">
+                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                    Validar fechamento da folha
+                </h1>
+                <p class="page-subtitle">
+                    Folha de <strong>{{ folha.mes_referencia|date:"F Y" }}</strong> —
+                    Status: <span class="badge">{{ folha.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar aos detalhes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if folha.status != 'ABERTA' %}
+    <div class="alert alert-warning stock-u-mb-24" role="alert">
+        <strong><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Atenção</strong>
+        <p class="stock-u-mb-0">Esta folha não está aberta e não pode ser validada.</p>
+    </div>
+    {% endif %}
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ folha.total_funcionarios|default:0 }}</div>
+            <div class="stat-label">Total de funcionários</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.total_bruto|floatformat:2 }} MT</div>
+            <div class="stat-label">Total bruto</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.total_descontos|floatformat:2 }} MT</div>
+            <div class="stat-label">Total de descontos</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.total_liquido|floatformat:2 }} MT</div>
+            <div class="stat-label">Total líquido</div>
+        </div>
+    </div>
+
+    {% if folha.data_inicio_fechamento or folha.data_fim_fechamento or folha.data_inicio_abertura or folha.data_fim_abertura %}
+    <div class="stats stock-stats-row">
+{% if folha.data_inicio_fechamento and folha.data_fim_fechamento %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.data_inicio_fechamento|date:"d/m/Y" }} — {{ folha.data_fim_fechamento|date:"d/m/Y" }}</div>
+            <div class="stat-label">Período para fechamento</div>
+        </div>
+            {% endif %}
+            {% if folha.data_inicio_abertura and folha.data_fim_abertura %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.data_inicio_abertura|date:"d/m/Y" }} — {{ folha.data_fim_abertura|date:"d/m/Y" }}</div>
+            <div class="stat-label">Período para abertura/reabertura</div>
+        </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-tasks" aria-hidden="true"></i> Resultado da validação</h2>
+        </div>
+        <div class="folha-validacao-grid">
+            <div class="folha-validacao-card {% if validacao.valido %}success{% else %}error{% endif %}">
+                <h3>
+                    <i class="fas fa-{% if validacao.valido %}check-circle{% else %}times-circle{% endif %}" aria-hidden="true"></i>
+                    Validações
+                </h3>
+                {% if validacao.valido %}
+                <div class="folha-validacao-empty">
+                    <p><strong>Todas as validações passaram.</strong></p>
+                    <p>A folha está pronta para ser fechada.</p>
+                </div>
+                {% else %}
+                <ul class="folha-validacao-list" role="list">
+                    {% for erro in validacao.erros %}
+                    <li>
+                        <i class="fas fa-times-circle text-danger" aria-hidden="true"></i>
+                        <span>{{ erro }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
+            <div class="folha-validacao-card warning">
+                <h3>
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    Avisos
+                </h3>
+                {% if validacao.avisos %}
+                <ul class="folha-validacao-list" role="list">
+                    {% for aviso in validacao.avisos %}
+                    <li>
+                        <i class="fas fa-exclamation-triangle text-warning" aria-hidden="true"></i>
+                        <span>{{ aviso }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="folha-validacao-empty">
+                    <p>Nenhum aviso encontrado.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if validacao.funcionarios_sem_salario or validacao.funcionarios_sem_presenca or validacao.funcionarios_salario_negativo %}
+        <div class="stats-grid stock-dash-kpi-grid stock-u-mt-16">
+            {% if validacao.funcionarios_sem_salario %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ validacao.funcionarios_sem_salario }}</div>
+            <div class="stat-label">Sem salário</div>
+        </div>
+            {% endif %}
+            {% if validacao.funcionarios_sem_presenca %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ validacao.funcionarios_sem_presenca }}</div>
+            <div class="stat-label">Sem presença</div>
+        </div>
+            {% endif %}
+            {% if validacao.funcionarios_salario_negativo %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ validacao.funcionarios_salario_negativo }}</div>
+            <div class="stat-label">Salário líquido negativo</div>
+        </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="alert alert-info stock-u-mb-24" role="note">
+        <strong><i class="fas fa-info-circle" aria-hidden="true"></i> Informação</strong>
+        <p class="stock-u-mb-0">
+            Esta página permite validar o fechamento da folha salarial. Após a validação, a folha poderá ser fechada definitivamente.
+            {% if folha.data_fim_fechamento %}
+            <br><strong>Importante:</strong> presenças e faltas registadas após {{ folha.data_fim_fechamento|date:"d/m/Y" }} serão consideradas na folha do mês seguinte.
+            {% endif %}
+        </p>
+    </div>
+
+    {% if folha.status == 'ABERTA' %}
+    <div class="alert alert-warning stock-u-mb-24" role="alert">
+        <strong><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Aviso importante</strong>
+        <p class="stock-u-mb-0">
+            Confirme que todos os dados estão correctos antes de validar o fechamento.
+            Após o fecho, a folha não poderá ser editada sem reabertura.
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="page-header-content stock-u-mb-24">
+        <div class="header-actions">
+            {% if folha.status == 'ABERTA' %}
+                {% if validacao.valido %}
+                <form method="post" class="stock-u-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i> Validar e fechar folha
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'rh:folha_calcular' folha.id %}" class="btn btn-warning">
+                    <i class="fas fa-calculator" aria-hidden="true"></i> Recalcular folha
+                </a>
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar aos detalhes
+            </a>
+            <a href="{% url 'rh:folha_salarial' %}" class="btn btn-secondary">
+                <i class="fas fa-list" aria-hidden="true"></i> Lista de folhas
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

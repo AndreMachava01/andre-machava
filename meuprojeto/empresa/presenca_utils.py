@@ -26,8 +26,8 @@ class PresencaAutomatica:
         Returns:
             dict: Resultado da operação
         """
-        from .views import marcar_presencas_automaticas
-        
+        from .services.rh_service import marcar_presencas_automaticas
+
         return marcar_presencas_automaticas(
             funcionario_id=funcionario_id,
             data_inicio=data_inicio,
@@ -50,8 +50,8 @@ class PresencaAutomatica:
         Returns:
             dict: Resultado da operação
         """
-        from .views import marcar_presencas_automaticas
-        
+        from .services.rh_service import marcar_presencas_automaticas
+
         return marcar_presencas_automaticas(
             funcionario_id=funcionario_id,
             data_inicio=data_inicio,
@@ -73,8 +73,8 @@ class PresencaAutomatica:
         Returns:
             dict: Resultado da operação
         """
-        from .views import remover_presencas_automaticas
-        
+        from .services.rh_service import remover_presencas_automaticas
+
         return remover_presencas_automaticas(
             funcionario_id=funcionario_id,
             data_inicio=data_inicio,
@@ -95,8 +95,8 @@ class PresencaAutomatica:
         Returns:
             dict: Resultado da operação
         """
-        from .views import remover_presencas_automaticas
-        
+        from .services.rh_service import remover_presencas_automaticas
+
         return remover_presencas_automaticas(
             funcionario_id=funcionario_id,
             data_inicio=data_inicio,

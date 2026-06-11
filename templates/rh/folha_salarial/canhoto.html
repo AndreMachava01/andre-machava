@@ -1,79 +1,15 @@
 {% extends 'base_admin.html' %}
+
+{% block body_class %}stock-module{% endblock %}
 {% load static %}
 
 {% block title %}Canhoto de Salário - {{ funcionario_folha.funcionario.nome_completo }}{% endblock %}
 
 {% block extra_style %}
 <style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-
-    /* Botões de Ação Padronizados */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: #f0fdf4;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background: #10b981;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #059669;
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-        background: #6b7280;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #4b5563;
-        transform: translateY(-1px);
-    }
-
-    .btn-outline {
-        background: transparent;
-        color: #6b7280;
-        border: 1px solid #6b7280;
-    }
-
-    .btn-outline:hover {
-        background: #6b7280;
-        color: white;
-        transform: translateY(-1px);
-    }
-
     @media print {
-        .action-buttons {
+        .folha-canhoto-toolbar,
+        .page-header {
             display: none !important;
         }
         
@@ -249,25 +185,64 @@
         border: none;
         font-size: 9px;
     }
+
+    .canhoto-row-separator td {
+        background: #e5e7eb;
+        height: 2px;
+        padding: 0;
+    }
+
+    .canhoto-section-banner td {
+        padding: 8px;
+        font-weight: bold;
+        color: #374151;
+        text-align: center;
+        font-size: 10px;
+    }
+
+    .canhoto-section-banner--beneficios td {
+        background: #f0f9ff;
+    }
+
+    .canhoto-section-banner--descontos td {
+        background: #f3f4f6;
+    }
+
+    .canhoto-footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 12px;
+        color: #6b7280;
+    }
     
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Action Buttons -->
-<div class="action-buttons">
-    <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i>Voltar aos Detalhes
-    </a>
-    <a href="{% url 'rh:folha_salarial' %}" class="btn btn-outline">
-        <i class="fas fa-list"></i>Lista de Folhas
-    </a>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline">
-        <i class="fas fa-home"></i>Dashboard
-    </a>
-    <button onclick="window.print()" class="btn btn-primary">
-        <i class="fas fa-print"></i>Imprimir
-    </button>
+<div class="container stock-page folha-canhoto-toolbar" role="navigation" aria-label="Acções do canhoto">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Canhoto' %}
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-receipt" aria-hidden="true"></i>
+                    Canhoto de salário
+                </h1>
+                <p class="page-subtitle">{{ funcionario_folha.funcionario.nome_completo }} — {{ folha.mes_referencia|date:"F Y" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'rh:folha_salarial' %}" class="btn btn-secondary">
+                    <i class="fas fa-list" aria-hidden="true"></i> Folhas
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="canhoto-container">
@@ -335,11 +310,11 @@
                 <td class="valor">{{ funcionario_folha.horas_extras|floatformat:2 }}h</td>
                 <td class="valor">{{ funcionario_folha.get_horas_extras_valor|floatformat:2 }}</td>
             </tr>
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
+            <tr class="canhoto-row-separator">
+                <td colspan="3"></td>
             </tr>
-            <tr>
-                <td colspan="3" style="background: #f0f9ff; padding: 8px; font-weight: bold; color: #374151; text-align: center; font-size: 10px;">
+            <tr class="canhoto-section-banner canhoto-section-banner--beneficios">
+                <td colspan="3">
                     💰 SUBSÍDIOS E BENEFÍCIOS
                 </td>
             </tr>
@@ -361,11 +336,11 @@
                 <td class="valor">0.00</td>
             </tr>
             {% endfor %}
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
+            <tr class="canhoto-row-separator">
+                <td colspan="3"></td>
             </tr>
-            <tr>
-                <td colspan="3" style="background: #f3f4f6; padding: 8px; font-weight: bold; color: #374151; text-align: center; font-size: 10px;">
+            <tr class="canhoto-section-banner canhoto-section-banner--descontos">
+                <td colspan="3">
                     💸 DESCONTOS
                 </td>
             </tr>
@@ -398,8 +373,8 @@
                 <td class="valor">{{ funcionario_folha.get_desconto_adicional_valor|floatformat:2 }}</td>
             </tr>
             {% endfor %}
-            <tr>
-                <td colspan="3" style="background: #e5e7eb; height: 2px; padding: 0;"></td>
+            <tr class="canhoto-row-separator">
+                <td colspan="3"></td>
             </tr>
         </tbody>
     </table>
@@ -454,7 +429,7 @@
     </div>
     
     <!-- Rodapé -->
-    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #6b7280;">
+    <div class="canhoto-footer">
         Recibo gerado em: {% now "d/m/Y H:i" %}
     </div>
 </div>

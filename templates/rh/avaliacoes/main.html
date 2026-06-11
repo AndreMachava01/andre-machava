@@ -1,22 +1,14 @@
-{% extends 'base_admin.html' %}
+﻿{% extends 'base_admin.html' %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Avaliações de Desempenho - RH{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Avaliações</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Avaliações' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -29,6 +21,9 @@
                 </p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 <a href="{% url 'rh:avaliacao_add' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     Nova Avaliação
@@ -41,69 +36,39 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.total_avaliacoes|default:"0" }}</h3>
-                <p class="stat-label">Total de Avaliações</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ stats.total_avaliacoes|default:"0" }}</div>
+            <div class="stat-label">Total de Avaliações</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-plus"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.planejadas|default:"0" }}</h3>
-                <p class="stat-label">Planejadas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.planejadas|default:"0" }}</div>
+            <div class="stat-label">Planejadas</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-play-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.em_andamento|default:"0" }}</h3>
-                <p class="stat-label">Em Andamento</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.em_andamento|default:"0" }}</div>
+            <div class="stat-label">Em Andamento</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.concluidas|default:"0" }}</h3>
-                <p class="stat-label">Concluídas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.concluidas|default:"0" }}</div>
+            <div class="stat-label">Concluídas</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.canceladas|default:"0" }}</h3>
-                <p class="stat-label">Canceladas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.canceladas|default:"0" }}</div>
+            <div class="stat-label">Canceladas</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.nota_media|floatformat:1|default:"0.0" }}</h3>
-                <p class="stat-label">Nota Média</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.nota_media|floatformat:1|default:"0.0" }}</div>
+            <div class="stat-label">Nota Média</div>
         </div>
     </div>
     
+
     <!-- Filters Section -->
     <div class="filters-section">
         <h3 class="filters-title">
@@ -180,7 +145,13 @@
                 </select>
             </div>
             
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+            
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+            
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Buscar
@@ -451,18 +422,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
 </script>
 {% endblock %}

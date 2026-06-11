@@ -1,0 +1,711 @@
+﻿<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificação de Ajuste Salarial - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ec4899;
+        }
+        .header-info h1 {
+            margin: 0 0 10px 0;
+            color: #374151;
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-info .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-success {
+            background: #b45309;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #92400e;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .document-container {
+            background: white;
+            padding: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .document-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ec4899;
+        }
+        .document-header h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #374151;
+            text-transform: uppercase;
+        }
+        .document-header .company-info {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 5px;
+            line-height: 1.3;
+        }
+        .document-body {
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        .document-section {
+            margin-bottom: 8px;
+        }
+        .document-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #92400e;
+        }
+        .document-section p {
+            font-size: 11px;
+            text-align: justify;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            color: #4b5563;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 11px;
+            background: white;
+        }
+        .info-table td {
+            padding: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .info-table td:first-child {
+            font-weight: 600;
+            width: 35%;
+            background: #f9fafb;
+            color: #374151;
+        }
+        .info-table td:last-child {
+            color: #4b5563;
+        }
+        .salary-comparison {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        .salary-comparison h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+            text-align: center;
+        }
+        .salary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .salary-item {
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+        }
+        .salary-item .label {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .salary-item .value {
+            font-weight: bold;
+            font-size: 14px;
+            color: #374151;
+        }
+        .salary-item .value.increase {
+            color: #92400e;
+        }
+        .confirmation-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .confirmation-section.confirmed {
+            background: #d1fae5;
+            border-color: #92400e;
+        }
+        .confirmation-section h3 {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #856404;
+        }
+        .confirmation-section.confirmed h3 {
+            color: #065f46;
+        }
+        .confirmation-form {
+            margin-top: 8px;
+        }
+        .confirmation-form textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 11px;
+            min-height: 60px;
+            margin-bottom: 8px;
+            resize: vertical;
+            font-family: Arial, sans-serif;
+        }
+        .confirmation-form .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .confirmation-form .btn {
+            flex: 1;
+        }
+        .signature-section {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            align-items: start;
+        }
+        .signature-box {
+            text-align: center;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 8px;
+            margin-top: 40px;
+            width: 100%;
+        }
+        .signature-box .label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+        .signature-box .name {
+            margin-top: 35px;
+            font-size: 11px;
+            color: #4b5563;
+            min-height: 15px;
+        }
+        .signature-box .signature-label {
+            margin-top: 4px;
+            font-size: 10px;
+            color: #6b7280;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .card-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #b45309;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-header i {
+            color: #92400e;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #0c5460;
+            color: #0c5460;
+        }
+        .no-print {
+            display: block;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .header-section {
+                display: none !important;
+            }
+            .container {
+                box-shadow: none;
+                padding: 10mm;
+                margin: 0;
+                max-width: 100%;
+            }
+            .document-container {
+                border: none;
+                padding: 0;
+                box-shadow: none;
+            }
+            .document-header {
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+            .document-header h2 {
+                font-size: 16px;
+            }
+            .document-header .company-info {
+                font-size: 10px;
+                margin-top: 3px;
+            }
+            .document-section {
+                margin-bottom: 6px;
+                page-break-inside: avoid;
+            }
+            .document-section p {
+                font-size: 10px;
+                line-height: 1.2;
+                margin-bottom: 2px;
+            }
+            .card {
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+                margin-bottom: 8px;
+                padding: 8px;
+                break-inside: avoid;
+            }
+            .card-header {
+                font-size: 11px;
+                margin-bottom: 5px;
+                padding-bottom: 4px;
+            }
+            .salary-comparison {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin: 8px 0;
+                padding: 8px;
+            }
+            .salary-comparison h3 {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+            .salary-item {
+                padding: 6px;
+            }
+            .salary-item .label {
+                font-size: 9px;
+                margin-bottom: 2px;
+            }
+            .salary-item .value {
+                font-size: 12px;
+            }
+            .salary-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+            }
+            .info-table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin: 6px 0;
+                font-size: 10px;
+            }
+            .info-table td {
+                padding: 4px;
+            }
+            .info-table tr {
+                page-break-inside: avoid;
+            }
+            .confirmation-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin: 10px 0;
+                padding: 8px;
+            }
+            .confirmation-section h3 {
+                font-size: 11px;
+                margin-bottom: 5px;
+            }
+            .signature-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-top: 15px;
+                gap: 30px;
+            }
+            .signature-box {
+                margin-top: 25px;
+                padding-top: 5px;
+            }
+            .signature-box .label {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            .signature-box .name {
+                margin-top: 20px;
+                font-size: 10px;
+            }
+            .signature-box .signature-label {
+                font-size: 9px;
+                margin-top: 2px;
+            }
+            .btn {
+                display: none !important;
+            }
+            .alert {
+                page-break-inside: avoid;
+            }
+            /* Ajustes de cores para impressão */
+            .card-header {
+                color: #000 !important;
+                border-bottom-color: #000 !important;
+            }
+            .card-header i {
+                color: #000 !important;
+            }
+            .salary-item .value.increase {
+                color: #000 !important;
+            }
+            /* Garantir que tabelas não sejam quebradas */
+            table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* Espaçamento entre seções */
+            .document-section + .document-section {
+                margin-top: 20px;
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header-section {
+                flex-direction: column;
+            }
+            .header-actions {
+                width: 100%;
+                margin-top: 15px;
+            }
+            .header-actions .btn {
+                flex: 1;
+            }
+            .document-container {
+                padding: 20px;
+            }
+            .salary-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+            }
+            .salary-item {
+                padding: 6px;
+            }
+            .salary-item .label {
+                font-size: 9px;
+            }
+            .salary-item .value {
+                font-size: 11px;
+            }
+            .signature-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .signature-box {
+                margin-top: 30px;
+            }
+            .signature-box .name {
+                margin-top: 25px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <div class="header-info">
+                <h1><i class="fas fa-file-alt"></i> Notificação de Ajuste Salarial</h1>
+                <p class="subtitle">{{ promocao.funcionario.nome_completo }} - {{ promocao.get_tipo_display }}</p>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <a href="{% url 'rh:promocao_detail' promocao.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar aos Detalhes
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+            <div class="no-print">
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div style="color: #b93c3c; margin-bottom: 8px; padding: 10px; background: #f8d7da; border-radius: 3px;">{{ message }}</div>
+                    {% else %}
+                        <div style="color: #2065d2; margin-bottom: 8px; padding: 10px; background: #d1ecf1; border-radius: 3px;">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="document-container">
+            <div class="document-header">
+                {% if empresa %}
+                <div>
+                    <strong style="font-size: 18px;">{{ empresa.nome }}</strong>
+                    {% if empresa.tipo_societario %}<span style="font-size: 14px;"> {{ empresa.tipo_societario }}</span>{% endif %}
+                </div>
+                <div class="company-info">
+                    {% if empresa.endereco %}Av. {{ empresa.endereco }}{% endif %}
+                    {% if empresa.bairro %} - {{ empresa.bairro }}{% endif %}
+                    {% if empresa.cidade %} - {{ empresa.cidade }}{% endif %}
+                    {% if empresa.provincia %} - {{ empresa.provincia }}{% endif %}<br>
+                    {% if empresa.telefone %}Tel: {{ empresa.telefone }}{% endif %}
+                    {% if empresa.email %} | Email: {{ empresa.email }}{% endif %}
+                </div>
+                {% endif %}
+                <h2>Notificação de Ajuste Salarial</h2>
+                <div style="font-size: 13px; margin-top: 8px; color: #6b7280;">
+                    Data de Emissão: {{ data_emissao|date:"d/m/Y" }}
+                </div>
+            </div>
+            
+            <div class="document-body">
+                <div class="document-section">
+                    <p style="margin-bottom: 4px;"><strong>Senhor(a) {{ promocao.funcionario.nome_completo }},</strong></p>
+                    <p style="margin-bottom: 4px;">Por meio desta, vimos notificar V. Sa. sobre a aprovação do seu ajuste salarial/{{ promocao.get_tipo_display|lower }}, conforme detalhes abaixo:</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle"></i> Informações do Ajuste
+                    </div>
+                    <table class="info-table">
+                        <tr>
+                            <td>Funcionário</td>
+                            <td>{{ promocao.funcionario.nome_completo }} {% if promocao.funcionario.codigo_funcionario %}({{ promocao.funcionario.codigo_funcionario }}){% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td>Tipo de Ajuste</td>
+                            <td>{{ promocao.get_tipo_display }}</td>
+                        </tr>
+                        <tr>
+                            <td>Departamento</td>
+                            <td>{% if promocao.funcionario.departamento %}{{ promocao.funcionario.departamento.nome }}{% else %}Não especificado{% endif %}</td>
+                        </tr>
+                        {% if promocao.tipo == 'PROMOCAO' %}
+                        <tr>
+                            <td>Cargo Anterior</td>
+                            <td>{% if promocao.cargo_anterior %}{{ promocao.cargo_anterior.nome }}{% else %}Não especificado{% endif %}</td>
+                        </tr>
+                        {% if promocao.cargo_novo %}
+                        <tr>
+                            <td>Novo Cargo</td>
+                            <td>{{ promocao.cargo_novo.nome }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endif %}
+                        <tr>
+                            <td>Data da Solicitação</td>
+                            <td>{{ promocao.data_solicitacao|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td>Data de Aprovação</td>
+                            <td>{% if promocao.data_aprovacao %}{{ promocao.data_aprovacao|date:"d/m/Y" }}{% else %}Não aprovada{% endif %}</td>
+                        </tr>
+                        {% if promocao.aprovado_por %}
+                        <tr>
+                            <td>Aprovado por</td>
+                            <td>{{ promocao.aprovado_por.get_full_name|default:promocao.aprovado_por.username }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                
+                <div class="salary-comparison">
+                    <h3><i class="fas fa-chart-line"></i> Comparação Salarial</h3>
+                    <div class="salary-grid">
+                        <div class="salary-item">
+                            <div class="label">Salário Anterior</div>
+                            <div class="value">{{ promocao.salario_anterior|floatformat:2 }} MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Novo Salário</div>
+                            <div class="value">{{ promocao.salario_novo|floatformat:2 }} MT</div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Valor do Aumento</div>
+                            <div class="value increase">
+                                {% if promocao.valor_aumento is not None %}
+                                    {% if promocao.valor_aumento > 0 %}+{% endif %}{{ promocao.valor_aumento|floatformat:2 }} MT
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="salary-item">
+                            <div class="label">Percentual de Aumento</div>
+                            <div class="value increase">
+                                {% if promocao.percentual_aumento is not None %}
+                                    {% if promocao.percentual_aumento > 0 %}+{% endif %}{{ promocao.percentual_aumento|floatformat:1 }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt"></i> Motivação
+                    </div>
+                    <div class="document-section">
+                        <p style="white-space: pre-wrap; margin: 0; font-size: 11px; line-height: 1.3;">{{ promocao.motivo }}</p>
+                    </div>
+                </div>
+                
+                {% if promocao.justificativa %}
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-align-left"></i> Justificativa Detalhada
+                    </div>
+                    <div class="document-section">
+                        <p style="white-space: pre-wrap; margin: 0; font-size: 11px; line-height: 1.3;">{{ promocao.justificativa }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="document-section" style="margin-top: 8px;">
+                    <p style="margin: 0;"><strong>Data de Implementação:</strong> O ajuste será implementado na próxima folha salarial após a confirmação por parte do funcionário.</p>
+                </div>
+                
+                {% if not promocao.confirmado_por_funcionario %}
+                <div class="confirmation-section no-print">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Confirmação Necessária</h3>
+                    <p style="font-size: 11px; margin-bottom: 8px; color: #856404;">
+                        Por favor, confirme o recebimento desta notificação e sua concordância com o ajuste proposto.
+                    </p>
+                    <form method="post" action="{% url 'rh:promocao_confirmar' promocao.id %}" class="confirmation-form">
+                        {% csrf_token %}
+                        <textarea name="observacoes" placeholder="Observações (opcional): Ex: Concordo com o ajuste proposto."></textarea>
+                        <div class="form-actions">
+                            <button type="submit" name="confirmar" value="true" class="btn btn-success">
+                                <i class="fas fa-check"></i> Confirmar e Aceitar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% else %}
+                <div class="confirmation-section confirmed">
+                    <h3><i class="fas fa-check-circle"></i> Notificação Confirmada</h3>
+                    <p style="font-size: 11px; color: #065f46; margin: 0;">
+                        Esta notificação foi confirmada em {{ promocao.data_confirmacao|date:"d/m/Y \à\s H:i" }}.
+                    </p>
+                    {% if promocao.observacoes_confirmacao %}
+                    <p style="font-size: 11px; margin-top: 5px; color: #065f46;">
+                        <strong>Observações:</strong> {{ promocao.observacoes_confirmacao }}
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <div class="label">Funcionário</div>
+                        <div class="name">{{ promocao.funcionario.nome_completo }}</div>
+                        <div class="signature-label">Assinatura</div>
+                    </div>
+                    <div class="signature-box">
+                        <div class="label">Gestor de Recursos Humanos</div>
+                        <div class="name">
+                            {% if promocao.aprovado_por %}{{ promocao.aprovado_por.get_full_name|default:promocao.aprovado_por.username }}{% else %}_________________{% endif %}
+                        </div>
+                        <div class="signature-label">Assinatura</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function printDocument() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

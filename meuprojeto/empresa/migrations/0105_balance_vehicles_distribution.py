@@ -9,14 +9,14 @@ def balance_vehicles_distribution(apps, schema_editor):
     """
     Transportadora = apps.get_model('empresa', 'Transportadora')
     Sucursal = apps.get_model('empresa', 'Sucursal')
-    
-    # Obter sucursais
-    sede = Sucursal.objects.get(nome='Sede - Conception')
-    marracuene = Sucursal.objects.get(nome='LOJA DE MARRACUENE')
-    
-    # Mover um automóvel da Sede para Marracuene para equilibrar
-    # Vamos mover o SED-AUTO-02 (ID: 14) para Marracuene
-    viatura_mover = Transportadora.objects.get(id=14)
+
+    try:
+        sede = Sucursal.objects.get(nome='Sede - Conception')
+        marracuene = Sucursal.objects.get(nome='LOJA DE MARRACUENE')
+        viatura_mover = Transportadora.objects.get(id=14)
+    except (Sucursal.DoesNotExist, Transportadora.DoesNotExist):
+        print('Dados de veículos/sucursais não encontrados; migração ignorada.')
+        return
     viatura_mover.sucursal = marracuene
     
     # Regenerar nome baseado na nova sucursal

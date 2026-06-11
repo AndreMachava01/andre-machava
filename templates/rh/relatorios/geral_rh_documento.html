@@ -1,0 +1,1362 @@
+﻿<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Geral de RH - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% load static %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #333;
+        }
+        .no-print {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .print-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #ec4899;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .logo-section img {
+            max-height: 40px;
+            width: auto;
+        }
+        .title-section {
+            flex: 1;
+            text-align: center;
+        }
+        .document-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .document-subtitle {
+            font-size: 11px;
+            color: #6b7280;
+            margin: 5px 0 0 0;
+        }
+        .info-section {
+            text-align: right;
+            font-size: 9px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #92400e;
+            margin: 15px 0 8px 0;
+            padding: 5px 0;
+            border-bottom: 2px solid #b45309;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .summary-card {
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+        .summary-label {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+        .summary-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 9px;
+        }
+        table th {
+            background: #b45309;
+            color: white;
+            padding: 7px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #059669;
+        }
+        table td {
+            padding: 6px;
+            border: 1px solid #d1d5db;
+        }
+        table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .currency {
+            font-family: 'Courier New', monospace;
+        }
+        .document-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #d1d5db;
+            text-align: center;
+            font-size: 8px;
+            color: #6b7280;
+        }
+        .highlight-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .highlight-box strong {
+            color: #92400e;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                max-width: 100%;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <div class="action-buttons">
+            <a href="{% url 'rh:relatorios' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar aos Relatórios
+            </a>
+            <a href="{% url 'rh:main' %}" class="btn btn-secondary">
+                <i class="fas fa-users"></i> RH
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+        
+        <!-- Formulário de Filtros -->
+        <div class="filters-section" style="margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 5px; border-left: 4px solid #3b82f6;">
+            <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #374151; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-filter"></i> Filtros do Relatório
+            </h3>
+            <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #374151;">Mês de Referência</label>
+                    <input type="month" name="mes_referencia" value="{{ filtros.mes_referencia|default:'' }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #374151;">Data Início</label>
+                    <input type="date" name="data_inicio" value="{{ filtros.data_inicio|default:'' }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #374151;">Data Fim</label>
+                    <input type="date" name="data_fim" value="{{ filtros.data_fim|default:'' }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #374151;">Departamento</label>
+                    <select name="departamento" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">Todos os departamentos</option>
+                        {% for dept in departamentos %}
+                            <option value="{{ dept.id }}" {% if filtros.departamento == dept.id|stringformat:"s" %}selected{% endif %}>
+                                {{ dept.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                    <a href="{% url 'rh:relatorio_geral_rh_documento' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">
+                        <i class="fas fa-times"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="print-container">
+        <!-- Cabeçalho -->
+        <div class="document-header">
+            <div class="logo-section">
+                {% if empresa and empresa.logo %}
+                <img src="{{ empresa.logo.url }}" alt="Logotipo da {{ empresa.nome }}" class="logo">
+                {% else %}
+                <img src="{% static 'empresa/img/LOGO DA CONCEPTION.jpg' %}" alt="Logo Conception" class="logo">
+                {% endif %}
+            </div>
+            <div class="title-section">
+                <h1 class="document-title">RELATÓRIO GERAL DE RECURSOS HUMANOS</h1>
+                <p class="document-subtitle">
+                    Período: 
+                    {% if filtros.mes_referencia %}
+                        {{ filtros.mes_referencia|slice:":4" }}/{{ filtros.mes_referencia|slice:"5:" }}
+                    {% elif filtros.data_inicio and filtros.data_fim %}
+                        {{ filtros.data_inicio|date:"d/m/Y" }} a {{ filtros.data_fim|date:"d/m/Y" }}
+                    {% else %}
+                        Últimos 3 meses
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-section">
+                <div><strong>Relatório Nº:</strong> RH-GERAL-{{ data_relatorio|date:"YmdHis" }}</div>
+                <div><strong>Data:</strong> {{ data_relatorio|date:"d/m/Y" }}</div>
+                <div><strong>Gerado por:</strong> {{ request.user.get_full_name|default:request.user.username }}</div>
+            </div>
+        </div>
+        
+        <!-- Resumo Executivo -->
+        <div class="highlight-box">
+            <strong>RESUMO EXECUTIVO:</strong> 
+            {{ total_funcionarios }} funcionário{{ total_funcionarios|pluralize }}, 
+            {{ total_folhas }} folha{{ total_folhas|pluralize }} salarial{{ total_folhas|pluralize }}, 
+            Custo Total de RH: {{ total_geral_custos_rh|floatformat:2 }} MT
+        </div>
+        
+        <!-- 1. FUNCIONÁRIOS -->
+        <div class="section-title">
+            <i class="fas fa-users"></i> FUNCIONÁRIOS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Funcionários</div>
+                <div class="summary-value">{{ total_funcionarios }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Funcionários Ativos</div>
+                <div class="summary-value">{{ funcionarios_ativos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Funcionários Inativos</div>
+                <div class="summary-value">{{ funcionarios_inativos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Taxa de Ativos</div>
+                <div class="summary-value">
+                    {% if total_funcionarios > 0 %}
+                        {% widthratio funcionarios_ativos total_funcionarios 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if funcionarios_por_departamento %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Departamento</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in funcionarios_por_departamento %}
+                <tr>
+                    <td>{{ dept.departamento__nome|default:"Sem Departamento" }}</td>
+                    <td class="text-center">{{ dept.total }}</td>
+                    <td class="text-center">
+                        {% if total_funcionarios > 0 %}
+                            {% widthratio dept.total total_funcionarios 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if funcionarios_por_cargo %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-briefcase"></i> FUNCIONÁRIOS POR CARGO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cargo</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cargo in funcionarios_por_cargo %}
+                <tr>
+                    <td>{{ cargo.cargo__nome|default:"Sem Cargo" }}</td>
+                    <td class="text-center">{{ cargo.total }}</td>
+                    <td class="text-center">
+                        {% if total_funcionarios > 0 %}
+                            {% widthratio cargo.total total_funcionarios 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if funcionarios_por_sucursal %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-building"></i> FUNCIONÁRIOS POR SUCURSAL
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sucursal</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sucursal in funcionarios_por_sucursal %}
+                <tr>
+                    <td>{{ sucursal.sucursal__nome|default:"Sem Sucursal" }}</td>
+                    <td class="text-center">{{ sucursal.total }}</td>
+                    <td class="text-center">
+                        {% if total_funcionarios > 0 %}
+                            {% widthratio sucursal.total total_funcionarios 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if funcionarios_nuit_inss %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-id-card"></i> FUNCIONÁRIOS - NUIT E INSS COM VALORES
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Departamento</th>
+                    <th class="text-center">NUIT</th>
+                    <th class="text-center">Nº Contrib. INSS</th>
+                    <th class="text-center">Mês Ref.</th>
+                    <th class="text-right">Salário Bruto</th>
+                    <th class="text-right">INSS Trabalhador (3%)</th>
+                    <th class="text-right">INSS Empregador (4%)</th>
+                    <th class="text-right">INSS Total (7%)</th>
+                    <th class="text-center">IRPS Taxa</th>
+                    <th class="text-right">IRPS Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in funcionarios_nuit_inss %}
+                <tr>
+                    <td><strong>{{ item.funcionario.nome_completo }}</strong></td>
+                    <td>{{ item.departamento }}</td>
+                    <td class="text-center">
+                        {% if item.nuit != '-' %}
+                            <strong style="color: #059669;">{{ item.nuit }}</strong>
+                        {% else %}
+                            <span style="color: #dc2626;">⚠️ Não informado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if item.numero_contribuinte_inss != '-' %}
+                            <strong style="color: #059669;">{{ item.numero_contribuinte_inss }}</strong>
+                        {% else %}
+                            <span style="color: #dc2626;">⚠️ Não informado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ item.mes_referencia|date:"m/Y" }}</td>
+                    <td class="text-right currency">{{ item.salario_bruto|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ item.inss_trabalhador|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ item.inss_empregador|floatformat:2 }} MT</td>
+                    <td class="text-right currency"><strong>{{ item.inss_total|floatformat:2 }} MT</strong></td>
+                    <td class="text-center">
+                        {% if item.irps_valor > 0 %}
+                            <span style="color: #059669;"><strong>{{ item.irps_taxa }}</strong></span>
+                        {% else %}
+                            <span style="color: #6b7280;">Isento</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right currency"><strong>{{ item.irps_valor|floatformat:2 }} MT</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background: #f3f4f6; font-weight: bold;">
+                    <td colspan="5" class="text-right"><strong>TOTAIS:</strong></td>
+                    <td class="text-right currency">{{ total_salario_bruto_nuit_inss|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ total_inss_trabalhador_nuit_inss|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ total_inss_empregador_nuit_inss|floatformat:2 }} MT</td>
+                    <td class="text-right currency"><strong>{{ total_inss_geral_nuit_inss|floatformat:2 }} MT</strong></td>
+                    <td class="text-center">-</td>
+                    <td class="text-right currency"><strong>{{ total_irps_nuit_inss|floatformat:2 }} MT</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        {% endif %}
+        
+        {% if funcionarios_detalhados %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-list"></i> LISTA DETALHADA DE FUNCIONÁRIOS (Primeiros 100)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th>Departamento</th>
+                    <th>Sucursal</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Admissão</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for func in funcionarios_detalhados %}
+                <tr>
+                    <td class="text-center">{{ func.codigo_funcionario|default:"-" }}</td>
+                    <td><strong>{{ func.nome_completo }}</strong></td>
+                    <td>{{ func.cargo.nome|default:"-" }}</td>
+                    <td>{{ func.departamento.nome|default:"-" }}</td>
+                    <td>{{ func.sucursal.nome|default:"-" }}</td>
+                    <td class="text-center">
+                        {% if func.status == 'AT' %}
+                            <span class="status-badge status-active">Ativo</span>
+                        {% else %}
+                            <span class="status-badge status-inactive">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ func.data_admissao|date:"d/m/Y"|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 2. PRESENÇAS -->
+        <div class="section-title">
+            <i class="fas fa-calendar-check"></i> PRESENÇAS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Registros</div>
+                <div class="summary-value">{{ total_presencas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Presenças</div>
+                <div class="summary-value">{{ presencas_presentes }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Faltas</div>
+                <div class="summary-value">{{ presencas_faltas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Taxa de Presença</div>
+                <div class="summary-value">
+                    {% if total_presencas > 0 %}
+                        {% widthratio presencas_presentes total_presencas 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if presencas_por_tipo %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-pie"></i> PRESENÇAS POR TIPO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in presencas_por_tipo %}
+                <tr>
+                    <td>{{ tipo.tipo_presenca__nome|default:"-" }}</td>
+                    <td class="text-center">{{ tipo.total }}</td>
+                    <td class="text-center">
+                        {% if tipo.percentual < 0.5 and tipo.total > 0 %}
+                            &lt;1%
+                        {% else %}
+                            {{ tipo.percentual|floatformat:1 }}%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr style="background: #f3f4f6; font-weight: bold;">
+                    <td><strong>TOTAL</strong></td>
+                    <td class="text-center"><strong>{{ total_presencas }}</strong></td>
+                    <td class="text-center"><strong>100.0%</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if presencas_por_departamento %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-building"></i> PRESENÇAS POR DEPARTAMENTO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Departamento</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Presentes</th>
+                    <th class="text-center">Faltas</th>
+                    <th class="text-center">Taxa Presença</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in presencas_por_departamento %}
+                <tr>
+                    <td>{{ dept.funcionario__departamento__nome|default:"Sem Departamento" }}</td>
+                    <td class="text-center">{{ dept.total }}</td>
+                    <td class="text-center">{{ dept.presentes }}</td>
+                    <td class="text-center">{{ dept.faltas }}</td>
+                    <td class="text-center">
+                        {% if dept.total > 0 %}
+                            {% widthratio dept.presentes dept.total 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if presencas_por_funcionario %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-user-check"></i> RESUMO DE PRESENÇAS POR FUNCIONÁRIO (Top 50)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Departamento</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Presentes</th>
+                    <th class="text-center">Faltas/Ausentes</th>
+                    <th class="text-center">Licença</th>
+                    <th class="text-center">Férias</th>
+                    <th class="text-center">Feriado</th>
+                    <th class="text-center">Folga</th>
+                    <th class="text-center">Atraso</th>
+                    <th class="text-center">Outros</th>
+                    <th class="text-center">Taxa Presença</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for func in presencas_por_funcionario %}
+                <tr>
+                    <td><strong>{{ func.funcionario__nome_completo }}</strong></td>
+                    <td>{{ func.funcionario__departamento__nome|default:"Sem Departamento" }}</td>
+                    <td class="text-center"><strong>{{ func.total }}</strong></td>
+                    <td class="text-center">{{ func.presentes }}</td>
+                    <td class="text-center">{{ func.faltas_ausentes }}</td>
+                    <td class="text-center">{{ func.licenca }}</td>
+                    <td class="text-center">{{ func.ferias }}</td>
+                    <td class="text-center">{{ func.feriado }}</td>
+                    <td class="text-center">{{ func.folga }}</td>
+                    <td class="text-center">{{ func.atraso }}</td>
+                    <td class="text-center" title="Outros: Outro tipo={{ func.outros }}, Não categorizado={{ func.outros_tipos }}">
+                        {% with outros_total=func.outros|add:func.outros_tipos %}
+                            {% if outros_total > 0 %}
+                                <span style="cursor: help;" title="Outro tipo: {{ func.outros }}, Não categorizado: {{ func.outros_tipos }}">
+                                    {{ outros_total }}
+                                </span>
+                            {% else %}
+                                0
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ func.taxa_presenca|floatformat:1 }}%</strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 3. FOLHAS SALARIAIS -->
+        <div class="section-title">
+            <i class="fas fa-money-bill-wave"></i> FOLHAS SALARIAIS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Folhas</div>
+                <div class="summary-value">{{ total_folhas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Folhas Fechadas</div>
+                <div class="summary-value">{{ folhas_fechadas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Bruto</div>
+                <div class="summary-value currency">{{ total_salarios_bruto|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Líquido</div>
+                <div class="summary-value currency">{{ total_salarios_liquido|floatformat:2 }} MT</div>
+            </div>
+        </div>
+        
+        <div class="summary-grid" style="margin-top: 10px;">
+            <div class="summary-card">
+                <div class="summary-label">Folhas Calculadas</div>
+                <div class="summary-value">{{ folhas_calculadas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Folhas Abertas</div>
+                <div class="summary-value">{{ folhas_abertas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Descontos</div>
+                <div class="summary-value currency">{{ total_descontos_folha|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Encargos</div>
+                <div class="summary-value currency">{{ total_encargos|floatformat:2 }} MT</div>
+            </div>
+        </div>
+        
+        {% if folhas_por_status %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-bar"></i> FOLHAS POR STATUS
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in folhas_por_status %}
+                <tr>
+                    <td>{{ status.status }}</td>
+                    <td class="text-center">{{ status.total }}</td>
+                    <td class="text-right currency">{{ status.valor_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if folhas_detalhadas %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-list"></i> LISTA DETALHADA DE FOLHAS SALARIAIS (Últimas 50)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mês Referência</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Funcionários</th>
+                    <th class="text-right">Total Bruto</th>
+                    <th class="text-right">Total Líquido</th>
+                    <th class="text-right">Encargos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for folha in folhas_detalhadas %}
+                <tr>
+                    <td>{{ folha.mes_referencia|date:"m/Y" }}</td>
+                    <td class="text-center">{{ folha.status }}</td>
+                    <td class="text-center">{{ folha.total_funcionarios }}</td>
+                    <td class="text-right currency">{{ folha.total_bruto|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ folha.total_liquido|floatformat:2 }} MT</td>
+                    <td class="text-right currency">{{ folha.total_encargos|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 4. BENEFÍCIOS E DESCONTOS -->
+        <div class="section-title">
+            <i class="fas fa-gift"></i> BENEFÍCIOS E DESCONTOS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Benefícios</div>
+                <div class="summary-value currency">{{ total_beneficios|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total de Descontos</div>
+                <div class="summary-value currency">{{ total_descontos|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Saldo (Benef. - Desc.)</div>
+                <div class="summary-value currency">{{ saldo_beneficios_descontos|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média por Funcionário</div>
+                <div class="summary-value currency">{{ media_beneficios_descontos_funcionario|floatformat:2 }} MT</div>
+            </div>
+        </div>
+        
+        {% if descontos_por_conta %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-exchange-alt"></i> DESCONTOS POR CONTA DE CANALIZAÇÃO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Conta</th>
+                    <th>Descrição</th>
+                    <th>Desconto</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Valor Total</th>
+                    <th class="text-center">% do Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in descontos_por_conta %}
+                <tr>
+                    <td><strong>{{ item.desconto__conta_canalizacao|default:"-" }}</strong></td>
+                    <td>{{ item.desconto__descricao_canalizacao|default:"-" }}</td>
+                    <td>{{ item.desconto__nome }} ({{ item.desconto__codigo }})</td>
+                    <td class="text-center">{{ item.quantidade }}</td>
+                    <td class="text-right currency">{{ item.total|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        <strong>{{ item.percentual|floatformat:1 }}%</strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 5. HORAS EXTRAS -->
+        <div class="section-title">
+            <i class="fas fa-clock"></i> HORAS EXTRAS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Quantidade de Horas</div>
+                <div class="summary-value">{{ quantidade_horas_extras|floatformat:1 }}h</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Valor Total</div>
+                <div class="summary-value currency">{{ total_horas_extras|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média por Hora</div>
+                <div class="summary-value currency">
+                    {% if quantidade_horas_extras > 0 %}
+                        {% widthratio total_horas_extras quantidade_horas_extras|floatformat:0 1 %} MT/h
+                    {% else %}
+                        0.00 MT/h
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if horas_extras_por_tipo %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-pie"></i> HORAS EXTRAS POR TIPO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-center">Total Horas</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in horas_extras_por_tipo %}
+                <tr>
+                    <td>
+                        {% if tipo.tipo == 'DI' %}Diurno
+                        {% elif tipo.tipo == 'NO' %}Noturno
+                        {% elif tipo.tipo == 'EX' %}Extraordinário
+                        {% else %}{{ tipo.tipo }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ tipo.quantidade }}</td>
+                    <td class="text-center">{{ tipo.total_horas|floatformat:1 }}h</td>
+                    <td class="text-right currency">{{ tipo.valor_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if horas_extras_por_departamento %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-building"></i> HORAS EXTRAS POR DEPARTAMENTO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Departamento</th>
+                    <th class="text-center">Registros</th>
+                    <th class="text-center">Total Horas</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in horas_extras_por_departamento %}
+                <tr>
+                    <td>{{ dept.funcionario__departamento__nome|default:"Sem Departamento" }}</td>
+                    <td class="text-center">{{ dept.quantidade }}</td>
+                    <td class="text-center">{{ dept.total_horas|floatformat:1 }}h</td>
+                    <td class="text-right currency">{{ dept.valor_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if horas_extras_detalhadas %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-list"></i> REGISTROS DE HORAS EXTRAS (Últimos 100)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Funcionário</th>
+                    <th>Departamento</th>
+                    <th class="text-center">Tipo</th>
+                    <th class="text-center">Horas</th>
+                    <th class="text-right">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for he in horas_extras_detalhadas %}
+                <tr>
+                    <td class="text-center">{{ he.data|date:"d/m/Y" }}</td>
+                    <td>{{ he.funcionario.nome_completo }}</td>
+                    <td>{{ he.funcionario.departamento.nome|default:"-" }}</td>
+                    <td class="text-center">
+                        {% if he.tipo == 'DI' %}Diurno
+                        {% elif he.tipo == 'NO' %}Noturno
+                        {% elif he.tipo == 'EX' %}Extraordinário
+                        {% else %}{{ he.tipo }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ he.quantidade_horas|floatformat:1 }}h</td>
+                    <td class="text-right currency">{{ he.valor_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 6. TREINAMENTOS -->
+        <div class="section-title">
+            <i class="fas fa-graduation-cap"></i> TREINAMENTOS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Treinamentos</div>
+                <div class="summary-value">{{ total_treinamentos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Treinamentos Concluídos</div>
+                <div class="summary-value">{{ treinamentos_concluidos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total de Inscrições</div>
+                <div class="summary-value">{{ total_inscricoes }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Custo Total</div>
+                <div class="summary-value currency">{{ total_custo_treinamentos|floatformat:2 }} MT</div>
+            </div>
+        </div>
+        
+        {% if treinamentos_por_tipo %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-pie"></i> TREINAMENTOS POR TIPO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Custo Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in treinamentos_por_tipo %}
+                <tr>
+                    <td>{{ tipo.tipo }}</td>
+                    <td class="text-center">{{ tipo.total }}</td>
+                    <td class="text-right currency">{{ tipo.custo_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if treinamentos_por_status %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-bar"></i> TREINAMENTOS POR STATUS
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-right">Custo Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in treinamentos_por_status %}
+                <tr>
+                    <td>{{ status.status }}</td>
+                    <td class="text-center">{{ status.total }}</td>
+                    <td class="text-right currency">{{ status.custo_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if treinamentos_detalhados %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-list"></i> LISTA DETALHADA DE TREINAMENTOS (Últimos 50)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th class="text-center">Início</th>
+                    <th class="text-center">Fim</th>
+                    <th class="text-center">Inscrições</th>
+                    <th class="text-right">Custo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for treinamento in treinamentos_detalhados %}
+                <tr>
+                    <td><strong>{{ treinamento.nome }}</strong></td>
+                    <td>{{ treinamento.tipo }}</td>
+                    <td>{{ treinamento.status }}</td>
+                    <td class="text-center">{{ treinamento.data_inicio|date:"d/m/Y" }}</td>
+                    <td class="text-center">{{ treinamento.data_fim|date:"d/m/Y" }}</td>
+                    <td class="text-center">{{ treinamento.inscricoes.count }}</td>
+                    <td class="text-right currency">{{ treinamento.custo_total|floatformat:2 }} MT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 7. AVALIAÇÕES -->
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i> AVALIAÇÕES DE DESEMPENHO
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total de Avaliações</div>
+                <div class="summary-value">{{ total_avaliacoes }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Avaliações Concluídas</div>
+                <div class="summary-value">{{ avaliacoes_concluidas }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média de Notas</div>
+                <div class="summary-value">{{ media_notas|floatformat:2 }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Taxa de Conclusão</div>
+                <div class="summary-value">
+                    {% if total_avaliacoes > 0 %}
+                        {% widthratio avaliacoes_concluidas total_avaliacoes 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if avaliacoes_por_status %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-bar"></i> AVALIAÇÕES POR STATUS
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-center">Média de Notas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in avaliacoes_por_status %}
+                <tr>
+                    <td>{{ status.status }}</td>
+                    <td class="text-center">{{ status.total }}</td>
+                    <td class="text-center">{{ status.media_notas|floatformat:2|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if avaliacoes_por_departamento %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-building"></i> AVALIAÇÕES POR DEPARTAMENTO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Departamento</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Concluídas</th>
+                    <th class="text-center">Média Notas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in avaliacoes_por_departamento %}
+                <tr>
+                    <td>{{ dept.funcionario__departamento__nome|default:"Sem Departamento" }}</td>
+                    <td class="text-center">{{ dept.total }}</td>
+                    <td class="text-center">{{ dept.concluidas }}</td>
+                    <td class="text-center">{{ dept.media_notas|floatformat:2|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if avaliacoes_detalhadas %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-list"></i> LISTA DETALHADA DE AVALIAÇÕES (Últimas 50)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Departamento</th>
+                    <th class="text-center">Período</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for avaliacao in avaliacoes_detalhadas %}
+                <tr>
+                    <td><strong>{{ avaliacao.funcionario.nome_completo }}</strong></td>
+                    <td>{{ avaliacao.funcionario.departamento.nome|default:"-" }}</td>
+                    <td class="text-center">
+                        {{ avaliacao.data_inicio|date:"d/m/Y" }} - {{ avaliacao.data_fim|date:"d/m/Y" }}
+                    </td>
+                    <td class="text-center">{{ avaliacao.status }}</td>
+                    <td class="text-center">{{ avaliacao.nota_geral|floatformat:2|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 8. FERIADOS -->
+        <div class="section-title">
+            <i class="fas fa-calendar-alt"></i> FERIADOS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Feriados Ativos</div>
+                <div class="summary-value">{{ feriados_ativos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Feriados Inativos</div>
+                <div class="summary-value">{{ feriados_inativos }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Próximos 30 dias</div>
+                <div class="summary-value">{{ feriados_proximos_count }}</div>
+            </div>
+        </div>
+        
+        {% if feriados_por_tipo %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-pie"></i> FERIADOS POR TIPO
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th class="text-center">Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in feriados_por_tipo %}
+                <tr>
+                    <td>{{ tipo.tipo }}</td>
+                    <td class="text-center">{{ tipo.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if feriados_proximos %}
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-calendar-alt"></i> PRÓXIMOS FERIADOS (Próximos 20)
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feriado in feriados_proximos %}
+                <tr>
+                    <td class="text-center">{{ feriado.data|date:"d/m/Y" }}</td>
+                    <td><strong>{{ feriado.nome }}</strong></td>
+                    <td>{{ feriado.get_tipo_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 9. CUSTOS TOTAIS DE RH -->
+        <div class="section-title">
+            <i class="fas fa-calculator"></i> CUSTOS TOTAIS DE RECURSOS HUMANOS
+        </div>
+        <div class="highlight-box">
+            <strong>TOTAL GERAL DE CUSTOS DE RH:</strong> {{ total_geral_custos_rh|floatformat:2 }} MT
+        </div>
+        
+        {% if custos_por_departamento %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Departamento</th>
+                    <th class="text-right">Custo Total</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for custo in custos_por_departamento %}
+                <tr>
+                    <td>{{ custo.departamento }}</td>
+                    <td class="text-right currency">{{ custo.total|floatformat:2 }} MT</td>
+                    <td class="text-center">{{ custo.percentual|floatformat:2 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- 10. ANÁLISES COMPARATIVAS E MÉTRICAS -->
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i> ANÁLISES COMPARATIVAS E MÉTRICAS AVANÇADAS
+        </div>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Média Salário/Funcionário</div>
+                <div class="summary-value currency">{{ media_salario_funcionario|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Média Custo RH/Funcionário</div>
+                <div class="summary-value currency">{{ media_custo_rh_funcionario|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">% Benefícios/Salários</div>
+                <div class="summary-value">{{ percentual_beneficios|floatformat:2 }}%</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">% Descontos/Salários</div>
+                <div class="summary-value">{{ percentual_descontos|floatformat:2 }}%</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">% Horas Extras/Salários</div>
+                <div class="summary-value">{{ percentual_horas_extras|floatformat:2 }}%</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">% Treinamentos/Custos RH</div>
+                <div class="summary-value">{{ percentual_treinamentos|floatformat:2 }}%</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Custo Médio Treinamento</div>
+                <div class="summary-value currency">{{ custo_medio_treinamento|floatformat:2 }} MT</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Taxa Presença Geral</div>
+                <div class="summary-value">
+                    {% if total_presencas > 0 %}
+                        {% widthratio presencas_presentes total_presencas 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Composição de Custos -->
+        <div class="section-title" style="margin-top: 15px; font-size: 11px;">
+            <i class="fas fa-chart-pie"></i> COMPOSIÇÃO DE CUSTOS DE RH
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th class="text-right">Valor</th>
+                    <th class="text-center">Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Salários Brutos</strong></td>
+                    <td class="text-right currency">{{ total_salarios_bruto|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        {% if total_geral_custos_rh > 0 %}
+                            {% widthratio total_salarios_bruto total_geral_custos_rh 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Benefícios</td>
+                    <td class="text-right currency">{{ total_beneficios|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        {% if total_geral_custos_rh > 0 %}
+                            {% widthratio total_beneficios total_geral_custos_rh 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Horas Extras</td>
+                    <td class="text-right currency">{{ total_horas_extras|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        {% if total_geral_custos_rh > 0 %}
+                            {% widthratio total_horas_extras total_geral_custos_rh 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Treinamentos</td>
+                    <td class="text-right currency">{{ total_custo_treinamentos|floatformat:2 }} MT</td>
+                    <td class="text-center">
+                        {% if total_geral_custos_rh > 0 %}
+                            {% widthratio total_custo_treinamentos total_geral_custos_rh 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr style="font-weight: bold; background: #f0fdf4;">
+                    <td><strong>TOTAL GERAL</strong></td>
+                    <td class="text-right currency"><strong>{{ total_geral_custos_rh|floatformat:2 }} MT</strong></td>
+                    <td class="text-center"><strong>100%</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Rodapé -->
+        <div class="document-footer">
+            Documento gerado automaticamente em {{ data_relatorio|date:"d/m/Y H:i" }} | 
+            Sistema de Gestão Empresarial - Conception
+        </div>
+    </div>
+</body>
+</html>
+

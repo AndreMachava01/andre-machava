@@ -1,49 +1,40 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
+{% block body_class %}stock-module{% endblock %}
+
 {% block title %}Gestão de Benefícios{% endblock %}
 
 {% block extra_style %}
 <style>
     /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="beneficios-container">
-    <div class="header-section">
-        <h1 class="header-title">
-            <i class="fas fa-gift"></i>
-            Gestão de Benefícios
-        </h1>
-        
-        <div style="margin-top: 15px;">
-            <a href="{% url 'rh:salarios' %}" class="back-button">
-                <i class="fas fa-arrow-left"></i>
-                Voltar para Salários
-            </a>
+<div class="container">
+    {% url 'rh:salarios' as salarios_url %}
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Salários' breadcrumb_section_url=salarios_url breadcrumb_current='Benefícios' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-gift" aria-hidden="true"></i> Gestão de Benefícios</h1>
+                <p class="page-subtitle">Catálogo de benefícios salariais e não monetários</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'rh:salarios' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> Salários</a>
+                <a href="{% url 'rh:beneficio_salarial_add' %}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Adicionar</a>
+            </div>
         </div>
     </div>
 
-    <div class="action-buttons">
-        <a href="{% url 'rh:beneficio_salarial_add' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i>
-            Adicionar Benefício
-        </a>
-        <a href="{% url 'rh:salarios' %}" class="btn btn-secondary">
-            <i class="fas fa-money-bill-wave"></i>
-            Salários
-        </a>
-    </div>
-
     <div class="filters-section">
-        <form method="get" class="filters-grid">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
             <div class="filter-group">
                 <label for="tipo">Tipo</label>
                 <select name="tipo" id="tipo">
@@ -163,33 +154,33 @@
     </div>
 
     {% if page_obj.has_other_pages %}
-    <div class="pagination">
+    <nav class="pagination-modern" aria-label="Paginação">
         {% if page_obj.has_previous %}
-            <a href="?page=1{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
-                <i class="fas fa-angle-double-left"></i>
+            <a href="?page=1{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="page-btn" aria-label="Primeira página">
+                <i class="fas fa-angle-double-left" aria-hidden="true"></i>
             </a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
-                <i class="fas fa-angle-left"></i>
+            <a href="?page={{ page_obj.previous_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="page-btn" aria-label="Página anterior">
+                <i class="fas fa-angle-left" aria-hidden="true"></i>
             </a>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-                <span class="current">{{ num }}</span>
+                <span class="page-btn active" aria-current="page">{{ num }}</span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+                <a href="?page={{ num }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="page-btn">{{ num }}</a>
             {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
-                <i class="fas fa-angle-right"></i>
+            <a href="?page={{ page_obj.next_page_number }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="page-btn" aria-label="Página seguinte">
+                <i class="fas fa-angle-right" aria-hidden="true"></i>
             </a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
-                <i class="fas fa-angle-double-right"></i>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if ativo %}&ativo={{ ativo }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="page-btn" aria-label="Última página">
+                <i class="fas fa-angle-double-right" aria-hidden="true"></i>
             </a>
         {% endif %}
-    </div>
+    </nav>
     {% endif %}
 </div>
 {% endblock %}

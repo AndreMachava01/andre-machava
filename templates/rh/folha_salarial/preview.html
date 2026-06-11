@@ -1,11 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pré-visualização - Folha Salarial {{ folha.mes_referencia|date:"F Y" }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module folha-preview-page{% endblock %}
+{% block title %}Pré-visualização — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    .page-header, .hero-section, .dashboard-header, .nav-top { background: var(--purple-gradient); }
+    .folha-preview-page { background: #1f2937; }
+    .folha-preview-toolbar { margin-bottom: 0; }
         @page {
             size: A4 landscape;
             margin: 1cm;
@@ -17,78 +20,15 @@
             box-sizing: border-box;
         }
         
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1f2937;
+        .folha-preview-document {
             color: white;
-            min-height: 100vh;
-            overflow-x: auto !important;
-            overflow-y: auto;
-        }
-        
-        /* Botões de Ação Padronizados */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin: 20px;
-            padding: 10px;
-            background: #f0fdf4;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #059669;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #10b981;
-            border: 1px solid #10b981;
-        }
-
-        .btn-outline:hover {
-            background: #10b981;
-            color: white;
-            transform: translateY(-1px);
+            overflow-x: auto;
         }
 
         @media print {
-            .action-buttons {
-                display: none !important;
-            }
+            .folha-preview-toolbar,
+            .container-fluid { padding: 0 !important; }
+            .folha-preview-page { background: white !important; }
         }
         
         /* FORÇAR LAYOUT HORIZONTAL - CSS CRÍTICO */
@@ -441,15 +381,15 @@
                 border: none !important;
                 border-radius: 0 !important;
                 margin: 0 !important;
-                min-height: auto !important;
+                min-height: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
             }
             
-            .action-buttons {
+            .folha-preview-toolbar {
                 display: none !important;
             }
-            
+
             .hero-section {
                 background: var(--bg-card) !important;
                 color: black !important;
@@ -537,7 +477,6 @@
             
             .itens-section {
                 overflow-x: scroll;
-                -webkit-overflow-scrolling: touch;
             }
         }
         
@@ -567,25 +506,51 @@
             
             .itens-section {
                 overflow-x: scroll;
-                -webkit-overflow-scrolling: touch;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Botões de Ação Padronizados -->
-    <div class="action-buttons">
-        <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Voltar à Folha
-        </a>
-        <button onclick="window.print()" class="btn btn-primary">
-            <i class="fas fa-print"></i> Imprimir Folha
-        </button>
-        <a href="{% url 'rh:main' %}" class="btn btn-outline">
-            <i class="fas fa-home"></i> Dashboard RH
-        </a>
-    </div>
 
+        .itens-table.itens-table--compact th,
+        .itens-table.itens-table--compact td {
+            font-size: 0.7rem;
+        }
+
+        .itens-table.itens-table--compact strong {
+            font-size: 0.7rem;
+        }
+
+        .itens-table.itens-table--compact small {
+            font-size: 0.65rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container stock-page folha-preview-toolbar" role="navigation" aria-label="Acções da pré-visualização">
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-eye" aria-hidden="true"></i>
+                    Pré-visualização da folha
+                </h1>
+                <p class="page-subtitle">{{ folha.mes_referencia|date:"F Y" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar à folha
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print" aria-hidden="true"></i> Imprimir
+                </button>
+                <a href="{% url 'rh:folha_pdf' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="folha-preview-document">
     <div class="modern-container">
         <!-- Header -->
         <div class="hero-section">
@@ -683,7 +648,7 @@
             {% if funcionarios %}
             <div class="itens-section">
                 <h3 class="itens-title">Detalhamento por Funcionário</h3>
-                <table class="itens-table">
+                <table class="itens-table itens-table--compact">
                     <thead>
                         <tr>
                             <th>Funcionário</th>
@@ -702,19 +667,19 @@
                         {% for func_folha in funcionarios %}
                         <tr>
                             <td>
-                                <strong style="font-size: 0.7rem;">{{ func_folha.funcionario.nome_completo }}</strong>
+                                <strong>{{ func_folha.funcionario.nome_completo }}</strong>
                                 <br>
-                                <small style="font-size: 0.65rem;">{{ func_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
+                                <small>{{ func_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
                             </td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.funcionario.departamento.nome|default:"N/A" }}</td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.salario_base|floatformat:2 }}</td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.total_beneficios|floatformat:2 }}</td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.total_descontos|floatformat:2 }}</td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.desconto_faltas|floatformat:2 }}</td>
-                            <td style="font-size: 0.7rem;"><strong>{{ func_folha.salario_bruto|floatformat:2 }}</strong></td>
-                            <td style="font-size: 0.7rem;"><strong>{{ func_folha.salario_liquido|floatformat:2 }}</strong></td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.dias_trabalhados }}</td>
-                            <td style="font-size: 0.7rem;">{{ func_folha.horas_trabalhadas|floatformat:1 }}h</td>
+                            <td>{{ func_folha.funcionario.departamento.nome|default:"N/A" }}</td>
+                            <td>{{ func_folha.salario_base|floatformat:2 }}</td>
+                            <td>{{ func_folha.total_beneficios|floatformat:2 }}</td>
+                            <td>{{ func_folha.total_descontos|floatformat:2 }}</td>
+                            <td>{{ func_folha.desconto_faltas|floatformat:2 }}</td>
+                            <td><strong>{{ func_folha.salario_bruto|floatformat:2 }}</strong></td>
+                            <td><strong>{{ func_folha.salario_liquido|floatformat:2 }}</strong></td>
+                            <td>{{ func_folha.dias_trabalhados }}</td>
+                            <td>{{ func_folha.horas_trabalhadas|floatformat:1 }}h</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -729,8 +694,12 @@
             <p>CONCEPTION - Empresa de Construção e Serviços</p>
         </div>
     </div>
-    
-    <script>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
         // FORÇAR LAYOUT HORIZONTAL
         document.addEventListener('DOMContentLoaded', function() {
             // Garantir que o scroll horizontal está ativo
@@ -849,6 +818,5 @@
                 itensSection.parentNode.appendChild(scrollIndicator);
             }
         });
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}

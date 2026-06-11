@@ -1,0 +1,112 @@
+﻿{% extends 'base_admin.html' %}
+
+{% block title %}Prestadores de Serviços{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Prestadores' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-user-tie" aria-hidden="true"></i> Prestadores de Serviços</h1>
+                <p class="page-subtitle">Base de prestadores externos (pessoas singulares e empresas)</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> RH</a>
+                <a href="{% url 'rh:prestador_add' %}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Adicionar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ stats.total|default:"0" }}</div>
+            <div class="stat-label">Total registados</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.activos|default:"0" }}</div>
+            <div class="stat-label">Activos</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.singulares|default:"0" }}</div>
+            <div class="stat-label">Pessoas singulares</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.empresas|default:"0" }}</div>
+            <div class="stat-label">Empresas</div>
+        </div>
+        </div>
+
+    <div class="filters-section">
+        <h3 class="filters-title"><i class="fas fa-filter" aria-hidden="true"></i> Filtros</h3>
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label" for="prestador_tipo">Tipo</label>
+                <select name="tipo" id="prestador_tipo" class="form-select" aria-label="Filtrar por tipo">
+                    <option value="">Todos</option>
+                    {% for v, l in tipo_choices %}
+                    <option value="{{ v }}" {% if tipo_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group filter-group--actions">
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search"><i class="fas fa-search" aria-hidden="true"></i> Filtrar</button>
+                    {% if tipo_filter %}<a href="{% url 'rh:prestadores' %}" class="btn-clear">Limpar</a>{% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if prestadores %}
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-list" aria-hidden="true"></i> Prestadores</h3>
+            <span class="page-info">{{ prestadores|length }} registo(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Nome / Razão social</th>
+                        <th>Tipo</th>
+                        <th>Contacto</th>
+                        <th>NUIT</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in prestadores %}
+                    <tr>
+                        <td>
+                            <div class="cell-primary">{{ p.nome }}</div>
+                            {% if p.representante_legal %}<div class="cell-tertiary">{{ p.representante_legal }}</div>{% endif %}
+                        </td>
+                        <td><span class="status-badge status-info">{{ p.get_tipo_display }}</span></td>
+                        <td>{{ p.contacto|default:"—" }}</td>
+                        <td>{{ p.nuit|default:"—" }}</td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'rh:prestador_detail' p.id %}" class="btn-action success" title="Ver"><i class="fas fa-eye" aria-hidden="true"></i></a>
+                                <a href="{% url 'rh:prestador_edit' p.id %}" class="btn-action secondary" title="Editar"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <a href="{% url 'rh:prestador_delete' p.id %}" class="btn-action danger" title="Eliminar"><i class="fas fa-trash" aria-hidden="true"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-user-tie" aria-hidden="true"></i>
+            <h4>Nenhum prestador registado</h4>
+            <p><a href="{% url 'rh:prestador_add' %}">Adicionar o primeiro prestador</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

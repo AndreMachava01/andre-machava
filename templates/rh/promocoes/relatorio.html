@@ -1,0 +1,91 @@
+{% extends 'base_admin.html' %}
+
+{% block body_class %}stock-module{% endblock %}
+
+{% block title %}Relatório de Promoções{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-bar"></i> Relatório de Promoções</h2>
+        <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="summary-card">
+            <h3>Total</h3>
+            <p class="number">{{ total_promocoes }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Aprovadas</h3>
+            <p class="number">{{ promocoes_aprovadas }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Pendentes</h3>
+            <p class="number">{{ promocoes_pendentes }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Implementadas</h3>
+            <p class="number">{{ promocoes_implementadas }}</p>
+        </div>
+    </div>
+
+    <div class="filters-container">
+        <form method="get" class="row">
+            <div class="col-md-3">
+                <label for="data_inicio">Data início</label>
+                <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
+            </div>
+            <div class="col-md-3">
+                <label for="data_fim">Data fim</label>
+                <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim }}">
+            </div>
+            <div class="col-md-3">
+                <label for="status">Status</label>
+                <select class="form-control" id="status" name="status">
+                    <option value="">Todos</option>
+                    {% for value, label in STATUS_CHOICES %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+
+    {% if promocoes %}
+    <div class="table-container mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Tipo</th>
+                    <th>Data solicitação</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for promocao in promocoes %}
+                <tr>
+                    <td>{{ promocao.funcionario.nome_completo }}</td>
+                    <td>{{ promocao.get_tipo_display }}</td>
+                    <td>{{ promocao.data_solicitacao|date:"d/m/Y" }}</td>
+                    <td>{{ promocao.get_status_display }}</td>
+                    <td>
+                        <a href="{% url 'rh:promocao_detail' promocao.id %}" class="btn btn-sm btn-secondary">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted mt-4">Nenhuma promoção encontrada com os filtros seleccionados.</p>
+    {% endif %}
+</div>
+{% endblock %}

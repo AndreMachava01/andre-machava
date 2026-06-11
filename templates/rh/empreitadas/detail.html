@@ -1,0 +1,85 @@
+﻿{% extends "base_admin.html" %}
+{% block title %}Detalhes - {{ trabalho.descricao|truncatewords:5 }} - Sistema Conception{% endblock %}
+{% block extra_style %}
+<style>
+    /* Contraste WCAG AA */
+    body { margin: 0; padding: 20px; background: #f1f5f9; color: #1e293b; }
+    .container { max-width: 700px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); color: #1e293b; }
+    .header { border-bottom: 2px solid #059669; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { color: #0f172a; margin: 0; font-size: 22px; font-weight: 600; }
+    .detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .detail-label { font-weight: 600; width: 180px; color: #334155; }
+    .detail-value { flex: 1; color: #1e293b; }
+    .badge { padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+    .badge-concluido { background: #d1fae5; color: #064e3b; }
+    .badge-pendente { background: #fef3c7; color: #78350f; }
+    .badge-em_andamento { background: #dbeafe; color: #1e3a8a; }
+    .badge-cancelado { background: #fee2e2; color: #991b1b; }
+    .actions { margin-top: 25px; display: flex; gap: 10px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 3px; text-decoration: none; display: inline-block; font-weight: 500; }
+    .btn-primary { background: #92400e; color: #ffffff; }
+    .btn-secondary { background: #475569; color: #ffffff; }
+</style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-briefcase"></i> {{ trabalho.descricao }}</h1>
+            <span class="badge badge-{{ trabalho.status|lower }}">{{ trabalho.get_status_display }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Prestador:</span>
+            <span class="detail-value">{{ trabalho.prestador.nome }}{% if trabalho.prestador.tipo == 'EMPRESA' and trabalho.prestador.representante_legal %} ({{ trabalho.prestador.representante_legal }}){% endif %}</span>
+        </div>
+        {% if trabalho.atividade_execucao %}
+        <div class="detail-row">
+            <span class="detail-label">Actividade do plano:</span>
+            <span class="detail-value">{{ trabalho.atividade_execucao.ordem_servico.codigo }} – {{ trabalho.atividade_execucao.nome }}</span>
+        </div>
+        {% elif trabalho.servico_orcamento %}
+        <div class="detail-row">
+            <span class="detail-label">Serviço cotado:</span>
+            <span class="detail-value">{{ trabalho.servico_orcamento.ordem_servico.codigo }} – {{ trabalho.servico_orcamento.servico.nome }}</span>
+        </div>
+        {% endif %}
+        <div class="detail-row">
+            <span class="detail-label">Valor fixo:</span>
+            <span class="detail-value">{{ trabalho.valor_fixo|floatformat:2 }} MT</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Data de início:</span>
+            <span class="detail-value">{{ trabalho.data_inicio|date:"d/m/Y"|default:"-" }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Data de conclusão:</span>
+            <span class="detail-value">{{ trabalho.data_conclusao|date:"d/m/Y"|default:"-" }}</span>
+        </div>
+        {% if trabalho.sucursal %}
+        <div class="detail-row">
+            <span class="detail-label">Sucursal:</span>
+            <span class="detail-value">{{ trabalho.sucursal.nome }}</span>
+        </div>
+        {% endif %}
+        {% if trabalho.observacoes %}
+        <div class="detail-row">
+            <span class="detail-label">Observações:</span>
+            <span class="detail-value">{{ trabalho.observacoes }}</span>
+        </div>
+        {% endif %}
+
+        <div class="actions">
+            {% if trabalho.contrato_empreitada %}
+            {% if trabalho.contrato_empreitada.pode_editar_clausulas %}
+            <a href="{% url 'rh:editar_contrato_empreitada' trabalho.contrato_empreitada.id %}" class="btn btn-primary"><i class="fas fa-file-contract"></i> Gerir cláusulas do contrato{% if trabalho.contrato_empreitada.trabalhos.count > 1 %} ({{ trabalho.contrato_empreitada.trabalhos.count }} trabalhos consolidados){% endif %}</a>
+            {% else %}
+            <span class="btn btn-primary" style="opacity: 0.6; cursor: not-allowed;" title="Cláusulas bloqueadas: há trabalhos iniciados ou concluídos"><i class="fas fa-lock"></i> Gerir cláusulas (bloqueado)</span>
+            {% endif %}
+            {% endif %}
+            {% if trabalho.status == 'PENDENTE' or trabalho.status == 'CANCELADO' %}
+            <a href="{% url 'rh:empreitada_edit' trabalho.id %}" class="btn btn-primary">Editar</a>
+            {% endif %}
+            <a href="{% url 'rh:empreitadas' %}" class="btn btn-secondary">Voltar à lista</a>
+        </div>
+    </div>
+{% endblock %}

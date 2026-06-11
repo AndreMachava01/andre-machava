@@ -1,0 +1,93 @@
+﻿{% extends 'base_admin.html' %}
+
+{% block title %}Gestão de Hierarquias{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container stock-page">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Hierarquia' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-sitemap" aria-hidden="true"></i> Gestão de Hierarquias</h1>
+                <p class="page-subtitle">Posições, solicitações e aprovações de mudanças de chefia</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> RH</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h3 class="section-title"><i class="fas fa-th-large" aria-hidden="true"></i> Módulos</h3>
+        </div>
+        <div class="modules-grid">
+            <a href="{% url 'rh:hierarquia_solicitar' %}" class="module-card">
+                <h3><i class="fas fa-paper-plane"></i> Solicitar hierarquia</h3>
+                <p>Alteração de chefia (RH)</p>
+            </a>
+            <a href="{% url 'rh:hierarquia_aprovar' %}" class="module-card">
+                <h3><i class="fas fa-check-double"></i> Aprovar{% if solicitacoes_pendentes %} <span class="status-badge status-pending">{{ solicitacoes_pendentes }}</span>{% endif %}</h3>
+                <p>Aprovação de solicitações (Direcção)</p>
+            </a>
+            <a href="{% url 'rh:hierarquia_historico' %}" class="module-card">
+                <h3><i class="fas fa-history"></i> Histórico</h3>
+                <p>{{ total_solicitacoes|default:"0" }} solicitação(ões) registadas</p>
+            </a>
+            <a href="{% url 'rh:posicoes' %}" class="module-card">
+                <h3><i class="fas fa-layer-group"></i> Posições</h3>
+                <p>Definição de níveis por departamento</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-layer-group" aria-hidden="true"></i> Posições hierárquicas</h3>
+            <a href="{% url 'rh:posicao_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus" aria-hidden="true"></i> Nova posição</a>
+        </div>
+        {% if posicoes %}
+        <div class="table-wrapper">
+            <table class="table table-with-actions" role="table" aria-label="Posições hierárquicas">
+                <caption class="visually-hidden">Posições hierárquicas por departamento</caption>
+                <thead>
+                    <tr>
+                        <th>Departamentos</th>
+                        <th>Nome</th>
+                        <th>Cargos</th>
+                        <th>Nível</th>
+                        <th>Superior</th>
+                        <th>Activa</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for posicao in posicoes %}
+                    <tr>
+                        <td>{% for dept in posicao.departamentos.all %}{{ dept.nome }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+                        <td><div class="cell-primary">{{ posicao.nome }}</div></td>
+                        <td>{% for cargo in posicao.cargos.all %}{{ cargo.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Todos{% endfor %}</td>
+                        <td>{{ posicao.nivel }}</td>
+                        <td>{% if posicao.posicao_superior %}{{ posicao.posicao_superior.nome }}{% else %}—{% endif %}</td>
+                        <td>{% if posicao.ativa %}<span class="status-badge status-active">Sim</span>{% else %}<span class="status-badge status-inactive">Não</span>{% endif %}</td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'rh:posicao_edit' posicao.id %}" class="btn-action secondary" title="Editar"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <a href="{% url 'rh:posicao_delete' posicao.id %}" class="btn-action danger" title="Eliminar"><i class="fas fa-trash" aria-hidden="true"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>Nenhuma posição hierárquica. <a href="{% url 'rh:posicao_add' %}">Criar a primeira</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
