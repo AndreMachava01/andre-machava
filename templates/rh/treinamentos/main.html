@@ -1,23 +1,15 @@
-{% extends "base_admin.html" %}
+﻿{% extends "base_admin.html" %}
 {% load static %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Gestão de Treinamentos e Formação{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Treinamentos</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Treinamentos' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -30,6 +22,9 @@
                 </p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 <a href="{% url 'rh:treinamento_add' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     Novo Treinamento
@@ -38,69 +33,39 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.total_treinamentos|default:"0" }}</h3>
-                <p class="stat-label">Total de Treinamentos</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ stats.total_treinamentos|default:"0" }}</div>
+            <div class="stat-label">Total de Treinamentos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-play-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.treinamentos_ativos|default:"0" }}</h3>
-                <p class="stat-label">Em Andamento</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.treinamentos_ativos|default:"0" }}</div>
+            <div class="stat-label">Em Andamento</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.treinamentos_planejados|default:"0" }}</h3>
-                <p class="stat-label">Planejados</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.treinamentos_planejados|default:"0" }}</div>
+            <div class="stat-label">Planejados</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.treinamentos_concluidos|default:"0" }}</h3>
-                <p class="stat-label">Concluídos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.treinamentos_concluidos|default:"0" }}</div>
+            <div class="stat-label">Concluídos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.proximos_7_dias|default:"0" }}</h3>
-                <p class="stat-label">Próximos 7 Dias</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.proximos_7_dias|default:"0" }}</div>
+            <div class="stat-label">Próximos 7 Dias</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.total_inscricoes|default:"0" }}</h3>
-                <p class="stat-label">Total de Inscrições</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.total_inscricoes|default:"0" }}</div>
+            <div class="stat-label">Total de Inscrições</div>
         </div>
     </div>
     
+
     <!-- Filters Section -->
     <div class="filters-section">
         <h3 class="filters-title">
@@ -153,7 +118,13 @@
                 </select>
             </div>
             
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+            
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+            
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Buscar
@@ -310,18 +281,5 @@ document.addEventListener('DOMContentLoaded', function() {
             this.form.submit();
         });
     });
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
 </script>
 {% endblock %}

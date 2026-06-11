@@ -1,125 +1,91 @@
 {% extends 'base_admin.html' %}
 {% load static %}
 
-{% block title %}Marcar como Paga - {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
-
-{% block extra_style %}
-<style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-</style>
-{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Marcar como paga — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
 
 {% block content %}
-<div class="mark-paid-container">
-    <div class="mark-paid-header">
-        <h1><i class="fas fa-check-circle"></i> Marcar Folha como Paga</h1>
-        <p>Folha de {{ folha.mes_referencia|date:"F Y" }} - Status: {{ folha.get_status_display }}</p>
-    </div>
-    
-    <!-- Informação de Sucesso -->
-    <div class="success-box">
-        <h4>
-            <i class="fas fa-info-circle"></i>
-            Folha Pronta para Pagamento
-        </h4>
-        <p>
-            Esta folha foi fechada e está pronta para ser marcada como paga. 
-            Após marcar como paga, a folha não poderá mais ser reaberta.
-        </p>
-    </div>
-    
-    <!-- Informações da Folha -->
-    <div class="folha-info">
-        <h4><i class="fas fa-info-circle"></i> Informações da Folha</h4>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="label">Mês</div>
-                <div class="value">{{ folha.mes_referencia|date:"F Y" }}</div>
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Marcar como paga' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                    Marcar folha como paga
+                </h1>
+                <p class="page-subtitle">
+                    {{ folha.mes_referencia|date:"F Y" }} — {{ folha.get_status_display }}
+                </p>
             </div>
-            <div class="info-item">
-                <div class="label">Status</div>
-                <div class="value">{{ folha.get_status_display }}</div>
-            </div>
-            <div class="info-item">
-                <div class="label">Data Fechamento</div>
-                <div class="value">{{ folha.data_fechamento|date:"d/m/Y"|default:"N/A" }}</div>
-            </div>
-            <div class="info-item">
-                <div class="label">Total Líquido</div>
-                <div class="value">{{ folha.total_liquido|floatformat:2 }} MT</div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancelar
+                </a>
             </div>
         </div>
     </div>
-    
-    <!-- Formulário -->
-    <div class="mark-paid-form">
+
+    <div class="alert alert-info stock-u-mb-24" role="note">
+        <strong><i class="fas fa-info-circle" aria-hidden="true"></i> Folha pronta para pagamento</strong>
+        Esta folha foi fechada e pode ser marcada como paga. Após esta acção, a folha não poderá ser reaberta.
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ folha.mes_referencia|date:"F Y" }}</div>
+            <div class="stat-label">Mês</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.get_status_display }}</div>
+            <div class="stat-label">Status</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.data_fechamento|date:"d/m/Y"|default:"N/A" }}</div>
+            <div class="stat-label">Data de fecho</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ folha.total_liquido|floatformat:2 }} MT</div>
+            <div class="stat-label">Total líquido</div>
+        </div>
+        </div>
+    </div>
+
+    <div class="form-container card">
         <form method="post">
             {% csrf_token %}
-            
             <div class="form-group">
-                <label for="data_pagamento">
-                    <i class="fas fa-calendar"></i>
-                    Data de Pagamento
-                </label>
-                <div class="date-input-group">
-                    <input 
-                        type="date" 
-                        id="data_pagamento" 
-                        name="data_pagamento" 
-                        value="{% now 'Y-m-d' %}"
-                        required
-                    >
-                    <button type="button" class="btn-today" onclick="setToday()">
-                        <i class="fas fa-calendar-day"></i>
-                        Hoje
+                <label for="data_pagamento">Data de pagamento</label>
+                <div class="form-row rh-form-row-center">
+                    <input type="date" id="data_pagamento" name="data_pagamento" class="form-control"
+                           value="{% now 'Y-m-d' %}">
+                    <button type="button" class="btn btn-secondary" id="btn-hoje-pagamento">
+                        <i class="fas fa-calendar-day" aria-hidden="true"></i> Hoje
                     </button>
                 </div>
-                <div class="help-text">
-                    Data em que a folha foi efetivamente paga aos funcionários.
-                </div>
+                <p class="help-text stock-u-mt-8">Data em que a folha foi efectivamente paga aos funcionários.</p>
             </div>
-            
             <div class="form-group">
-                <label for="observacoes">
-                    <i class="fas fa-comment"></i>
-                    Observações (Opcional)
-                </label>
-                <textarea 
-                    id="observacoes" 
-                    name="observacoes" 
-                    placeholder="Adicione observações sobre o pagamento..."
-                ></textarea>
-                <div class="help-text">
-                    Informações adicionais sobre o pagamento (método, referência, etc.).
-                </div>
+                <label for="observacoes">Observações (opcional)</label>
+                <textarea id="observacoes" name="observacoes" class="form-control" rows="3"
+                          placeholder="Método de pagamento, referência, etc."></textarea>
             </div>
-            
-            <div class="action-buttons">
-                <button type="submit" class="btn-marcar-paga">
-                    <i class="fas fa-check-circle"></i>
-                    Marcar como Paga
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check-circle" aria-hidden="true"></i> Marcar como paga
                 </button>
-                
-                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn-cancelar">
-                    <i class="fas fa-times"></i>
-                    Cancelar
-                </a>
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extrajs %}
 <script>
-function setToday() {
-    const today = new Date();
-    const dateString = today.toISOString().split('T')[0];
-    document.getElementById('data_pagamento').value = dateString;
-}
+document.getElementById('btn-hoje-pagamento')?.addEventListener('click', function () {
+    document.getElementById('data_pagamento').value = new Date().toISOString().split('T')[0];
+});
 </script>
 {% endblock %}

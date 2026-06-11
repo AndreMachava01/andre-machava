@@ -1,0 +1,151 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Adicionar Assinatura{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'stock:pod:dashboard' %}">POD & Documentos</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Adicionar Assinatura</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-signature"></i>
+                    Adicionar Assinatura
+                </h1>
+                <p class="page-subtitle">
+                    Adicionar assinatura digital à POD
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar à POD
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-signature"></i>
+                Upload de Assinatura
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="imagem_assinatura" class="form-label">
+                        <i class="fas fa-image"></i> Arquivo de Assinatura
+                    </label>
+                    <input type="file" name="imagem_assinatura" id="imagem_assinatura" class="form-control" accept="image/*" required>
+                    <small class="form-text text-muted">
+                        Upload da imagem da assinatura digital
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes" class="form-label">
+                        <i class="fas fa-comment-alt"></i> Observações
+                    </label>
+                    <textarea name="observacoes" id="observacoes" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i>
+                        Adicionar Assinatura
+                    </button>
+                    <a href="{% url 'stock:pod:prova_detail' prova.id %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.form-errors {
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    color: var(--accent-danger);
+    font-size: 0.875rem;
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+</style>
+{% endblock %}

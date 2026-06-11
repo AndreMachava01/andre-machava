@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
@@ -105,6 +106,10 @@ class Departamento(models.Model):
     ativo = models.BooleanField(
         default=True,
         help_text='Indica se o departamento está ativo'
+    )
+    nivel_hierarquico = models.PositiveIntegerField(
+        default=2,
+        help_text='Nível hierárquico do departamento (0-1 globais, 2+ específicos)',
     )
     data_criacao = models.DateTimeField(
         auto_now_add=True,
@@ -413,7 +418,23 @@ class Funcionario(models.Model):
     data_admissao = models.DateField(help_text='Data de admissão')
     data_demissao = models.DateField(null=True, blank=True, help_text='Data de demissão')
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='AT', help_text='Status atual')
-    
+    chefe = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subordinados',
+        help_text='Chefe direto (hierarquia organizacional)',
+    )
+    posicao = models.ForeignKey(
+        'PosicaoHierarquica',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='funcionarios',
+        help_text='Posição hierárquica no departamento',
+    )
+
     # Dados Bancários
     banco = models.CharField(max_length=100, null=True, blank=True, help_text='Nome do banco')
     agencia = models.CharField(max_length=10, null=True, blank=True, help_text='Número da agência')
@@ -1382,6 +1403,20 @@ class DescontoSalarial(models.Model):
         verbose_name="Aplicar Automaticamente",
         help_text="Se deve ser aplicado automaticamente na folha de salário"
     )
+    conta_canalizacao = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name="Conta para Canalização",
+        help_text="Código da conta contábil onde os valores deste desconto devem ser canalizados",
+    )
+    descricao_canalizacao = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name="Descrição da Canalização",
+        help_text="Descrição do destino dos valores (ex: IRPS a Recolher, INSS a Recolher)",
+    )
     
     ativo = models.BooleanField(default=True, verbose_name="Ativo")
     observacoes = models.TextField(blank=True, verbose_name="Observações")
@@ -1917,7 +1952,45 @@ class FolhaSalarial(models.Model):
     total_bruto = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Total Bruto")
     total_descontos = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Total Descontos")
     total_liquido = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Total Líquido")
+    total_encargos = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name="Total Encargos",
+        help_text="Custo total para a empresa (salário bruto + INSS empregador)",
+    )
+    total_inss_empregador = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name="Total INSS Empregador (4%)",
+        help_text="Custo total do INSS do empregador para todos os funcionários",
+    )
     total_funcionarios = models.IntegerField(default=0, verbose_name="Total de Funcionários")
+    data_inicio_abertura = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data Início para Abertura",
+        help_text="Data a partir da qual a folha pode ser aberta. Se não informado, não há restrição.",
+    )
+    data_fim_abertura = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data Fim para Abertura",
+        help_text="Data até a qual a folha pode ser aberta. Se não informado, não há restrição.",
+    )
+    data_inicio_fechamento = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data Início para Fechamento",
+        help_text="Data a partir da qual a folha pode ser fechada. Se não informado, não há restrição.",
+    )
+    data_fim_fechamento = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Data Fim para Fechamento",
+        help_text="Data até a qual a folha pode ser fechada. Se não informado, não há restrição.",
+    )
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
 
@@ -2374,6 +2447,13 @@ class FuncionarioFolha(models.Model):
     total_descontos = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Total Descontos")
     desconto_faltas = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Desconto por Faltas")
     salario_liquido = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Salário Líquido")
+    inss_empregador = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="INSS Empregador (4%)",
+        help_text="Contribuição do empregador para INSS",
+    )
     horas_trabalhadas = models.DecimalField(max_digits=6, decimal_places=2, default=0, verbose_name="Horas Trabalhadas")
     horas_extras = models.DecimalField(max_digits=6, decimal_places=2, default=0, verbose_name="Horas Extras")
     dias_trabalhados = models.IntegerField(default=0, verbose_name="Dias Trabalhados")
@@ -2873,4 +2953,158 @@ FuncionarioFolha.get_irps_valor = get_irps_valor
 FuncionarioFolha.get_irps_taxa_display = get_irps_taxa_display
 FuncionarioFolha.get_desconto_adicional_valor = get_desconto_adicional_valor
 FuncionarioFolha.get_horas_extras_valor = get_horas_extras_valor
+
+
+class PosicaoHierarquica(models.Model):
+    nome = models.CharField(max_length=100, help_text='Nome da posição (ex.: Gerente, Analista)')
+    nivel = models.PositiveIntegerField(
+        default=0,
+        help_text='Ordem hierárquica (menor número = mais alto)',
+    )
+    ativa = models.BooleanField(default=True)
+    departamentos = models.ManyToManyField(
+        Departamento,
+        related_name='posicoes_hierarquicas',
+        help_text='Departamentos aos quais esta posição se aplica',
+    )
+    cargos = models.ManyToManyField(
+        'Cargo',
+        blank=True,
+        related_name='posicoes_hierarquicas',
+        help_text='Cargos aos quais esta posição se aplica (opcional)',
+    )
+    posicao_superior = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subposicoes',
+        help_text='Posição imediatamente superior',
+    )
+
+    class Meta:
+        verbose_name = 'Posição Hierárquica'
+        verbose_name_plural = 'Posições Hierárquicas'
+        ordering = ['nivel', 'nome']
+
+    def __str__(self):
+        return f'{self.nome} (Nível {self.nivel})'
+
+
+class SolicitacaoAlteracaoHierarquia(models.Model):
+    STATUS_CHOICES = [
+        ('ABERTO', 'Em análise'),
+        ('APROVADO', 'Aprovado'),
+        ('REJEITADO', 'Rejeitado'),
+    ]
+
+    funcionario = models.ForeignKey(
+        Funcionario,
+        on_delete=models.CASCADE,
+        related_name='solicitacoes_alteracao_hierarquia',
+    )
+    novo_chefe = models.ForeignKey(
+        Funcionario,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='solicitacoes_novo_chefe',
+    )
+    novo_nivel = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text='Novo nível hierárquico solicitado (0=TOPO)',
+    )
+    novo_posicao = models.ForeignKey(
+        PosicaoHierarquica,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    motivo = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ABERTO')
+    observacao_aprovacao = models.TextField(blank=True, default='')
+    solicitado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='solicitacoes_criadas_hierarquia',
+    )
+    aprovado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='solicitacoes_aprovadas_hierarquia',
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Solicitação de Alteração de Hierarquia'
+        verbose_name_plural = 'Solicitações de Alteração de Hierarquia'
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f'{self.funcionario.nome_completo} — {self.get_status_display()}'
+
+
+class SolicitacaoFerias(models.Model):
+    STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
+        ('APROVADO', 'Aprovado'),
+        ('REJEITADO', 'Rejeitado'),
+        ('CANCELADO', 'Cancelado'),
+    ]
+
+    funcionario = models.ForeignKey(
+        Funcionario,
+        on_delete=models.CASCADE,
+        related_name='solicitacoes_ferias',
+    )
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    dias_solicitados = models.PositiveIntegerField(default=0)
+    motivo = models.TextField(blank=True, default='')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='PENDENTE')
+    observacao_aprovacao = models.TextField(blank=True, default='')
+    solicitado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='solicitacoes_ferias_criadas',
+    )
+    aprovado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='solicitacoes_ferias_aprovadas',
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Solicitação de Férias'
+        verbose_name_plural = 'Solicitações de Férias'
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f'Férias {self.funcionario.nome_completo} ({self.data_inicio} — {self.data_fim})'
+
+    def calcular_dias(self):
+        if self.data_inicio and self.data_fim and self.data_fim >= self.data_inicio:
+            return (self.data_fim - self.data_inicio).days + 1
+        return 0
+
+    def save(self, *args, **kwargs):
+        self.dias_solicitados = self.calcular_dias()
+        super().save(*args, **kwargs)
+
+
+# Empreitada / prestadores (definições em models_producao_servicos)
+from .models_producao_servicos import (  # noqa: E402, F401
+    ContratoEmpreitada,
+    ParcelaPagamentoEmpreitada,
+    PrestadorServico,
+    TrabalhoEmpreitada,
+)
 

@@ -1,0 +1,71 @@
+﻿{% extends 'base_admin.html' %}
+
+{% block title %}Posições Hierárquicas{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Hierarquia' breadcrumb_current='Posições' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-layer-group" aria-hidden="true"></i> Posições Hierárquicas</h1>
+                <p class="page-subtitle">Níveis e posições por departamento</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> RH</a>
+                <a href="{% url 'rh:posicao_add' %}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Nova posição</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        {% if posicoes %}
+        <div class="table-header">
+            <h3 class="table-title"><i class="fas fa-list" aria-hidden="true"></i> Posições</h3>
+            <span class="page-info">{{ posicoes|length }} registo(s)</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table table-with-actions">
+                <thead>
+                    <tr>
+                        <th>Departamentos</th>
+                        <th>Nome</th>
+                        <th>Cargos</th>
+                        <th>Nível</th>
+                        <th>Superior</th>
+                        <th>Activa</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in posicoes %}
+                    <tr>
+                        <td>{% for dept in p.departamentos.all %}{{ dept.nome }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+                        <td><div class="cell-primary">{{ p.nome }}</div></td>
+                        <td>{% for cargo in p.cargos.all %}{{ cargo.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Todos{% endfor %}</td>
+                        <td>{{ p.nivel }}</td>
+                        <td>{% if p.posicao_superior %}{{ p.posicao_superior.nome }}{% else %}—{% endif %}</td>
+                        <td>{{ p.ativa|yesno:"Sim,Não" }}</td>
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'rh:posicao_edit' p.id %}" class="btn-action secondary" title="Editar"><i class="fas fa-edit" aria-hidden="true"></i></a>
+                                <a href="{% url 'rh:posicao_delete' p.id %}" class="btn-action danger" title="Eliminar"><i class="fas fa-trash" aria-hidden="true"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-layer-group" aria-hidden="true"></i>
+            <h4>Nenhuma posição registada</h4>
+            <p><a href="{% url 'rh:posicao_add' %}">Criar a primeira posição</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

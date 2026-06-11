@@ -1,0 +1,54 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Benefícios automáticos — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Benefícios automáticos' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-magic" aria-hidden="true"></i>
+                    Aplicar benefícios automáticos
+                </h1>
+                <p class="page-subtitle">Folha de {{ folha.mes_referencia|date:"F Y" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_beneficios' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info stock-u-mb-24" role="note">
+        <i class="fas fa-info-circle" aria-hidden="true"></i>
+        Serão aplicados os benefícios activos configurados no cadastro do funcionário seleccionado.
+    </div>
+
+    <div class="form-container card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="funcionario">Funcionário na folha <span class="required">*</span></label>
+                <select name="funcionario" id="funcionario" class="form-control" required>
+                    <option value="">— Seleccionar —</option>
+                    {% for ff in funcionarios_folha %}
+                    <option value="{{ ff.funcionario.id }}">{{ ff.funcionario.nome_completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-magic" aria-hidden="true"></i> Aplicar
+                </button>
+                <a href="{% url 'rh:folha_beneficios' folha.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

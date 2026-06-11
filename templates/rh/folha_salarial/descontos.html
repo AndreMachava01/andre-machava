@@ -1,0 +1,132 @@
+﻿{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Descontos — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Descontos' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title" id="page-title-folha-descontos">
+                    <i class="fas fa-minus-circle" aria-hidden="true"></i>
+                    Descontos da folha salarial
+                </h1>
+                <p class="page-subtitle">
+                    {{ folha.mes_referencia|date:"F Y" }} —
+                    <span class="status-badge status-{{ folha.status|lower }}">{{ folha.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'rh:folha_salarial' %}" class="btn btn-secondary">
+                    <i class="fas fa-list" aria-hidden="true"></i> Lista de folhas
+                </a>
+                {% if folha.status == 'ABERTA' %}
+                <a href="{% url 'rh:folha_desconto_auto_add' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-magic" aria-hidden="true"></i> Adicionar automático
+                </a>
+                <a href="{% url 'rh:folha_desconto_add' folha.id %}" class="btn btn-warning">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Adicionar desconto
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ folha.mes_referencia|date:"m/Y" }}</div>
+            <div class="stat-label">Mês de referência</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ descontos|length }}</div>
+            <div class="stat-label">Total de descontos</div>
+        </div>
+
+    <div class="movements-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-minus-circle" aria-hidden="true"></i> Descontos aplicados na folha</h2>
+        </div>
+
+        {% if descontos %}
+        <div class="table-wrapper">
+            <table class="table table-with-actions" role="table" aria-label="Descontos aplicados na folha salarial">
+                <caption class="sr-only">Lista de descontos por funcionário nesta folha</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Funcionário</th>
+                        <th scope="col">Desconto</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Valor base</th>
+                        <th scope="col">Valor aplicado</th>
+                        <th scope="col">Observações</th>
+                        {% if folha.status == 'ABERTA' %}
+                        <th scope="col">Acções</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for desconto in descontos %}
+                    <tr>
+                        <td>
+                            <strong>{{ desconto.funcionario_folha.funcionario.nome_completo|default:"-" }}</strong>
+                            <br><small class="text-muted">{{ desconto.funcionario_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
+                        </td>
+                        <td>{{ desconto.desconto.nome|default:"-" }}</td>
+                        <td>
+                            <span class="badge badge-danger">{{ desconto.desconto.get_tipo_display|default:"-" }}</span>
+                        </td>
+                        <td>
+                            {% if desconto.desconto.codigo == 'IR001' %}
+                                {{ desconto.funcionario_folha.get_irps_taxa_display|default:"Progressivo" }}
+                            {% elif desconto.desconto.codigo == 'IN001' %}
+                                3%
+                            {% else %}
+                                {{ desconto.desconto.valor|default:0|floatformat:2 }}{% if desconto.desconto.tipo_valor == 'PERCENTUAL' %}%{% else %} MT{% endif %}
+                            {% endif %}
+                        </td>
+                        <td><strong class="text-danger">{{ desconto.valor|default:0|floatformat:2 }} MT</strong></td>
+                        <td>{{ desconto.observacoes|default:"-"|truncatewords:15 }}</td>
+                        {% if folha.status == 'ABERTA' %}
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'rh:folha_desconto_edit' folha.id desconto.id %}"
+                                   class="btn-action primary" title="Editar desconto">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                    <span class="sr-only">Editar</span>
+                                </a>
+                                <a href="{% url 'rh:folha_desconto_delete' folha.id desconto.id %}"
+                                   class="btn-action danger" title="Eliminar desconto"
+                                   onclick="return confirm('Tem a certeza que deseja eliminar este desconto?');">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                    <span class="sr-only">Eliminar</span>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-minus-circle" aria-hidden="true"></i>
+            <h4>Nenhum desconto encontrado</h4>
+            <p>Esta folha ainda não possui descontos aplicados.</p>
+            {% if folha.status == 'ABERTA' %}
+            <a href="{% url 'rh:folha_desconto_add' folha.id %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Adicionar desconto
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

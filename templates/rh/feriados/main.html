@@ -1,23 +1,15 @@
-{% extends 'base_admin.html' %}
+﻿{% extends 'base_admin.html' %}
 {% load static %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Gestão de Feriados{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Feriados</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Feriados' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -30,6 +22,9 @@
                 </p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 <a href="{% url 'rh:feriado_add' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     Novo Feriado
@@ -38,49 +33,29 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_feriados|default:"0" }}</h3>
-                <p class="stat-label">Total de Feriados</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ total_feriados|default:"0" }}</div>
+            <div class="stat-label">Total de Feriados</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ feriados_ativos|default:"0" }}</h3>
-                <p class="stat-label">Feriados Ativos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ feriados_ativos|default:"0" }}</div>
+            <div class="stat-label">Feriados Ativos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ feriados_inativos|default:"0" }}</h3>
-                <p class="stat-label">Feriados Inativos</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ feriados_inativos|default:"0" }}</div>
+            <div class="stat-label">Feriados Inativos</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ feriados_ano_atual|default:"0" }}</h3>
-                <p class="stat-label">Este Ano</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ feriados_ano_atual|default:"0" }}</div>
+            <div class="stat-label">Este Ano</div>
         </div>
     </div>
     
+
     <!-- Filters Section -->
     <div class="filters-section">
         <h3 class="filters-title">
@@ -126,7 +101,13 @@
                 </select>
             </div>
             
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+            
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+            
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Filtrar
@@ -259,18 +240,5 @@ document.addEventListener('DOMContentLoaded', function() {
             this.form.submit();
         });
     });
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
 </script>
 {% endblock %}

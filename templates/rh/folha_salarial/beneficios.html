@@ -1,0 +1,126 @@
+﻿{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}Benefícios — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Benefícios' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title" id="page-title-folha-beneficios">
+                    <i class="fas fa-gift" aria-hidden="true"></i>
+                    Benefícios da folha salarial
+                </h1>
+                <p class="page-subtitle">
+                    {{ folha.mes_referencia|date:"F Y" }} —
+                    <span class="status-badge status-{{ folha.status|lower }}">{{ folha.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+                <a href="{% url 'rh:folha_salarial' %}" class="btn btn-secondary">
+                    <i class="fas fa-list" aria-hidden="true"></i> Lista de folhas
+                </a>
+                {% if folha.status == 'ABERTA' %}
+                <a href="{% url 'rh:folha_beneficio_auto_add' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-magic" aria-hidden="true"></i> Adicionar automático
+                </a>
+                <a href="{% url 'rh:folha_beneficio_add' folha.id %}" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Adicionar benefício
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ folha.mes_referencia|date:"m/Y" }}</div>
+            <div class="stat-label">Mês de referência</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ beneficios|length }}</div>
+            <div class="stat-label">Total de benefícios</div>
+        </div>
+
+    <div class="movements-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-gift" aria-hidden="true"></i> Benefícios aplicados na folha</h2>
+        </div>
+
+        {% if beneficios %}
+        <div class="table-wrapper">
+            <table class="table table-with-actions" role="table" aria-label="Benefícios aplicados na folha salarial">
+                <caption class="sr-only">Lista de benefícios por funcionário nesta folha</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Funcionário</th>
+                        <th scope="col">Benefício</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Valor base</th>
+                        <th scope="col">Valor aplicado</th>
+                        <th scope="col">Observações</th>
+                        {% if folha.status == 'ABERTA' %}
+                        <th scope="col">Acções</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for beneficio in beneficios %}
+                    <tr>
+                        <td>
+                            <strong>{{ beneficio.funcionario_folha.funcionario.nome_completo|default:"-" }}</strong>
+                            <br><small class="text-muted">{{ beneficio.funcionario_folha.funcionario.cargo.nome|default:"Sem cargo" }}</small>
+                        </td>
+                        <td><strong>{{ beneficio.beneficio.nome|default:"-" }}</strong></td>
+                        <td>
+                            <span class="badge badge-info">{{ beneficio.beneficio.get_tipo_display|default:"-" }}</span>
+                        </td>
+                        <td>
+                            {{ beneficio.beneficio.valor|default:0|floatformat:2 }}{% if beneficio.beneficio.tipo_valor == 'PERCENTUAL' %}%{% else %} MT{% endif %}
+                        </td>
+                        <td><strong class="text-success">{{ beneficio.valor|default:0|floatformat:2 }} MT</strong></td>
+                        <td>{{ beneficio.observacoes|default:"-" }}</td>
+                        {% if folha.status == 'ABERTA' %}
+                        <td>
+                            <div class="cell-actions">
+                                <a href="{% url 'rh:folha_beneficio_edit' folha.id beneficio.id %}"
+                                   class="btn-action primary" title="Editar benefício">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                    <span class="sr-only">Editar</span>
+                                </a>
+                                <a href="{% url 'rh:folha_beneficio_delete' folha.id beneficio.id %}"
+                                   class="btn-action danger" title="Eliminar benefício"
+                                   onclick="return confirm('Tem a certeza que deseja eliminar este benefício?');">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                    <span class="sr-only">Eliminar</span>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-gift" aria-hidden="true"></i>
+            <h4>Nenhum benefício encontrado</h4>
+            <p>Esta folha ainda não possui benefícios aplicados.</p>
+            {% if folha.status == 'ABERTA' %}
+            <a href="{% url 'rh:folha_beneficio_add' folha.id %}" class="btn btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i> Adicionar benefício
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

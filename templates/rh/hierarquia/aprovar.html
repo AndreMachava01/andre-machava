@@ -1,0 +1,109 @@
+﻿{% extends 'base_admin.html' %}
+
+{% block title %}Aprovar solicitações de hierarquia{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Hierarquia' breadcrumb_section_url='/rh/hierarquia/' breadcrumb_current='Aprovar solicitações' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title" id="page-title-hierarquia-aprovar">
+                    <i class="fas fa-check-double" aria-hidden="true"></i> Aprovar solicitações de hierarquia
+                </h1>
+                <p class="page-subtitle">Aprove ou rejeite alterações de chefia propostas pelo RH.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:hierarquia_main' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if solicitacoes %}
+    <div class="table-container card">
+        <table class="table table-with-actions" role="table" aria-label="Solicitações de hierarquia pendentes">
+            <caption class="sr-only">Lista de solicitações de alteração hierárquica aguardando aprovação</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Funcionário</th>
+                    <th scope="col">Nível / posição</th>
+                    <th scope="col">Novo chefe</th>
+                    <th scope="col">Motivo</th>
+                    <th scope="col">Solicitante</th>
+                    <th scope="col">Enviado em</th>
+                    <th scope="col">Acção</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sol in solicitacoes %}
+                <tr>
+                    <td>
+                        <strong>{{ sol.funcionario.nome_completo }}</strong>
+                        {% if sol.funcionario.departamento %}
+                        <br><small class="text-muted">{{ sol.funcionario.departamento.nome }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sol.novo_nivel is not None %}
+                        <strong>Nível {{ sol.novo_nivel }}</strong>
+                        {% if sol.novo_posicao %}<br><small>{{ sol.novo_posicao.nome }}</small>{% endif %}
+                        {% elif sol.novo_posicao %}
+                        {{ sol.novo_posicao.nome }}<br><small>(Nível {{ sol.novo_posicao.nivel }})</small>
+                        {% else %}
+                        <em class="text-muted">Não especificado</em>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sol.novo_chefe %}
+                        <strong>{{ sol.novo_chefe.nome_completo }}</strong>
+                        {% if sol.novo_chefe.departamento %}
+                        <br><small class="text-muted">{{ sol.novo_chefe.departamento.nome }}</small>
+                        {% endif %}
+                        {% elif sol.novo_nivel == 0 %}
+                        <em>Sem chefe (nível topo)</em>
+                        {% elif sol.novo_nivel %}
+                        <em class="text-warning">Chefe a definir na aprovação (nível {{ sol.novo_nivel|add:"-1" }})</em>
+                        {% else %}
+                        <em class="text-muted">Sem chefe definido</em>
+                        {% endif %}
+                    </td>
+                    <td>{{ sol.motivo }}</td>
+                    <td>{{ sol.solicitado_por.get_full_name|default:sol.solicitado_por.username }}</td>
+                    <td>{{ sol.criado_em|date:'d/m/Y H:i' }}</td>
+                    <td>
+                        <form method="post" class="hierarquia-approve-form rh-hierarquia-approve-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="solicitacao_id" value="{{ sol.id }}">
+                            <input type="hidden" name="acao" value="aprovar">
+                            <label class="sr-only" for="obs_aprovar_{{ sol.id }}">Observação aprovação</label>
+                            <input class="form-control form-control-sm rh-hierarquia-obs-input" id="obs_aprovar_{{ sol.id }}" name="observacao"
+                                placeholder="Observação (opcional)">
+                            <button type="submit" class="btn btn-primary btn-sm">Aprovar</button>
+                        </form>
+                        <form method="post" class="hierarquia-reject-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="solicitacao_id" value="{{ sol.id }}">
+                            <input type="hidden" name="acao" value="rejeitar">
+                            <label class="sr-only" for="obs_rejeitar_{{ sol.id }}">Observação rejeição</label>
+                            <input class="form-control form-control-sm rh-hierarquia-obs-input" id="obs_rejeitar_{{ sol.id }}" name="observacao"
+                                placeholder="Motivo da rejeição (opcional)">
+                            <button type="submit" class="btn btn-danger btn-sm">Rejeitar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state card" role="status">
+        <p>Nenhuma solicitação de alteração de hierarquia pendente para aprovação.</p>
+        <a href="{% url 'rh:hierarquia_solicitar' %}" class="btn btn-primary">Nova solicitação</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

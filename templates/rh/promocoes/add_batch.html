@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aumentos Salariais em Lote - Sistema Conception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #ec4899;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 { color: #b45309;
+            margin: 0 0 5px 0;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header p {
+            color: #6b7280;
+            margin: 0;
+            font-size: 16px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .alert i {
+            margin-right: 8px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #92400e;
+            background: #d1fae5;
+            border-left: 3px solid #10b981;
+            padding: 8px 12px;
+            margin: 25px 0 15px 0;
+            border-radius: 3px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .required {
+            color: #ef4444;
+        }
+        .preview-section {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .preview-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        .preview-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        .preview-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .preview-summary-item:last-child {
+            border-bottom: none;
+        }
+        .preview-summary-label {
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .preview-summary-value {
+            font-weight: 600;
+            color: #374151;
+        }
+        .preview-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .preview-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .preview-item-header {
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+        .preview-item-name {
+            font-weight: 600;
+            color: #374151;
+        }
+        .preview-item-detail {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .preview-item-value {
+            font-weight: 500;
+            color: #374151;
+            text-align: right;
+        }
+        .preview-item-value.increase {
+            color: #92400e;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-primary:hover {
+            background: #be185d;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .form-actions {
+                flex-direction: column;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .preview-item {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            .preview-item-header {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-users"></i> Aumentos Salariais em Lote</h1>
+            <p>Criar aumentos salariais percentuais para funcionários por departamento</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div style="color: #b93c3c; margin-bottom: 8px; padding: 10px; background: #f8d7da; border-radius: 3px;">{{ message }}</div>
+                {% elif message.tags == 'warning' %}
+                    <div style="color: #856404; margin-bottom: 8px; padding: 10px; background: #fff3cd; border-radius: 3px;">{{ message }}</div>
+                {% else %}
+                    <div style="color: #2065d2; margin-bottom: 8px; padding: 10px; background: #d1ecf1; border-radius: 3px;">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção:</strong> Esta funcionalidade criará promoções/aumentos para todos os funcionários ativos do departamento selecionado. 
+            Verifique o preview antes de confirmar.
+        </div>
+        
+        <form method="post" id="batchForm">
+            {% csrf_token %}
+            
+            <div class="form-section-title">Critérios de Seleção</div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="departamento">
+                        Departamento <span class="required">*</span>
+                    </label>
+                    <select id="departamento" name="departamento" required>
+                        <option value="">Selecione um departamento</option>
+                        {% for dept in departamentos %}
+                        <option value="{{ dept.id }}">{{ dept.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Selecione o departamento para aplicar o aumento</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipo">
+                        Tipo de Ajuste <span class="required">*</span>
+                    </label>
+                    <select id="tipo" name="tipo" required>
+                        {% for value, label in TIPO_CHOICES %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Tipo de promoção/aumento a ser criado</div>
+                </div>
+            </div>
+            
+            <div class="form-section-title">Configuração do Aumento</div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="percentual_aumento">
+                        Percentual de Aumento (%) <span class="required">*</span>
+                    </label>
+                    <input type="number" 
+                           id="percentual_aumento" 
+                           name="percentual_aumento" 
+                           step="0.01" 
+                           min="0.01" 
+                           max="100"
+                           required
+                           placeholder="Ex: 5.5">
+                    <div class="help-text">O percentual de aumento será aplicado ao salário atual de cada funcionário</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_solicitacao">Data da Solicitação</label>
+                    <input type="date" 
+                           id="data_solicitacao" 
+                           name="data_solicitacao"
+                           value="{% now 'Y-m-d' %}">
+                    <div class="help-text">Data em que o aumento foi solicitado</div>
+                </div>
+            </div>
+            
+            <div class="form-section-title">Motivação e Justificativa</div>
+            
+            <div class="form-group">
+                <label for="motivo">
+                    Motivo <span class="required">*</span>
+                </label>
+                <textarea id="motivo" 
+                          name="motivo" 
+                          rows="3" 
+                          required
+                          placeholder="Descreva o motivo do aumento salarial em lote..."></textarea>
+                <div class="help-text">Este motivo será usado em todas as promoções criadas</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="justificativa">Justificativa Detalhada (opcional)</label>
+                <textarea id="justificativa" 
+                          name="justificativa" 
+                          rows="3"
+                          placeholder="Justificativa detalhada do aumento..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="observacoes">Observações (opcional)</label>
+                <textarea id="observacoes" 
+                          name="observacoes" 
+                          rows="2"
+                          placeholder="Observações adicionais..."></textarea>
+            </div>
+            
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-title">
+                    <i class="fas fa-eye"></i> Preview dos Funcionários Afetados
+                </div>
+                <div class="preview-summary" id="previewSummary"></div>
+                <div class="preview-item preview-item-header">
+                    <div>Funcionário</div>
+                    <div>Cargo</div>
+                    <div>Salário Atual</div>
+                    <div>Novo Salário</div>
+                    <div>Aumento</div>
+                </div>
+                <div class="preview-list" id="previewList">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i> Carregando...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'rh:promocoes' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Criar Aumentos em Lote
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        let previewTimeout;
+        
+        function updatePreview() {
+            const departamentoId = document.getElementById('departamento').value;
+            const percentual = document.getElementById('percentual_aumento').value;
+            const previewSection = document.getElementById('previewSection');
+            const previewList = document.getElementById('previewList');
+            const previewSummary = document.getElementById('previewSummary');
+            
+            if (!departamentoId || !percentual || parseFloat(percentual) <= 0) {
+                previewSection.style.display = 'none';
+                return;
+            }
+            
+            previewSection.style.display = 'block';
+            previewList.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i> Carregando...</div>';
+            previewSummary.innerHTML = '';
+            
+            fetch(`?ajax=preview&departamento=${departamentoId}&percentual_aumento=${percentual}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    previewList.innerHTML = `<div style="padding: 20px; color: #ef4444; text-align: center;">Erro: ${data.error || 'Erro ao carregar preview'}</div>`;
+                    return;
+                }
+                
+                if (data.funcionarios.length === 0) {
+                    previewList.innerHTML = '<div style="padding: 20px; color: #6b7280; text-align: center;">Nenhum funcionário com salário encontrado neste departamento.</div>';
+                    return;
+                }
+                
+                // Summary
+                previewSummary.innerHTML = `
+                    <div class="preview-summary-item">
+                        <span class="preview-summary-label">Total de Funcionários:</span>
+                        <span class="preview-summary-value">${data.total}</span>
+                    </div>
+                    <div class="preview-summary-item">
+                        <span class="preview-summary-label">Total do Aumento:</span>
+                        <span class="preview-summary-value" style="color: #92400e;">${data.total_aumento.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} MT</span>
+                    </div>
+                `;
+                
+                // List
+                let html = '';
+                data.funcionarios.forEach(func => {
+                    html += `
+                        <div class="preview-item">
+                            <div>
+                                <div class="preview-item-name">${func.nome_completo}</div>
+                            </div>
+                            <div class="preview-item-detail">${func.cargo || 'Sem cargo'}</div>
+                            <div class="preview-item-value">${func.salario_atual.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} MT</div>
+                            <div class="preview-item-value">${func.salario_novo.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} MT</div>
+                            <div class="preview-item-value increase">+${func.valor_aumento.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2})} MT</div>
+                        </div>
+                    `;
+                });
+                previewList.innerHTML = html;
+            })
+            .catch(error => {
+                previewList.innerHTML = `<div style="padding: 20px; color: #ef4444; text-align: center;">Erro ao carregar preview: ${error.message}</div>`;
+            });
+        }
+        
+        document.getElementById('departamento').addEventListener('change', function() {
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(updatePreview, 500);
+        });
+        
+        document.getElementById('percentual_aumento').addEventListener('input', function() {
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(updatePreview, 500);
+        });
+        
+        // Update preview on load if values exist
+        document.addEventListener('DOMContentLoaded', function() {
+            const departamento = document.getElementById('departamento').value;
+            const percentual = document.getElementById('percentual_aumento').value;
+            if (departamento && percentual) {
+                updatePreview();
+            }
+        });
+    </script>
+</body>
+</html>
+

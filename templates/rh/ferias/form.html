@@ -1,0 +1,53 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Novo pedido de férias{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Férias' breadcrumb_section_url='/rh/ferias/' breadcrumb_current='Novo pedido' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-calendar-plus" aria-hidden="true"></i> Novo pedido de férias</h1>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:ferias' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="funcionario_id">Funcionário *</label>
+                <select name="funcionario_id" id="funcionario_id" class="form-control" required>
+                    <option value="">Selecione...</option>
+                    {% for f in funcionarios %}
+                    <option value="{{ f.id }}">{{ f.nome_completo }}{% if f.departamento %} — {{ f.departamento.nome }}{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="data_inicio">Data início *</label>
+                    <input type="date" name="data_inicio" id="data_inicio" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="data_fim">Data fim *</label>
+                    <input type="date" name="data_fim" id="data_fim" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="motivo">Motivo / observações</label>
+                <textarea name="motivo" id="motivo" class="form-control" rows="3" placeholder="Férias anuais, etc."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Submeter pedido</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

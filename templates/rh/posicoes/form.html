@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if posicao %}Editar{% else %}Nova{% endif %} Posição</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f9fa;padding:20px}
+        .container{max-width:700px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .header{padding:20px;border-bottom:2px solid #10b981}
+        .header h1{margin:0;font-size:20px}
+        .header p{margin:8px 0 0 0;color:#6b7280;font-size:14px;line-height:1.5}
+        .content{padding:20px}
+        .info-box{background:#f0f9ff;border-left:4px solid #10b981;padding:12px 16px;margin-bottom:20px;border-radius:4px}
+        .info-box p{margin:0;color:#374151;font-size:13px;line-height:1.6}
+        .info-box ul{margin:8px 0 0 20px;padding:0;color:#4b5563;font-size:13px}
+        .info-box li{margin-bottom:4px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .grid .full{grid-column:1/-1}
+        .dual-select-container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px;
+            margin-top: 8px;
+            align-items: start;
+        }
+        .dual-select-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .dual-select-right {
+            display: flex;
+            flex-direction: column;
+        }
+        .dual-select-dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        .dual-select-list {
+            min-height: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 8px;
+            background: #f9fafb;
+        }
+        .dual-select-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            margin: 4px 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .dual-select-item span {
+            flex: 1;
+        }
+        .dual-select-item button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .dual-select-item button:hover {
+            background: #dc2626;
+        }
+        .dual-select-empty {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-size: 12px;
+            font-style: italic;
+        }
+        .hidden-inputs {
+            display: none;
+        }
+        .form-group{margin-bottom:16px}
+        label{font-size:12px;color:#374151;font-weight:600;display:block;margin-bottom:6px}
+        .help-text{font-size:11px;color:#6b7280;margin-top:4px;line-height:1.4;font-style:italic}
+        input,select{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:4px;font-size:14px}
+        input:focus,select:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.1)}
+        .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid #e5e7eb}
+        .btn{padding:8px 14px;border-radius:4px;text-decoration:none;color:#fff;background:#10b981;border:none;cursor:pointer;font-size:14px;font-weight:500}
+        .btn:hover{background:#059669}
+        .btn-secondary{background:#6c757d}
+        .btn-secondary:hover{background:#545b62}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>{% if posicao %}Editar{% else %}Nova{% endif %} Posição Hierárquica</h1>
+        <p>{% if posicao %}Atualize os dados da posição hierárquica.{% else %}Crie uma nova posição hierárquica para definir a estrutura organizacional dentro de um departamento.{% endif %}</p>
+    </div>
+    <div class="content">
+        <div class="info-box">
+            <p><strong>O que é uma Posição Hierárquica?</strong></p>
+            <p>Posições hierárquicas definem os níveis de autoridade e responsabilidade dentro de cada departamento. Elas permitem organizar a estrutura organizacional e estabelecer relações de subordinação.</p>
+            <ul>
+                <li><strong>Exemplos:</strong> Diretor, Gerente, Coordenador, Analista, Assistente</li>
+                <li><strong>Nível:</strong> Números menores = hierarquia mais alta (1 = Diretor, 2 = Gerente, 3 = Analista)</li>
+                <li><strong>Posição Superior:</strong> Define quem está acima na hierarquia (ex.: Gerente → Diretor)</li>
+                <li><strong>Departamentos:</strong> Uma posição pode abranger vários departamentos (ex.: "Diretor Geral" pode aplicar a todos)</li>
+                <li><strong>Cargos:</strong> Uma posição pode estar associada a cargos específicos. Se nenhum cargo for selecionado, aplica-se a todos os cargos dos departamentos escolhidos.</li>
+            </ul>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ form.departamentos }}  <!-- Campo hidden do Django -->
+            {{ form.cargos }}  <!-- Campo hidden do Django -->
+            <div class="grid">
+                <div class="form-group">
+                    <label>Nome da Posição <span style="color:#dc3545">*</span></label>
+                    {{ form.nome }}
+                    <div class="help-text">Nome da posição (ex.: "Gerente de Vendas", "Analista Financeiro", "Diretor Comercial")</div>
+                </div>
+                <div class="form-group">
+                    <label>Nível Hierárquico <span style="color:#dc3545">*</span></label>
+                    {{ form.nivel }}
+                    <div class="help-text">Número que indica o nível na hierarquia. Menor número = posição mais alta (1 = Diretor, 2 = Gerente, 3 = Coordenador, etc.)</div>
+                </div>
+                <div class="form-group full">
+                    <label>Departamentos <span style="color:#dc3545">*</span></label>
+                    <div class="dual-select-container">
+                        <div class="dual-select-left">
+                            <select id="departamentos_dropdown" class="dual-select-dropdown">
+                                <option value="">-- Selecione um departamento --</option>
+                                {% for dept in form.departamentos.field.queryset %}
+                                    <option value="{{ dept.id }}" data-name="{{ dept.nome }}">{{ dept.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="dual-select-right">
+                            <div class="dual-select-list" id="departamentos_selected">
+                                <div class="dual-select-empty">Nenhum departamento selecionado</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden-inputs" id="departamentos_hidden">
+                        <!-- Inputs hidden serão atualizados aqui via JavaScript -->
+                    </div>
+                    <div class="help-text">Selecione um departamento no dropdown à esquerda e ele será adicionado à lista à direita. Uma posição pode abranger vários departamentos (ex.: "Diretor Geral" pode aplicar a todos os departamentos).</div>
+                </div>
+                <div class="form-group full">
+                    <label>Cargos (Opcional)</label>
+                    <div class="dual-select-container">
+                        <div class="dual-select-left">
+                            <select id="cargos_dropdown" class="dual-select-dropdown">
+                                <option value="">-- Selecione um cargo --</option>
+                                {% for cargo in form.cargos.field.queryset %}
+                                    <option value="{{ cargo.id }}" data-name="{{ cargo.nome }}">{{ cargo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="dual-select-right">
+                            <div class="dual-select-list" id="cargos_selected">
+                                <div class="dual-select-empty">Nenhum cargo selecionado (aplica-se a todos)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden-inputs" id="cargos_hidden">
+                        <!-- Inputs hidden serão atualizados aqui via JavaScript -->
+                    </div>
+                    <div class="help-text">Selecione cargos específicos no dropdown. Se nenhum cargo for selecionado, a posição se aplica a todos os cargos dos departamentos escolhidos.</div>
+                </div>
+                <div class="form-group">
+                    <label>Posição Superior</label>
+                    {{ form.posicao_superior }}
+                    <div class="help-text">Posição imediatamente acima desta na hierarquia (opcional). Deixe em branco para posições de nível máximo do departamento.</div>
+                </div>
+                <div class="full form-group">
+                    <label style="display:flex;align-items:center;gap:8px;">
+                        {{ form.ativa }}
+                        <span>Posição Ativa</span>
+                    </label>
+                    <div class="help-text">Desmarque para desativar a posição sem excluí-la. Posições inativas não aparecerão em novos cadastros de funcionários.</div>
+                </div>
+            </div>
+            <div class="actions">
+                <a href="{% url 'rh:hierarquia_main' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn">Salvar Posição</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+(function() {
+    // Configuração para Departamentos
+    const deptDropdown = document.getElementById('departamentos_dropdown');
+    const deptSelected = document.getElementById('departamentos_selected');
+    const deptHidden = document.getElementById('departamentos_hidden');
+    let selectedDepts = new Set();
+    
+    // Configuração para Cargos
+    const cargoDropdown = document.getElementById('cargos_dropdown');
+    const cargoSelected = document.getElementById('cargos_selected');
+    const cargoHidden = document.getElementById('cargos_hidden');
+    let selectedCargos = new Set();
+    
+    // Função para adicionar item à lista (Departamentos)
+    function addDepartamento(id, nome) {
+        const idStr = String(id);
+        if (selectedDepts.has(idStr)) return;
+        
+        selectedDepts.add(idStr);
+        updateDepartamentosUI();
+        updateDepartamentosHidden();
+    }
+    
+    // Função para remover item da lista (Departamentos)
+    function removeDepartamento(id) {
+        selectedDepts.delete(String(id));
+        updateDepartamentosUI();
+        updateDepartamentosHidden();
+    }
+    
+    // Função para atualizar UI de Departamentos
+    function updateDepartamentosUI() {
+        deptSelected.innerHTML = '';
+        
+        if (selectedDepts.size === 0) {
+            deptSelected.innerHTML = '<div class="dual-select-empty">Nenhum departamento selecionado</div>';
+            return;
+        }
+        
+        selectedDepts.forEach(id => {
+            const option = deptDropdown.querySelector(`option[value="${id}"]`);
+            if (option) {
+                const item = document.createElement('div');
+                item.className = 'dual-select-item';
+                item.innerHTML = `
+                    <span>${option.dataset.name}</span>
+                    <button type="button" onclick="removeDepartamento('${id}')">×</button>
+                `;
+                deptSelected.appendChild(item);
+            }
+        });
+    }
+    
+    // Função para atualizar inputs hidden (Departamentos)
+    function updateDepartamentosHidden() {
+        // Limpar opções selecionadas no campo Django
+        const djangoField = document.querySelector('select[name="departamentos"]');
+        if (djangoField) {
+            Array.from(djangoField.options).forEach(opt => opt.selected = false);
+            
+            // Selecionar as opções corretas
+            selectedDepts.forEach(id => {
+                const option = djangoField.querySelector(`option[value="${id}"]`);
+                if (option) {
+                    option.selected = true;
+                }
+            });
+        }
+    }
+    
+    // Função para adicionar item à lista (Cargos)
+    function addCargo(id, nome) {
+        const idStr = String(id);
+        if (selectedCargos.has(idStr)) return;
+        
+        selectedCargos.add(idStr);
+        updateCargosUI();
+        updateCargosHidden();
+    }
+    
+    // Função para remover item da lista (Cargos)
+    function removeCargo(id) {
+        selectedCargos.delete(String(id));
+        updateCargosUI();
+        updateCargosHidden();
+    }
+    
+    // Função para atualizar UI de Cargos
+    function updateCargosUI() {
+        cargoSelected.innerHTML = '';
+        
+        if (selectedCargos.size === 0) {
+            cargoSelected.innerHTML = '<div class="dual-select-empty">Nenhum cargo selecionado (aplica-se a todos)</div>';
+            return;
+        }
+        
+        selectedCargos.forEach(id => {
+            const option = cargoDropdown.querySelector(`option[value="${id}"]`);
+            if (option) {
+                const item = document.createElement('div');
+                item.className = 'dual-select-item';
+                item.innerHTML = `
+                    <span>${option.dataset.name}</span>
+                    <button type="button" onclick="removeCargo('${id}')">×</button>
+                `;
+                cargoSelected.appendChild(item);
+            }
+        });
+    }
+    
+    // Função para atualizar inputs hidden (Cargos)
+    function updateCargosHidden() {
+        // Limpar opções selecionadas no campo Django
+        const djangoField = document.querySelector('select[name="cargos"]');
+        if (djangoField) {
+            Array.from(djangoField.options).forEach(opt => opt.selected = false);
+            
+            // Selecionar as opções corretas
+            selectedCargos.forEach(id => {
+                const option = djangoField.querySelector(`option[value="${id}"]`);
+                if (option) {
+                    option.selected = true;
+                }
+            });
+        }
+    }
+    
+    // Event listeners para Departamentos
+    deptDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        if (selectedValue) {
+            const selectedOption = this.options[this.selectedIndex];
+            addDepartamento(selectedValue, selectedOption.dataset.name);
+            this.value = ''; // Reset dropdown
+        }
+    });
+    
+    // Event listeners para Cargos
+    cargoDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        if (selectedValue) {
+            const selectedOption = this.options[this.selectedIndex];
+            addCargo(selectedValue, selectedOption.dataset.name);
+            this.value = ''; // Reset dropdown
+        }
+    });
+    
+    // Carregar valores existentes (para edição) ou do formulário com erro
+    function loadInitialValues() {
+        // Verificar se há valores no campo Django (para edição ou após erro de validação)
+        const djangoDeptField = document.querySelector('select[name="departamentos"]');
+        if (djangoDeptField) {
+            Array.from(djangoDeptField.selectedOptions).forEach(opt => {
+                if (opt.value) {
+                    selectedDepts.add(String(opt.value));
+                }
+            });
+        }
+        
+        const djangoCargoField = document.querySelector('select[name="cargos"]');
+        if (djangoCargoField) {
+            Array.from(djangoCargoField.selectedOptions).forEach(opt => {
+                if (opt.value) {
+                    selectedCargos.add(String(opt.value));
+                }
+            });
+        }
+        
+        updateDepartamentosUI();
+        updateDepartamentosHidden();
+        updateCargosUI();
+        updateCargosHidden();
+    }
+    
+    // Executar quando a página carregar
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadInitialValues);
+    } else {
+        loadInitialValues();
+    }
+    
+    // Tornar funções globais para os botões de remoção
+    window.removeDepartamento = function(id) {
+        selectedDepts.delete(String(id));
+        updateDepartamentosUI();
+        updateDepartamentosHidden();
+    };
+    
+    window.removeCargo = function(id) {
+        selectedCargos.delete(String(id));
+        updateCargosUI();
+        updateCargosHidden();
+    };
+})();
+</script>
+</body>
+</html>

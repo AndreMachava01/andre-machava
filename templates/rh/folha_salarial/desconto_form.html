@@ -1,0 +1,73 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}{% if desconto %}Editar{% else %}Adicionar{% endif %} desconto — {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current='Descontos' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-minus-circle" aria-hidden="true"></i>
+                    {% if desconto %}Editar{% else %}Adicionar{% endif %} desconto
+                </h1>
+                <p class="page-subtitle">Folha de {{ folha.mes_referencia|date:"F Y" }}</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_descontos' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container card">
+        <form method="post">
+            {% csrf_token %}
+            {% if not desconto %}
+            <div class="form-group">
+                <label for="funcionario">Funcionário <span class="required">*</span></label>
+                <select name="funcionario" id="funcionario" class="form-control" required>
+                    <option value="">— Seleccionar —</option>
+                    {% for f in funcionarios %}
+                    <option value="{{ f.id }}">{{ f.nome_completo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="desconto">Desconto <span class="required">*</span></label>
+                <select name="desconto" id="desconto" class="form-control" required>
+                    <option value="">— Seleccionar —</option>
+                    {% for d in descontos %}
+                    <option value="{{ d.id }}">{{ d.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <div class="alert alert-info stock-u-mb-16" role="status">
+                <strong>{{ desconto.funcionario_folha.funcionario.nome_completo }}</strong> — {{ desconto.desconto.nome }}
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="valor">Valor (MT) <span class="required">*</span></label>
+                <input type="number" step="0.01" min="0" name="valor" id="valor" class="form-control" required
+                       value="{% if desconto %}{{ desconto.valor }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="observacoes">Observações</label>
+                <textarea name="observacoes" id="observacoes" class="form-control" rows="3">{% if desconto %}{{ desconto.observacoes }}{% endif %}</textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save" aria-hidden="true"></i> Guardar
+                </button>
+                <a href="{% url 'rh:folha_descontos' folha.id %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

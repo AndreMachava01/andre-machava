@@ -5,16 +5,8 @@
 
 {% block extra_style %}
 <style>
-    /* Estilos específicos do módulo - apenas gradiente no header */
-    .page-header,
-    .hero-section,
-    .dashboard-header,
-    .nav-top {
-        background: var(--purple-gradient);
-    }
-    
     .form-container {
-        background: var(--bg-card);
+        background: var(--surface-dark);
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         padding: 20px;
@@ -23,7 +15,7 @@
     }
 
     .form-section {
-        background: var(--bg-card);
+        background: var(--surface-dark);
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         padding: 20px;
@@ -67,23 +59,36 @@
     }
 
     .form-group input,
-    .form-group select,
     .form-group textarea {
         padding: 8px 12px;
-        height: 36px;
+        min-height: 36px;
         line-height: 20px;
         border: 1px solid var(--border-color);
         border-radius: 6px;
         font-size: 13px;
-        background-color: var(--bg-input);
-        color: var(--text-color);
-        transition: all 0.2s ease;
+        background-color: #fff;
+        color: var(--text-primary);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
         width: 100%;
         box-sizing: border-box;
         font-family: inherit;
-        appearance: none;
+    }
+
+    .form-group select {
+        padding: 8px 36px 8px 12px;
+        min-height: 36px;
+        line-height: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: #fff;
+        color: var(--text-primary);
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
         -webkit-appearance: none;
         -moz-appearance: none;
+        appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234b5563' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 10px center;
@@ -323,7 +328,7 @@
 
     .categoria-section {
         margin-bottom: 12px;
-        background: var(--bg-card);
+        background: var(--surface-dark);
         border-radius: 6px;
         padding: 12px;
         border: 1px solid var(--border-color);
@@ -360,7 +365,7 @@
         padding: 8px;
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        background: var(--bg-card);
+        background: var(--surface-dark);
         transition: all 0.2s ease;
         position: relative;
     }
@@ -452,7 +457,7 @@
         grid-column: 1 / -1;
         text-align: center;
         padding: 20px;
-        background: var(--bg-card);
+        background: var(--surface-dark);
         border-radius: 6px;
         border: 1px dashed var(--border-color);
     }
@@ -863,7 +868,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" id="outro-banco-group" style="display: none;">
+                <div class="form-group is-hidden" id="outro-banco-group">
                     <label for="outro_banco">Especificar Outro Banco</label>
                     <input type="text" id="outro_banco" name="outro_banco" value="{% if funcionario.banco and funcionario.banco not in 'BIM,BCI,Millennium BIM,Standard Bank,Absa Bank,Ecobank,First National Bank,Mercantile Bank,Banco Único,Banco de Moçambique' %}{{ funcionario.banco }}{% endif %}">
                 </div>
@@ -1179,10 +1184,10 @@ function toggleOutroBanco() {
     const outroBancoInput = document.getElementById('outro_banco');
     
     if (bancoSelect.value === 'Outro') {
-        outroBancoGroup.style.display = 'block';
+        outroBancoGroup.classList.remove('is-hidden');
         outroBancoInput.required = true;
     } else {
-        outroBancoGroup.style.display = 'none';
+        outroBancoGroup.classList.add('is-hidden');
         outroBancoInput.required = false;
         outroBancoInput.value = '';
     }

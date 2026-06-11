@@ -6,21 +6,26 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Q, Count, Sum
 from django.http import JsonResponse
 from datetime import timedelta
 import logging
+import json
 
 from .decorators import require_stock_access
 from .models_stock import (
-    Transportadora, RastreamentoEntrega, EventoRastreamento
+    Transportadora, RastreamentoEntrega, EventoRastreamento, VeiculoInterno
 )
 from .services.logistica_sync import (
     get_or_create_rastreamento_for_notificacao,
     sincronizar_rastreamento_com_notificacao,
     criar_evento_rastreamento,
 )
+from .services.pricing import calculate_quote, PricingItem
+from django.conf import settings
+from django.core.mail import send_mail
 from .services import logistica_ops
 
 # Utilitários movidos para services/logistica_sync.py
@@ -831,7 +836,7 @@ class RastreamentoForm(forms.ModelForm):
     class Meta:
         model = RastreamentoEntrega
         fields = [
-            'transportadora',
+            'transportadora', 'veiculo_interno',
             'destinatario_nome', 'destinatario_telefone',
             'endereco_entrega', 'cidade_entrega', 'provincia_entrega',
             'peso_total', 'valor_declarado', 'custo_envio',
@@ -839,6 +844,7 @@ class RastreamentoForm(forms.ModelForm):
         ]
         widgets = {
             'transportadora': forms.Select(attrs={'class': 'form-control'}),
+            'veiculo_interno': forms.Select(attrs={'class': 'form-control'}),
             'destinatario_nome': forms.TextInput(attrs={'class': 'form-control'}),
             'destinatario_telefone': forms.TextInput(attrs={'class': 'form-control'}),
             'endereco_entrega': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -856,6 +862,122 @@ class RastreamentoForm(forms.ModelForm):
         
         # Transportadoras ativas
         self.fields['transportadora'].queryset = Transportadora.objects.filter(status='ATIVA')
+        
+        # Veículos internos ativos
+        self.fields['veiculo_interno'].queryset = VeiculoInterno.objects.filter(status='ATIVO')
+        
+        # Tornar campos opcionais
+        self.fields['transportadora'].required = False
+        self.fields['veiculo_interno'].required = False
+        self.fields['peso_total'].required = False
+        self.fields['valor_declarado'].required = False
+        self.fields['custo_envio'].required = False
+        self.fields['data_entrega_prevista'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        transportadora = cleaned_data.get('transportadora')
+        veiculo_interno = cleaned_data.get('veiculo_interno')
+        
+        # Validar que apenas um tipo de transporte seja selecionado
+        if not transportadora and not veiculo_interno:
+            raise forms.ValidationError("Selecione uma transportadora ou veículo interno.")
+        
+        if transportadora and veiculo_interno:
+            raise forms.ValidationError("Selecione apenas uma transportadora OU um veículo interno.")
+        
+        return cleaned_data
+
+
+# =============================================================================
+# VIEWS PARA RASTREAMENTO DE ENTREGAS
+# =============================================================================
+
+@login_required
+@require_stock_access
+def rastreamento_create(request):
+    """Criar novo rastreamento de entrega."""
+    if request.method == 'POST':
+        form = RastreamentoForm(request.POST)
+        if form.is_valid():
+            try:
+                rastreamento = form.save(commit=False)
+                
+                # Gerar código de rastreamento único
+                rastreamento.codigo_rastreamento = _gerar_codigo_rastreamento()
+                rastreamento.criado_por = request.user
+                rastreamento.status_atual = 'PREPARANDO'
+                
+                rastreamento.save()
+                
+                messages.success(request, f'Rastreamento criado com sucesso! Código: {rastreamento.codigo_rastreamento}')
+                return redirect('stock:logistica:rastreamento_detail', id=rastreamento.id)
+                
+            except Exception as e:
+                logger.error(f"Erro ao criar rastreamento: {e}")
+                messages.error(request, f'Erro ao criar rastreamento: {str(e)}')
+    else:
+        form = RastreamentoForm()
+    
+    context = {
+        'form': form,
+        'title': 'Criar Rastreamento de Entrega',
+    }
+    
+    return render(request, 'stock/logistica/rastreamento_form.html', context)
+
+
+@login_required
+@require_stock_access
+def rastreamento_edit(request, id):
+    """Editar rastreamento de entrega."""
+    rastreamento = get_object_or_404(RastreamentoEntrega, id=id)
+    
+    if request.method == 'POST':
+        form = RastreamentoForm(request.POST, instance=rastreamento)
+        if form.is_valid():
+            try:
+                rastreamento = form.save()
+                messages.success(request, 'Rastreamento atualizado com sucesso!')
+                return redirect('stock:logistica:rastreamento_detail', id=rastreamento.id)
+                
+            except Exception as e:
+                logger.error(f"Erro ao atualizar rastreamento: {e}")
+                messages.error(request, f'Erro ao atualizar rastreamento: {str(e)}')
+    else:
+        form = RastreamentoForm(instance=rastreamento)
+    
+    context = {
+        'form': form,
+        'rastreamento': rastreamento,
+        'title': 'Editar Rastreamento de Entrega',
+    }
+    
+    return render(request, 'stock/logistica/rastreamento_form.html', context)
+
+
+def _gerar_codigo_rastreamento():
+    """Gera código único para rastreamento."""
+    import random
+    import string
+    
+    # Formato: RAST + ano + mês + 4 dígitos aleatórios
+    from django.utils import timezone
+    now = timezone.now()
+    
+    prefix = f"RAST{now.year}{now.month:02d}"
+    
+    # Gerar 4 dígitos aleatórios
+    random_suffix = ''.join(random.choices(string.digits, k=4))
+    
+    codigo = f"{prefix}{random_suffix}"
+    
+    # Verificar se já existe
+    while RastreamentoEntrega.objects.filter(codigo_rastreamento=codigo).exists():
+        random_suffix = ''.join(random.choices(string.digits, k=4))
+        codigo = f"{prefix}{random_suffix}"
+    
+    return codigo
 
 
 # =============================================================================
@@ -1549,3 +1671,160 @@ def checklist_viaturas_print_blank(request):
 
     return render(request, 'stock/logistica/checklist/print_blank.html', context)
 
+
+# =============================================================================
+# API INTERNA: COTAÇÃO LOGÍSTICA
+# =============================================================================
+
+@login_required
+@require_stock_access
+@require_http_methods(["POST"])
+def cotacao_interna(request):
+    """Calcula cotação interna usando regras básicas (sem integrações externas)."""
+    import json
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+
+    transportadora_id = payload.get('transportadora_id')
+    items_payload = payload.get('items') or []
+    origem_provincia = payload.get('origem_provincia')
+    destino_provincia = payload.get('destino_provincia')
+    fuel_surcharge_pct = float(payload.get('fuel_surcharge_pct') or 0)
+    tolls_flat = float(payload.get('tolls_flat') or 0)
+    insurance_pct = float(payload.get('insurance_pct') or 0)
+
+    if not transportadora_id or not items_payload:
+        return JsonResponse({'error': 'Campos obrigatórios: transportadora_id e items'}, status=400)
+
+    transportadora = get_object_or_404(Transportadora, id=transportadora_id, status='ATIVA')
+
+    try:
+        items = []
+        for it in items_payload:
+            items.append(PricingItem(
+                weight_kg=float(it.get('weight_kg') or 0),
+                length_cm=float(it.get('length_cm') or 0),
+                width_cm=float(it.get('width_cm') or 0),
+                height_cm=float(it.get('height_cm') or 0),
+                declared_value=float(it.get('declared_value') or 0),
+            ))
+    except Exception:
+        return JsonResponse({'error': 'Items inválidos'}, status=400)
+
+    result = calculate_quote(
+        transportadora=transportadora,
+        items=items,
+        origem_provincia=origem_provincia,
+        destino_provincia=destino_provincia,
+        fuel_surcharge_pct=max(0.0, fuel_surcharge_pct),
+        tolls_flat=max(0.0, tolls_flat),
+        insurance_pct=max(0.0, insurance_pct),
+    )
+
+    return JsonResponse({
+        'total_cost': result.total_cost,
+        'currency': result.currency,
+        'estimated_days': result.estimated_days,
+        'breakdown': result.breakdown,
+    })
+
+
+@login_required
+@require_stock_access
+def cotacao_form(request):
+    """Formulário simples para testar cotação interna pelo navegador."""
+    transportadoras = Transportadora.objects.filter(status='ATIVA').order_by('nome')
+    context = {
+        'transportadoras': transportadoras,
+    }
+    return render(request, 'stock/logistica/cotacao/form.html', context)
+
+
+# =============================================================================
+# WEBHOOKS DE TRANSPORTADORAS (SKELETON)
+# =============================================================================
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def carrier_webhook(request, carrier):
+    """Webhook para receber atualizações de transportadoras."""
+    from .services.webhook_service import CarrierWebhookView
+    
+    # Usar a view de webhook do serviço
+    webhook_view = CarrierWebhookView()
+    return webhook_view.post(request, carrier)
+
+
+# =============================================================================
+# NOTIFICAÇÕES INTERNAS (E-MAIL BÁSICO)
+# =============================================================================
+
+def send_internal_email_notification(request):
+    """Endpoint para envio de notificações por email interno."""
+    from .services.email_service import email_service
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            notification_type = data.get('type')
+            recipient_email = data.get('recipient_email')
+            
+            if not notification_type or not recipient_email:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'type e recipient_email são obrigatórios'
+                }, status=400)
+            
+            # Processar baseado no tipo
+            if notification_type == 'tracking_update':
+                result = email_service.send_tracking_update(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    status=data.get('status', ''),
+                    location=data.get('location'),
+                    estimated_delivery=data.get('estimated_delivery')
+                )
+            elif notification_type == 'delivery_confirmation':
+                result = email_service.send_delivery_confirmation(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    delivery_date=data.get('delivery_date', ''),
+                    signature_name=data.get('signature_name')
+                )
+            elif notification_type == 'delay_notification':
+                result = email_service.send_delay_notification(
+                    recipient_email=recipient_email,
+                    tracking_code=data.get('tracking_code', ''),
+                    original_date=data.get('original_date', ''),
+                    new_date=data.get('new_date', ''),
+                    reason=data.get('reason')
+                )
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Tipo de notificação não suportado: {notification_type}'
+                }, status=400)
+            
+            return JsonResponse({
+                'success': result,
+                'message': 'Email enviado com sucesso' if result else 'Falha ao enviar email'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'JSON inválido'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Método não permitido'
+    }, status=405)

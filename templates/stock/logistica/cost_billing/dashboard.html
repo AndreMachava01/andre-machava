@@ -1,0 +1,370 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard Custos & Faturamento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-modern">
+        <a href="/dashboard/">
+            <i class="fas fa-home"></i>
+            Dashboard
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/">
+            <i class="fas fa-warehouse"></i>
+            Stock
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/stock/logistica/">
+            <i class="fas fa-truck"></i>
+            Logística
+        </a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Custos & Faturamento</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-dollar-sign"></i>
+                    Dashboard Custos & Faturamento
+                </h1>
+                <p class="page-subtitle">
+                    Gestão Financeira da Operação Logística
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'stock:cost_billing:custo_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i>
+                    Novo Custo
+                </a>
+                <a href="{% url 'stock:cost_billing:fatura_create' %}" class="btn btn-primary">
+                    <i class="fas fa-file-invoice"></i>
+                    Nova Fatura
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas de Custos -->
+    <div class="stats-grid">
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_custos.custos_pendentes }}</div>
+                <div class="stat-label">Custos Pendentes</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_custos.custos_aprovados }}</div>
+                <div class="stat-label">Custos Aprovados</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_custos.custos_rateados }}</div>
+                <div class="stat-label">Custos Rateados</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">R$ {{ stats_custos.valor_total|floatformat:2 }}</div>
+                <div class="stat-label">Valor Total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas de Faturamento -->
+    <div class="stats-grid">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_faturamento.faturas_pagas }}</div>
+                <div class="stat-label">Faturas Pagas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_faturamento.faturas_pendentes }}</div>
+                <div class="stat-label">Faturas Pendentes</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ stats_faturamento.faturas_vencidas }}</div>
+                <div class="stat-label">Faturas Vencidas</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">R$ {{ stats_faturamento.valor_total_faturado|floatformat:2 }}</div>
+                <div class="stat-label">Total Faturado</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Custos Pendentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        Custos Pendentes de Aprovação
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:cost_billing:custos_list' %}?status=PENDENTE" class="btn btn-warning btn-sm">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if custos_pendentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for custo in custos_pendentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ custo.codigo }}</span>
+                                        </td>
+                                        <td>{{ custo.tipo_custo.nome }}</td>
+                                        <td>R$ {{ custo.valor|floatformat:2 }}</td>
+                                        <td>{{ custo.data_custo|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'stock:cost_billing:custo_detail' custo.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'stock:cost_billing:custo_approve' custo.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'stock:cost_billing:custo_reject' custo.id %}" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhum custo pendente de aprovação</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Faturas Pendentes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clock text-warning"></i>
+                        Faturas Pendentes de Pagamento
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:cost_billing:faturas_list' %}?status=ENVIADO" class="btn btn-warning btn-sm">
+                            Ver Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if faturas_pendentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Cliente</th>
+                                        <th>Valor</th>
+                                        <th>Vencimento</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fatura in faturas_pendentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ fatura.numero_fatura }}</span>
+                                        </td>
+                                        <td>{{ fatura.cliente_nome }}</td>
+                                        <td>R$ {{ fatura.valor_liquido|floatformat:2 }}</td>
+                                        <td>{{ fatura.data_vencimento|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'stock:cost_billing:fatura_detail' fatura.id %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'stock:cost_billing:fatura_mark_paid' fatura.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>Nenhuma fatura pendente de pagamento</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custos Recentes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history text-primary"></i>
+                        Custos Recentes (7 dias)
+                    </h3>
+                    <div class="card-actions">
+                        <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-primary btn-sm">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if custos_recentes %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descrição</th>
+                                        <th>Tipo</th>
+                                        <th>Centro de Custo</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for custo in custos_recentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ custo.codigo }}</span>
+                                        </td>
+                                        <td>{{ custo.descricao|truncatechars:50 }}</td>
+                                        <td>{{ custo.tipo_custo.nome }}</td>
+                                        <td>{{ custo.centro_custo.nome }}</td>
+                                        <td>R$ {{ custo.valor|floatformat:2 }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if custo.status == 'APROVADO' %}success{% elif custo.status == 'PENDENTE' %}warning{% elif custo.status == 'REJEITADO' %}danger{% elif custo.status == 'RATEADO' %}info{% else %}secondary{% endif %}">
+                                                {{ custo.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ custo.data_custo|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>Nenhum custo registrado nos últimos 7 dias</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Rápidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Acesso Rápido
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'stock:cost_billing:custos_list' %}" class="btn btn-outline-danger btn-block">
+                                <i class="fas fa-receipt"></i><br>
+                                Custos Logísticos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'stock:cost_billing:faturas_list' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-file-invoice"></i><br>
+                                Faturas de Frete
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'stock:cost_billing:stats' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-chart-bar"></i><br>
+                                Estatísticas
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-cog"></i><br>
+                                Configurações
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

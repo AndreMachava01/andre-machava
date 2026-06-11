@@ -1,0 +1,35 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Aprovar férias{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Férias' breadcrumb_section_url='/rh/ferias/' breadcrumb_current='Aprovar' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">Aprovar pedido de férias</h1>
+                <p class="page-subtitle">{{ solicitacao.funcionario.nome_completo }} — {{ solicitacao.data_inicio|date:"d/m/Y" }} a {{ solicitacao.data_fim|date:"d/m/Y" }} ({{ solicitacao.dias_solicitados }} dias)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card rh-approval-card">
+        <p><strong>Motivo:</strong> {{ solicitacao.motivo|default:"—" }}</p>
+        <form method="post" class="rh-approval-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="observacao">Observação</label>
+                <textarea name="observacao" id="observacao" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'rh:ferias' %}" class="btn btn-secondary">Voltar</a>
+                <button type="submit" name="acao" value="rejeitar" class="btn btn-danger">Rejeitar</button>
+                <button type="submit" name="acao" value="aprovar" class="btn btn-primary">Aprovar e marcar calendário</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

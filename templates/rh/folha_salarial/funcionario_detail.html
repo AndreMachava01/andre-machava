@@ -1,0 +1,308 @@
+﻿{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block body_class %}stock-module{% endblock %}
+{% block title %}{{ funcionario.nome_completo }} — Folha {{ folha.mes_referencia|date:"F Y" }}{% endblock %}
+
+{% block content %}
+<div class="container" role="main">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_section='Folha Salarial' breadcrumb_section_url='/rh/folha-salarial/' breadcrumb_current=funcionario.nome_completo %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    {{ funcionario.nome_completo }}
+                </h1>
+                <p class="page-subtitle">
+                    Folha de {{ folha.mes_referencia|date:"F Y" }} —
+                    <span class="status-badge status-{{ folha.status|lower }}">{{ folha.get_status_display }}</span>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:folha_detail' folha.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar à folha
+                </a>
+                <a href="{% url 'rh:canhoto_visualizar' folha.id funcionario.id %}" class="btn btn-primary">
+                    <i class="fas fa-receipt" aria-hidden="true"></i> Ver canhoto
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.salario_base|floatformat:2 }} MT</div>
+            <div class="stat-label">Salário base</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.salario_bruto|floatformat:2 }} MT</div>
+            <div class="stat-label">Salário bruto</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.salario_liquido|floatformat:2 }} MT</div>
+            <div class="stat-label">Salário líquido</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.dias_trabalhados }}</div>
+            <div class="stat-label">Dias trabalhados</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.horas_trabalhadas|floatformat:1 }}h</div>
+            <div class="stat-label">Horas trabalhadas</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ total_horas_extras_quantidade|floatformat:1 }}h</div>
+            <div class="stat-label">Horas extras</div>
+        </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-info-circle" aria-hidden="true"></i> Informações do funcionário</h2>
+        </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ funcionario.codigo_funcionario|default:"-" }}</div>
+            <div class="stat-label">Código</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario.cargo.nome|default:"Sem cargo" }}</div>
+            <div class="stat-label">Cargo</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario.departamento.nome|default:"-" }}</div>
+            <div class="stat-label">Departamento</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario.sucursal.nome|default:"-" }}</div>
+            <div class="stat-label">Sucursal</div>
+        </div>
+    </div>
+    </div>
+
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-calculator" aria-hidden="true"></i> Resumo salarial</h2>
+        </div>
+        <div class="stats stock-stats-row">
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.total_beneficios|floatformat:2 }} MT</div>
+            <div class="stat-label">Total benefícios</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.total_descontos|floatformat:2 }} MT</div>
+            <div class="stat-label">Total descontos</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ funcionario_folha.desconto_faltas|floatformat:2 }} MT</div>
+            <div class="stat-label">Desconto por faltas</div>
+        </div>
+        </div>
+    </div>
+
+    {% if beneficios_folha %}
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-gift" aria-hidden="true"></i> Benefícios aplicados</h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="table" role="table" aria-label="Benefícios do funcionário">
+                <thead>
+                    <tr>
+                        <th scope="col">Benefício</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Valor base</th>
+                        <th scope="col">Valor aplicado</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for beneficio_folha in beneficios_folha %}
+                    <tr>
+                        <td><strong>{{ beneficio_folha.beneficio.nome }}</strong></td>
+                        <td>{{ beneficio_folha.beneficio.get_tipo_display }}</td>
+                        <td>{{ beneficio_folha.beneficio.valor|floatformat:2 }}{% if beneficio_folha.beneficio.tipo_valor == 'PERCENTUAL' %}%{% else %} MT{% endif %}</td>
+                        <td class="text-success">{{ beneficio_folha.valor|floatformat:2 }} MT</td>
+                        <td>{{ beneficio_folha.observacoes|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if descontos_manuais or descontos_automaticos %}
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-minus-circle" aria-hidden="true"></i> Descontos aplicados</h2>
+        </div>
+
+        {% if descontos_manuais %}
+        <h3 class="section-subtitle stock-u-mb-8">Descontos manuais</h3>
+        <div class="table-wrapper stock-u-mb-16">
+            <table class="table" role="table" aria-label="Descontos manuais">
+                <thead>
+                    <tr>
+                        <th scope="col">Desconto</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Valor base</th>
+                        <th scope="col">Valor aplicado</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for desconto_folha in descontos_manuais %}
+                    <tr>
+                        <td><strong>{{ desconto_folha.desconto.nome }}</strong></td>
+                        <td>{{ desconto_folha.desconto.get_tipo_display }}</td>
+                        <td>{{ desconto_folha.desconto.valor|floatformat:2 }}{% if desconto_folha.desconto.tipo_valor == 'PERCENTUAL' %}%{% else %} MT{% endif %}</td>
+                        <td class="text-danger">{{ desconto_folha.valor|floatformat:2 }} MT</td>
+                        <td>{{ desconto_folha.observacoes|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if descontos_automaticos %}
+        <h3 class="section-subtitle stock-u-mb-8">Descontos automáticos</h3>
+        <div class="table-wrapper">
+            <table class="table" role="table" aria-label="Descontos automáticos">
+                <thead>
+                    <tr>
+                        <th scope="col">Desconto</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Valor base</th>
+                        <th scope="col">Valor aplicado</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for desconto_folha in descontos_automaticos %}
+                    <tr>
+                        <td><strong>{{ desconto_folha.desconto.nome }}</strong></td>
+                        <td>{{ desconto_folha.desconto.get_tipo_display }}</td>
+                        <td>{{ desconto_folha.desconto.valor|floatformat:2 }}{% if desconto_folha.desconto.tipo_valor == 'PERCENTUAL' %}%{% else %} MT{% endif %}</td>
+                        <td class="text-danger">{{ desconto_folha.valor|floatformat:2 }} MT</td>
+                        <td>{{ desconto_folha.observacoes|default:"Calculado automaticamente" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if presencas %}
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                Presenças do mês ({{ presencas|length }})
+            </h2>
+        </div>
+        {% if presencas_por_tipo %}
+        <div class="stats-grid stock-dash-kpi-grid stock-u-mb-16">
+            {% for codigo, count in presencas_por_tipo.items %}
+                    <div class="stat-box">
+            <div class="stat-number">{{ count }}</div>
+            <div class="stat-label">{{ codigo }}</div>
+        </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="table-wrapper">
+            <table class="table" role="table" aria-label="Presenças do mês">
+                <thead>
+                    <tr>
+                        <th scope="col">Data</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Hora início</th>
+                        <th scope="col">Hora fim</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for presenca in presencas %}
+                    <tr>
+                        <td><strong>{{ presenca.data|date:"d/m/Y" }}</strong></td>
+                        <td>
+                            {% if presenca.tipo_presenca %}
+                            <span class="badge">{{ presenca.tipo_presenca.nome }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ presenca.hora_inicio|time:"H:i"|default:"-" }}</td>
+                        <td>{{ presenca.hora_fim|time:"H:i"|default:"-" }}</td>
+                        <td>{{ presenca.observacoes|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if horas_extras %}
+    <div class="movements-section stock-u-mb-24">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                Horas extras do mês ({{ horas_extras|length }})
+            </h2>
+        </div>
+        <div class="stats-grid stock-dash-kpi-grid stock-u-mb-16">
+                    <div class="stat-box">
+            <div class="stat-number">{{ total_horas_extras_quantidade|floatformat:1 }}h</div>
+            <div class="stat-label">Total de horas</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ total_horas_extras_valor|floatformat:2 }} MT</div>
+            <div class="stat-label">Valor total</div>
+        </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="table" role="table" aria-label="Horas extras do mês">
+                <thead>
+                    <tr>
+                        <th scope="col">Data</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Quantidade</th>
+                        <th scope="col">Valor/hora</th>
+                        <th scope="col">Valor total</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hora_extra in horas_extras %}
+                    <tr>
+                        <td><strong>{{ hora_extra.data|date:"d/m/Y" }}</strong></td>
+                        <td><span class="badge badge-info">{{ hora_extra.get_tipo_display }}</span></td>
+                        <td>{{ hora_extra.quantidade_horas|floatformat:1 }}h</td>
+                        <td>{{ hora_extra.valor_por_hora|floatformat:2 }} MT</td>
+                        <td class="text-success">{{ hora_extra.valor_total|floatformat:2 }} MT</td>
+                        <td>{{ hora_extra.observacoes|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if funcionario_folha.observacoes %}
+    <div class="movements-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-align-left" aria-hidden="true"></i> Observações</h2>
+        </div>
+        <p>{{ funcionario_folha.observacoes }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

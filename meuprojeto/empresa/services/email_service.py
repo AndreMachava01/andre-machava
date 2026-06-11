@@ -1,233 +1,254 @@
-import os
+"""
+Serviço de notificações por email interno para logística.
+"""
 import logging
+from typing import Dict, List, Optional
+from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.core.files.base import ContentFile
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from io import BytesIO
+from django.utils.html import strip_tags
 
 logger = logging.getLogger(__name__)
 
-class EmailService:
-    """Serviço para envio de emails com SendGrid"""
+
+class EmailNotificationService:
+    """Serviço para envio de notificações por email."""
     
     def __init__(self):
-        self.sendgrid_api_key = getattr(settings, 'SENDGRID_API_KEY', None)
-        self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@conception.co.mz')
-        self.from_name = getattr(settings, 'EMAIL_FROM_NAME', 'Conception')
+        self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@empresa.com')
+        self.template_dir = 'stock/logistica/emails'
+    
+    def send_tracking_update(self, 
+                           recipient_email: str,
+                           tracking_code: str,
+                           status: str,
+                           location: Optional[str] = None,
+                           estimated_delivery: Optional[str] = None) -> bool:
+        """
+        Envia notificação de atualização de rastreamento.
         
-        if self.sendgrid_api_key:
-            self.sg = SendGridAPIClient(api_key=self.sendgrid_api_key)
-        else:
-            self.sg = None
-            logger.warning("SENDGRID_API_KEY não configurado. Emails serão simulados.")
-    
-    def gerar_pdf_ordem_compra(self, ordem_compra):
-        """Gera PDF da ordem de compra usando ReportLab"""
+        Args:
+            recipient_email: Email do destinatário
+            tracking_code: Código de rastreamento
+            status: Status atual da entrega
+            location: Localização atual (opcional)
+            estimated_delivery: Data estimada de entrega (opcional)
+            
+        Returns:
+            bool: True se enviado com sucesso
+        """
         try:
-            buffer = BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=A4)
-            styles = getSampleStyleSheet()
+            subject = f"Atualização de Rastreamento - {tracking_code}"
             
-            # Estilos personalizados
-            title_style = ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Heading1'],
-                fontSize=18,
-                spaceAfter=30,
-                alignment=1,  # Center
-                textColor=colors.darkblue
+            context = {
+                'tracking_code': tracking_code,
+                'status': status,
+                'location': location,
+                'estimated_delivery': estimated_delivery,
+                'company_name': getattr(settings, 'COMPANY_NAME', 'Empresa')
+            }
+            
+            # Renderizar template HTML
+            html_message = render_to_string(
+                f'{self.template_dir}/tracking_update.html',
+                context
             )
             
-            header_style = ParagraphStyle(
-                'CustomHeader',
-                parent=styles['Heading2'],
-                fontSize=14,
-                spaceAfter=12,
-                textColor=colors.darkblue
+            # Versão texto simples
+            plain_message = self._generate_plain_text_tracking_update(context)
+            
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=self.from_email,
+                recipient_list=[recipient_email],
+                html_message=html_message,
+                fail_silently=False
             )
             
-            # Conteúdo do PDF
-            story = []
-            
-            # Título
-            story.append(Paragraph("ORDEM DE COMPRA", title_style))
-            story.append(Spacer(1, 20))
-            
-            # Informações da ordem
-            info_data = [
-                ['Código:', ordem_compra.codigo],
-                ['Número da Cotação:', ordem_compra.numero_cotacao or 'N/A'],
-                ['Fornecedor:', ordem_compra.fornecedor.nome if ordem_compra.fornecedor else 'N/A'],
-                ['Data:', ordem_compra.data_criacao.strftime('%d/%m/%Y')],
-                ['Status:', ordem_compra.get_status_display()],
-            ]
-            
-            info_table = Table(info_data, colWidths=[2*inch, 3*inch])
-            info_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            
-            story.append(info_table)
-            story.append(Spacer(1, 20))
-            
-            # Itens da ordem
-            story.append(Paragraph("ITENS DA ORDEM", header_style))
-            
-            # Cabeçalho da tabela de itens
-            items_data = [['Item', 'Quantidade', 'Preço Unitário', 'Total']]
-            
-            total_geral = 0
-            for item in ordem_compra.itens.all():
-                total_item = item.quantidade_solicitada * item.preco_unitario
-                total_geral += total_item
-                
-                items_data.append([
-                    f"{item.produto.nome} ({item.produto.codigo})" if item.produto else 'N/A',
-                    str(item.quantidade_solicitada),
-                    f"{item.preco_unitario:.2f} MT",
-                    f"{total_item:.2f} MT"
-                ])
-            
-            # Adicionar linha de total
-            items_data.append(['', '', 'TOTAL GERAL:', f"{total_geral:.2f} MT"])
-            
-            items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1.5*inch, 1.5*inch])
-            items_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 9),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-                ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
-                ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
-                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            
-            story.append(items_table)
-            story.append(Spacer(1, 20))
-            
-            # Observações
-            if ordem_compra.observacoes:
-                story.append(Paragraph("OBSERVAÇÕES", header_style))
-                story.append(Paragraph(ordem_compra.observacoes, styles['Normal']))
-            
-            # Gerar PDF
-            doc.build(story)
-            buffer.seek(0)
-            
-            return buffer.getvalue()
+            logger.info(f"Email de rastreamento enviado para {recipient_email} - {tracking_code}")
+            return True
             
         except Exception as e:
-            logger.error(f"Erro ao gerar PDF da ordem {ordem_compra.codigo}: {e}")
-            return None
+            logger.error(f"Erro ao enviar email de rastreamento: {e}")
+            return False
     
-    def enviar_ordem_compra(self, ordem_compra, email_destinatario, assunto=None, mensagem_personalizada=None):
-        """Envia ordem de compra por email"""
+    def send_delivery_confirmation(self,
+                                 recipient_email: str,
+                                 tracking_code: str,
+                                 delivery_date: str,
+                                 signature_name: Optional[str] = None) -> bool:
+        """
+        Envia confirmação de entrega.
+        
+        Args:
+            recipient_email: Email do destinatário
+            tracking_code: Código de rastreamento
+            delivery_date: Data da entrega
+            signature_name: Nome de quem assinou (opcional)
+            
+        Returns:
+            bool: True se enviado com sucesso
+        """
         try:
-            # Gerar PDF
-            pdf_content = self.gerar_pdf_ordem_compra(ordem_compra)
-            if not pdf_content:
-                return False, "Erro ao gerar PDF"
+            subject = f"Entrega Confirmada - {tracking_code}"
             
-            # Preparar assunto
-            if not assunto:
-                assunto = f"Ordem de Compra {ordem_compra.codigo} - {ordem_compra.fornecedor.nome}"
+            context = {
+                'tracking_code': tracking_code,
+                'delivery_date': delivery_date,
+                'signature_name': signature_name,
+                'company_name': getattr(settings, 'COMPANY_NAME', 'Empresa')
+            }
             
-            # Preparar mensagem
-            if not mensagem_personalizada:
-                mensagem_personalizada = f"""
-                Prezado(a) {ordem_compra.fornecedor.nome},
-                
-                Segue em anexo a Ordem de Compra {ordem_compra.codigo} para sua análise e processamento.
-                
-                Detalhes da Ordem:
-                - Código: {ordem_compra.codigo}
-                - Número da Cotação: {ordem_compra.numero_cotacao}
-                - Data: {ordem_compra.data_criacao.strftime('%d/%m/%Y')}
-                - Total: {ordem_compra.valor_total} MT
-                
-                Por favor, confirme o recebimento e envie a cotação conforme solicitado.
-                
-                Atenciosamente,
-                Equipe Conception
-                """
-            
-            # Criar email
-            message = Mail(
-                from_email=(self.from_email, self.from_name),
-                to_emails=email_destinatario,
-                subject=assunto,
-                plain_text_content=mensagem_personalizada
+            html_message = render_to_string(
+                f'{self.template_dir}/delivery_confirmation.html',
+                context
             )
             
-            # Adicionar anexo PDF
-            if pdf_content:
-                encoded_pdf = FileContent(pdf_content)
-                pdf_attachment = Attachment(
-                    file_content=encoded_pdf,
-                    file_name=f"Ordem_Compra_{ordem_compra.codigo}.pdf",
-                    file_type=FileType('application/pdf'),
-                    disposition=Disposition('attachment')
-                )
-                message.attachment = pdf_attachment
+            plain_message = self._generate_plain_text_delivery_confirmation(context)
             
-            # Enviar email
-            if self.sg:
-                response = self.sg.send(message)
-                logger.info(f"Email enviado para {email_destinatario}: {response.status_code}")
-                return True, f"Email enviado com sucesso. Status: {response.status_code}"
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=self.from_email,
+                recipient_list=[recipient_email],
+                html_message=html_message,
+                fail_silently=False
+            )
+            
+            logger.info(f"Email de confirmação de entrega enviado para {recipient_email} - {tracking_code}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Erro ao enviar email de confirmação de entrega: {e}")
+            return False
+    
+    def send_delay_notification(self,
+                              recipient_email: str,
+                              tracking_code: str,
+                              original_date: str,
+                              new_date: str,
+                              reason: Optional[str] = None) -> bool:
+        """
+        Envia notificação de atraso.
+        
+        Args:
+            recipient_email: Email do destinatário
+            tracking_code: Código de rastreamento
+            original_date: Data original de entrega
+            new_date: Nova data estimada
+            reason: Motivo do atraso (opcional)
+            
+        Returns:
+            bool: True se enviado com sucesso
+        """
+        try:
+            subject = f"Atraso na Entrega - {tracking_code}"
+            
+            context = {
+                'tracking_code': tracking_code,
+                'original_date': original_date,
+                'new_date': new_date,
+                'reason': reason,
+                'company_name': getattr(settings, 'COMPANY_NAME', 'Empresa')
+            }
+            
+            html_message = render_to_string(
+                f'{self.template_dir}/delay_notification.html',
+                context
+            )
+            
+            plain_message = self._generate_plain_text_delay_notification(context)
+            
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=self.from_email,
+                recipient_list=[recipient_email],
+                html_message=html_message,
+                fail_silently=False
+            )
+            
+            logger.info(f"Email de atraso enviado para {recipient_email} - {tracking_code}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Erro ao enviar email de atraso: {e}")
+            return False
+    
+    def send_bulk_notifications(self, notifications: List[Dict]) -> Dict[str, int]:
+        """
+        Envia múltiplas notificações em lote.
+        
+        Args:
+            notifications: Lista de dicionários com dados das notificações
+            
+        Returns:
+            Dict com contadores de sucesso e falha
+        """
+        results = {'success': 0, 'failed': 0}
+        
+        for notification in notifications:
+            notification_type = notification.get('type')
+            
+            if notification_type == 'tracking_update':
+                success = self.send_tracking_update(**notification.get('data', {}))
+            elif notification_type == 'delivery_confirmation':
+                success = self.send_delivery_confirmation(**notification.get('data', {}))
+            elif notification_type == 'delay_notification':
+                success = self.send_delay_notification(**notification.get('data', {}))
             else:
-                # Modo simulação
-                logger.info(f"SIMULAÇÃO: Email seria enviado para {email_destinatario}")
-                return True, "Email simulado (SendGrid não configurado)"
-                
-        except Exception as e:
-            logger.error(f"Erro ao enviar email: {e}")
-            return False, str(e)
-    
-    def enviar_email_simples(self, destinatario, assunto, mensagem, anexos=None):
-        """Envia email simples com anexos opcionais"""
-        try:
-            message = Mail(
-                from_email=(self.from_email, self.from_name),
-                to_emails=destinatario,
-                subject=assunto,
-                plain_text_content=mensagem
-            )
+                logger.warning(f"Tipo de notificação desconhecido: {notification_type}")
+                success = False
             
-            # Adicionar anexos se fornecidos
-            if anexos:
-                for anexo in anexos:
-                    attachment = Attachment(
-                        file_content=anexo['content'],
-                        file_name=anexo['filename'],
-                        file_type=anexo.get('type', FileType('application/octet-stream')),
-                        disposition=Disposition('attachment')
-                    )
-                    message.attachment = attachment
-            
-            if self.sg:
-                response = self.sg.send(message)
-                return True, f"Email enviado. Status: {response.status_code}"
+            if success:
+                results['success'] += 1
             else:
-                logger.info(f"SIMULAÇÃO: Email seria enviado para {destinatario}")
-                return True, "Email simulado"
-                
-        except Exception as e:
-            logger.error(f"Erro ao enviar email simples: {e}")
-            return False, str(e)
+                results['failed'] += 1
+        
+        logger.info(f"Envio em lote concluído: {results['success']} sucessos, {results['failed']} falhas")
+        return results
+    
+    def _generate_plain_text_tracking_update(self, context: Dict) -> str:
+        """Gera versão texto simples da notificação de rastreamento."""
+        return f"""
+Atualização de Rastreamento - {context['tracking_code']}
+
+Status: {context['status']}
+{f"Localização: {context['location']}" if context.get('location') else ""}
+{f"Entrega estimada: {context['estimated_delivery']}" if context.get('estimated_delivery') else ""}
+
+Acompanhe seu pedido em: {getattr(settings, 'TRACKING_URL', 'https://empresa.com/rastreamento')}
+
+{context['company_name']}
+        """.strip()
+    
+    def _generate_plain_text_delivery_confirmation(self, context: Dict) -> str:
+        """Gera versão texto simples da confirmação de entrega."""
+        return f"""
+Entrega Confirmada - {context['tracking_code']}
+
+Sua entrega foi realizada com sucesso em {context['delivery_date']}.
+{f"Assinado por: {context['signature_name']}" if context.get('signature_name') else ""}
+
+Obrigado por escolher {context['company_name']}!
+        """.strip()
+    
+    def _generate_plain_text_delay_notification(self, context: Dict) -> str:
+        """Gera versão texto simples da notificação de atraso."""
+        return f"""
+Atraso na Entrega - {context['tracking_code']}
+
+Lamentamos informar que sua entrega prevista para {context['original_date']} 
+foi adiada para {context['new_date']}.
+
+{f"Motivo: {context['reason']}" if context.get('reason') else ""}
+
+Acompanhe seu pedido em: {getattr(settings, 'TRACKING_URL', 'https://empresa.com/rastreamento')}
+
+{context['company_name']}
+        """.strip()
+
+
+# Instância global do serviço
+email_service = EmailNotificationService()

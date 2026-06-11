@@ -1,23 +1,15 @@
-{% extends 'base_admin.html' %}
+﻿{% extends 'base_admin.html' %}
 {% load static %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Promoções e Aumentos{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Promoções</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Promoções' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -30,6 +22,9 @@
                 </p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary btn-back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Voltar
+                </a>
                 <a href="{% url 'rh:promocao_add' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     Nova Promoção
@@ -38,59 +33,34 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-trophy"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.total|default:"0" }}</h3>
-                <p class="stat-label">Total de Solicitações</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ stats.total|default:"0" }}</div>
+            <div class="stat-label">Total de Solicitações</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.pendentes|default:"0" }}</h3>
-                <p class="stat-label">Pendentes</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.pendentes|default:"0" }}</div>
+            <div class="stat-label">Pendentes</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.aprovadas|default:"0" }}</h3>
-                <p class="stat-label">Aprovadas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.aprovadas|default:"0" }}</div>
+            <div class="stat-label">Aprovadas</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-play-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.implementadas|default:"0" }}</h3>
-                <p class="stat-label">Implementadas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.implementadas|default:"0" }}</div>
+            <div class="stat-label">Implementadas</div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ stats.rejeitadas|default:"0" }}</h3>
-                <p class="stat-label">Rejeitadas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ stats.rejeitadas|default:"0" }}</div>
+            <div class="stat-label">Rejeitadas</div>
         </div>
     </div>
     
+
     <!-- Filters Section -->
     <div class="filters-section">
         <h3 class="filters-title">
@@ -127,7 +97,13 @@
                 </div>
             </div>
             
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+            
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+            
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Buscar
@@ -288,18 +264,5 @@ document.addEventListener('DOMContentLoaded', function() {
             this.form.submit();
         });
     });
-    
-    // Animate cards on load
-    const cards = document.querySelectorAll('.stat-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
 </script>
 {% endblock %}

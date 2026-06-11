@@ -1,0 +1,408 @@
+﻿{% extends "base_admin.html" %}
+{% block title %}{% if trabalho %}Editar{% else %}Adicionar{% endif %} Empreitada - Sistema Conception{% endblock %}
+{% block extra_style %}
+<style>
+    /* Contraste WCAG AA: fundo claro + texto escuro */
+    body { margin: 0; padding: 20px; background: #f1f5f9; color: #1e293b; }
+    .container { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); color: #1e293b; }
+    .header { border-bottom: 2px solid #059669; padding-bottom: 15px; margin-bottom: 20px; }
+    .header h1 { color: #0f172a; font-weight: 600; }
+    .header-desc { color: #334155; margin: 8px 0 0 0; font-size: 14px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #334155; }
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%; padding: 10px 12px; border: 1px solid #94a3b8; border-radius: 6px; box-sizing: border-box;
+        background: #ffffff; color: #1e293b; font-size: 15px;
+    }
+    .form-group select optgroup { font-weight: 600; color: #0f172a; background: #f8fafc; }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: #475569; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        outline: none; border-color: #92400e; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    .form-group select:disabled {
+        background: #e2e8f0; color: #334155; cursor: not-allowed;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-row.form-row-3 { grid-template-columns: 2fr 1fr 1fr; }
+    .trabalho-row { border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 16px; background: #f8fafc; }
+    .trabalho-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .trabalho-num { font-weight: 600; color: #334155; }
+    .btn-remove-row { background: #fee2e2; color: #991b1b; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+    .btn-remove-row:hover { background: #fecaca; }
+    .btn-outline { background: transparent; border: 1px solid #059669; color: #059669; }
+    .btn-outline:hover { background: #f0fdf4; }
+    .form-actions { display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: 500; }
+    .btn-primary { background: #92400e; color: #ffffff; }
+    .btn-primary:hover { background: #047857; }
+    .btn-secondary { background: #64748b; color: #ffffff; }
+    .btn-secondary:hover { background: #475569; }
+    .help-text { font-size: 13px; color: #334155; margin-top: 4px; line-height: 1.4; }
+    .help-text a { color: #047857; font-weight: 500; }
+    .form-group span[style*="color:red"] { color: #dc2626 !important; }
+    .form-section-title {
+        font-size: 17px; font-weight: 500; color: #059669;
+        background: #f0fdf4; border-left: 3px solid #059669;
+        padding: 4px 0 4px 12px; margin: 28px 0 15px 0;
+    }
+    .form-section-desc { font-size: 14px; color: #334155; margin: -8px 0 16px 12px; line-height: 1.5; }
+    .trabalho-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+    .trabalho-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .trabalho-num { font-weight: 600; color: #334155; }
+    .btn-remove-row { background: #fee2e2; color: #dc2626; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+    .btn-remove-row:hover { background: #fecaca; }
+    .btn-outline { background: transparent; border: 1px solid #059669; color: #059669; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    .btn-outline:hover { background: #f0fdf4; }
+    .form-row.flex-3 { grid-template-columns: 2fr 1fr 1fr; }
+    .flex-2 { grid-column: span 1; }
+</style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-briefcase"></i> {% if trabalho %}Editar{% else %}Adicionar{% endif %} Trabalho por Empreitada</h1>
+            <p class="header-desc">Baseado em serviços cotados, aprovados e em execução. Apenas prestadores externos.</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-section-title">1. Cotação confirmada</div>
+            <p class="form-section-desc">Selecione a cotação confirmada (ordem de serviço) que contém os trabalhos a subcontratar.</p>
+                <div class="form-group">
+                    <label>Cotação confirmada (ordem de serviço)</label>
+                    <select id="ordem_servico">
+                        <option value="">-- Seleccionar cotação --</option>
+                        <option value="manual" {% if trabalho and not trabalho.servico_orcamento_id %}selected{% endif %}>Nenhum / Manual</option>
+                        {% for ordem in ordens_aprovadas %}
+                        <option value="{{ ordem.id }}" {% if trabalho and trabalho.servico_orcamento and trabalho.servico_orcamento.ordem_servico_id == ordem.id %}selected{% endif %}>
+                            {{ ordem.codigo }}{% if ordem.sucursal %} ({{ ordem.sucursal.nome }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="help-text">Apenas cotações confirmadas e em execução. Os itens a subcontratar vêm do <strong>plano de execução</strong> da ordem (se existir) ou dos serviços da cotação.</span>
+                </div>
+
+            <div class="form-section-title">2. Trabalhos a terceirizar</div>
+            <p class="form-section-desc" id="form-section-desc-trabalhos">As empreitadas baseiam-se no <strong>plano de trabalho</strong> da ordem: seleccione as actividades planeadas e indique o prestador e valor. O limite de 60% vem dos serviços entregues pela actividade. Se a ordem não tiver plano definido, são listados os serviços da cotação. Pode adicionar vários trabalhos.</p>
+            {% if not trabalho %}
+                <div id="trabalhos-container">
+                    <div class="trabalho-row" data-index="0">
+                        <div class="trabalho-row-header">
+                            <span class="trabalho-num">Trabalho 1</span>
+                            <button type="button" class="btn-remove-row" title="Remover" style="display:none;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="form-row form-row-3">
+                            <div class="form-group servico-actividade-cell">
+                                <label class="label-servico">Serviço a subcontratar</label>
+                                <label class="label-actividade" style="display:none;">Actividade do plano de trabalho</label>
+                                <select name="servico_orcamento" class="servico-select">
+                                    <option value="">-- Seleccionar cotação primeiro --</option>
+                                </select>
+                                <select name="atividade_execucao" class="atividade-select" style="display:none;">
+                                    <option value="">-- Seleccionar cotação primeiro --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Prestador <span style="color:red">*</span></label>
+                                <select name="prestador" class="prestador-select" required>
+                                    <option value="">-- Seleccionar --</option>
+                                    {% for p in prestadores %}
+                                    <option value="{{ p.id }}">{{ p.nome }}{% if p.tipo == 'EMPRESA' and p.representante_legal %} ({{ p.representante_legal }}){% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (MT)</label>
+                                <input type="number" name="valor_fixo" class="valor-input" step="0.01" min="0" value="0">
+                                <span class="help-text valor-help"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição <span style="color:red">*</span></label>
+                            <input type="text" name="descricao" class="descricao-input" required maxlength="300" placeholder="Preenchido ao seleccionar serviço">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="btn-add-trabalho" class="btn btn-outline"><i class="fas fa-plus"></i> Adicionar trabalho</button>
+                    <span class="help-text"><a href="{% url 'rh:prestador_add' %}">Adicionar prestador</a> se não existir na lista.</span>
+                </div>
+                <div class="form-group" id="total-empreitada-wrap" style="margin-top: 16px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #059669; border-radius: 6px;">
+                    <strong>Valor total da empreitada:</strong> <span id="valor-total-empreitada">0.00</span> MT
+                </div>
+            {% else %}
+            <div id="edit-single-row" class="form-group">
+                <div class="form-row form-row-3">
+                    <div class="form-group">
+                        <label>Serviço a subcontratar</label>
+                        <select name="servico_orcamento" id="servico_orcamento_edit">
+                            <option value="">-- Seleccionar cotação primeiro --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Prestador <span style="color:red">*</span></label>
+                        <select name="prestador" required>
+                            <option value="">-- Seleccionar --</option>
+                            {% for p in prestadores %}
+                            <option value="{{ p.id }}" {% if trabalho.prestador_id == p.id %}selected{% endif %}>{{ p.nome }}{% if p.tipo == 'EMPRESA' and p.representante_legal %} ({{ p.representante_legal }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (MT)</label>
+                        <input type="number" name="valor_fixo" id="valor_fixo_edit" step="0.01" min="0" value="{{ trabalho.valor_fixo|default:'0' }}">
+                        <span class="help-text" id="valor-help-edit"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição <span style="color:red">*</span></label>
+                    <input type="text" name="descricao" id="descricao_edit" value="{{ trabalho.descricao|default:'' }}" required maxlength="300">
+                </div>
+                <input type="hidden" name="sucursal" id="sucursal-hidden-edit" value="{{ trabalho.sucursal_id|default:'' }}">
+            </div>
+                <div class="form-group" id="total-empreitada-wrap-edit" style="margin-top: 16px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #059669; border-radius: 6px;">
+                    <strong>Valor total da empreitada:</strong> <span id="valor-total-empreitada-edit">{{ trabalho.valor_fixo|floatformat:2|default:"0.00" }}</span> MT
+                </div>
+            {% endif %}
+
+            <div class="form-section-title">{% if trabalho %}Dados do trabalho{% else %}Dados comuns{% endif %}</div>
+            <p class="form-section-desc">Status, datas e observações aplicam-se a todos os trabalhos.</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status">
+                        {% for v, l in status_choices %}
+                        <option value="{{ v }}" {% if trabalho and trabalho.status == v %}selected{% elif not trabalho and v == 'PENDENTE' %}selected{% endif %}>{{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data de início</label>
+                    <input type="date" name="data_inicio" value="{{ trabalho.data_inicio|date:'Y-m-d'|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label>Data de conclusão</label>
+                    <input type="date" name="data_conclusao" value="{{ trabalho.data_conclusao|date:'Y-m-d'|default:'' }}">
+                    <span class="help-text">Ao marcar como Concluído, será gerado lançamento em Finanças.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Observações</label>
+                <textarea name="observacoes" rows="2">{{ trabalho.observacoes|default:'' }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="{% url 'rh:empreitadas' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+<script>
+var ordensServicos = {{ ordens_servicos_json|safe }};
+var ordensAtividades = {{ ordens_atividades_json|default:"{}"|safe }};
+var rowIndex = 1;
+
+function usarPlanoTrabalho(ordemId) {
+    if (!ordemId || ordemId === 'manual') return false;
+    var atvs = ordensAtividades[ordemId];
+    return atvs && atvs.length > 0;
+}
+
+function atualizarServicos() {
+    var ordemId = document.getElementById('ordem_servico').value;
+    var planMode = usarPlanoTrabalho(ordemId);
+    var servicos = (ordemId && ordemId !== 'manual' && ordensServicos[ordemId]) ? ordensServicos[ordemId] : [];
+    var atividades = (ordemId && ordensAtividades[ordemId]) ? ordensAtividades[ordemId] : [];
+
+    var htmlServico = '<option value="">-- Seleccionar serviço --</option>';
+    servicos.forEach(function(s) {
+        var desc = (s.desc || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        htmlServico += '<option value="' + s.id + '" data-desc="' + desc + '" data-valor="' + (s.valor || '0') + '" data-sucursal="' + (s.sucursal || '') + '">' + desc + ' — ' + (s.valor || '0') + ' MT</option>';
+    });
+    var htmlAtividade = '<option value="">-- Seleccionar actividade --</option>';
+    atividades.forEach(function(a) {
+        var desc = (a.desc || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        htmlAtividade += '<option value="' + a.id + '" data-desc="' + desc + '" data-valor="' + (a.valor || '0') + '" data-sucursal="' + (a.sucursal || '') + '">' + desc + ' — máx. ' + (a.valor || '0') + ' MT</option>';
+    });
+
+    document.querySelectorAll('.trabalho-row').forEach(function(row) {
+        var cell = row.querySelector('.servico-actividade-cell');
+        if (!cell) return;
+        var servicoSelect = cell.querySelector('.servico-select');
+        var atividadeSelect = cell.querySelector('.atividade-select');
+        var labelServico = cell.querySelector('.label-servico');
+        var labelActividade = cell.querySelector('.label-actividade');
+        if (planMode) {
+            if (servicoSelect) { servicoSelect.innerHTML = htmlServico; servicoSelect.style.display = 'none'; servicoSelect.removeAttribute('name'); }
+            if (atividadeSelect) { atividadeSelect.innerHTML = htmlAtividade; atividadeSelect.style.display = ''; atividadeSelect.setAttribute('name', 'atividade_execucao'); }
+            if (labelServico) labelServico.style.display = 'none';
+            if (labelActividade) labelActividade.style.display = 'block';
+        } else {
+            if (servicoSelect) { servicoSelect.innerHTML = htmlServico; servicoSelect.style.display = ''; servicoSelect.setAttribute('name', 'servico_orcamento'); }
+            if (atividadeSelect) { atividadeSelect.innerHTML = htmlAtividade; atividadeSelect.style.display = 'none'; atividadeSelect.removeAttribute('name'); }
+            if (labelServico) labelServico.style.display = 'block';
+            if (labelActividade) labelActividade.style.display = 'none';
+        }
+    });
+
+    var editSelect = document.getElementById('servico_orcamento_edit');
+    if (editSelect) editSelect.innerHTML = htmlServico;
+}
+
+function aplicarServicoRow(selectEl) {
+    var row = selectEl.closest('.trabalho-row');
+    if (!row) return;
+    var opt = selectEl.options[selectEl.selectedIndex];
+    var descInput = row.querySelector('.descricao-input');
+    var valorInput = row.querySelector('.valor-input');
+    var valorHelp = row.querySelector('.valor-help');
+    if (!opt || !opt.value) {
+        if (valorInput) { valorInput.removeAttribute('data-max'); valorInput.removeAttribute('data-valor-cotado'); }
+        if (valorHelp) valorHelp.textContent = '';
+        return;
+    }
+    if (descInput) descInput.value = opt.dataset.desc || '';
+    var valorNum = parseFloat(opt.dataset.valor) || 0;
+    var limite60;
+    if (selectEl.classList.contains('atividade-select')) {
+        limite60 = valorNum.toFixed(2);
+    } else {
+        limite60 = (valorNum * 0.6).toFixed(2);
+    }
+    if (valorInput) {
+        valorInput.value = limite60;
+        valorInput.dataset.max = limite60;
+        valorInput.dataset.valorCotado = valorNum;
+    }
+    if (valorHelp) valorHelp.textContent = 'Máx. 60% do valor cotado: ' + limite60 + ' MT';
+}
+
+function aplicarServicoEdit(alterarValor) {
+    var selectEl = document.getElementById('servico_orcamento_edit');
+    if (!selectEl) return;
+    var opt = selectEl.options[selectEl.selectedIndex];
+    var hidden = document.getElementById('sucursal-hidden-edit');
+    var valorInput = document.getElementById('valor_fixo_edit');
+    var valorHelp = document.getElementById('valor-help-edit');
+    if (opt && opt.value && opt.dataset.valor) {
+        document.getElementById('descricao_edit').value = opt.dataset.desc || '';
+        var valorCotado = parseFloat(opt.dataset.valor) || 0;
+        var limite60 = (valorCotado * 0.6).toFixed(2);
+        if (valorInput) {
+            valorInput.dataset.max = limite60;
+            if (alterarValor) valorInput.value = limite60;
+        }
+        if (valorHelp) valorHelp.textContent = 'Máx. 60% do valor cotado: ' + limite60 + ' MT';
+        if (hidden) hidden.value = opt.dataset.sucursal || '';
+    } else {
+        if (valorInput) valorInput.removeAttribute('data-max');
+        if (valorHelp) valorHelp.textContent = '';
+    }
+}
+
+function addTrabalhoRow() {
+    var container = document.getElementById('trabalhos-container');
+    var firstRow = container.querySelector('.trabalho-row');
+    var newRow = firstRow.cloneNode(true);
+    newRow.dataset.index = rowIndex++;
+    newRow.querySelector('.trabalho-num').textContent = 'Trabalho ' + (container.querySelectorAll('.trabalho-row').length + 1);
+    newRow.querySelector('.descricao-input').value = '';
+    newRow.querySelector('.valor-input').value = '0';
+    var cell = newRow.querySelector('.servico-actividade-cell');
+    if (cell) {
+        var s = cell.querySelector('.servico-select');
+        var a = cell.querySelector('.atividade-select');
+        if (s) s.value = '';
+        if (a) a.value = '';
+    }
+    newRow.querySelector('.prestador-select').value = '';
+    newRow.querySelector('.btn-remove-row').style.display = 'inline-block';
+    newRow.querySelector('.btn-remove-row').onclick = function() { newRow.remove(); updateRowNumbers(); };
+    newRow.querySelector('.servico-select').addEventListener('change', function() { aplicarServicoRow(this); });
+    var atvSel = newRow.querySelector('.atividade-select');
+    if (atvSel) atvSel.addEventListener('change', function() { aplicarServicoRow(this); });
+    container.appendChild(newRow);
+    atualizarServicos();
+    container.querySelectorAll('.btn-remove-row').forEach(function(btn, i) {
+        btn.style.display = container.querySelectorAll('.trabalho-row').length > 1 ? 'inline-block' : 'none';
+    });
+}
+
+function updateRowNumbers() {
+    document.querySelectorAll('#trabalhos-container .trabalho-row').forEach(function(row, i) {
+        row.querySelector('.trabalho-num').textContent = 'Trabalho ' + (i + 1);
+    });
+    document.querySelectorAll('#trabalhos-container .btn-remove-row').forEach(function(btn) {
+        btn.style.display = document.querySelectorAll('#trabalhos-container .trabalho-row').length > 1 ? 'inline-block' : 'none';
+    });
+    updateTotalEmpreitada();
+}
+
+function updateTotalEmpreitada() {
+    var total = 0;
+    document.querySelectorAll('#trabalhos-container .valor-input').forEach(function(input) {
+        total += parseFloat(input.value) || 0;
+    });
+    var el = document.getElementById('valor-total-empreitada');
+    if (el) el.textContent = total.toFixed(2);
+    // Edit mode: update total when single valor changes
+    var editValor = document.getElementById('valor_fixo_edit');
+    var editTotal = document.getElementById('valor-total-empreitada-edit');
+    if (editValor && editTotal) {
+        editTotal.textContent = (parseFloat(editValor.value) || 0).toFixed(2);
+    }
+}
+
+document.getElementById('ordem_servico').addEventListener('change', atualizarServicos);
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    var invalid = [];
+    document.querySelectorAll('.trabalho-row').forEach(function(row, i) {
+        var valorInput = row.querySelector('.valor-input');
+        if (!valorInput) return;
+        var sel = row.querySelector('.atividade-select[name="atividade_execucao"]') || row.querySelector('.servico-select[name="servico_orcamento"]');
+        if (sel && sel.value && valorInput.dataset.max) {
+            var val = parseFloat(valorInput.value) || 0;
+            var max = parseFloat(valorInput.dataset.max) || 0;
+            if (val > max) invalid.push(i + 1);
+        }
+    });
+    var editValor = document.getElementById('valor_fixo_edit');
+    if (editValor && editValor.dataset.max) {
+        var val = parseFloat(editValor.value) || 0;
+        var max = parseFloat(editValor.dataset.max) || 0;
+        if (val > max) invalid.push('em edição');
+    }
+    if (invalid.length > 0) {
+        e.preventDefault();
+        alert('O valor não pode exceder 60% do valor cotado ao cliente. Verifique o(s) trabalho(s): ' + invalid.join(', ') + '.');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    atualizarServicos();
+    document.querySelectorAll('.servico-select').forEach(function(el) {
+        el.addEventListener('change', function() { aplicarServicoRow(this); });
+    });
+    document.querySelectorAll('.atividade-select').forEach(function(el) {
+        el.addEventListener('change', function() { aplicarServicoRow(this); });
+    });
+    var editSelect = document.getElementById('servico_orcamento_edit');
+    if (editSelect) {
+        editSelect.addEventListener('change', function() { aplicarServicoEdit(true); });
+        editSelect.value = '{{ trabalho.servico_orcamento_id|default:"" }}';
+        aplicarServicoEdit(false);
+    }
+    var btnAdd = document.getElementById('btn-add-trabalho');
+    if (btnAdd) btnAdd.addEventListener('click', function() { addTrabalhoRow(); updateTotalEmpreitada(); });
+    // Valor total: recalcular ao alterar qualquer valor
+    document.getElementById('trabalhos-container') && document.getElementById('trabalhos-container').addEventListener('input', function(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('valor-input')) updateTotalEmpreitada();
+    });
+    var valorEdit = document.getElementById('valor_fixo_edit');
+    if (valorEdit) valorEdit.addEventListener('input', updateTotalEmpreitada);
+    updateTotalEmpreitada();
+});
+</script>
+{% endblock %}

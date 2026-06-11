@@ -1,0 +1,100 @@
+﻿{% extends "base_admin.html" %}
+{% block title %}{% if prestador %}Editar{% else %}Adicionar{% endif %} Prestador - Sistema Conception{% endblock %}
+{% block extra_style %}
+<style>
+    body { margin: 0; padding: 20px; background: #f1f5f9; color: #1e293b; }
+    .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { border-bottom: 2px solid #8b5cf6; padding-bottom: 15px; margin-bottom: 20px; }
+    .header h1 { color: #0f172a; font-weight: 600; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #334155; }
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%; padding: 10px 12px; border: 1px solid #94a3b8; border-radius: 6px; box-sizing: border-box;
+        background: #fff; color: #1e293b; font-size: 15px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: 500; }
+    .btn-primary { background: #8b5cf6; color: white; }
+    .btn-secondary { background: #64748b; color: white; }
+    .checkbox-group { display: flex; align-items: center; gap: 10px; }
+    .help-text { font-size: 13px; color: #475569; margin-top: 4px; }
+    #grupo-representante { display: none; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-user-tie"></i> {% if prestador %}Editar{% else %}Adicionar{% endif %} Prestador de Serviços</h1>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tipo <span style="color:#dc2626">*</span></label>
+                <select name="tipo" id="tipo" onchange="toggleRepresentante()">
+                    {% for v, l in tipo_choices %}
+                    <option value="{{ v }}" {% if prestador and prestador.tipo == v %}selected{% elif not prestador and v == 'SINGULAR' %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" id="grupo-representante">
+                <label>Representante legal</label>
+                <input type="text" name="representante_legal" value="{{ prestador.representante_legal|default:'' }}" placeholder="Nome do representante">
+                <span class="help-text">Apenas para empresas</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Nome / Razão social <span style="color:#dc2626">*</span></label>
+            <input type="text" name="nome" value="{{ prestador.nome|default:'' }}" required maxlength="200" placeholder="Nome completo ou razão social da empresa">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Contacto</label>
+                <input type="text" name="contacto" value="{{ prestador.contacto|default:'' }}" maxlength="50" placeholder="+258...">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ prestador.email|default:'' }}" placeholder="email@exemplo.com">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>NUIT</label>
+            <input type="text" name="nuit" value="{{ prestador.nuit|default:'' }}" maxlength="20" placeholder="Número de identificação fiscal">
+        </div>
+
+        <div class="form-group">
+            <label>Endereço</label>
+            <textarea name="endereco" rows="2">{{ prestador.endereco|default:'' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Observações</label>
+            <textarea name="observacoes" rows="2">{{ prestador.observacoes|default:'' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox-group">
+                <input type="checkbox" name="ativo" id="ativo" {% if not prestador or prestador.ativo %}checked{% endif %}>
+                <label for="ativo">Ativo</label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'rh:prestadores' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+<script>
+function toggleRepresentante() {
+    var tipo = document.getElementById('tipo').value;
+    document.getElementById('grupo-representante').style.display = tipo === 'EMPRESA' ? 'block' : 'none';
+}
+document.addEventListener('DOMContentLoaded', toggleRepresentante);
+</script>
+{% endblock %}

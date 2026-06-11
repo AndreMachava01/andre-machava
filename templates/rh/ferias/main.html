@@ -1,0 +1,106 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Férias{% endblock %}
+{% block body_class %}stock-module{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Férias' %}
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title"><i class="fas fa-umbrella-beach" aria-hidden="true"></i> Gestão de Férias</h1>
+                <p class="page-subtitle">Pedidos, aprovações e marcação automática no calendário de presenças</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'rh:main' %}" class="btn btn-secondary"><i class="fas fa-arrow-left" aria-hidden="true"></i> RH</a>
+                <a href="{% url 'rh:ferias_solicitar' %}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Novo pedido</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ stats.total|default:"0" }}</div>
+            <div class="stat-label">Total de pedidos</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.pendentes|default:"0" }}</div>
+            <div class="stat-label">Pendentes</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.aprovadas|default:"0" }}</div>
+            <div class="stat-label">Aprovadas</div>
+        </div>
+                    <div class="stat-box">
+            <div class="stat-number">{{ stats.em_curso|default:"0" }}</div>
+            <div class="stat-label">Em curso hoje</div>
+        </div>
+        </div>
+
+    <div class="filters-section">
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label for="status">Estado</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="">Todos</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        {% if solicitacoes %}
+        <div class="table-wrapper">
+            <table class="table table-with-actions" role="table" aria-label="Pedidos de férias">
+                <caption class="visually-hidden">Lista de pedidos de férias</caption>
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Período</th>
+                        <th>Dias</th>
+                        <th>Estado</th>
+                        <th>Solicitado</th>
+                        <th class="col-actions">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in solicitacoes %}
+                    <tr>
+                        <td><div class="cell-primary">{{ s.funcionario.nome_completo }}</div>
+                            <small>{{ s.funcionario.departamento.nome|default:"" }}</small></td>
+                        <td>{{ s.data_inicio|date:"d/m/Y" }} — {{ s.data_fim|date:"d/m/Y" }}</td>
+                        <td>{{ s.dias_solicitados }}</td>
+                        <td><span class="status-badge">{{ s.get_status_display }}</span></td>
+                        <td>{{ s.criado_em|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="cell-actions">
+                                {% if s.status == 'PENDENTE' %}
+                                <a href="{% url 'rh:ferias_aprovar' s.id %}" class="btn-action primary" title="Aprovar/Rejeitar"><i class="fas fa-check" aria-hidden="true"></i></a>
+                                {% endif %}
+                                {% if s.status != 'CANCELADO' %}
+                                <form method="post" action="{% url 'rh:ferias_cancelar' s.id %}" class="rh-cell-inline-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action danger" title="Cancelar" onclick="return confirm('Cancelar este pedido?');"><i class="fas fa-times" aria-hidden="true"></i></button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>Nenhum pedido de férias. <a href="{% url 'rh:ferias_solicitar' %}">Criar o primeiro</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

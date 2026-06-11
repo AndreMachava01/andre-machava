@@ -1,23 +1,15 @@
-{% extends "base_admin.html" %}
+﻿{% extends "base_admin.html" %}
 {% load static %}
+
+{% block body_class %}stock-module{% endblock %}
 
 {% block title %}Folha Salarial{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb-modern">
-        <a href="/dashboard/">
-            <i class="fas fa-home"></i>
-            Dashboard
-        </a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="/rh/">RH</a>
-        <i class="fas fa-chevron-right"></i>
-        <span>Folha Salarial</span>
-    </nav>
-    
-    <!-- Page Header -->
+    {% include 'rh/includes/_breadcrumb.html' with breadcrumb_current='Folha Salarial' %}
+
+<!-- Page Header -->
     <div class="page-header">
         <div class="page-header-content">
             <div>
@@ -42,45 +34,25 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ total_folhas }}</h3>
-                <p class="stat-label">Total de Folhas</p>
-            </div>
+    <div class="stats stock-stats-row">
+<div class="stat-box">
+            <div class="stat-number">{{ total_folhas }}</div>
+            <div class="stat-label">Total de Folhas</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ folhas_abertas }}</h3>
-                <p class="stat-label">Folhas Abertas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ folhas_abertas }}</div>
+            <div class="stat-label">Folhas Abertas</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ folhas_fechadas }}</h3>
-                <p class="stat-label">Folhas Fechadas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ folhas_fechadas }}</div>
+            <div class="stat-label">Folhas Fechadas</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-money-bill-wave"></i>
-            </div>
-            <div class="stat-content">
-                <h3 class="stat-number">{{ folhas_pagas }}</h3>
-                <p class="stat-label">Folhas Pagas</p>
-            </div>
+                <div class="stat-box">
+            <div class="stat-number">{{ folhas_pagas }}</div>
+            <div class="stat-label">Folhas Pagas</div>
         </div>
     </div>
+
 
     <!-- Filters Section -->
     <div class="filters-section">
@@ -110,7 +82,11 @@
                            placeholder="Pesquisar por mês ou observações..." value="{{ filtros.search|default:'' }}" class="form-control">
                 </div>
             </div>
-            <div class="filter-actions">
+            <div class="filter-group filter-group--actions">
+
+                <span class="filter-label filter-label--actions" aria-hidden="true">Ações</span>
+
+                <div class="filter-actions">
                 <button type="submit" class="btn-search">
                     <i class="fas fa-search"></i>
                     Filtrar
