@@ -5,7 +5,7 @@ import logging
 import time
 import json
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from django.db.models import Q, F, Count, Sum, Avg, Min, Max
 from django.utils import timezone

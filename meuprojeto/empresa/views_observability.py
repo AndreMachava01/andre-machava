@@ -109,7 +109,7 @@ def auditoria_list(request):
     modelos_disponiveis = [
         'RastreamentoEntrega', 'Transportadora', 'VeiculoInterno',
         'CustoLogistico', 'FaturamentoFrete', 'ProvaEntrega',
-        'Regiao', 'ZonaLogistica', 'HubLogistico'
+        'Regiao', 'ZonaEntrega', 'ZonaRoteamento', 'HubLogistico'
     ]
     
     from django.contrib.auth.models import User

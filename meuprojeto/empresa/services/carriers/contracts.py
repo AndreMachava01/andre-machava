@@ -71,6 +71,38 @@ class ProofOfDelivery:
     gps_lng: Optional[float] = None
 
 
+@dataclass
+class TrackingRequest:
+    tracking_code: str
+
+
+@dataclass
+class TrackingResponse:
+    success: bool
+    tracking_code: str = ''
+    status: str = ''
+    events: Optional[List[Dict[str, Any]]] = None
+    estimated_delivery: Optional[Any] = None
+    raw_response: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+@dataclass
+class ProofOfDeliveryRequest:
+    tracking_code: str
+    proof_type: str = 'ENTREGA'
+    format: str = 'PDF'
+
+
+@dataclass
+class ProofOfDeliveryResponse:
+    success: bool
+    proof_url: Optional[str] = None
+    proof_data: Optional[Dict[str, Any]] = None
+    raw_response: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
 class CarrierClient(Protocol):
     """Carrier client contract. Concrete implementations must be provided later."""
 

@@ -13,7 +13,7 @@ from ..models_stock import (
     RastreamentoEntrega, Transportadora, VeiculoInterno, 
     EventoRastreamento, NotificacaoLogisticaUnificada
 )
-from ..models_routing import ZonaEntrega, Rota, PlanejamentoEntrega
+from ..models_routing import ZonaRoteamento, Rota, PlanejamentoEntrega
 from ..services.pricing import calculate_quote, PricingItem
 from ..services.logistica_ops import confirmar_coleta, iniciar_transporte
 

@@ -124,6 +124,38 @@ class CoordenadaHistorica(models.Model):
         return hashlib.sha256(endereco_str.encode()).hexdigest()
 
 
+class CoordenadaHistorica(models.Model):
+    """Histórico de coordenadas associadas a entidades logísticas."""
+
+    TIPO_ENTIDADE_CHOICES = [
+        ('VEICULO', 'Veículo'),
+        ('ENTREGA', 'Entrega'),
+        ('MOTORISTA', 'Motorista'),
+        ('HUB', 'Hub'),
+        ('OUTRO', 'Outro'),
+    ]
+
+    endereco = models.ForeignKey(
+        EnderecoNormalizado,
+        on_delete=models.CASCADE,
+        related_name='coordenadas_historicas',
+    )
+    tipo_entidade = models.CharField(max_length=20, choices=TIPO_ENTIDADE_CHOICES)
+    entidade_id = models.CharField(max_length=50, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    observacoes = models.TextField(blank=True)
+    data_registro = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Coordenada Histórica"
+        verbose_name_plural = "Coordenadas Históricas"
+        ordering = ['-data_registro']
+
+    def __str__(self):
+        return f"{self.tipo_entidade} #{self.entidade_id} @ {self.data_registro}"
+
+
 class CalculoDistancia(models.Model):
     """Cálculos de distância entre pontos geográficos."""
     
