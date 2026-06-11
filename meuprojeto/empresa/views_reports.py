@@ -25,7 +25,12 @@ from .models_stock import (
     OrdemCompra,
     ItemOrdemCompra,
 )
-from .models_cost_billing import CustoLogistico
+from .models_pod import ProvaEntrega
+from .models_cost_billing import CustoLogistico, FaturamentoFrete
+from .models_routing import Rota, PlanejamentoEntrega
+from .models_exceptions import ExcecaoLogistica
+from .models_geolocation import CalculoDistancia
+from .models_mobile import SessaoMotorista, EventoMotorista
 
 logger = logging.getLogger(__name__)
 

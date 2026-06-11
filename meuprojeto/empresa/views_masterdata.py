@@ -17,7 +17,7 @@ import logging
 
 from .decorators import require_stock_access
 from .models_masterdata import (
-    Regiao, ZonaLogistica, HubLogistico, CatalogoDimensoes,
+    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
@@ -38,7 +38,7 @@ def masterdata_dashboard(request):
     logs_recentes = masterdata_service.obter_logs_masterdata(limite=10)
     
     regioes_qs = Regiao.objects.filter(ativo=True).order_by('prioridade', 'nome')
-    zonas_qs = ZonaLogistica.objects.filter(ativo=True).select_related('regiao').order_by('regiao', 'nome')
+    zonas_qs = ZonaEntrega.objects.filter(ativo=True).select_related('regiao').order_by('regiao', 'nome')
     hubs_qs = HubLogistico.objects.filter(ativo=True).select_related('regiao').order_by('tipo', 'nome')
 
     context = {
@@ -165,7 +165,7 @@ def zonas_list(request):
     regiao = request.GET.get('regiao', '')
     ativo = request.GET.get('ativo', '')
     
-    zonas = ZonaLogistica.objects.select_related('regiao')
+    zonas = ZonaEntrega.objects.select_related('regiao')
     
     if search:
         zonas = zonas.filter(
@@ -204,7 +204,7 @@ def zonas_list(request):
 @require_stock_access
 def zona_detail(request, zona_id):
     """Detalhes de uma zona de entrega."""
-    zona = get_object_or_404(ZonaLogistica, id=zona_id)
+    zona = get_object_or_404(ZonaEntrega, id=zona_id)
     
     context = {
         'zona': zona,
@@ -597,7 +597,7 @@ def validar_restricoes(request):
 
     transportadoras = queryset_transportadoras_externas()
     viaturas_internas = queryset_viaturas_internas_catalogo()
-    zonas_entrega = ZonaLogistica.objects.filter(ativo=True)
+    zonas_entrega = ZonaEntrega.objects.filter(ativo=True)
     
     context = {
         'transportadoras': transportadoras,
@@ -654,7 +654,7 @@ def logs_masterdata(request):
     
     # Opções para filtros
     modelos_disponiveis = [
-        'Regiao', 'ZonaLogistica', 'HubLogistico', 
+        'Regiao', 'ZonaEntrega', 'HubLogistico', 
         'CatalogoDimensoes', 'RestricaoLogistica', 'PermissaoLogistica'
     ]
     
@@ -745,7 +745,7 @@ def regiao_delete(request, regiao_id):
 @login_required
 @require_stock_access
 def zona_edit(request, zona_id):
-    zona = get_object_or_404(ZonaLogistica, id=zona_id)
+    zona = get_object_or_404(ZonaEntrega, id=zona_id)
     masterdata_service = MasterdataService()
     if request.method == 'POST':
         try:
@@ -778,7 +778,7 @@ def zona_edit(request, zona_id):
 @require_stock_access
 @require_http_methods(["GET", "POST"])
 def zona_delete(request, zona_id):
-    zona = get_object_or_404(ZonaLogistica, id=zona_id)
+    zona = get_object_or_404(ZonaEntrega, id=zona_id)
     if request.method == 'POST':
         MasterdataService().excluir_zona_entrega(zona.id, usuario=request.user)
         messages.success(request, f'Zona {zona.codigo} eliminada.')

@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from ..models_masterdata import (
-    Regiao, ZonaLogistica, HubLogistico, CatalogoDimensoes,
+    Regiao, ZonaEntrega, HubLogistico, CatalogoDimensoes,
     RestricaoLogistica, PermissaoLogistica, ConfiguracaoMasterdata,
     LogMasterdata
 )
@@ -145,7 +145,7 @@ class MasterdataService:
                           horario_inicio: str = '08:00',
                           horario_fim: str = '18:00',
                           dias_funcionamento: List[int] = None,
-                          usuario: Optional[User] = None) -> ZonaLogistica:
+                          usuario: Optional[User] = None) -> ZonaEntrega:
         """
         Cria uma nova zona de entrega.
         
@@ -163,7 +163,7 @@ class MasterdataService:
             usuario: Usuário que criou
             
         Returns:
-            ZonaLogistica criada
+            ZonaEntrega criada
         """
         try:
             regiao = Regiao.objects.get(id=regiao_id)
@@ -172,9 +172,9 @@ class MasterdataService:
                 dias_funcionamento = [0, 1, 2, 3, 4]  # Segunda a sexta
 
             if not codigo:
-                codigo = self._gerar_codigo(ZonaLogistica, 'ZN')
+                codigo = self._gerar_codigo(ZonaEntrega, 'ZN')
             
-            zona = ZonaLogistica.objects.create(
+            zona = ZonaEntrega.objects.create(
                 codigo=codigo,
                 nome=nome,
                 regiao=regiao,
@@ -190,7 +190,7 @@ class MasterdataService:
             
             self._log_operacao(
                 tipo_operacao='CRIAR',
-                modelo_afetado='ZonaLogistica',
+                modelo_afetado='ZonaEntrega',
                 objeto_id=zona.id,
                 dados_novos={
                     'codigo': codigo,
@@ -501,7 +501,7 @@ class MasterdataService:
             # Limites da zona de entrega (masterdata)
             if zona_entrega_id:
                 try:
-                    zona = ZonaLogistica.objects.get(id=zona_entrega_id, ativo=True)
+                    zona = ZonaEntrega.objects.get(id=zona_entrega_id, ativo=True)
                     if peso_kg is not None and zona.peso_maximo_kg and peso_kg > zona.peso_maximo_kg:
                         _registar_violacao(
                             f'Zona {zona.nome} — peso máximo',
@@ -512,7 +512,7 @@ class MasterdataService:
                             f'Zona {zona.nome} — volume máximo',
                             'VOLUME', volume_m3, zona.volume_maximo_m3, 'm³', bloquear=True,
                         )
-                except ZonaLogistica.DoesNotExist:
+                except ZonaEntrega.DoesNotExist:
                     pass
             
             # Obter restrições ativas
@@ -614,9 +614,9 @@ class MasterdataService:
                     ).count()
                 },
                 'zonas_entrega': {
-                    'total': ZonaLogistica.objects.filter(ativo=True).count(),
+                    'total': ZonaEntrega.objects.filter(ativo=True).count(),
                     'por_regiao': dict(
-                        ZonaLogistica.objects.filter(ativo=True)
+                        ZonaEntrega.objects.filter(ativo=True)
                         .values('regiao__nome')
                         .annotate(count=Count('id'))
                         .values_list('regiao__nome', 'count')
@@ -751,8 +751,8 @@ class MasterdataService:
                                peso_maximo_kg=None, volume_maximo_m3=None,
                                horario_inicio: str = '08:00', horario_fim: str = '18:00',
                                dias_funcionamento: Optional[List[int]] = None,
-                               ativo: bool = True, usuario: Optional[User] = None) -> ZonaLogistica:
-        zona = ZonaLogistica.objects.get(id=zona_id)
+                               ativo: bool = True, usuario: Optional[User] = None) -> ZonaEntrega:
+        zona = ZonaEntrega.objects.get(id=zona_id)
         regiao = Regiao.objects.get(id=regiao_id)
         dados_anteriores = {'codigo': zona.codigo, 'nome': zona.nome, 'ativo': zona.ativo}
         if dias_funcionamento is None:
@@ -768,16 +768,16 @@ class MasterdataService:
         zona.dias_funcionamento = dias_funcionamento
         zona.ativo = ativo
         zona.save()
-        self._log_operacao('EDITAR', 'ZonaLogistica', zona.id, dados_anteriores,
+        self._log_operacao('EDITAR', 'ZonaEntrega', zona.id, dados_anteriores,
                            {'nome': nome, 'regiao': regiao.nome, 'ativo': ativo}, usuario)
         return zona
 
     def excluir_zona_entrega(self, zona_id: int, usuario: Optional[User] = None) -> None:
-        zona = ZonaLogistica.objects.get(id=zona_id)
+        zona = ZonaEntrega.objects.get(id=zona_id)
         dados = {'codigo': zona.codigo, 'nome': zona.nome}
         obj_id = zona.id
         zona.delete()
-        self._log_operacao('EXCLUIR', 'ZonaLogistica', obj_id, dados_anteriores=dados, usuario=usuario)
+        self._log_operacao('EXCLUIR', 'ZonaEntrega', obj_id, dados_anteriores=dados, usuario=usuario)
 
     def atualizar_hub_logistico(self, hub_id: int, nome: str, endereco: str, cidade: str,
                                 regiao_id: int, latitude: Decimal, longitude: Decimal,
