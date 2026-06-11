@@ -5,7 +5,7 @@ import logging
 import time
 import json
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from django.db.models import Q, F, Count, Sum, Avg, Min, Max
 from django.utils import timezone
@@ -15,7 +15,7 @@ from django.core.cache import cache
 
 from ..models_mobile import (
     SessaoMotorista, EventoMotorista, PODOffline,
-    RotaMotorista, ParadaRota, ConfiguracaoMobile, LogMobile
+    RotaMotorista, ParadaRotaMotorista, ConfiguracaoMobile, LogMobile
 )
 from ..models_stock import RastreamentoEntrega, VeiculoInterno
 from ..models_pod import ProvaEntrega

@@ -300,8 +300,8 @@ class RotaMotorista(models.Model):
         return f"{self.codigo} - {self.nome_rota}"
 
 
-class ParadaRota(models.Model):
-    """Paradas individuais em uma rota."""
+class ParadaRotaMotorista(models.Model):
+    """Paradas individuais numa rota do motorista (app mobile)."""
     
     STATUS_CHOICES = [
         ('PENDENTE', 'Pendente'),
@@ -357,6 +357,95 @@ class ParadaRota(models.Model):
     
     def __str__(self):
         return f"{self.rota_motorista.codigo} - Parada {self.ordem_parada}"
+
+
+class SincronizacaoOffline(models.Model):
+    """Operações mobile guardadas offline à espera de sincronização."""
+
+    STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
+        ('EM_PROCESSAMENTO', 'Em Processamento'),
+        ('CONCLUIDA', 'Concluída'),
+        ('ERRO', 'Erro'),
+    ]
+
+    TIPO_OPERACAO_CHOICES = [
+        ('POD', 'POD'),
+        ('EVENTO', 'Evento'),
+        ('GPS', 'GPS'),
+        ('ROTA', 'Rota'),
+        ('OUTRO', 'Outro'),
+    ]
+
+    sessao = models.ForeignKey(
+        SessaoMotorista,
+        on_delete=models.CASCADE,
+        related_name='sincronizacoes_offline',
+    )
+    tipo_operacao = models.CharField(max_length=20, choices=TIPO_OPERACAO_CHOICES)
+    operacao = models.CharField(max_length=100)
+    dados_operacao = models.JSONField(default=dict)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDENTE')
+    erro_mensagem = models.TextField(blank=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_processamento = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Sincronização Offline"
+        verbose_name_plural = "Sincronizações Offline"
+        ordering = ['-data_criacao']
+
+    def __str__(self):
+        return f"{self.operacao} ({self.status})"
+
+
+class NotificacaoMobile(models.Model):
+    """Notificações enviadas a utilizadores da app mobile."""
+
+    TIPO_NOTIFICACAO_CHOICES = [
+        ('ROTA', 'Rota'),
+        ('ENTREGA', 'Entrega'),
+        ('ALERTA', 'Alerta'),
+        ('SISTEMA', 'Sistema'),
+        ('OUTRO', 'Outro'),
+    ]
+
+    CANAL_CHOICES = [
+        ('PUSH', 'Push'),
+        ('EMAIL', 'Email'),
+        ('SMS', 'SMS'),
+        ('WHATSAPP', 'WhatsApp'),
+    ]
+
+    PRIORIDADE_CHOICES = [
+        ('BAIXA', 'Baixa'),
+        ('NORMAL', 'Normal'),
+        ('ALTA', 'Alta'),
+        ('URGENTE', 'Urgente'),
+    ]
+
+    destinatario = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='notificacoes_mobile',
+    )
+    tipo_notificacao = models.CharField(max_length=20, choices=TIPO_NOTIFICACAO_CHOICES)
+    canal = models.CharField(max_length=20, choices=CANAL_CHOICES, default='PUSH')
+    titulo = models.CharField(max_length=200, blank=True)
+    mensagem = models.TextField()
+    dados_extras = models.JSONField(default=dict, blank=True)
+    prioridade = models.CharField(max_length=20, choices=PRIORIDADE_CHOICES, default='NORMAL')
+    lida = models.BooleanField(default=False)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_leitura = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Notificação Mobile"
+        verbose_name_plural = "Notificações Mobile"
+        ordering = ['-data_criacao']
+
+    def __str__(self):
+        return f"{self.titulo or self.tipo_notificacao} → {self.destinatario.username}"
 
 
 class ConfiguracaoMobile(models.Model):

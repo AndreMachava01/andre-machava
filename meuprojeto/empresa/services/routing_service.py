@@ -10,7 +10,7 @@ from django.db.models import Q, F, Count, Sum, Avg
 from django.utils import timezone
 
 from ..models_routing import (
-    ZonaEntrega, Rota, ParadaRota, PlanejamentoEntrega, ConfiguracaoRoteirizacao
+    ZonaRoteamento, Rota, ParadaRota, PlanejamentoEntrega, ConfiguracaoRoteirizacao
 )
 from ..models_stock import VeiculoInterno, RastreamentoEntrega
 
@@ -131,11 +131,11 @@ class RoutingService:
         logger.info(f"Planejamento de entrega criado: {codigo}")
         return planejamento
     
-    def _determinar_zona_entrega(self, cidade: str, provincia: str) -> ZonaEntrega:
+    def _determinar_zona_entrega(self, cidade: str, provincia: str) -> ZonaRoteamento:
         """Determina a zona de entrega baseada na cidade e província."""
         try:
             # Buscar zona específica por cidade
-            zona = ZonaEntrega.objects.filter(
+            zona = ZonaRoteamento.objects.filter(
                 cidade__iexact=cidade,
                 provincia__iexact=provincia,
                 ativo=True
@@ -145,7 +145,7 @@ class RoutingService:
                 return zona
             
             # Buscar zona genérica por província
-            zona = ZonaEntrega.objects.filter(
+            zona = ZonaRoteamento.objects.filter(
                 provincia__iexact=provincia,
                 ativo=True
             ).first()
@@ -154,7 +154,7 @@ class RoutingService:
                 return zona
             
             # Criar zona padrão se não existir
-            return ZonaEntrega.objects.create(
+            return ZonaRoteamento.objects.create(
                 nome=f"Zona {cidade}",
                 codigo=f"{provincia[:3].upper()}-{cidade[:3].upper()}",
                 provincia=provincia,

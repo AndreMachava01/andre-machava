@@ -7,8 +7,8 @@ from django.utils import timezone
 from decimal import Decimal
 
 
-class ZonaEntrega(models.Model):
-    """Zona geográfica para agrupamento de entregas."""
+class ZonaRoteamento(models.Model):
+    """Zona geográfica para agrupamento de entregas em rotas."""
     
     nome = models.CharField(max_length=100, unique=True)
     codigo = models.CharField(max_length=20, unique=True)
@@ -47,8 +47,9 @@ class ZonaEntrega(models.Model):
     )
     
     class Meta:
-        verbose_name = "Zona de Entrega"
-        verbose_name_plural = "Zonas de Entrega"
+        db_table = 'empresa_zonaentrega'
+        verbose_name = "Zona de Roteamento"
+        verbose_name_plural = "Zonas de Roteamento"
         ordering = ['provincia', 'cidade', 'nome']
     
     def __str__(self):
@@ -71,12 +72,12 @@ class Rota(models.Model):
     
     # Configurações da rota
     zona_origem = models.ForeignKey(
-        ZonaEntrega, 
+        ZonaRoteamento,
         on_delete=models.CASCADE,
         related_name='rotas_origem'
     )
     zonas_destino = models.ManyToManyField(
-        ZonaEntrega,
+        ZonaRoteamento,
         related_name='rotas_destino',
         help_text="Zonas que esta rota atende"
     )
@@ -233,7 +234,7 @@ class PlanejamentoEntrega(models.Model):
     codigo = models.CharField(max_length=20, unique=True)
     
     # Destino
-    zona_entrega = models.ForeignKey(ZonaEntrega, on_delete=models.CASCADE)
+    zona_entrega = models.ForeignKey(ZonaRoteamento, on_delete=models.CASCADE)
     endereco_completo = models.TextField()
     cidade = models.CharField(max_length=100)
     provincia = models.CharField(max_length=50)

@@ -15,7 +15,7 @@ import logging
 
 from .decorators import require_stock_access
 from .models_routing import (
-    ZonaEntrega, Rota, ParadaRota, PlanejamentoEntrega, ConfiguracaoRoteirizacao
+    ZonaRoteamento, Rota, ParadaRota, PlanejamentoEntrega, ConfiguracaoRoteirizacao
 )
 from .models_stock import VeiculoInterno, RastreamentoEntrega
 from .services.routing_service import RoutingService
@@ -35,7 +35,7 @@ def zonas_entrega_list(request):
     provincia = request.GET.get('provincia', '')
     ativo = request.GET.get('ativo', '')
     
-    zonas = ZonaEntrega.objects.all()
+    zonas = ZonaRoteamento.objects.all()
     
     if search:
         zonas = zonas.filter(
@@ -59,7 +59,7 @@ def zonas_entrega_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Opções para filtros
-    provincias = ZonaEntrega.objects.values_list('provincia', flat=True).distinct().order_by('provincia')
+    provincias = ZonaRoteamento.objects.values_list('provincia', flat=True).distinct().order_by('provincia')
     
     context = {
         'page_obj': page_obj,
@@ -76,7 +76,7 @@ def zonas_entrega_list(request):
 @require_stock_access
 def zona_entrega_detail(request, zona_id):
     """Detalhes de uma zona de entrega."""
-    zona = get_object_or_404(ZonaEntrega, id=zona_id)
+    zona = get_object_or_404(ZonaRoteamento, id=zona_id)
     
     # Estatísticas da zona
     planejamentos = PlanejamentoEntrega.objects.filter(zona_entrega=zona)
@@ -347,7 +347,7 @@ def otimizar_rotas(request):
     
     # GET - mostrar formulário de otimização
     veiculos = VeiculoInterno.objects.filter(status='ATIVO', disponivel=True)
-    zonas = ZonaEntrega.objects.filter(ativo=True)
+    zonas = ZonaRoteamento.objects.filter(ativo=True)
     
     # Data padrão: amanhã
     data_padrao = (timezone.now() + timedelta(days=1)).date()
@@ -374,7 +374,7 @@ def dashboard_roteirizacao(request):
         'rotas_planejadas': Rota.objects.filter(status='PLANEJADA').count(),
         'rotas_executando': Rota.objects.filter(status='EM_EXECUCAO').count(),
         'veiculos_disponiveis': VeiculoInterno.objects.filter(status='ATIVO', disponivel=True).count(),
-        'zonas_ativas': ZonaEntrega.objects.filter(ativo=True).count(),
+        'zonas_ativas': ZonaRoteamento.objects.filter(ativo=True).count(),
     }
     
     # Planejamentos por prioridade
